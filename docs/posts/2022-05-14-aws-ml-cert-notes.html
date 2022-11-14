@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-05-14">
+<meta name="description" content="My notes for AWS ML speciality exam passed on May 14, 2022.">
+
+<title>Random Thoughts - AWS Machine Learning Certification Notes (MLS-C01)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - AWS Machine Learning Certification Notes (MLS-C01)">
+<meta property="og:description" content="My notes for AWS ML speciality exam passed on May 14, 2022.">
+<meta property="og:image" content="images/2022-05-14-aws-ml-cert-notes/AWS-Certified-Machine-Learning-Specialty_badge.png">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - AWS Machine Learning Certification Notes (MLS-C01)">
+<meta name="twitter:description" content="My notes for AWS ML speciality exam passed on May 14, 2022.">
+<meta name="twitter:image" content="images/2022-05-14-aws-ml-cert-notes/AWS-Certified-Machine-Learning-Specialty_badge.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a>
+  <ul class="collapse">
+  <li><a href="#amazon-comprehend" id="toc-amazon-comprehend" class="nav-link" data-scroll-target="#amazon-comprehend">Amazon Comprehend</a></li>
+  <li><a href="#amazon-rekognition" id="toc-amazon-rekognition" class="nav-link" data-scroll-target="#amazon-rekognition">Amazon Rekognition</a></li>
+  <li><a href="#amazon-polly" id="toc-amazon-polly" class="nav-link" data-scroll-target="#amazon-polly">Amazon Polly</a></li>
+  <li><a href="#amazon-lex" id="toc-amazon-lex" class="nav-link" data-scroll-target="#amazon-lex">Amazon Lex</a></li>
+  <li><a href="#amazon-transcribe" id="toc-amazon-transcribe" class="nav-link" data-scroll-target="#amazon-transcribe">Amazon Transcribe</a></li>
+  <li><a href="#latent-dirichlet-allocation-lda-algorithm" id="toc-latent-dirichlet-allocation-lda-algorithm" class="nav-link" data-scroll-target="#latent-dirichlet-allocation-lda-algorithm">Latent Dirichlet Allocation (LDA) Algorithm</a></li>
+  <li><a href="#multinomial-logistic-regression-algorithm" id="toc-multinomial-logistic-regression-algorithm" class="nav-link" data-scroll-target="#multinomial-logistic-regression-algorithm">Multinomial Logistic Regression Algorithm</a></li>
+  <li><a href="#factorization-machines-algorithm" id="toc-factorization-machines-algorithm" class="nav-link" data-scroll-target="#factorization-machines-algorithm">Factorization Machines Algorithm</a></li>
+  <li><a href="#sequence-to-sequence-seq2seq-algorithm" id="toc-sequence-to-sequence-seq2seq-algorithm" class="nav-link" data-scroll-target="#sequence-to-sequence-seq2seq-algorithm">Sequence to Sequence (seq2seq) Algorithm</a></li>
+  <li><a href="#term-frequency-inverse-document-frequency-algorithm" id="toc-term-frequency-inverse-document-frequency-algorithm" class="nav-link" data-scroll-target="#term-frequency-inverse-document-frequency-algorithm">Term frequency-inverse document frequency Algorithm</a></li>
+  <li><a href="#blazingtext-algorithm" id="toc-blazingtext-algorithm" class="nav-link" data-scroll-target="#blazingtext-algorithm">BlazingText Algorithm</a></li>
+  <li><a href="#amazon-sagemaker-batch-transform" id="toc-amazon-sagemaker-batch-transform" class="nav-link" data-scroll-target="#amazon-sagemaker-batch-transform">Amazon SageMaker Batch Transform</a></li>
+  <li><a href="#amazon-sagemaker-real-time-inference-hosting-services" id="toc-amazon-sagemaker-real-time-inference-hosting-services" class="nav-link" data-scroll-target="#amazon-sagemaker-real-time-inference-hosting-services">Amazon SageMaker Real-time inference / Hosting Services</a></li>
+  <li><a href="#amazon-sagemaker-inference-pipeline" id="toc-amazon-sagemaker-inference-pipeline" class="nav-link" data-scroll-target="#amazon-sagemaker-inference-pipeline">Amazon SageMaker Inference Pipeline</a></li>
+  <li><a href="#amazon-sagemaker-neo" id="toc-amazon-sagemaker-neo" class="nav-link" data-scroll-target="#amazon-sagemaker-neo">Amazon SageMaker Neo</a></li>
+  <li><a href="#lstm-long-short-term-memory" id="toc-lstm-long-short-term-memory" class="nav-link" data-scroll-target="#lstm-long-short-term-memory">LSTM / Long Short-Term Memory</a></li>
+  <li><a href="#semantic-segmentation-algorithm" id="toc-semantic-segmentation-algorithm" class="nav-link" data-scroll-target="#semantic-segmentation-algorithm">Semantic Segmentation Algorithm</a></li>
+  <li><a href="#accuracy" id="toc-accuracy" class="nav-link" data-scroll-target="#accuracy">Accuracy</a></li>
+  <li><a href="#precision" id="toc-precision" class="nav-link" data-scroll-target="#precision">Precision</a></li>
+  <li><a href="#recall" id="toc-recall" class="nav-link" data-scroll-target="#recall">Recall</a></li>
+  <li><a href="#l1-regularization" id="toc-l1-regularization" class="nav-link" data-scroll-target="#l1-regularization">L1 regularization</a></li>
+  <li><a href="#l2-regularization" id="toc-l2-regularization" class="nav-link" data-scroll-target="#l2-regularization">L2 regularization</a></li>
+  <li><a href="#k-means" id="toc-k-means" class="nav-link" data-scroll-target="#k-means">K-means</a></li>
+  <li><a href="#k-nearest-neighbors" id="toc-k-nearest-neighbors" class="nav-link" data-scroll-target="#k-nearest-neighbors">K-nearest neighbors</a></li>
+  </ul></li>
+  <li><a href="#courses" id="toc-courses" class="nav-link" data-scroll-target="#courses">Courses</a>
+  <ul class="collapse">
+  <li><a href="#exam-readiness-aws-certified-machine-learning---specialty" id="toc-exam-readiness-aws-certified-machine-learning---specialty" class="nav-link" data-scroll-target="#exam-readiness-aws-certified-machine-learning---specialty">Exam Readiness: AWS Certified Machine Learning - Specialty</a></li>
+  <li><a href="#acloudguru-aws-certified-machine-learning---specialty-2020" id="toc-acloudguru-aws-certified-machine-learning---specialty-2020" class="nav-link" data-scroll-target="#acloudguru-aws-certified-machine-learning---specialty-2020">ACloudGuru AWS Certified Machine Learning - Specialty 2020</a></li>
+  </ul></li>
+  <li><a href="#practice-projects" id="toc-practice-projects" class="nav-link" data-scroll-target="#practice-projects">Practice Projects</a></li>
+  <li><a href="#practice-dumps" id="toc-practice-dumps" class="nav-link" data-scroll-target="#practice-dumps">Practice Dumps</a></li>
+  <li><a href="#other-tips" id="toc-other-tips" class="nav-link" data-scroll-target="#other-tips">Other Tips</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AWS Machine Learning Certification Notes (MLS-C01)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+    <div class="quarto-category">ml</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    My notes for AWS ML speciality exam passed on May 14, 2022.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 14, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-14-aws-ml-cert-notes/AWS-Certified-Machine-Learning-Specialty_badge.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">AWS ML Speciality Badge</figcaption><p></p>
+</figure>
+</div>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This post is a compilation of important notes and references for AWS Machine Learning Certification MLSC01.</p>
+</section>
+<section id="notes" class="level1">
+<h1>Notes</h1>
+<section id="amazon-comprehend" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-comprehend">Amazon Comprehend</h2>
+<p>Amazon Comprehend is a natural-language processing (NLP) service that uses machine learning to uncover valuable insights and connections in text.</p>
+<p><strong>References</strong></p>
+<p>https://aws.amazon.com/comprehend/</p>
+</section>
+<section id="amazon-rekognition" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-rekognition">Amazon Rekognition</h2>
+<p>Amazon Rekognition offers pre-trained and customizable computer vision (CV) capabilities to extract information and insights from your images and videos.</p>
+<p><strong>References</strong></p>
+<p>https://aws.amazon.com/rekognition/</p>
+</section>
+<section id="amazon-polly" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-polly">Amazon Polly</h2>
+<p>Amazon Polly is a service that turns text into lifelike speech, allowing you to create applications that talk, and build entirely new categories of speech-enabled products.</p>
+<p><strong>References</strong></p>
+<p>https://aws.amazon.com/polly/</p>
+</section>
+<section id="amazon-lex" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-lex">Amazon Lex</h2>
+<p>Amazon Lex is a fully managed artificial intelligence (AI) service with advanced natural language models to design, build, test, and deploy conversational interfaces in applications (chat bots).</p>
+<p><strong>References</strong></p>
+<p>https://aws.amazon.com/lex/</p>
+</section>
+<section id="amazon-transcribe" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-transcribe">Amazon Transcribe</h2>
+<p>Amazon Transcribe is an automatic speech recognition service that makes it easy to add speech to text capabilities to any application. Transcribe’s features enable you to ingest audio input, produce easy to read and review transcripts, improve accuracy with customization, and filter content to ensure customer privacy.</p>
+<p><strong>References</strong></p>
+<p>https://aws.amazon.com/transcribe/</p>
+</section>
+<section id="latent-dirichlet-allocation-lda-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="latent-dirichlet-allocation-lda-algorithm">Latent Dirichlet Allocation (LDA) Algorithm</h2>
+<ul>
+<li>It is a topic modeling technique to generate abstract topics based on word frequency from a set of documents</li>
+<li>It is similar to <strong>unsupervised</strong> classification of documents</li>
+<li>It is useful for automatically organizing, summerizing, understanding and searching large electronic archives. It can help in
+<ul>
+<li>discovering hidden themes in the collection</li>
+<li>classifying document into dicoverable themes</li>
+<li>organize/summerize/search the documents</li>
+</ul></li>
+</ul>
+<p><strong>References</strong></p>
+<p>https://towardsdatascience.com/latent-dirichlet-allocation-lda-9d1cd064ffa2</p>
+</section>
+<section id="multinomial-logistic-regression-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="multinomial-logistic-regression-algorithm">Multinomial Logistic Regression Algorithm</h2>
+<p>Multinomial Logistic Regression is an extension of logistic regression (<strong>supervised</strong>) that allows more than two discrete outcomes (multiclass).</p>
+<p><strong>References</strong></p>
+<p>https://en.wikipedia.org/wiki/Multinomial_logistic_regression</p>
+</section>
+<section id="factorization-machines-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="factorization-machines-algorithm">Factorization Machines Algorithm</h2>
+<p>The Factorization Machines algorithm is a general-purpose <strong>supervised</strong> learning algorithm that you can use for both classification and regression tasks. It is an extension of a linear model that is designed to capture interactions between features within high dimensional sparse datasets economically. For example, in a click prediction system, the Factorization Machines model can capture click rate patterns observed when ads from a certain ad-category are placed on pages from a certain page-category. Factorization machines are a good choice for tasks dealing with high dimensional sparse datasets, such as click prediction and item recommendation.</p>
+<p><strong>References</strong></p>
+<p>https://docs.aws.amazon.com/sagemaker/latest/dg/fact-machines.html</p>
+</section>
+<section id="sequence-to-sequence-seq2seq-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="sequence-to-sequence-seq2seq-algorithm">Sequence to Sequence (seq2seq) Algorithm</h2>
+<p>Amazon SageMaker Sequence to Sequence is a supervised learning algorithm where the input is a sequence of tokens (for example, text, audio) and the output generated is another sequence of tokens. Example applications include * machine translation (input a sentence from one language and predict what that sentence would be in another language) * text summarization (input a longer string of words and predict a shorter string of words that is a summary) * speech-to-text (audio clips converted into output sentences in tokens)</p>
+<p>Problems in this domain have been successfully modeled with deep neural networks that show a significant performance boost over previous methodologies. Amazon SageMaker seq2seq uses Recurrent Neural Networks (RNNs) and Convolutional Neural Network (CNN) models with attention as encoder-decoder architectures.</p>
+<p><strong>References</strong></p>
+<p>https://docs.aws.amazon.com/sagemaker/latest/dg/seq-2-seq.html</p>
+</section>
+<section id="term-frequency-inverse-document-frequency-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="term-frequency-inverse-document-frequency-algorithm">Term frequency-inverse document frequency Algorithm</h2>
+<p>TF-IDF (term frequency-inverse document frequency) is a statistical measure that evaluates how relevant a word is to a document in a collection of documents.</p>
+<p>This is done by multiplying two metrics: how many times a word appears in a document (frequency), and the inverse document frequency of the word across a set of documents.</p>
+<ul>
+<li>The term <strong>frequency</strong> of a word in a document. There are several ways of calculating this frequency, with the simplest being a raw count of instances a word appears in a document.</li>
+<li>The <strong>inverse document frequency</strong> of the word across a set of documents. This means, how common or rare a word is in the entire document set. The closer it is to 0, the more common a word is. This metric can be calculated by taking the total number of documents, dividing it by the number of documents that contain a word, and calculating the logarithm. So, if the word is very common and appears in many documents, this number will approach 0. Otherwise, it will approach 1</li>
+</ul>
+<p>It has many uses, most importantly in automated text analysis, and is very useful for scoring words in machine learning algorithms for Natural Language Processing (NLP).</p>
+<p><strong>References</strong></p>
+<p>https://monkeylearn.com/blog/what-is-tf-idf</p>
+</section>
+<section id="blazingtext-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="blazingtext-algorithm">BlazingText Algorithm</h2>
+<p>The Amazon SageMaker BlazingText algorithm provides highly optimized implementations of the Word2vec and text classification algorithms. The Word2vec algorithm is useful for many downstream natural language processing (NLP) tasks, such as sentiment analysis, named entity recognition, machine translation, etc. Text classification is an important task for applications that perform web searches, information retrieval, ranking, and document classification.</p>
+<p>The Word2vec algorithm maps words to high-quality distributed vectors. The resulting vector representation of a word is called a word embedding. Words that are semantically similar correspond to vectors that are close together. That way, word embeddings capture the semantic relationships between words.</p>
+<p><strong>References</strong></p>
+<p>https://docs.aws.amazon.com/sagemaker/latest/dg/blazingtext.html</p>
+</section>
+<section id="amazon-sagemaker-batch-transform" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-sagemaker-batch-transform">Amazon SageMaker Batch Transform</h2>
+<p>Use batch transform when you need to do the following:</p>
+<ul>
+<li>Preprocess datasets to remove noise or bias that interferes with training or inference from your dataset.</li>
+<li>Get inferences from large datasets.</li>
+<li>Run inference when you don’t need a persistent endpoint.</li>
+<li>Associate input records with inferences to assist the interpretation of results.</li>
+</ul>
+<p><strong>References</strong></p>
+<p>https://docs.aws.amazon.com/sagemaker/latest/dg/batch-transform.html</p>
+</section>
+<section id="amazon-sagemaker-real-time-inference-hosting-services" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-sagemaker-real-time-inference-hosting-services">Amazon SageMaker Real-time inference / Hosting Services</h2>
+<p>Real-time inference is ideal for inference workloads where you have real-time, interactive, low latency requirements. You can deploy your model to SageMaker hosting services and get an endpoint that can be used for inference. These endpoints are fully managed and support autoscaling.</p>
+<p><strong>References</strong></p>
+<p>https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html</p>
+</section>
+<section id="amazon-sagemaker-inference-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-sagemaker-inference-pipeline">Amazon SageMaker Inference Pipeline</h2>
+<p>An inference pipeline is a Amazon SageMaker model that is composed of a linear sequence of two to fifteen containers that process requests for inferences on data. You use an inference pipeline to define and deploy any combination of pretrained SageMaker built-in algorithms and your own custom algorithms packaged in Docker containers. You can use an inference pipeline to combine preprocessing, predictions, and post-processing data science tasks. Inference pipelines are fully managed.</p>
+<p>Within an inference pipeline model, SageMaker handles invocations as a sequence of HTTP requests. The first container in the pipeline handles the initial request, then the intermediate response is sent as a request to the second container, and so on, for each container in the pipeline. SageMaker returns the final response to the client.</p>
+<p>When you deploy the pipeline model, SageMaker installs and runs all of the containers on each Amazon Elastic Compute Cloud (Amazon EC2) instance in the endpoint or transform job. Feature processing and inferences run with low latency because the containers are co-located on the same EC2 instances.</p>
+<p><strong>References</strong></p>
+<p>https://docs.aws.amazon.com/sagemaker/latest/dg/inference-pipelines.html</p>
+</section>
+<section id="amazon-sagemaker-neo" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-sagemaker-neo">Amazon SageMaker Neo</h2>
+<p>Amazon SageMaker Neo automatically optimizes machine learning models for inference on cloud instances and edge devices to run faster with no loss in accuracy. You start with a machine learning model already built with DarkNet, Keras, MXNet, PyTorch, TensorFlow, TensorFlow-Lite, ONNX, or XGBoost and trained in Amazon SageMaker or anywhere else. Then you choose your target hardware platform, which can be a SageMaker hosting instance or an edge device based on processors from Ambarella, Apple, ARM, Intel, MediaTek, Nvidia, NXP, Qualcomm, RockChip, Texas Instruments, or Xilinx. With a single click, SageMaker Neo optimizes the trained model and compiles it into an executable. The compiler uses a machine learning model to apply the performance optimizations that extract the best available performance for your model on the cloud instance or edge device. You then deploy the model as a SageMaker endpoint or on supported edge devices and start making predictions.</p>
+<p><strong>References</strong></p>
+<p>https://aws.amazon.com/sagemaker/neo/</p>
+</section>
+<section id="lstm-long-short-term-memory" class="level2">
+<h2 class="anchored" data-anchor-id="lstm-long-short-term-memory">LSTM / Long Short-Term Memory</h2>
+<p>LSTM is an artificial recurrent neural network (RNN) architecture used in the field of deep learning. Unlike standard feedforward neural networks, LSTM has feedback connections. It can process not only single data points (such as images), but also entire sequences of data (such as speech or video).</p>
+<p>LSTM networks are well-suited to classifying, processing and making predictions based on time series data, since there can be lags of unknown duration between important events in a time series. LSTM is applicable to tasks such as anomaly detection in network traffic or IDSs (intrusion detection systems)</p>
+<p><strong>References</strong></p>
+<p>https://en.wikipedia.org/wiki/Long_short-term_memory</p>
+</section>
+<section id="semantic-segmentation-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="semantic-segmentation-algorithm">Semantic Segmentation Algorithm</h2>
+<p>The SageMaker semantic segmentation algorithm provides a fine-grained, pixel-level approach to developing computer vision applications. It tags every pixel in an image with a class label from a predefined set of classes. Tagging is fundamental for understanding scenes, which is critical to an increasing number of computer vision applications, such as self-driving vehicles, medical imaging diagnostics, and robot sensing.</p>
+<p>For comparison, the SageMaker Image Classification Algorithm is a supervised learning algorithm that analyzes only whole images, classifying them into one of multiple output categories. The Object Detection Algorithm is a supervised learning algorithm that detects and classifies all instances of an object in an image. It indicates the location and scale of each object in the image with a rectangular bounding box.</p>
+<p>Because the semantic segmentation algorithm classifies every pixel in an image, it also provides information about the shapes of the objects contained in the image. The segmentation output is represented as a grayscale image, called a segmentation mask. A segmentation mask is a grayscale image with the same shape as the input image.</p>
+<p>The SageMaker semantic segmentation algorithm is built using the MXNet Gluon framework and the Gluon CV toolkit.</p>
+<p><strong>References</strong> * https://docs.aws.amazon.com/sagemaker/latest/dg/semantic-segmentation.html</p>
+</section>
+<section id="accuracy" class="level2">
+<h2 class="anchored" data-anchor-id="accuracy">Accuracy</h2>
+<p>Accuracy measures the fraction of correct predictions. The range is 0 to 1.</p>
+<p>Accuracy = (TP + TN) / (TP + FP + TN + FN)</p>
+</section>
+<section id="precision" class="level2">
+<h2 class="anchored" data-anchor-id="precision">Precision</h2>
+<p>Precision measures the fraction of actual positives among those examples that are predicted as positive. The range is 0 to 1. This formula tells us that the larger value of FP (False Positives), the lower the Precision.</p>
+<p>Precision = TP / (TP + FP)</p>
+<p>For maximun precision there should be no FP. FP are also called Type 1 error.</p>
+</section>
+<section id="recall" class="level2">
+<h2 class="anchored" data-anchor-id="recall">Recall</h2>
+<p>The Recall measures the fraction of actual positives that are predicted as positive. The range is 0 to 1. This formula tells us that the larger value of FN (False Negatives), the lower the Recall.</p>
+<p>Recall = TP / (TP + FN)</p>
+<p>For maximun recall there should be no FN. FN are also called Type 2 error.</p>
+<p>Note: Precision and Recall are inversely proportional to eachother.</p>
+<p><strong>References</strong></p>
+<p>https://towardsdatascience.com/model-evaluation-i-precision-and-recall-166ddb257c7b</p>
+</section>
+<section id="l1-regularization" class="level2">
+<h2 class="anchored" data-anchor-id="l1-regularization">L1 regularization</h2>
+<p>L1 regularization, also known as L1 norm or Lasso (in regression problems), combats overfitting by shrinking the parameters towards 0. This makes some features obsolete.</p>
+<p>It’s a form of feature selection, because when we assign a feature with a 0 weight, we’re multiplying the feature values by 0 which returns 0, eradicating the significance of that feature. If the input features of our model have weights closer to 0, our L1 norm would be sparse. A selection of the input features would have weights equal to zero, and the rest would be non-zero.</p>
+</section>
+<section id="l2-regularization" class="level2">
+<h2 class="anchored" data-anchor-id="l2-regularization">L2 regularization</h2>
+<p>L2 regularization, or the L2 norm, or Ridge (in regression problems), combats overfitting by forcing weights to be small, but not making them exactly 0. This regularization returns a non-sparse solution since the weights will be non-zero (although some may be close to 0). A major snag to consider when using L2 regularization is that it’s not robust to outliers.</p>
+<p><strong>References</strong></p>
+<p>https://neptune.ai/blog/fighting-overfitting-with-l1-or-l2-regularization</p>
+</section>
+<section id="k-means" class="level2">
+<h2 class="anchored" data-anchor-id="k-means">K-means</h2>
+<p>K-means is a <strong>clustering algorithm</strong> that tries to partition a set of points into K sets (clusters) such that the points in each cluster tend to be near each other. It is <strong>unsupervised</strong> because the points have no external classification.</p>
+</section>
+<section id="k-nearest-neighbors" class="level2">
+<h2 class="anchored" data-anchor-id="k-nearest-neighbors">K-nearest neighbors</h2>
+<p>K-nearest neighbors is a <strong>classification (or regression)</strong> algorithm that in order to determine the classification of a point, combines the classification of the K nearest points. It is <strong>supervised</strong> because you are trying to classify a point based on the known classification of other points.</p>
+</section>
+</section>
+<section id="courses" class="level1">
+<h1>Courses</h1>
+<section id="exam-readiness-aws-certified-machine-learning---specialty" class="level2">
+<h2 class="anchored" data-anchor-id="exam-readiness-aws-certified-machine-learning---specialty">Exam Readiness: AWS Certified Machine Learning - Specialty</h2>
+<p>https://explore.skillbuilder.aws/learn/course/27/play/54/exam-readiness-aws-certified-machine-learning-specialty</p>
+<p>This is overall a very good short course that can help you identify your strengths and weaknesses in each exam domain so you know where to focus when studying for the exam.</p>
+</section>
+<section id="acloudguru-aws-certified-machine-learning---specialty-2020" class="level2">
+<h2 class="anchored" data-anchor-id="acloudguru-aws-certified-machine-learning---specialty-2020">ACloudGuru AWS Certified Machine Learning - Specialty 2020</h2>
+<p>https://acloudguru.com/course/aws-certified-machine-learning-specialty</p>
+<p>This is a detailed course on the topics covered in the exam. But this course lacks on “Modeling” domain and hands-on labs. Besides taking this course you should have a good knowledge and working experience in data science and machine learning domain. I already have AI/ML background so it was not an issue for me. Some people have recommended taking <a href="https://www.udemy.com/course/data-science-and-machine-learning-with-python-hands-on/">Machine Learning, Data Science and Deep Learning with Python</a> from Frank Kane on Udemy if you don’t have an ML background but I am not sure about it’s worth.</p>
+</section>
+</section>
+<section id="practice-projects" class="level1">
+<h1>Practice Projects</h1>
+<p>Besides preparing for the exam you should do some projects to build good hands-on knowledge. For this you can use How-To Guides from AWS Getting Started Resource Center (<a href="https://aws.amazon.com/getting-started/hands-on/?awsf.getting-started-category=category%23machine-learning&amp;awsf.getting-started-content-type=content-type%23hands-on&amp;getting-started-all.sort-by=item.additionalFields.sortOrder&amp;getting-started-all.sort-order=asc&amp;awsf.getting-started-level=level%23200%7Clevel%23300">Link Here</a>). Some of my favorite projects are * <a href="https://aws.amazon.com/getting-started/hands-on/build-train-deploy-monitor-machine-learning-model-sagemaker-studio/">Build, train, deploy, and monitor a machine learning model with Amazon SageMaker Studio</a> * <a href="https://aws.amazon.com/getting-started/hands-on/managed-spot-training-sagemaker/">Optimizing and Scaling Machine Learning Training with Managed Spot Training for Amazon SageMaker</a></p>
+</section>
+<section id="practice-dumps" class="level1">
+<h1>Practice Dumps</h1>
+<p>For exam practice tests I have used Jon Bonso Udemy course <a href="https://www.udemy.com/course/aws-certified-machine-learning-specialty-practice-exams-amazon/">AWS Certified Machine Learning Specialty Practice Exams</a></p>
+</section>
+<section id="other-tips" class="level1">
+<h1>Other Tips</h1>
+<p>About a week before your exam date start checking <a href="https://www.reddit.com/r/AWSCertifications/">Reddit Communities</a>. From time to time people post about their achievements and experiences on taking the exam. People also mention the services or topics that they were asked about during the exam. Keep a close eye on such posts and try to find any topic that you have not covered before.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

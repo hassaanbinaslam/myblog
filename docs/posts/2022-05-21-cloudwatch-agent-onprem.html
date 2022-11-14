@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-05-21">
+<meta name="keywords" content="logs, aws, cloudwatch">
+<meta name="description" content="A detailed guide on using cloudwatch agent to collect logs and metrics from an on-premises Ubuntu server.">
+
+<title>Random Thoughts - Collecting metrics and logs from on-premises servers with the CloudWatch agent</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Collecting metrics and logs from on-premises servers with the CloudWatch agent">
+<meta property="og:description" content="A detailed guide on using cloudwatch agent to collect logs and metrics from an on-premises Ubuntu server.">
+<meta property="og:image" content="images/2022-05-21-cloudwatch-agent-onprem.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Collecting metrics and logs from on-premises servers with the CloudWatch agent">
+<meta name="twitter:description" content="A detailed guide on using cloudwatch agent to collect logs and metrics from an on-premises Ubuntu server.">
+<meta name="twitter:image" content="images/2022-05-21-cloudwatch-agent-onprem.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  <li><a href="#cloudwatch-agent-installation-and-configuration-steps" id="toc-cloudwatch-agent-installation-and-configuration-steps" class="nav-link" data-scroll-target="#cloudwatch-agent-installation-and-configuration-steps">CloudWatch Agent Installation and Configuration Steps</a>
+  <ul class="collapse">
+  <li><a href="#create-iam-roles-and-users-for-use-with-cloudwatch-agent" id="toc-create-iam-roles-and-users-for-use-with-cloudwatch-agent" class="nav-link" data-scroll-target="#create-iam-roles-and-users-for-use-with-cloudwatch-agent">Create IAM roles and users for use with CloudWatch agent</a></li>
+  <li><a href="#install-and-configure-aws-cli-on-ubuntu-server" id="toc-install-and-configure-aws-cli-on-ubuntu-server" class="nav-link" data-scroll-target="#install-and-configure-aws-cli-on-ubuntu-server">Install and configure AWS CLI on Ubuntu server</a>
+  <ul class="collapse">
+  <li><a href="#download-aws-cli-package" id="toc-download-aws-cli-package" class="nav-link" data-scroll-target="#download-aws-cli-package">1. Download AWS CLI package</a></li>
+  <li><a href="#install-unzip-package" id="toc-install-unzip-package" class="nav-link" data-scroll-target="#install-unzip-package">2. Install UNZIP package</a></li>
+  <li><a href="#unzip-awscli-package" id="toc-unzip-awscli-package" class="nav-link" data-scroll-target="#unzip-awscli-package">3. Unzip AWSCLI Package</a></li>
+  <li><a href="#install-aws-cli" id="toc-install-aws-cli" class="nav-link" data-scroll-target="#install-aws-cli">4. Install AWS CLI</a></li>
+  <li><a href="#configure-aws-cli" id="toc-configure-aws-cli" class="nav-link" data-scroll-target="#configure-aws-cli">6. Configure AWS CLI</a></li>
+  <li><a href="#verify-credentials-in-user-home-directory" id="toc-verify-credentials-in-user-home-directory" class="nav-link" data-scroll-target="#verify-credentials-in-user-home-directory">7. Verify credentials in User home directory</a></li>
+  </ul></li>
+  <li><a href="#install-and-run-the-cloudwatch-agent-on-ubuntu-server" id="toc-install-and-run-the-cloudwatch-agent-on-ubuntu-server" class="nav-link" data-scroll-target="#install-and-run-the-cloudwatch-agent-on-ubuntu-server">Install and run the CloudWatch agent on Ubuntu server</a>
+  <ul class="collapse">
+  <li><a href="#download-the-agent" id="toc-download-the-agent" class="nav-link" data-scroll-target="#download-the-agent">1. Download the agent</a></li>
+  <li><a href="#install-the-agent" id="toc-install-the-agent" class="nav-link" data-scroll-target="#install-the-agent">2. Install the agent</a></li>
+  <li><a href="#prepare-agent-configuration-file" id="toc-prepare-agent-configuration-file" class="nav-link" data-scroll-target="#prepare-agent-configuration-file">3. Prepare agent configuration file</a></li>
+  <li><a href="#update-shared-configuration-file" id="toc-update-shared-configuration-file" class="nav-link" data-scroll-target="#update-shared-configuration-file">4. Update shared configuration file</a></li>
+  <li><a href="#start-the-agent" id="toc-start-the-agent" class="nav-link" data-scroll-target="#start-the-agent">5. Start the agent</a></li>
+  <li><a href="#check-agent-status" id="toc-check-agent-status" class="nav-link" data-scroll-target="#check-agent-status">6. Check agent status</a></li>
+  <li><a href="#check-agent-logs" id="toc-check-agent-logs" class="nav-link" data-scroll-target="#check-agent-logs">7. Check agent logs</a></li>
+  </ul></li>
+  <li><a href="#check-the-agent-logs-on-aws-cloudwatch-console" id="toc-check-the-agent-logs-on-aws-cloudwatch-console" class="nav-link" data-scroll-target="#check-the-agent-logs-on-aws-cloudwatch-console">Check the agent logs on AWS CloudWatch console</a></li>
+  <li><a href="#check-the-machine-metrics-on-cloudwatch-console" id="toc-check-the-machine-metrics-on-cloudwatch-console" class="nav-link" data-scroll-target="#check-the-machine-metrics-on-cloudwatch-console">Check the machine metrics on CloudWatch console</a></li>
+  </ul></li>
+  <li><a href="#common-scenarios-with-the-cloudwatch-agent" id="toc-common-scenarios-with-the-cloudwatch-agent" class="nav-link" data-scroll-target="#common-scenarios-with-the-cloudwatch-agent">Common scenarios with the CloudWatch agent</a>
+  <ul class="collapse">
+  <li><a href="#to-stop-the-cloudwatch-agent-locally-using-the-command-line" id="toc-to-stop-the-cloudwatch-agent-locally-using-the-command-line" class="nav-link" data-scroll-target="#to-stop-the-cloudwatch-agent-locally-using-the-command-line">To stop the CloudWatch agent locally using the command line</a></li>
+  <li><a href="#i-updated-my-agent-configuration-but-dont-see-the-new-metrics-or-logs-in-the-cloudwatch-console" id="toc-i-updated-my-agent-configuration-but-dont-see-the-new-metrics-or-logs-in-the-cloudwatch-console" class="nav-link" data-scroll-target="#i-updated-my-agent-configuration-but-dont-see-the-new-metrics-or-logs-in-the-cloudwatch-console">I updated my agent configuration but don’t see the new metrics or logs in the CloudWatch console</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Collecting metrics and logs from on-premises servers with the CloudWatch agent</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+    <div class="quarto-category">cloudwatch</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A detailed guide on using cloudwatch agent to collect logs and metrics from an on-premises Ubuntu server.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 21, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem.jpeg" class="img-fluid"></p>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This post is a detailed guide on using <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html">AWS CloudWatch</a> Agent to collect logs and metrics from on-premises Ubuntu server. * The CloudWatch agent is open-source tool under the MIT license, and is hosted on GitHub <a href="https://github.com/aws/amazon-cloudwatch-agent/">amazon-cloudwatch-agent</a> * With this agent you can collect more system-level metrics from Amazon EC2 instances or onprem servers across operating systems. You can retrieve custom metrics from your applications or services using the StatsD and collectd protocols. <strong>StatsD</strong> is supported on both Linux servers and servers running Windows Server. <strong>collectd</strong> is supported only on Linux servers * For the list of metrics that can be collected by CloudWatch agent follow this link <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/metrics-collected-by-CloudWatch-agent.html">metrics-collected-by-CloudWatch-agent</a></p>
+</section>
+<section id="environment-details" class="level1">
+<h1>Environment Details</h1>
+<p>For on-premises Ubuntu server, we will use an EC2 machine with Ubuntu OS. Enable Auto-assign public IP and keep all the default settings. Once the instance is in a running state use SSH Key to connect to it.</p>
+<p>If you are using Windows OS and while connecting to Ubuntu machine you are getting “Permissions for ‘ssh-key.pem’ are too open.” then take help from this post to resolve it <a href="https://superuser.com/questions/1296024/windows-ssh-permissions-for-private-key-are-too-open">windows-ssh-permissions-for-private-key-are-too-open</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/windows-ssh-permissions-for-private-key-are-too-open.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">windows-ssh-permissions-for-private-key-are-too-open</figcaption><p></p>
+</figure>
+</div>
+<p>Once you are successfully connected to EC2 Ubuntu machine you will get the following message on the terminal. <img src="images/2022-05-21-cloudwatch-agent-onprem/ubuntu-ec2-ssh-connect.png" class="img-fluid" alt="ubuntu-ec2-ssh-connect"></p>
+</section>
+<section id="cloudwatch-agent-installation-and-configuration-steps" class="level1">
+<h1>CloudWatch Agent Installation and Configuration Steps</h1>
+<section id="create-iam-roles-and-users-for-use-with-cloudwatch-agent" class="level2">
+<h2 class="anchored" data-anchor-id="create-iam-roles-and-users-for-use-with-cloudwatch-agent">Create IAM roles and users for use with CloudWatch agent</h2>
+<p>Access to AWS resources requires permissions. You create an IAM role, an IAM user, or both to grant permissions that the CloudWatch agent needs to write metrics to CloudWatch. * If you’re going to use the agent on Amazon EC2 instances, you should create an IAM role. * f you’re going to use the agent on on-premises servers, you should create an IAM user.</p>
+<p>Since we want to use EC2 machine as an on-premises machine so we will create an IAM user.</p>
+<p><strong>To create the IAM user necessary for the CloudWatch agent to run on on-premises servers follow these steps</strong> 1. Sign in to the AWS Management Console and open the IAM console at https://console.aws.amazon.com/iam/. 2. In the navigation pane on the left, choose <strong>Users</strong> and then <strong>Add users</strong>. 3. Enter the user name for the new user. 4. Select <strong>Access key - Programmatic access</strong> and choose <strong>Next: Permissions</strong>. 5. Choose <strong>Attach existing policies directly</strong>. 6. In the list of policies, select the check box next to <strong>CloudWatchAgentServerPolicy</strong>. If necessary, use the search box to find the policy. 7. Choose <strong>Next: Tags</strong>. 8. Optionally create tags for the new IAM user, and then choose <strong>Next:Review</strong>. 9. Confirm that the correct policy is listed, and choose <strong>Create user</strong>. 10. Next to the name of the new user, choose <strong>Show</strong>. Copy the access key and secret key to a file so that you can use them when installing the agent. Choose <strong>Close</strong>.</p>
+</section>
+<section id="install-and-configure-aws-cli-on-ubuntu-server" class="level2">
+<h2 class="anchored" data-anchor-id="install-and-configure-aws-cli-on-ubuntu-server">Install and configure AWS CLI on Ubuntu server</h2>
+<p>Connect to the Ubuntu server using any SSH client. We need to first download and install AWS CLI. Follow the below commands to download and install it. For installing AWS CLI on macOS and Windows take help from this post <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">awscli-getting-started-install</a></p>
+<section id="download-aws-cli-package" class="level3">
+<h3 class="anchored" data-anchor-id="download-aws-cli-package">1. Download AWS CLI package</h3>
+<pre><code>curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"</code></pre>
+</section>
+<section id="install-unzip-package" class="level3">
+<h3 class="anchored" data-anchor-id="install-unzip-package">2. Install UNZIP package</h3>
+<pre><code>sudo apt install unzip</code></pre>
+</section>
+<section id="unzip-awscli-package" class="level3">
+<h3 class="anchored" data-anchor-id="unzip-awscli-package">3. Unzip AWSCLI Package</h3>
+<pre><code>unzip awscliv2.zip</code></pre>
+</section>
+<section id="install-aws-cli" class="level3">
+<h3 class="anchored" data-anchor-id="install-aws-cli">4. Install AWS CLI</h3>
+<pre><code>sudo ./aws/install</code></pre>
+<p><strong>5. Verify AWS CLI Installation</strong></p>
+<pre><code>aws --version</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/aws-cli-installation-complete.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">aws-cli-installation-complete</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="configure-aws-cli" class="level3">
+<h3 class="anchored" data-anchor-id="configure-aws-cli">6. Configure AWS CLI</h3>
+<p>Make sure that you use <strong>AmazonCloudWatchAgent</strong> profile name as this is used by the <code>OnPremise</code> case by default. For more details, you may take help from this post <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html">install-CloudWatch-Agent-commandline-fleet</a></p>
+<pre><code>aws configure --profile AmazonCloudWatchAgent</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/configure-aws-cli.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">configure-aws-cli</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="verify-credentials-in-user-home-directory" class="level3">
+<h3 class="anchored" data-anchor-id="verify-credentials-in-user-home-directory">7. Verify credentials in User home directory</h3>
+<pre><code>cat /home/ubuntu/.aws/credentials</code></pre>
+</section>
+</section>
+<section id="install-and-run-the-cloudwatch-agent-on-ubuntu-server" class="level2">
+<h2 class="anchored" data-anchor-id="install-and-run-the-cloudwatch-agent-on-ubuntu-server">Install and run the CloudWatch agent on Ubuntu server</h2>
+<section id="download-the-agent" class="level3">
+<h3 class="anchored" data-anchor-id="download-the-agent">1. Download the agent</h3>
+<p>The following download link is for Ubuntu. For any other OS you can take help from this post for downloaded agent <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/download-cloudwatch-agent-commandline.html">download-cloudwatch-agent-commandline</a></p>
+<pre><code>wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb</code></pre>
+</section>
+<section id="install-the-agent" class="level3">
+<h3 class="anchored" data-anchor-id="install-the-agent">2. Install the agent</h3>
+<pre><code>sudo dpkg -i -E ./amazon-cloudwatch-agent.deb</code></pre>
+</section>
+<section id="prepare-agent-configuration-file" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-agent-configuration-file">3. Prepare agent configuration file</h3>
+<p>Prepare agent configuration file. This config file will be provided to the agent in the run command. One such sample is provided below. For more details on this config file you may take help from this link <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/create-cloudwatch-agent-configuration-file.html">create-cloudwatch-agent-configuration-file</a>. Note the path of this config file (<strong>agent config</strong>) as we will need it in later commands.</p>
+<div class="cell" data-vscode="{&quot;languageId&quot;:&quot;json&quot;}">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">//</span> config<span class="op">-</span>cloudwatchagent.json</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"agent"</span>: {</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>      <span class="st">"metrics_collection_interval"</span>: <span class="dv">10</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>      <span class="st">"logfile"</span>: <span class="st">"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"run_as_user"</span>: <span class="st">"ubuntu"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">"debug"</span>: false</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"metrics"</span>: {</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">"namespace"</span>: <span class="st">"myblog/cloudwatchagent/demo"</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      <span class="st">"metrics_collected"</span>: {</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"cpu"</span>: {</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">"*"</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"name"</span>: <span class="st">"cpu_usage_idle"</span>, <span class="st">"rename"</span>: <span class="st">"CPU_USAGE_IDLE"</span>, <span class="st">"unit"</span>: <span class="st">"Percent"</span>},</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"name"</span>: <span class="st">"cpu_usage_nice"</span>, <span class="st">"unit"</span>: <span class="st">"Percent"</span>},</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">"cpu_usage_guest"</span>,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">"cpu_usage_active"</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>          <span class="st">"totalcpu"</span>: true,</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">10</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">"disk"</span>: {</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>            <span class="st">"/"</span>,</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>            <span class="st">"/tmp"</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"name"</span>: <span class="st">"free"</span>, <span class="st">"rename"</span>: <span class="st">"DISK_FREE"</span>, <span class="st">"unit"</span>: <span class="st">"Gigabytes"</span>},</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>            <span class="st">"total"</span>,</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>            <span class="st">"used"</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>           <span class="st">"ignore_file_system_types"</span>: [</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>            <span class="st">"sysfs"</span>, <span class="st">"devtmpfs"</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>        <span class="st">"diskio"</span>: {</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>            <span class="st">"*"</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>            <span class="st">"reads"</span>,</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>            <span class="st">"writes"</span>,</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>            <span class="st">"read_time"</span>,</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>            <span class="st">"write_time"</span>,</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>            <span class="st">"io_time"</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"swap"</span>: {</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>            <span class="st">"swap_used"</span>,</span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>            <span class="st">"swap_free"</span>,</span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>            <span class="st">"swap_used_percent"</span></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>          ]</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>        <span class="st">"mem"</span>: {</span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>            <span class="st">"mem_used"</span>,</span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>            <span class="st">"mem_cached"</span>,</span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>            <span class="st">"mem_total"</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">1</span></span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>        <span class="st">"net"</span>: {</span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>            <span class="st">"eth0"</span></span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>            <span class="st">"bytes_sent"</span>,</span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a>            <span class="st">"bytes_recv"</span>,</span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>            <span class="st">"drop_in"</span>,</span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>            <span class="st">"drop_out"</span></span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>          ]</span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>        <span class="st">"netstat"</span>: {</span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>            <span class="st">"tcp_established"</span>,</span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>            <span class="st">"tcp_syn_sent"</span>,</span>
+<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>            <span class="st">"tcp_close"</span></span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>          ],</span>
+<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a>        <span class="st">"processes"</span>: {</span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a>            <span class="st">"running"</span>,</span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>            <span class="st">"sleeping"</span>,</span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>            <span class="st">"dead"</span></span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a>          ]</span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>      },</span>
+<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>      <span class="st">"force_flush_interval"</span> : <span class="dv">30</span></span>
+<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a>    <span class="st">"logs"</span>: {</span>
+<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a>      <span class="st">"logs_collected"</span>: {</span>
+<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a>        <span class="st">"files"</span>: {</span>
+<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a>          <span class="st">"collect_list"</span>: [</span>
+<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a>            {</span>
+<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a>              <span class="st">"file_path"</span>: <span class="st">"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"</span>,</span>
+<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a>              <span class="st">"log_group_name"</span>: <span class="st">"myblog/onprem/ubuntu/amazon-cloudwatch-agent"</span>,</span>
+<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a>              <span class="st">"log_stream_name"</span>: <span class="st">"myblog-cloudwatchagent-demo.log"</span>,</span>
+<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a>              <span class="st">"timezone"</span>: <span class="st">"UTC"</span></span>
+<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a>          ]</span>
+<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a>      },</span>
+<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>      <span class="st">"log_stream_name"</span>: <span class="st">"my_log_stream_name"</span>,</span>
+<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>      <span class="st">"force_flush_interval"</span> : <span class="dv">15</span></span>
+<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Some important parts of this config file</p>
+<p><strong>logfile</strong></p>
+<pre><code>"logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"</code></pre>
+<p>CloudWatch agent log file location on on-premise server is specified by this tag. After running the agent you can check this log file for any exception messages.</p>
+<p><strong>log_group_name</strong></p>
+<pre><code>"log_group_name": "myblog/onprem/ubuntu/amazon-cloudwatch-agent"</code></pre>
+<p>An on-premise logfile is also uploaded to CloudWatch under <code>log-group-name</code> specified by this tag.</p>
+<p><strong>log_stream_name</strong></p>
+<pre><code>"log_stream_name": "myblog-cloudwatchagent-demo.log"</code></pre>
+<p>Log stream name of the CloudWatch where logfile log steam will be uploaded.</p>
+<p><strong>namespace</strong></p>
+<pre><code>"namespace": "myblog/cloudwatchagent/demo"</code></pre>
+<p>On CloudWatch console you find the uploaded metrics under the custom namespace specified by this tag. In our case, it is “myblog/cloudwatchagent/demo”</p>
+</section>
+<section id="update-shared-configuration-file" class="level3">
+<h3 class="anchored" data-anchor-id="update-shared-configuration-file">4. Update shared configuration file</h3>
+<p>From the config file 1. Uncomment the <code>[credentails]</code> tag 2. Update <code>shared_credentails_profile</code> name. This is the profile name with which we have configured our AWS CLI ‘AmazonCloudWatchAgent’. If you have used any other name then use that name here. 3. Update <code>shared_credentials_file</code> path. This is the path for AWS user credentails file created by AWS CLI. ‘/home/<code>username</code>/.aws/credentials’ and in our case it is <code>/home/ubuntu/.aws/credentials</code></p>
+<p>Configuration file is located at <code>/opt/aws/amazon-cloudwatch-agent/etc/common-config.toml</code>. For more details on this shared configuration file follow this link <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html#CloudWatch-Agent-profile-instance-first">CloudWatch-Agent-profile-instance-first</a></p>
+<pre><code>sudo vim /opt/aws/amazon-cloudwatch-agent/etc/common-config.toml</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/agent-shared-config.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">agent-shared-config</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="start-the-agent" class="level3">
+<h3 class="anchored" data-anchor-id="start-the-agent">5. Start the agent</h3>
+<pre><code>sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m onPremise -s -c file:/home/ubuntu/config-cloudwatchagent.json</code></pre>
+<p>Make sure that you provide the correct path to the JSON config file. In our case, it is <strong>file:/home/ubuntu/config-cloudwatchagent.json</strong>. For more details check this link <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-on-premise.html#start-CloudWatch-Agent-on-premise-SSM-onprem">start-CloudWatch-Agent-on-premise-SSM-onprem</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/run-agent-success.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">run-agent-success</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="check-agent-status" class="level3">
+<h3 class="anchored" data-anchor-id="check-agent-status">6. Check agent status</h3>
+<pre><code>sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status</code></pre>
+<p>If the agent is running you will get <strong>status : running</strong> otherwise you will get <strong>status : stopped</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/check-agent-status.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">check-agent-status</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="check-agent-logs" class="level3">
+<h3 class="anchored" data-anchor-id="check-agent-logs">7. Check agent logs</h3>
+<p>The agent generates a log while it runs. This log includes troubleshooting information. This log is the <code>amazon-cloudwatch-agent.log</code> file. This file is located in <code>/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log</code> on Linux servers. This is the same logfile path we also defined in the JSON config file. If you are using multiple agents on the machine then you can give them separate log file paths using their JSON configurations.</p>
+<pre><code>sudo tail -f /var/log/amazon/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log</code></pre>
+<p>Check the logs if there is an exception message or not.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/agent-logs.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">agent-logs</figcaption><p></p>
+</figure>
+</div>
+<p>Please note that both the log files are the same. It could be that agent is keeping multiple copies for internal processing.</p>
+<pre><code>/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log</code></pre>
+<p>or</p>
+<pre><code>/var/log/amazon/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log</code></pre>
+</section>
+</section>
+<section id="check-the-agent-logs-on-aws-cloudwatch-console" class="level2">
+<h2 class="anchored" data-anchor-id="check-the-agent-logs-on-aws-cloudwatch-console">Check the agent logs on AWS CloudWatch console</h2>
+<p>Agent logs are also uploaded to CloudWatch console under log <strong>group</strong> and <strong>stream</strong> that we mentioned in JSON config file. In our case it is</p>
+<pre><code>"log_group_name": "myblog/onprem/ubuntu/amazon-cloudwatch-agent"
+"log_stream_name": "myblog-cloudwatchagent-demo.log"</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/agent-log-group.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">agent-log-group</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="check-the-machine-metrics-on-cloudwatch-console" class="level2">
+<h2 class="anchored" data-anchor-id="check-the-machine-metrics-on-cloudwatch-console">Check the machine metrics on CloudWatch console</h2>
+<p>Now finally we can check the metrics uploaded by the agent on CloudWatch console under <code>CloudWatch &gt; Metrics &gt; ALL metrics &gt; Custom namespaces</code></p>
+<p>The name of the metrics namespace is the same as what we defined in our JSON config file</p>
+<pre><code>"metrics": {
+      "namespace": "myblog/cloudwatchagent/demo"</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-21-cloudwatch-agent-onprem/agent-metrics.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">agent-metrics</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="common-scenarios-with-the-cloudwatch-agent" class="level1">
+<h1>Common scenarios with the CloudWatch agent</h1>
+<p>For more trouble shooting scenerios follow these link * <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/troubleshooting-CloudWatch-Agent.html">troubleshooting-CloudWatch-Agent</a> * <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-common-scenarios.html">CloudWatch-Agent-common-scenarios</a></p>
+<section id="to-stop-the-cloudwatch-agent-locally-using-the-command-line" class="level2">
+<h2 class="anchored" data-anchor-id="to-stop-the-cloudwatch-agent-locally-using-the-command-line">To stop the CloudWatch agent locally using the command line</h2>
+<p>On a Linux server, enter the following</p>
+<pre><code>sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a stop</code></pre>
+</section>
+<section id="i-updated-my-agent-configuration-but-dont-see-the-new-metrics-or-logs-in-the-cloudwatch-console" class="level2">
+<h2 class="anchored" data-anchor-id="i-updated-my-agent-configuration-but-dont-see-the-new-metrics-or-logs-in-the-cloudwatch-console">I updated my agent configuration but don’t see the new metrics or logs in the CloudWatch console</h2>
+<p>If you update your CloudWatch agent configuration file, the next time that you start the agent, you need to use the fetch-config option. For example, if you stored the updated file on the local computer, enter the following command. Replace <code>&lt;configuration-file-path&gt;</code> with the actual config file path.</p>
+<pre><code>sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -s -m ec2 -c file:&lt;configuration-file-path&gt;</code></pre>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-05-23">
+<meta name="description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models. This is a five parts series where we will prepare, import, explore, process, and export data using AWS Data Wrangler. You are reading Part 2:Import data from multiple sources using Data Wrangler.">
+
+<title>Random Thoughts - Data Preparation with SageMaker Data Wrangler (Part 2)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Data Preparation with SageMaker Data Wrangler (Part 2)">
+<meta property="og:description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models.">
+<meta property="og:image" content="images/2022-05-23-aws-sagemaker-wrangler-p2.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Data Preparation with SageMaker Data Wrangler (Part 2)">
+<meta name="twitter:description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models.">
+<meta name="twitter:image" content="images/2022-05-23-aws-sagemaker-wrangler-p2.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#enviornment" id="toc-enviornment" class="nav-link active" data-scroll-target="#enviornment">Enviornment</a></li>
+  <li><a href="#about" id="toc-about" class="nav-link" data-scroll-target="#about">About</a></li>
+  <li><a href="#part-2-import-data-from-multiple-sources-using-data-wrangler" id="toc-part-2-import-data-from-multiple-sources-using-data-wrangler" class="nav-link" data-scroll-target="#part-2-import-data-from-multiple-sources-using-data-wrangler">Part 2: Import data from multiple sources using Data Wrangler</a>
+  <ul class="collapse">
+  <li><a href="#launch-sagemaker-data-wrangler-flow" id="toc-launch-sagemaker-data-wrangler-flow" class="nav-link" data-scroll-target="#launch-sagemaker-data-wrangler-flow">Launch SageMaker Data Wrangler Flow</a></li>
+  <li><a href="#import-data-from-sources" id="toc-import-data-from-sources" class="nav-link" data-scroll-target="#import-data-from-sources">Import data from sources</a></li>
+  <li><a href="#joining-tables" id="toc-joining-tables" class="nav-link" data-scroll-target="#joining-tables">Joining Tables</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data Preparation with SageMaker Data Wrangler (Part 2)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+    <div class="quarto-category">ml</div>
+    <div class="quarto-category">sagemaker</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models. This is a five parts series where we will prepare, import, explore, process, and export data using AWS Data Wrangler. You are reading <strong>Part 2:Import data from multiple sources using Data Wrangler</strong>.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 23, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2.jpeg" class="img-fluid"></p>
+<section id="enviornment" class="level1">
+<h1>Enviornment</h1>
+<p>This notebook is prepared with Amazon SageMaker Studio using <code>Python 3 (Data Science)</code> Kernel and <code>ml.t3.medium</code> instance.</p>
+</section>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This is a detailed guide on using <strong>AWS SageMaker Data Wrangler</strong> service to prepare data for machine learning models. SageMaker Data Wrangler is a multipurpose tool with which you can * import data from multiple sources * explore data with visualizations * apply transformations * export data for ml training</p>
+<p>This guide is divided into five parts * <a href="https://hassaanbinaslam.github.io/myblog/aws/ml/sagemaker/2022/05/17/aws-sagemaker-wrangler-p1.html">Part 1: Prepare synthetic data and place it on multiple sources</a> * <strong>Part 2: Import data from multiple sources using Data Wrangler (You are here)</strong> * <a href="https://hassaanbinaslam.github.io/myblog/aws/ml/sagemaker/2022/05/24/aws-sagemaker-wrangler-p3.html">Part 3: Explore data with Data Wrangler visualizations</a> * <a href="https://hassaanbinaslam.github.io/myblog/aws/ml/sagemaker/2022/05/25/aws-sagemaker-wrangler-p4.html">Part 4: Preprocess data using Data Wrangler</a> * <a href="https://hassaanbinaslam.github.io/myblog/aws/ml/sagemaker/2022/05/26/aws-sagemaker-wrangler-p5.html">Part 5: Export data for ML training</a></p>
+</section>
+<section id="part-2-import-data-from-multiple-sources-using-data-wrangler" class="level1">
+<h1>Part 2: Import data from multiple sources using Data Wrangler</h1>
+<p>In this post, we will create SageMaker Data Wrangler Flow pipeline to import data from multiple sources. Once data is imported, we will then add a step to join the data into a single dataset that can be used for training ML models.</p>
+<section id="launch-sagemaker-data-wrangler-flow" class="level2">
+<h2 class="anchored" data-anchor-id="launch-sagemaker-data-wrangler-flow">Launch SageMaker Data Wrangler Flow</h2>
+<p>Create a new Data Wrangler flow by clicking on the main menu tabs <code>File &gt; New &gt; Data Wrangler Flow</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/data-wrangler-new-flow.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">data-wrangler-new-flow</figcaption><p></p>
+</figure>
+</div>
+<p>Once launched SageMaker may take a minute to initialize a new flow. The reason for this is SageMaker will launch a separate machine in the background <code>ml.m5.4xlarge</code> with 16vCPU and 64 GiB memory for processing flow files. A flow file is a JSON file that just captures all the steps performed from the Flow UI console. When you execute the flow, the Flow engine parses this file and performs all the steps. Once a new flow file is available, rename it to <code>customer-churn.flow</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/data-wrangler-flow-ready.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">data-wrangler-flow-ready</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="import-data-from-sources" class="level2">
+<h2 class="anchored" data-anchor-id="import-data-from-sources">Import data from sources</h2>
+<p>First, we will create a flow to import data (created in the part-1 post) from S3 bucket. For this from the flow UI click on <strong>Amazon S3 bucket</strong>. From the next window select the bucket name <strong>S3://sagemaker-us-east-1-801598032724</strong>. In your case, it could be different where you have stored the data. From the UI select the filename “telco_churn_customer_info.csv” and click <strong>Import</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/customer-churn-s3.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">customer-churn-s3</figcaption><p></p>
+</figure>
+</div>
+<p>Once the data is imported repeat the steps for the filename “telco_churn_account_info.csv”. If you are not seeing the “import from S3 bucket” option on the UI then check the flow UI and click on the ‘Import’ tab option. Once both files are imported, your <strong>Data Flow</strong> tab will look similar to this</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/data-flow-customer-account.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">data-flow-customer-account.png</figcaption><p></p>
+</figure>
+</div>
+<p>Now that we have imported data from S3, we can now work on importing data from the Athena database. For this from the Flow UI Import tab click on <strong>Amazon Athena</strong> option. From the next UI select <code>AwsDataCatalog</code> Data catalog option. For Databases drop down select <code>telco_db</code> and in the query pane write the below query.</p>
+<pre><code>select * from telco_churn_utility</code></pre>
+<p>You can also preview the data by clicking on the table preview option. Once satisfied with the results click ‘Import’. When asked about the database name write <code>telco_churn_utility</code></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/import-athena-table.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">import-athena-table.png</figcaption><p></p>
+</figure>
+</div>
+<p>At this point, you will find all three tables imported in Data Flow UI. Against each table, a plus sign (+) will appear that you can use to add any transformations you want to apply on each table.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/all-tables-imported.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">all-tables-imported.png</figcaption><p></p>
+</figure>
+</div>
+<p>for <code>telco_churn_customer_info</code> click on the plus sign and then select ‘Edit’ to change data types.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/edit_customer_info.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">edit_customer_info.png</figcaption><p></p>
+</figure>
+</div>
+<p>We will add the following transformations * Change <strong>Area Code</strong> from Long to String * Click <strong>Preview</strong> * Then click <strong>Apply</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/telco_churn_customer_info_edit.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">telco_churn_customer_info_edit.png</figcaption><p></p>
+</figure>
+</div>
+<p>Similarly for <code>telco_churn_account_info.csv</code> edit data types as * Change <strong>Account Length</strong> to Long * Change <strong>Int’l Plan</strong> and <strong>VMail Plan</strong> to Bool * Click <strong>Preview</strong> and then click <strong>Apply</strong></p>
+<p>For <code>telco_churn_utility.csv</code> edit data types as * Change <strong>custserv_calls</strong> to Long * Click <strong>Preview</strong> and then click <strong>Apply</strong></p>
+<p>At this point, we have imported the data from all three sources and have also properly transformed their column types.</p>
+</section>
+<section id="joining-tables" class="level2">
+<h2 class="anchored" data-anchor-id="joining-tables">Joining Tables</h2>
+<p>Now we will join all three tables to get a full dataset. For this from the Flow UI Data flow click on the plus sign next to <strong>customer_info</strong> data type and this time select ‘Join’. From the new window select <strong>account_info</strong> as the right dataset and click <strong>Configure</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/join-configure.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">join-configure.png</figcaption><p></p>
+</figure>
+</div>
+<p>From the next screen select * Join Type = Full Outer * Columns Left = CustomerID * Columns Right = CustomerID * Click Preview and then Add</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/join-preview.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">join-preview.png</figcaption><p></p>
+</figure>
+</div>
+<p>A new join step will appear on the Data Flow UI. Click on the plus sign next to it and repeat the steps for <strong>utility</strong> table</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/first-join.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">first-join.png</figcaption><p></p>
+</figure>
+</div>
+<ul>
+<li>Join Type = Full Outer</li>
+<li>Columns Left = CustomerID_0</li>
+<li>Columns Right = CustomerID</li>
+<li>Click Preview and then Add</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-05-23-aws-sagemaker-wrangler-p2/join-second.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">join-second.png</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="summary" class="level1">
+<h1>Summary</h1>
+<p>At this point, we have all the tables joined together. The <code>customer-churn.flow</code> created is available on the GitHub <a href="https://github.com/hassaanbinaslam/myblog/blob/master/_notebooks/datasets/2022-05-23-aws-sagemaker-wrangler-p2/customer-churn.flow">here</a>. In the next post, we will clean duplicate columns and create some visualizations to analyze the data.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

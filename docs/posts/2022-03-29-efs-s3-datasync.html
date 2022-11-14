@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-29">
+<meta name="keywords" content="aws, lambda, s3, efs, sync, python, datasync">
+<meta name="description" content="A tutorial to synchronize EFS with S3 bucket using DataSync service.">
+
+<title>Random Thoughts - AWS EFS Sync to S3 Using DataSync</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - AWS EFS Sync to S3 Using DataSync">
+<meta property="og:description" content="A tutorial to synchronize EFS with S3 bucket using DataSync service.">
+<meta property="og:image" content="images/2022-03-29-efs-s3-datasync.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - AWS EFS Sync to S3 Using DataSync">
+<meta name="twitter:description" content="A tutorial to synchronize EFS with S3 bucket using DataSync service.">
+<meta name="twitter:image" content="images/2022-03-29-efs-s3-datasync.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  <li><a href="#steps-for-trigger-based-approach" id="toc-steps-for-trigger-based-approach" class="nav-link" data-scroll-target="#steps-for-trigger-based-approach">Steps for trigger based approach</a>
+  <ul class="collapse">
+  <li><a href="#create-an-s3-bucket" id="toc-create-an-s3-bucket" class="nav-link" data-scroll-target="#create-an-s3-bucket">Create an S3 bucket</a></li>
+  <li><a href="#create-an-efs" id="toc-create-an-efs" class="nav-link" data-scroll-target="#create-an-efs">Create an EFS</a></li>
+  <li><a href="#note-on-efs-security-group-settings" id="toc-note-on-efs-security-group-settings" class="nav-link" data-scroll-target="#note-on-efs-security-group-settings">Note on EFS security group settings</a></li>
+  <li><a href="#create-datasync-service-task" id="toc-create-datasync-service-task" class="nav-link" data-scroll-target="#create-datasync-service-task">Create DataSync service task</a></li>
+  <li><a href="#test-datasync-service" id="toc-test-datasync-service" class="nav-link" data-scroll-target="#test-datasync-service">Test DataSync Service</a></li>
+  <li><a href="#datasync-can-work-without-internet-gateway-or-vpc-endpoint" id="toc-datasync-can-work-without-internet-gateway-or-vpc-endpoint" class="nav-link" data-scroll-target="#datasync-can-work-without-internet-gateway-or-vpc-endpoint">DataSync can work without Internet Gateway or VPC Endpoint</a></li>
+  <li><a href="#verify-efs-by-mounting-it-to-the-ec2-machine" id="toc-verify-efs-by-mounting-it-to-the-ec2-machine" class="nav-link" data-scroll-target="#verify-efs-by-mounting-it-to-the-ec2-machine">Verify EFS by mounting it to the EC2 machine</a></li>
+  <li><a href="#create-lambda-function-to-trigger-datasync-task" id="toc-create-lambda-function-to-trigger-datasync-task" class="nav-link" data-scroll-target="#create-lambda-function-to-trigger-datasync-task">Create Lambda function to trigger DataSync task</a></li>
+  <li><a href="#configure-s3-bucket-event-notifications" id="toc-configure-s3-bucket-event-notifications" class="nav-link" data-scroll-target="#configure-s3-bucket-event-notifications">Configure S3 bucket event notifications</a></li>
+  <li><a href="#test-datasync-task-through-s3-events-trigger" id="toc-test-datasync-task-through-s3-events-trigger" class="nav-link" data-scroll-target="#test-datasync-task-through-s3-events-trigger">Test DataSync task through S3 events trigger</a></li>
+  </ul></li>
+  <li><a href="#steps-for-scheduled-based-approach" id="toc-steps-for-scheduled-based-approach" class="nav-link" data-scroll-target="#steps-for-scheduled-based-approach">Steps for scheduled based approach</a>
+  <ul class="collapse">
+  <li><a href="#create-a-lambda-function" id="toc-create-a-lambda-function" class="nav-link" data-scroll-target="#create-a-lambda-function">Create a lambda function</a></li>
+  <li><a href="#create-eventbridge-event" id="toc-create-eventbridge-event" class="nav-link" data-scroll-target="#create-eventbridge-event">Create EventBridge event</a></li>
+  <li><a href="#verify-event-and-datasync-task-execution" id="toc-verify-event-and-datasync-task-execution" class="nav-link" data-scroll-target="#verify-event-and-datasync-task-execution">Verify event and datasync task execution</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AWS EFS Sync to S3 Using DataSync</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+    <div class="quarto-category">lambda</div>
+    <div class="quarto-category">efs</div>
+    <div class="quarto-category">s3</div>
+    <div class="quarto-category">synchonization</div>
+    <div class="quarto-category">datasync</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A tutorial to synchronize EFS with S3 bucket using DataSync service.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 29, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-03-29-efs-s3-datasync.jpeg" class="img-fluid"></p>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This post is to document all the steps required to synchronize <a href="https://aws.amazon.com/efs/">AWS EFS</a> with an <a href="https://aws.amazon.com/s3/">S3 bucket</a> using <a href="https://aws.amazon.com/datasync/">DataSync service</a>. The flow of information is from S3 to EFS and not vice versa.</p>
+<p>We will discuss two approaches to trigger the datasync service * Trigger-based. Whenever there is a new file uploaded in S3 bucket * Schedule-based. A trigger will run datasync at scheduled intervals</p>
+<p>Once a datasync service is invoked it will take care of syncing files from S3 bucket to EFS.</p>
+</section>
+<section id="environment-details" class="level1">
+<h1>Environment Details</h1>
+<ul>
+<li>Python = 3.9.x</li>
+</ul>
+</section>
+<section id="steps-for-trigger-based-approach" class="level1">
+<h1>Steps for trigger based approach</h1>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-29-efs-s3-datasync/trigger-based-approach.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">trigger-based-approach</figcaption><p></p>
+</figure>
+</div>
+<section id="create-an-s3-bucket" class="level2">
+<h2 class="anchored" data-anchor-id="create-an-s3-bucket">Create an S3 bucket</h2>
+<p>Let’s first create an S3 bucket that will contain our data, and this is the bucket we would like to be in sync with EFS. I am naming the bucket as <code>mydata-202203</code>. You may name it as you please. Choose a region of your choice and leave the rest of the settings as defaults.</p>
+</section>
+<section id="create-an-efs" class="level2">
+<h2 class="anchored" data-anchor-id="create-an-efs">Create an EFS</h2>
+<p>From EFS console give name as <code>mydata-efs</code>. I am using default VPC for this post. Use <code>Regional</code> availability settings. Click <strong>Create</strong>. Once file system is created, click on <strong>Access points</strong> and create an access point for this efs to be mounted in other service. For access point use following settings * name = mydata-ap * root dir path = / * POSIX User * POSIX UID = 1000 * Group ID = 1000 * Root directory creation permissions * Owner user id = 1000 * Owner group id = 1000 * POSIX permissions = 777</p>
+<p>Click <strong>Create</strong>.</p>
+</section>
+<section id="note-on-efs-security-group-settings" class="level2">
+<h2 class="anchored" data-anchor-id="note-on-efs-security-group-settings">Note on EFS security group settings</h2>
+<p>In the last section, I have used a default VPC security group (sg) while creating EFS. Default sg allows traffic for all protocols and all ports, both inbound and outbound. But if you are using a custom security group then make sure that you have an inbound rule for * Type = NFS * Protocol = TCP * Port range = 2049</p>
+<p>Otherwise, you will not be able to access EFS using NFS clients, and if you find an error similar to the below then it means you need to check the security group settings.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-29-efs-s3-datasync/security-group-error.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">security-group-error</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-datasync-service-task" class="level2">
+<h2 class="anchored" data-anchor-id="create-datasync-service-task">Create DataSync service task</h2>
+<ul>
+<li>configure source location = create a new location
+<ul>
+<li>location type = Amazon S3</li>
+<li>region = us-east-1</li>
+<li>s3 bucket = mydata-202203</li>
+<li>s3 storage class = standard</li>
+<li>folder = [leave empty]</li>
+<li>IAM role = click on auto generate</li>
+</ul></li>
+<li>configure destination location = create a new location
+<ul>
+<li>location type = EFS</li>
+<li>region = us-east-1</li>
+<li>efs file system = mydata-efs</li>
+<li>mount path = /efs</li>
+<li>subnet = us-east-1a</li>
+<li>security group = default</li>
+</ul></li>
+<li>configure settings
+<ul>
+<li>task name = mydata-datasync</li>
+<li>task execution configuration
+<ul>
+<li>verify data = verify only the data transferred</li>
+<li>set bandwidth limit = use available</li>
+</ul></li>
+<li>data transfer configuration
+<ul>
+<li>data to scan = entire source location</li>
+<li>transfer mode = transfer only the data that has changed</li>
+<li>uncheck “keep deleted files”</li>
+<li>check “overwrite files”</li>
+</ul></li>
+<li>schedule
+<ul>
+<li>frequency = not scheduled</li>
+</ul></li>
+<li>task logging
+<ul>
+<li>cloudwatch log group = autogenerate</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>Click “next”. Review and Launch.</p>
+</section>
+<section id="test-datasync-service" class="level2">
+<h2 class="anchored" data-anchor-id="test-datasync-service">Test DataSync Service</h2>
+<p>Let’s test datasync service by manually starting it. If S3 bucket is empty then datasync will throw an exception as below</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-29-efs-s3-datasync/s3-empty.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">s3-empty</figcaption><p></p>
+</figure>
+</div>
+<p>This is not an issue. Just place some files (<strong>test1.txt</strong> in my case) in the bucket and start the datasync service again. If it executes successfully then you will get a message as <code>Execution Status = Success</code></p>
+</section>
+<section id="datasync-can-work-without-internet-gateway-or-vpc-endpoint" class="level2">
+<h2 class="anchored" data-anchor-id="datasync-can-work-without-internet-gateway-or-vpc-endpoint">DataSync can work without Internet Gateway or VPC Endpoint</h2>
+<p>One thing I noticed is that DataSync service can work even without the presence of an internet gateway or S3 service endpoint. EFS is VPC bound and S3 is global but DataSync can still communicate with both of them. This was different for Lambda. Once Lambda is configured for a VPC then it is not able to access S3 without an internet gateway or VPC endpoint.</p>
+</section>
+<section id="verify-efs-by-mounting-it-to-the-ec2-machine" class="level2">
+<h2 class="anchored" data-anchor-id="verify-efs-by-mounting-it-to-the-ec2-machine">Verify EFS by mounting it to the EC2 machine</h2>
+<p>In the last section, we ran DataSync and it successfully copied files from S3 to EFS. So let’s verify our files from EFS by mounting it to an EC2 instance.</p>
+<p>Create an EC2 machine * AMI = Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type * Intance type = t2.micro (free tier) * Instance details * Network = default VPC * Auto-assign Public IP = Enable * Review and Lanunch &gt; Launch &gt; Proceed without key pair.</p>
+<p>Once the instance is up and running, click on it and connect using EC2 instance connect option. Create a dir ‘efs’ using the command</p>
+<pre><code>mkdir efs</code></pre>
+<p>In a separate tab open EFS, and click on the file system we have created. Click <strong>Attach</strong>. From “Mount via DNS” copy command for NFS client. paste that in EC2 bash terminal</p>
+<pre><code>sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-01acd308743098251.efs.us-east-1.amazonaws.com:/ efs</code></pre>
+<p>Once successfully mounted, verify that the file ‘<strong>test1.txt</strong>’ exists in EFS.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-29-efs-s3-datasync/efs-verify.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">efs-verify</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-lambda-function-to-trigger-datasync-task" class="level2">
+<h2 class="anchored" data-anchor-id="create-lambda-function-to-trigger-datasync-task">Create Lambda function to trigger DataSync task</h2>
+<p>Now let’s create a lambda function that will trigger the datasync task. This function will itself be triggered by an S3 event notification whenever a file is uploaded or deleted.</p>
+<ul>
+<li>Create a lambda function as</li>
+<li>name = datasync-trigger-s3</li>
+<li>runtime = Python 3.9</li>
+</ul>
+<p>Leave the rest of the settings as default, update the code as below, and deploy.</p>
+<p>In the code, we are first filtering the object key for which the event is generated. Then we trigger the datasync task and pass the object key as a filter string. With the filter key provided datasync job will only sync provided object from S3 to EFS.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json  </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> boto3  </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os  </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>DataSync_task_arn <span class="op">=</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a'</span>  </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>DataSync <span class="op">=</span> boto3.client(<span class="st">'datasync'</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lambda_handler(event, context):  </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    objectKey <span class="op">=</span> <span class="st">''</span>  </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:  </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        objectKey <span class="op">=</span> event[<span class="st">"Records"</span>][<span class="dv">0</span>][<span class="st">"s3"</span>][<span class="st">"object"</span>][<span class="st">"key"</span>]  </span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">KeyError</span>:  </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">KeyError</span>(<span class="st">"Received invalid event - unable to locate Object key to upload."</span>, event)  </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> DataSync.start_task_execution(  </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        TaskArn<span class="op">=</span>DataSync_task_arn,  </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        OverrideOptions<span class="op">=</span>{  </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">'OverwriteMode'</span> : <span class="st">'ALWAYS'</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">'PreserveDeletedFiles'</span> : <span class="st">'REMOVE'</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        },  </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        Includes<span class="op">=</span>[  </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>            {  </span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                <span class="st">'FilterType'</span>: <span class="st">'SIMPLE_PATTERN'</span>,  </span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                <span class="st">'Value'</span>: <span class="st">'/'</span> <span class="op">+</span> os.path.basename(objectKey)  </span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>            }  </span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        ]  </span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    )  </span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"response= </span><span class="sc">{</span>response<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {  </span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">'response'</span> : response  </span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    } </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Add policy <code>AWSDataSyncFullAccess</code> to this lambda function role otherwise it will not be able to trigger datasync task.</p>
+</section>
+<section id="configure-s3-bucket-event-notifications" class="level2">
+<h2 class="anchored" data-anchor-id="configure-s3-bucket-event-notifications">Configure S3 bucket event notifications</h2>
+<p>Our lambda function is ready. Now we can enable S3 bucket event notifications as put the lambda function as a target. For this from S3 bucket Properties &gt; Event notifications &gt; <strong>Create event notifications</strong></p>
+<ul>
+<li>event name = object-put-delete</li>
+<li>event type = s3:ObjectCreated:Put, and s3:ObjectRemoved:Delete</li>
+<li>destination = lambda function (datasync-trigger-s3)</li>
+</ul>
+<p>Click <strong>Save changes</strong></p>
+</section>
+<section id="test-datasync-task-through-s3-events-trigger" class="level2">
+<h2 class="anchored" data-anchor-id="test-datasync-task-through-s3-events-trigger">Test DataSync task through S3 events trigger</h2>
+<p>Now let’s test our trigger by placing a new file in S3 bucket. In my case it is ‘<strong>test2.txt</strong>’. Once file is successfully uploaded we can check the EC2 instance to verify the file presence.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-29-efs-s3-datasync/ec2-verify-files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">ec2-verify-files</figcaption><p></p>
+</figure>
+</div>
+<p>We can also verify that the datasync job was triggered from lambda CloudWatch logs.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>response<span class="op">=</span> {<span class="st">'TaskExecutionArn'</span><span class="op">:</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a/execution/exec-020e456f670ca2419'</span><span class="op">,</span> <span class="st">'ResponseMetadata'</span><span class="op">:</span> {<span class="st">'RequestId'</span><span class="op">:</span> <span class="st">'c8166ce4-ef14-415c-beff-09cc7720f4a3'</span><span class="op">,</span> <span class="st">'HTTPStatusCode'</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span> <span class="st">'HTTPHeaders'</span><span class="op">:</span> {<span class="st">'date'</span><span class="op">:</span> <span class="st">'Wed, 30 Mar 2022 13:27:45 GMT'</span><span class="op">,</span> <span class="st">'content-type'</span><span class="op">:</span> <span class="st">'application/x-amz-json-1.1'</span><span class="op">,</span> <span class="st">'content-length'</span><span class="op">:</span> <span class="st">'123'</span><span class="op">,</span> <span class="st">'connection'</span><span class="op">:</span> <span class="st">'keep-alive'</span><span class="op">,</span> <span class="st">'x-amzn-requestid'</span><span class="op">:</span> <span class="st">'c8166ce4-ef14-415c-beff-09cc7720f4a3'</span>}<span class="op">,</span> <span class="st">'RetryAttempts'</span><span class="op">:</span> <span class="dv">0</span>}}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In the logs we have task execution id <code>exec-020e456f670ca2419</code> , and we can use that to verify task’s status from datasync console.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-29-efs-s3-datasync/datasync-task-status.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">datasync-task-status</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="steps-for-scheduled-based-approach" class="level1">
+<h1>Steps for scheduled based approach</h1>
+<p>We have seen in the last section that we can use S3 event notifications to trigger datasync tasks. Now we will discuss a schedule-based trigger for datasync task. This can be done in two ways * While creating a datasync task we can define a frequency for it to follow. But the limitation on this is that it can not be lower than a 1 hour window. * If we want to schedule a datasync task on a smaller than 1 hour window then we can use AWS EventBridge (previously CloudWatch Events) to trigger a lambda function that can inturn invoke a datasync task. In the coming section, we will follow this approach.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-29-efs-s3-datasync/scheduled-based-approach.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">scheduled-based-approach</figcaption><p></p>
+</figure>
+</div>
+<section id="create-a-lambda-function" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-lambda-function">Create a lambda function</h2>
+<p>Let’s create a new lambda function with the following code. This lambda will invoke the datasync task. Add permissions to this lambda <code>AWSDataSyncFullAccess</code></p>
+<ul>
+<li>function name = datasync-trigger-scheduled</li>
+<li>runtime = Python 3.9</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json  </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> boto3  </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os  </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>DataSync_task_arn <span class="op">=</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a'</span>  </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>DataSync <span class="op">=</span> boto3.client(<span class="st">'datasync'</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lambda_handler(event, context):</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> DataSync.start_task_execution(  </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        TaskArn<span class="op">=</span>DataSync_task_arn,  </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        OverrideOptions<span class="op">=</span>{  </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">'OverwriteMode'</span> : <span class="st">'ALWAYS'</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>            <span class="st">'PreserveDeletedFiles'</span> : <span class="st">'REMOVE'</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    )  </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"response= </span><span class="sc">{</span>response<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {  </span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">'response'</span> : response  </span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    } </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="create-eventbridge-event" class="level2">
+<h2 class="anchored" data-anchor-id="create-eventbridge-event">Create EventBridge event</h2>
+<p>Go to EventBridge Events &gt; Rules &gt; select <strong>Create Rule</strong> - Define rule details - name = datasync-trigger - event bus = default - rule type = scheduled - Define schedule - Sample event = {} - Schedule Pattern - Rate expression = 5 min - Select Targets - target = Lambda function - function = datasync-trigger-scheduled</p>
+<p>Click <strong>Next</strong> and <strong>Create Rule</strong></p>
+<p>EventBridge will automatically add a policy statement to lambda function (datasync-trigger-scheduled) allowing it to trigger lambda. You can verify the policy from lambda Configurations &gt; Permissions &gt; <strong>Resource based policy</strong>. If no resource policy exists then you need to manually add a policy to allow EventBridge to invoke it. For this click on Resource based policy &gt; Policy statements &gt; <strong>Add permissions</strong>. * policy statement = AWS service * service = EventBridge * statement id = eventbridge-1000 (or any unique id) * principal = events.amazonaws.com * source ARN = arn:aws:events:us-east-1:801598032724:rule/datasync-trigger (arn for eventbridge event)</p>
+</section>
+<section id="verify-event-and-datasync-task-execution" class="level2">
+<h2 class="anchored" data-anchor-id="verify-event-and-datasync-task-execution">Verify event and datasync task execution</h2>
+<ul>
+<li>We have configured eventbridge to fire an event after every 5 min we can verify it from eventbrige monitoring tab and its cloudwatch logs.</li>
+<li>Lambda function invocations can be verified from its cloudwatch logs</li>
+<li>Datasync task execution status can be verified from its history tab and cloudwatch logs.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

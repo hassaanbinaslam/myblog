@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-10-10">
+<meta name="description" content="This is a practice notebook for implementing a linear regression model in PyTorch. We will start by generating some synthetic linear data and then load it into DataLoader class for creating mini-batches. Then build the complete pipeline to train the model and visualize its loss progress in TensorBoard.">
+
+<title>Random Thoughts - Linear Regression with PyTorch</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Linear Regression with PyTorch">
+<meta property="og:description" content="This is a practice notebook for implementing a linear regression model in PyTorch.">
+<meta property="og:image" content="images/2022-10-10-pytorch-linear-regression.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Linear Regression with PyTorch">
+<meta name="twitter:description" content="This is a practice notebook for implementing a linear regression model in PyTorch.">
+<meta name="twitter:image" content="images/2022-10-10-pytorch-linear-regression.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#environment" id="toc-environment" class="nav-link" data-scroll-target="#environment">Environment</a></li>
+  <li><a href="#credits" id="toc-credits" class="nav-link" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#generate-synthetic-linear-data" id="toc-generate-synthetic-linear-data" class="nav-link" data-scroll-target="#generate-synthetic-linear-data">Generate synthetic linear data</a></li>
+  <li><a href="#load-generated-data-into-pytorch-dataset-and-dataloader-class" id="toc-load-generated-data-into-pytorch-dataset-and-dataloader-class" class="nav-link" data-scroll-target="#load-generated-data-into-pytorch-dataset-and-dataloader-class">Load generated data into PyTorch Dataset and DataLoader class</a></li>
+  <li><a href="#create-model-configuration" id="toc-create-model-configuration" class="nav-link" data-scroll-target="#create-model-configuration">Create model configuration</a></li>
+  <li><a href="#define-training-validation-and-mini-batch-processing-pipeline" id="toc-define-training-validation-and-mini-batch-processing-pipeline" class="nav-link" data-scroll-target="#define-training-validation-and-mini-batch-processing-pipeline">Define training, validation and mini-batch processing pipeline</a></li>
+  <li><a href="#configure-tensorboard-to-visualize-loss-logs" id="toc-configure-tensorboard-to-visualize-loss-logs" class="nav-link" data-scroll-target="#configure-tensorboard-to-visualize-loss-logs">Configure TensorBoard to visualize loss logs</a></li>
+  <li><a href="#execute-model-training-and-validation-pipeline" id="toc-execute-model-training-and-validation-pipeline" class="nav-link" data-scroll-target="#execute-model-training-and-validation-pipeline">Execute model training and validation pipeline</a></li>
+  <li><a href="#visualize-loss-logs-from-tensorboard" id="toc-visualize-loss-logs-from-tensorboard" class="nav-link" data-scroll-target="#visualize-loss-logs-from-tensorboard">Visualize loss logs from TensorBoard</a></li>
+  <li><a href="#comparison-with-scikit-learn-linearregression-model" id="toc-comparison-with-scikit-learn-linearregression-model" class="nav-link" data-scroll-target="#comparison-with-scikit-learn-linearregression-model">Comparison with Scikit-Learn LinearRegression model</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Linear Regression with PyTorch</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">pytorch</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This is a practice notebook for implementing a linear regression model in PyTorch. We will start by generating some synthetic linear data and then load it into DataLoader class for creating mini-batches. Then build the complete pipeline to train the model and visualize its loss progress in TensorBoard.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 10, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-10-10-pytorch-linear-regression.jpeg" class="img-fluid"></p>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this notebook, we will train a linear regression model using PyTorch. Given below is the summary of the steps followed in this notebook. * Create a synthetic linear dataset * Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class * Create a Linear Neural Net model configuration, an SGD optimizer, and a loss function * Create a pipeline that will train the model on given data and update the weights based on the loss * View the training results using TensorBoard graphical view</p>
+</section>
+<section id="environment" class="level2">
+<h2 class="anchored" data-anchor-id="environment">Environment</h2>
+<p>This notebook is prepared with Google Colab.</p>
+<div class="cell" data-outputid="c13a2607-e015-4484-d363-edc7ad386397" data-execution_count="19">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn, numpy, matplotlib, pandas, torch</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"sklearn=="</span> <span class="op">+</span> sklearn.__version__)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.7.14
+sklearn==1.0.2
+numpy==1.21.6
+torch==1.12.1+cu113
+matplotlib==3.2.2</code></pre>
+</div>
+</div>
+</section>
+<section id="credits" class="level2">
+<h2 class="anchored" data-anchor-id="credits">Credits</h2>
+<p>This notebook takes inspiration from the book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks and can be used independently: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://colab.research.google.com/github/dvgodoy/PyTorchStepByStep/blob/master/Chapter02.ipynb">chapter 2 notebook</a> of the same book.</p>
+</section>
+<section id="generate-synthetic-linear-data" class="level2">
+<h2 class="anchored" data-anchor-id="generate-synthetic-linear-data">Generate synthetic linear data</h2>
+<p>In this section, we will generate some data representing a line using equation “y = mx + b”. <code>y = mx + b</code> is the slope intercept form of writing the equation of a straight line. In the equation ‘b’ is the point where the line intersects the ‘y axis’ and ‘m’ denotes the slope of the line. If you want to read more about this equation then follow this post: <a href="https://www.cuemath.com/geometry/y-mx-b/">cuemath.com/geometry/y-mx-b</a></p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">0</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_linear_data(n_data_points<span class="op">=</span><span class="dv">100</span>, true_m<span class="op">=</span><span class="dv">1</span>, true_b<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate linear data using equation: y = mx + b + e</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">    where 'e' is some random noise added</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.random.rand(n_data_points, <span class="dv">1</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> true_m <span class="op">*</span> x <span class="op">+</span> true_b <span class="op">+</span> (<span class="fl">.1</span> <span class="op">*</span> np.random.randn(n_data_points, <span class="dv">1</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x, y</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Let's generate 100 data points</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>n_data_points <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>true_m <span class="op">=</span> <span class="dv">2</span> <span class="co"># this is 'm' from slope-intercept line equation</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>true_b <span class="op">=</span> <span class="dv">1</span> <span class="co"># this is 'b' from slope-intercept line equation</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>x, y <span class="op">=</span> generate_linear_data(n_data_points, true_m, true_b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s plot our generated data to see how it looks.</p>
+<div class="cell" data-outputid="10282722-bfaa-4cb1-d5c4-9770223ac50e" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>ax.scatter(x, y)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'x'</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'y'</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Generated Full Dataset'</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-10-pytorch-linear-regression_files/figure-html/cell-4-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="load-generated-data-into-pytorch-dataset-and-dataloader-class" class="level2">
+<h2 class="anchored" data-anchor-id="load-generated-data-into-pytorch-dataset-and-dataloader-class">Load generated data into PyTorch Dataset and DataLoader class</h2>
+<p>In this section, we will load our data in PyTorch helper classes Dataset and DataLoader. PyTorch documentation defines them as: [see <a href="https://pytorch.org/tutorials/beginner/basics/data_tutorial.html">basics/data_tutorial</a>]</p>
+<blockquote class="blockquote">
+<p>Code for processing data samples can get messy and hard to maintain; we ideally want our dataset code to be decoupled from our model training code for better readability and modularity. PyTorch provides two data primitives: <code>torch.utils.data.DataLoader</code> and <code>torch.utils.data.Dataset</code> that allow you to use pre-loaded datasets as well as your own data. Dataset stores the samples and their corresponding labels, and DataLoader wraps an iterable around the Dataset to enable easy access to the samples.</p>
+</blockquote>
+<p>For this, we first need to convert NumPy data arrays to PyTorch tensors.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert NumPy array to PyTorch tensors</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>x_tensor <span class="op">=</span> torch.as_tensor(x).<span class="bu">float</span>()</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>y_tensor <span class="op">=</span> torch.as_tensor(y).<span class="bu">float</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now load the tensors into Dataset and DataLoader class. PyTorch Dataset is a helper class that converts data and labels into a list of tuples. DataLoader is another helper class to create batches from Dataset tuples. <code>batch_size</code> means the number of tuples we want in a single batch. We have used 16 here since our data is small. So each fetch from DataLoader will give us a list of 16 tuples.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Load tensors into Dataset and DataLoader</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, TensorDataset, random_split</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> TensorDataset(x_tensor, y_tensor)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Performs the 80-20% train-valid split</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>ratio <span class="op">=</span> <span class="fl">.8</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>n_total <span class="op">=</span> <span class="bu">len</span>(dataset)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>n_train <span class="op">=</span> <span class="bu">int</span>(n_total <span class="op">*</span> ratio)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>n_val <span class="op">=</span> n_total <span class="op">-</span> n_train</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>train_data, val_data <span class="op">=</span> random_split(dataset, [n_train, n_val])</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Builds a loader of each set</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Use batch_size = 16 as data size is small</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>train_loader <span class="op">=</span> DataLoader(</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    dataset<span class="op">=</span>train_data,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    batch_size<span class="op">=</span><span class="dv">16</span>,</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    shuffle<span class="op">=</span><span class="va">True</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>val_loader <span class="op">=</span> DataLoader(dataset<span class="op">=</span>val_data, batch_size<span class="op">=</span><span class="dv">16</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We have our DataLoaders ready for training and validation set. DataLoader objects are iterators, and let’s extract data from them to plot.</p>
+<div class="cell" data-outputid="5f21dff6-d687-4d20-c56b-2ef3d91fd64f" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize training and validation data</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># extrat train and validation sets from DataLoader as a list of tuples</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>train_data_list <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(train_data))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>val_data_list <span class="op">=</span> <span class="bu">list</span>(<span class="bu">iter</span>(val_data))</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># get data and labels (x, y) from extracted tuples list</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>x_train <span class="op">=</span> [e[<span class="dv">0</span>].numpy() <span class="cf">for</span> e <span class="kw">in</span> train_data_list]</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> [e[<span class="dv">1</span>].numpy() <span class="cf">for</span> e <span class="kw">in</span> train_data_list]</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>x_val <span class="op">=</span> [e[<span class="dv">0</span>].numpy() <span class="cf">for</span> e <span class="kw">in</span> val_data_list]</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>y_val <span class="op">=</span> [e[<span class="dv">1</span>].numpy() <span class="cf">for</span> e <span class="kw">in</span> val_data_list]</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the data</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>figure, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>figure.suptitle(<span class="st">'Train and Validation Dataset'</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">'Training Data'</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].scatter(x_train, y_train)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">'Validation Data'</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].scatter(x_val, y_val)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].set_title(<span class="st">'Combined Data'</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].scatter(x_train, y_train)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].scatter(x_val, y_val)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-10-pytorch-linear-regression_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="create-model-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="create-model-configuration">Create model configuration</h2>
+<p>In this section, we will configure the linear model for training, define a loss function, and an optimizer to update the weights.</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Model configuration</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># check gpu availability</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'cuda'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Sets learning rate</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Now we can create a model and send it at once to the device</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> nn.Linear(<span class="dv">1</span>, <span class="dv">1</span>).to(device)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a SGD optimizer to update the parameters (now retrieved directly from the model)</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> optim.SGD(model.parameters(), lr<span class="op">=</span>lr)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a MSE loss function</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>loss_fn <span class="op">=</span> nn.MSELoss(reduction<span class="op">=</span><span class="st">'mean'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We have initialized a model with default weights. Let’s view them. Note that “weight” denotes <code>m</code> and “bias” denotes <code>b</code> from our line equation. At this point they are very random but once we have trained our model they will be much closer to <code>true_m</code> and <code>true_b</code> which we used to generate the data.</p>
+<div class="cell" data-outputid="c9a09fb6-4d91-4f83-d35e-6cfb03c632f9" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># model weights before training</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>OrderedDict([('weight', tensor([[-0.0075]])), ('bias', tensor([0.5364]))])</code></pre>
+</div>
+</div>
+</section>
+<section id="define-training-validation-and-mini-batch-processing-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="define-training-validation-and-mini-batch-processing-pipeline">Define training, validation and mini-batch processing pipeline</h2>
+<p>In this section, we will define our pipelines for training and validation. * Training pipeline is usually called “training step” which includes the following steps 1. Computes our model’s predicted output - the forward pass 2. Computes the loss 3. Computes gradients i.e., find the direction and scale to update the weight to reduce the loss 4. Updates parameters using gradients and the learning rate</p>
+<ul>
+<li>Validation pipeline is usually called the “validation step” which includes the following steps
+<ol type="1">
+<li>Computes our model’s predicted output - the forward pass</li>
+<li>Computes the loss</li>
+</ol></li>
+</ul>
+<p>Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients.</p>
+<p>Let’s configure our training pipeline steps in a helper function.</p>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Training pipeline - training step</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># helper function for training</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_train_step_fn(model, loss_fn, optimizer):</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Builds function that performs a step in the train loop</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> perform_train_step_fn(x, y):</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Sets model to TRAIN mode</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        model.train() </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        yhat <span class="op">=</span> model(x)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 2 - Computes the loss</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> loss_fn(yhat, y)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 3 - Computes gradients</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 4 - Updates parameters using gradients and the learning rate</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Returns the loss</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> loss.item()</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Returns the function that will be called inside the train loop</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> perform_train_step_fn</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates the train_step function for our model, loss function and optimizer</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>train_step_fn <span class="op">=</span> make_train_step_fn(model, loss_fn, optimizer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s now configure our validation pipeline steps in a helper function.</p>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Validation pipeline - validation step.</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># helper function for validation</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_val_step_fn(model, loss_fn):</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Builds function that performs a step in the validation loop</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> perform_val_step_fn(x, y):</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Sets model to EVAL mode</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        model.<span class="bu">eval</span>()</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        yhat <span class="op">=</span> model(x)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 2 - Computes the loss</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> loss_fn(yhat, y)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># There is no need to compute Steps 3 and 4, since we don't update parameters during evaluation</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> loss.item()</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> perform_val_step_fn</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates the val_step function for our model and loss function</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>val_step_fn <span class="op">=</span> make_val_step_fn(model, loss_fn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now let’s define the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to 1. Get the next batch of data and labels (x, y) from the DataLoader iterator 2. Perform a step on the batch. A step can be either training or validation 3. Compute the average batch loss</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper function for minibatch processing</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mini_batch(device, data_loader, step_fn):</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    mini_batch_losses <span class="op">=</span> []</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> x_batch, y_batch <span class="kw">in</span> data_loader:</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        x_batch <span class="op">=</span> x_batch.to(device)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        y_batch <span class="op">=</span> y_batch.to(device)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        mini_batch_loss <span class="op">=</span> step_fn(x_batch, y_batch)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        mini_batch_losses.append(mini_batch_loss)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> np.mean(mini_batch_losses)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="configure-tensorboard-to-visualize-loss-logs" class="level2">
+<h2 class="anchored" data-anchor-id="configure-tensorboard-to-visualize-loss-logs">Configure TensorBoard to visualize loss logs</h2>
+<p>In this section we will configure TensorBoard to track and visualize training and validation loss.</p>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.tensorboard <span class="im">import</span> SummaryWriter</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates a Summary Writer to interface with TensorBoard</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>timestamp <span class="op">=</span> datetime.datetime.utcnow().strftime(<span class="st">'%Y-%m-</span><span class="sc">%d</span><span class="st">-%H.%M.%S'</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>writer <span class="op">=</span> SummaryWriter(<span class="ss">f'runs/simple_linear_regression/</span><span class="sc">{</span>timestamp<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Fetches a single mini-batch so we can use add_graph</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>x_sample, y_sample <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(train_loader))</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>writer.add_graph(model, x_sample.to(device))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="execute-model-training-and-validation-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="execute-model-training-and-validation-pipeline">Execute model training and validation pipeline</h2>
+<p>Now we are ready to execute our training pipeline. We will train our model for 200 epochs. An epoch is one cycle when the model has seen all the training data to compute loss, and we want our model to do it 200 times (200 epochs).</p>
+<div class="cell" data-outputid="cb45f41b-570f-4c77-d37a-90ad9ec1d9e8" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Execute pipeline with training and validation steps</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>n_epochs <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>losses <span class="op">=</span> []</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>val_losses <span class="op">=</span> []</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(n_epochs):</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># training step</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> mini_batch(device, train_loader, train_step_fn)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    losses.append(loss)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># validation step</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># no gradients in validation!</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        val_loss <span class="op">=</span> mini_batch(device, val_loader, val_step_fn)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        val_losses.append(val_loss)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Records both losses for each epoch under the main tag "loss"</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    writer.add_scalars(main_tag<span class="op">=</span><span class="st">'loss'</span>,</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>                       tag_scalar_dict<span class="op">=</span>{<span class="st">'training'</span>: loss, <span class="st">'validation'</span>: val_loss},</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>                       global_step<span class="op">=</span>epoch)</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"epoch: </span><span class="sc">{</span>epoch<span class="sc">:3}</span><span class="ss">, train loss: </span><span class="sc">{</span>loss<span class="sc">:.5f}</span><span class="ss">, valid loss: </span><span class="sc">{</span>val_loss<span class="sc">:.5f}</span><span class="ss">"</span>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Closes the writer</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>writer.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>epoch:   0, train loss: 1.17219, valid loss: 0.23260
+epoch:   1, train loss: 0.20757, valid loss: 0.11046
+epoch:   2, train loss: 0.13150, valid loss: 0.09627
+epoch:   3, train loss: 0.11224, valid loss: 0.08610
+epoch:   4, train loss: 0.09926, valid loss: 0.07644
+epoch:   5, train loss: 0.08905, valid loss: 0.06739
+epoch:   6, train loss: 0.07843, valid loss: 0.06012
+epoch:   7, train loss: 0.06852, valid loss: 0.05478
+epoch:   8, train loss: 0.06251, valid loss: 0.04898
+epoch:   9, train loss: 0.05494, valid loss: 0.04451
+epoch:  10, train loss: 0.04878, valid loss: 0.04031
+epoch:  11, train loss: 0.04447, valid loss: 0.03616
+epoch:  12, train loss: 0.03953, valid loss: 0.03173
+epoch:  13, train loss: 0.03562, valid loss: 0.02867
+epoch:  14, train loss: 0.03217, valid loss: 0.02642
+epoch:  15, train loss: 0.02985, valid loss: 0.02395
+epoch:  16, train loss: 0.02688, valid loss: 0.02295
+epoch:  17, train loss: 0.02487, valid loss: 0.02103
+epoch:  18, train loss: 0.02344, valid loss: 0.01901
+epoch:  19, train loss: 0.02130, valid loss: 0.01751
+epoch:  20, train loss: 0.01974, valid loss: 0.01663
+epoch:  21, train loss: 0.01851, valid loss: 0.01555
+epoch:  22, train loss: 0.01764, valid loss: 0.01392
+epoch:  23, train loss: 0.01664, valid loss: 0.01410
+epoch:  24, train loss: 0.01585, valid loss: 0.01355
+epoch:  25, train loss: 0.01513, valid loss: 0.01283
+epoch:  26, train loss: 0.01448, valid loss: 0.01217
+epoch:  27, train loss: 0.01387, valid loss: 0.01166
+epoch:  28, train loss: 0.01328, valid loss: 0.01125
+epoch:  29, train loss: 0.01293, valid loss: 0.01146
+epoch:  30, train loss: 0.01253, valid loss: 0.01059
+epoch:  31, train loss: 0.01227, valid loss: 0.01087
+epoch:  32, train loss: 0.01199, valid loss: 0.01042
+epoch:  33, train loss: 0.01176, valid loss: 0.00927
+epoch:  34, train loss: 0.01160, valid loss: 0.00912
+epoch:  35, train loss: 0.01164, valid loss: 0.00951
+epoch:  36, train loss: 0.01119, valid loss: 0.00945
+epoch:  37, train loss: 0.01131, valid loss: 0.00946
+epoch:  38, train loss: 0.01095, valid loss: 0.00918
+epoch:  39, train loss: 0.01084, valid loss: 0.00888
+epoch:  40, train loss: 0.01099, valid loss: 0.00943
+epoch:  41, train loss: 0.01072, valid loss: 0.00863
+epoch:  42, train loss: 0.01063, valid loss: 0.00899
+epoch:  43, train loss: 0.01063, valid loss: 0.00843
+epoch:  44, train loss: 0.01063, valid loss: 0.00809
+epoch:  45, train loss: 0.01066, valid loss: 0.00779
+epoch:  46, train loss: 0.01046, valid loss: 0.00831
+epoch:  47, train loss: 0.01051, valid loss: 0.00780
+epoch:  48, train loss: 0.01043, valid loss: 0.00790
+epoch:  49, train loss: 0.01035, valid loss: 0.00813
+epoch:  50, train loss: 0.01048, valid loss: 0.00796
+epoch:  51, train loss: 0.01032, valid loss: 0.00859
+epoch:  52, train loss: 0.01065, valid loss: 0.00835
+epoch:  53, train loss: 0.01059, valid loss: 0.00790
+epoch:  54, train loss: 0.01039, valid loss: 0.00782
+epoch:  55, train loss: 0.01033, valid loss: 0.00821
+epoch:  56, train loss: 0.01027, valid loss: 0.00832
+epoch:  57, train loss: 0.01024, valid loss: 0.00856
+epoch:  58, train loss: 0.01034, valid loss: 0.00853
+epoch:  59, train loss: 0.01027, valid loss: 0.00846
+epoch:  60, train loss: 0.01019, valid loss: 0.00783
+epoch:  61, train loss: 0.01051, valid loss: 0.00831
+epoch:  62, train loss: 0.01032, valid loss: 0.00790
+epoch:  63, train loss: 0.01022, valid loss: 0.00815
+epoch:  64, train loss: 0.01040, valid loss: 0.00749
+epoch:  65, train loss: 0.01020, valid loss: 0.00768
+epoch:  66, train loss: 0.01025, valid loss: 0.00783
+epoch:  67, train loss: 0.01040, valid loss: 0.00861
+epoch:  68, train loss: 0.01025, valid loss: 0.00764
+epoch:  69, train loss: 0.01018, valid loss: 0.00818
+epoch:  70, train loss: 0.01030, valid loss: 0.00771
+epoch:  71, train loss: 0.01033, valid loss: 0.00809
+epoch:  72, train loss: 0.01034, valid loss: 0.00747
+epoch:  73, train loss: 0.01032, valid loss: 0.00855
+epoch:  74, train loss: 0.01023, valid loss: 0.00852
+epoch:  75, train loss: 0.01019, valid loss: 0.00785
+epoch:  76, train loss: 0.01027, valid loss: 0.00751
+epoch:  77, train loss: 0.01027, valid loss: 0.00742
+epoch:  78, train loss: 0.01031, valid loss: 0.00723
+epoch:  79, train loss: 0.01021, valid loss: 0.00816
+epoch:  80, train loss: 0.01023, valid loss: 0.00829
+epoch:  81, train loss: 0.01028, valid loss: 0.00803
+epoch:  82, train loss: 0.01040, valid loss: 0.00823
+epoch:  83, train loss: 0.01024, valid loss: 0.00815
+epoch:  84, train loss: 0.01020, valid loss: 0.00818
+epoch:  85, train loss: 0.01024, valid loss: 0.00835
+epoch:  86, train loss: 0.01029, valid loss: 0.00797
+epoch:  87, train loss: 0.01021, valid loss: 0.00776
+epoch:  88, train loss: 0.01025, valid loss: 0.00859
+epoch:  89, train loss: 0.01021, valid loss: 0.00840
+epoch:  90, train loss: 0.01026, valid loss: 0.00804
+epoch:  91, train loss: 0.01020, valid loss: 0.00803
+epoch:  92, train loss: 0.01031, valid loss: 0.00883
+epoch:  93, train loss: 0.01028, valid loss: 0.00808
+epoch:  94, train loss: 0.01034, valid loss: 0.00778
+epoch:  95, train loss: 0.01023, valid loss: 0.00797
+epoch:  96, train loss: 0.01019, valid loss: 0.00826
+epoch:  97, train loss: 0.01033, valid loss: 0.00747
+epoch:  98, train loss: 0.01022, valid loss: 0.00785
+epoch:  99, train loss: 0.01021, valid loss: 0.00778
+epoch: 100, train loss: 0.01025, valid loss: 0.00782
+epoch: 101, train loss: 0.01022, valid loss: 0.00807
+epoch: 102, train loss: 0.01032, valid loss: 0.00796
+epoch: 103, train loss: 0.01017, valid loss: 0.00770
+epoch: 104, train loss: 0.01019, valid loss: 0.00778
+epoch: 105, train loss: 0.01017, valid loss: 0.00776
+epoch: 106, train loss: 0.01018, valid loss: 0.00766
+epoch: 107, train loss: 0.01027, valid loss: 0.00823
+epoch: 108, train loss: 0.01021, valid loss: 0.00783
+epoch: 109, train loss: 0.01037, valid loss: 0.00753
+epoch: 110, train loss: 0.01017, valid loss: 0.00747
+epoch: 111, train loss: 0.01045, valid loss: 0.00805
+epoch: 112, train loss: 0.01020, valid loss: 0.00815
+epoch: 113, train loss: 0.01027, valid loss: 0.00811
+epoch: 114, train loss: 0.01016, valid loss: 0.00790
+epoch: 115, train loss: 0.01016, valid loss: 0.00776
+epoch: 116, train loss: 0.01018, valid loss: 0.00758
+epoch: 117, train loss: 0.01020, valid loss: 0.00743
+epoch: 118, train loss: 0.01021, valid loss: 0.00791
+epoch: 119, train loss: 0.01032, valid loss: 0.00731
+epoch: 120, train loss: 0.01019, valid loss: 0.00788
+epoch: 121, train loss: 0.01025, valid loss: 0.00819
+epoch: 122, train loss: 0.01039, valid loss: 0.00786
+epoch: 123, train loss: 0.01032, valid loss: 0.00791
+epoch: 124, train loss: 0.01026, valid loss: 0.00745
+epoch: 125, train loss: 0.01021, valid loss: 0.00786
+epoch: 126, train loss: 0.01026, valid loss: 0.00747
+epoch: 127, train loss: 0.01028, valid loss: 0.00794
+epoch: 128, train loss: 0.01037, valid loss: 0.00768
+epoch: 129, train loss: 0.01029, valid loss: 0.00775
+epoch: 130, train loss: 0.01027, valid loss: 0.00805
+epoch: 131, train loss: 0.01019, valid loss: 0.00828
+epoch: 132, train loss: 0.01024, valid loss: 0.00804
+epoch: 133, train loss: 0.01033, valid loss: 0.00801
+epoch: 134, train loss: 0.01022, valid loss: 0.00773
+epoch: 135, train loss: 0.01034, valid loss: 0.00868
+epoch: 136, train loss: 0.01031, valid loss: 0.00792
+epoch: 137, train loss: 0.01045, valid loss: 0.00862
+epoch: 138, train loss: 0.01031, valid loss: 0.00853
+epoch: 139, train loss: 0.01034, valid loss: 0.00832
+epoch: 140, train loss: 0.01022, valid loss: 0.00793
+epoch: 141, train loss: 0.01019, valid loss: 0.00754
+epoch: 142, train loss: 0.01017, valid loss: 0.00781
+epoch: 143, train loss: 0.01025, valid loss: 0.00809
+epoch: 144, train loss: 0.01022, valid loss: 0.00810
+epoch: 145, train loss: 0.01020, valid loss: 0.00822
+epoch: 146, train loss: 0.01016, valid loss: 0.00778
+epoch: 147, train loss: 0.01042, valid loss: 0.00790
+epoch: 148, train loss: 0.01027, valid loss: 0.00781
+epoch: 149, train loss: 0.01032, valid loss: 0.00742
+epoch: 150, train loss: 0.01018, valid loss: 0.00779
+epoch: 151, train loss: 0.01032, valid loss: 0.00830
+epoch: 152, train loss: 0.01028, valid loss: 0.00748
+epoch: 153, train loss: 0.01045, valid loss: 0.00763
+epoch: 154, train loss: 0.01025, valid loss: 0.00754
+epoch: 155, train loss: 0.01020, valid loss: 0.00739
+epoch: 156, train loss: 0.01022, valid loss: 0.00768
+epoch: 157, train loss: 0.01021, valid loss: 0.00727
+epoch: 158, train loss: 0.01021, valid loss: 0.00834
+epoch: 159, train loss: 0.01026, valid loss: 0.00809
+epoch: 160, train loss: 0.01027, valid loss: 0.00814
+epoch: 161, train loss: 0.01041, valid loss: 0.00773
+epoch: 162, train loss: 0.01028, valid loss: 0.00737
+epoch: 163, train loss: 0.01017, valid loss: 0.00785
+epoch: 164, train loss: 0.01015, valid loss: 0.00795
+epoch: 165, train loss: 0.01021, valid loss: 0.00808
+epoch: 166, train loss: 0.01023, valid loss: 0.00769
+epoch: 167, train loss: 0.01027, valid loss: 0.00792
+epoch: 168, train loss: 0.01031, valid loss: 0.00753
+epoch: 169, train loss: 0.01026, valid loss: 0.00753
+epoch: 170, train loss: 0.01020, valid loss: 0.00774
+epoch: 171, train loss: 0.01027, valid loss: 0.00768
+epoch: 172, train loss: 0.01025, valid loss: 0.00806
+epoch: 173, train loss: 0.01019, valid loss: 0.00826
+epoch: 174, train loss: 0.01034, valid loss: 0.00841
+epoch: 175, train loss: 0.01025, valid loss: 0.00751
+epoch: 176, train loss: 0.01025, valid loss: 0.00740
+epoch: 177, train loss: 0.01026, valid loss: 0.00800
+epoch: 178, train loss: 0.01045, valid loss: 0.00810
+epoch: 179, train loss: 0.01028, valid loss: 0.00799
+epoch: 180, train loss: 0.01039, valid loss: 0.00827
+epoch: 181, train loss: 0.01020, valid loss: 0.00768
+epoch: 182, train loss: 0.01031, valid loss: 0.00794
+epoch: 183, train loss: 0.01027, valid loss: 0.00806
+epoch: 184, train loss: 0.01019, valid loss: 0.00821
+epoch: 185, train loss: 0.01035, valid loss: 0.00847
+epoch: 186, train loss: 0.01026, valid loss: 0.00766
+epoch: 187, train loss: 0.01032, valid loss: 0.00747
+epoch: 188, train loss: 0.01025, valid loss: 0.00788
+epoch: 189, train loss: 0.01025, valid loss: 0.00774
+epoch: 190, train loss: 0.01027, valid loss: 0.00853
+epoch: 191, train loss: 0.01024, valid loss: 0.00778
+epoch: 192, train loss: 0.01026, valid loss: 0.00717
+epoch: 193, train loss: 0.01019, valid loss: 0.00781
+epoch: 194, train loss: 0.01017, valid loss: 0.00754
+epoch: 195, train loss: 0.01024, valid loss: 0.00798
+epoch: 196, train loss: 0.01019, valid loss: 0.00760
+epoch: 197, train loss: 0.01025, valid loss: 0.00762
+epoch: 198, train loss: 0.01025, valid loss: 0.00773
+epoch: 199, train loss: 0.01018, valid loss: 0.00771</code></pre>
+</div>
+</div>
+<p>That is it! We have trained our linear model and can view its learned <code>weight and bias</code>. Note that after training, they are much closer to <code>true_m</code> and <code>true_b</code>, which we used to generate the data. We can say that our model has learned the inherent pattern from within the data.</p>
+<div class="cell" data-outputid="0a75ad55-df37-40da-8f30-1d34ef0087ce" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># model weights after training</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>OrderedDict([('weight', tensor([[1.9914]])), ('bias', tensor([1.0314]))])</code></pre>
+</div>
+</div>
+</section>
+<section id="visualize-loss-logs-from-tensorboard" class="level2">
+<h2 class="anchored" data-anchor-id="visualize-loss-logs-from-tensorboard">Visualize loss logs from TensorBoard</h2>
+<p>Let’s view how our training and validation loss has progressed throughout the training using TensorBoard.</p>
+<div class="cell" data-outputid="cc031a30-3f90-4c7e-c7ce-8c267967b306" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ss">f'runs/simple_linear_regression/</span><span class="sc">{</span>timestamp<span class="sc">}</span><span class="ss">'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>'runs/simple_linear_regression/2022-10-10-12.02.43'</code></pre>
+</div>
+</div>
+<div class="cell" data-outputid="b0c118ac-4477-4309-871a-3a74b565aa13" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>load_ext tensorboard</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>tensorboard <span class="op">--</span>logdir runs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/javascript">
+
+        (async () => {
+            const url = new URL(await google.colab.kernel.proxyPort(6006, {'cache': true}));
+            url.searchParams.set('tensorboardColab', 'true');
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.setAttribute('width', '100%');
+            iframe.setAttribute('height', '800');
+            iframe.setAttribute('frameborder', 0);
+            document.body.appendChild(iframe);
+        })();
+    
+</script>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-10-10-pytorch-linear-regression/tensorboard.PNG" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">tensorboard.PNG</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="comparison-with-scikit-learn-linearregression-model" class="level1">
+<h1>Comparison with Scikit-Learn LinearRegression model</h1>
+<p>Let’s also make a quick comparison with sklearn LinearRegression model to see how our Neural Net model stands against it.</p>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>reg <span class="op">=</span> LinearRegression().fit(x_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Our Sklearn model is ready so let’s also get its weight and bias. For sklearn LinearRegressor * coef_ = coefficient = m * intercept_ = intercept = b</p>
+<div class="cell" data-outputid="a7630650-4e12-4bf4-b99f-451d867266cf" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>reg.coef_, reg.intercept_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="18">
+<pre><code>(array([[1.991623]], dtype=float32), array([1.0326645], dtype=float32))</code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

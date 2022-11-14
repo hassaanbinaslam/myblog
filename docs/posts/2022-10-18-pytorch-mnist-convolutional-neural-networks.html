@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-10-18">
+<meta name="description" content="This is a practice notebook for implementing a convolutional neural network (CNN) on the MNIST dataset with PyTorch. We will implement the now famous LeNet-5 from Yann LeCun, a 7-layer CNN from 1989. Then we will explore and visualize the layers learned by our network including filters, feature maps, and output layers.">
+
+<title>Random Thoughts - Convolutional Neural Networks Filters and Feature Maps with PyTorch</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Convolutional Neural Networks Filters and Feature Maps with PyTorch">
+<meta property="og:description" content="This is a practice notebook for implementing a convolutional neural network (CNN) on the MNIST dataset with PyTorch. We will implement the now famous LeNet-5 from Yann LeCun, a 7-layer CNN from 1989.">
+<meta property="og:image" content="images/2022-10-18-pytorch-mnist-convolutional-neural-networks.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Convolutional Neural Networks Filters and Feature Maps with PyTorch">
+<meta name="twitter:description" content="This is a practice notebook for implementing a convolutional neural network (CNN) on the MNIST dataset with PyTorch. We will implement the now famous LeNet-5 from Yann LeCun, a 7-layer CNN from 1989.">
+<meta name="twitter:image" content="images/2022-10-18-pytorch-mnist-convolutional-neural-networks.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#environment" id="toc-environment" class="nav-link" data-scroll-target="#environment">Environment</a></li>
+  <li><a href="#credits" id="toc-credits" class="nav-link" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#download-mnist-dataset" id="toc-download-mnist-dataset" class="nav-link" data-scroll-target="#download-mnist-dataset">Download MNIST Dataset</a></li>
+  <li><a href="#load-generated-data-into-pytorch-dataset-and-dataloader-class" id="toc-load-generated-data-into-pytorch-dataset-and-dataloader-class" class="nav-link" data-scroll-target="#load-generated-data-into-pytorch-dataset-and-dataloader-class">Load generated data into PyTorch Dataset and DataLoader class</a></li>
+  <li><a href="#define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" id="toc-define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" class="nav-link" data-scroll-target="#define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline">Define a class to implement training, validation, and mini-batch processing pipeline</a></li>
+  <li><a href="#create-lenet-5-model-configuration" id="toc-create-lenet-5-model-configuration" class="nav-link" data-scroll-target="#create-lenet-5-model-configuration">Create LeNet-5 model configuration</a></li>
+  <li><a href="#visualize-model-filters" id="toc-visualize-model-filters" class="nav-link" data-scroll-target="#visualize-model-filters">Visualize model filters</a>
+  <ul class="collapse">
+  <li><a href="#visualize-weights-for-first-conv2d-layer" id="toc-visualize-weights-for-first-conv2d-layer" class="nav-link" data-scroll-target="#visualize-weights-for-first-conv2d-layer">Visualize weights for first ‘Conv2d’ layer</a></li>
+  <li><a href="#visualize-weights-for-second-conv2d-layer" id="toc-visualize-weights-for-second-conv2d-layer" class="nav-link" data-scroll-target="#visualize-weights-for-second-conv2d-layer">Visualize weights for second ‘Conv2d’ layer</a></li>
+  <li><a href="#visualize-weights-for-third-conv2d-layer" id="toc-visualize-weights-for-third-conv2d-layer" class="nav-link" data-scroll-target="#visualize-weights-for-third-conv2d-layer">Visualize weights for third ‘Conv2d’ layer</a></li>
+  <li><a href="#what-do-these-filter-images-tell-us" id="toc-what-do-these-filter-images-tell-us" class="nav-link" data-scroll-target="#what-do-these-filter-images-tell-us">What do these filter images tell us?</a></li>
+  </ul></li>
+  <li><a href="#visualize-feature-maps-for-convolutional-layers" id="toc-visualize-feature-maps-for-convolutional-layers" class="nav-link" data-scroll-target="#visualize-feature-maps-for-convolutional-layers">Visualize feature maps for convolutional layers</a>
+  <ul class="collapse">
+  <li><a href="#define-a-hook" id="toc-define-a-hook" class="nav-link" data-scroll-target="#define-a-hook">Define a hook</a></li>
+  <li><a href="#feature-map-from-first-conv2d-layer" id="toc-feature-map-from-first-conv2d-layer" class="nav-link" data-scroll-target="#feature-map-from-first-conv2d-layer">Feature map from first ‘Conv2d’ layer</a></li>
+  <li><a href="#feature-map-from-second-conv2d-layer" id="toc-feature-map-from-second-conv2d-layer" class="nav-link" data-scroll-target="#feature-map-from-second-conv2d-layer">Feature map from second ‘Conv2d’ layer</a></li>
+  <li><a href="#feature-maps-from-the-first-and-second-conv2d-layers-together" id="toc-feature-maps-from-the-first-and-second-conv2d-layers-together" class="nav-link" data-scroll-target="#feature-maps-from-the-first-and-second-conv2d-layers-together">Feature maps from the first and second ‘Conv2d’ layers together</a></li>
+  <li><a href="#feature-map-from-third-conv2d-layer" id="toc-feature-map-from-third-conv2d-layer" class="nav-link" data-scroll-target="#feature-map-from-third-conv2d-layer">Feature map from third ‘Conv2d’ layer</a></li>
+  <li><a href="#feature-map-from-third-conv2d-layer-for-multiple-images" id="toc-feature-map-from-third-conv2d-layer-for-multiple-images" class="nav-link" data-scroll-target="#feature-map-from-third-conv2d-layer-for-multiple-images">Feature map from third ‘Conv2d’ layer for multiple images</a></li>
+  </ul></li>
+  <li><a href="#visualize-feature-maps-for-a-classifier-or-hidden-layer" id="toc-visualize-feature-maps-for-a-classifier-or-hidden-layer" class="nav-link" data-scroll-target="#visualize-feature-maps-for-a-classifier-or-hidden-layer">Visualize feature maps for a classifier or hidden layer</a>
+  <ul class="collapse">
+  <li><a href="#visualize-feature-map-for-first-linear-layer" id="toc-visualize-feature-map-for-first-linear-layer" class="nav-link" data-scroll-target="#visualize-feature-map-for-first-linear-layer">Visualize feature map for first ‘Linear’ layer</a></li>
+  <li><a href="#visualize-feature-map-for-second-linear-layer" id="toc-visualize-feature-map-for-second-linear-layer" class="nav-link" data-scroll-target="#visualize-feature-map-for-second-linear-layer">Visualize feature map for second ‘Linear’ layer</a></li>
+  <li><a href="#what-do-these-output-feature-maps-tell-us" id="toc-what-do-these-output-feature-maps-tell-us" class="nav-link" data-scroll-target="#what-do-these-output-feature-maps-tell-us">What do these OUTPUT feature maps tell us?</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Convolutional Neural Networks Filters and Feature Maps with PyTorch</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">pytorch</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This is a practice notebook for implementing a convolutional neural network (CNN) on the MNIST dataset with PyTorch. We will implement the now famous LeNet-5 from Yann LeCun, a 7-layer CNN from 1989. Then we will explore and visualize the layers learned by our network including filters, feature maps, and output layers.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 18, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-10-18-pytorch-mnist-convolutional-neural-networks.jpeg" class="img-fluid"></p>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>We will train a LeNet-5 CNN model with PyTorch on the MNIST dataset in this notebook. Given below is the summary of the steps followed in this notebook. * Download the MNIST dataset. Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class * Create a Neural Net model configuration, an SGD optimizer, and a loss function * Create a pipeline that will train the model on given data and update the weights based on the loss * Visualize filters and feature maps from the trained model</p>
+</section>
+<section id="environment" class="level2">
+<h2 class="anchored" data-anchor-id="environment">Environment</h2>
+<p>This notebook is prepared with Google Colab.</p>
+<div class="cell" data-outputid="3623bbbf-f88d-4b90-d9d4-5c30df075659" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy, matplotlib, pandas, torch</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.7.15
+numpy==1.21.6
+torch==1.12.1+cu113
+matplotlib==3.2.2</code></pre>
+</div>
+</div>
+</section>
+<section id="credits" class="level2">
+<h2 class="anchored" data-anchor-id="credits">Credits</h2>
+<p>This notebook takes inspiration and ideas from the following two sources. * The outstanding book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks and can be used independently: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter05.ipynb">chapter 5 notebook</a> of the same book. * A great post by “Eugenia Anello” with the title <a href="https://medium.com/dataseries/visualizing-the-feature-maps-and-filters-by-convolutional-neural-networks-e1462340518e">Visualizing the Feature Maps and Filters by Convolutional Neural Networks</a>. You can click the title to reach the post on the <code>medium.com</code> platform. <code>Eugenia Anello</code> can also be found on her <a href="https://www.linkedin.com/in/eugenia-anello">linkedin profile</a>.</p>
+</section>
+<section id="download-mnist-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="download-mnist-dataset">Download MNIST Dataset</h2>
+<p>MNIST dataset can be downloaded easily from PyTorch built-in datasets provided under <code>torchvision.datasets</code>. In this section, we will download it, split it into train and test datasets, and then convert it into PyTorch tensors. * Read more about the PyTorch MNIST dataset <a href="https://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html#torchvision.datasets.MNIST">here</a> * <code>torchvision.transforms.Compose</code> is like a container to hold a list of transformations you intend to apply. Read more about it <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html">here</a> * <code>torchvision.transforms.ToTensor</code> converts a <code>PIL Image</code> or <code>numpy.ndarray</code> to tensor. It converts a PIL Image or numpy.ndarray <strong>(H x W x C) in the range [0, 255]</strong> to a torch.FloatTensor of shape <strong>(C x H x W) in the range [0.0, 1.0]</strong>. Here C=Channel, H=Height, W=Width. Read more about this transformation <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html">here</a></p>
+<div class="cell" data-outputid="b05959d6-bffa-4084-9125-42279f9d9fcf" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>train_dataset <span class="op">=</span> torchvision.datasets.MNIST(<span class="st">'classifier_data'</span>, train<span class="op">=</span><span class="va">True</span>, download<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>test_dataset  <span class="op">=</span> torchvision.datasets.MNIST(<span class="st">'classifier_data'</span>, train<span class="op">=</span><span class="va">False</span>, download<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>transform <span class="op">=</span> torchvision.transforms.Compose([</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    torchvision.transforms.ToTensor()</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>train_dataset.transform<span class="op">=</span>transform</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>test_dataset.transform<span class="op">=</span>transform</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total training images: </span><span class="sc">{</span><span class="bu">len</span>(train_dataset)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Shape of an image: </span><span class="sc">{</span>np<span class="sc">.</span>shape(train_dataset.data[<span class="dv">7</span>])<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Values of an image: </span><span class="ch">\n</span><span class="sc">{</span>train_dataset<span class="sc">.</span>data[<span class="dv">7</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Total training images: 60000
+Shape of an image: torch.Size([28, 28])
+Values of an image: 
+tensor([[  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  38,  43, 105,
+         255, 253, 253, 253, 253, 253, 174,   6,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,  43, 139, 224, 226, 252,
+         253, 252, 252, 252, 252, 252, 252, 158,  14,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0, 178, 252, 252, 252, 252,
+         253, 252, 252, 252, 252, 252, 252, 252,  59,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0, 109, 252, 252, 230, 132,
+         133, 132, 132, 189, 252, 252, 252, 252,  59,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   4,  29,  29,  24,   0,
+           0,   0,   0,  14, 226, 252, 252, 172,   7,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,  85, 243, 252, 252, 144,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,  88, 189, 252, 252, 252,  14,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          91, 212, 247, 252, 252, 252, 204,   9,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,  32, 125, 193, 193, 193,
+         253, 252, 252, 252, 238, 102,  28,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,  45, 222, 252, 252, 252, 252,
+         253, 252, 252, 252, 177,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,  45, 223, 253, 253, 253, 253,
+         255, 253, 253, 253, 253,  74,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,  31, 123,  52,  44,  44,
+          44,  44, 143, 252, 252,  74,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,  15, 252, 252,  74,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,  86, 252, 252,  74,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   5,  75,   9,   0,   0,   0,   0,   0,
+           0,  98, 242, 252, 252,  74,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,  61, 183, 252,  29,   0,   0,   0,   0,  18,
+          92, 239, 252, 252, 243,  65,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0, 208, 252, 252, 147, 134, 134, 134, 134, 203,
+         253, 252, 252, 188,  83,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0, 208, 252, 252, 252, 252, 252, 252, 252, 252,
+         253, 230, 153,   8,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,  49, 157, 252, 252, 252, 252, 252, 217, 207,
+         146,  45,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   7, 103, 235, 252, 172, 103,  24,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+        [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0]],
+       dtype=torch.uint8)</code></pre>
+</div>
+</div>
+<p>From the above cell output, there are <code>60,000</code> training images. The shape of each image is <code>28 x 28</code>, which means it is a 2D matrix. We have also printed the values of one image, but they don’t make much sense unless we view them as an image. So let’s do that.</p>
+<div class="cell" data-outputid="88790e7b-a6a1-426f-c20f-d6550b66c1be" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>plt.imshow(train_dataset.data[<span class="dv">7</span>], cmap<span class="op">=</span><span class="st">'gray'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>&lt;matplotlib.image.AxesImage at 0x7feae1775310&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-4-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="load-generated-data-into-pytorch-dataset-and-dataloader-class" class="level2">
+<h2 class="anchored" data-anchor-id="load-generated-data-into-pytorch-dataset-and-dataloader-class">Load generated data into PyTorch Dataset and DataLoader class</h2>
+<p>Now let’s load our data into <code>Dataset</code> and <code>DataLoader</code> classes. PyTorch Dataset is a helper class that converts data and labels into a list of tuples. DataLoader is another helper class to create batches from Dataset tuples. <code>batch_size</code> means the number of tuples we want in a single batch. We have used 128 here, so each fetch from DataLoader will give us a list of 128 tuples.</p>
+<div class="cell" data-outputid="f198446f-7980-4a5f-da67-6f57b5fb5212" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader, random_split</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>train_size<span class="op">=</span><span class="bu">len</span>(train_dataset)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Randomly split the data into non-overlapping train and validation set</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># train size = 70% and validation size = 30%</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>train_data, val_data <span class="op">=</span> random_split(train_dataset, [<span class="bu">int</span>(train_size<span class="op">*</span><span class="fl">0.7</span>), <span class="bu">int</span>(train_size <span class="op">-</span> train_size<span class="op">*</span><span class="fl">0.7</span>)])</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>batch_size<span class="op">=</span><span class="dv">128</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data into DataLoader class</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>train_loader <span class="op">=</span> torch.utils.data.DataLoader(train_dataset, batch_size<span class="op">=</span>batch_size)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>valid_loader <span class="op">=</span> torch.utils.data.DataLoader(val_data, batch_size<span class="op">=</span>batch_size)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Batches in Train Loader: </span><span class="sc">{</span><span class="bu">len</span>(train_loader)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Batches in Valid Loader: </span><span class="sc">{</span><span class="bu">len</span>(valid_loader)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Examples in Train Loader: </span><span class="sc">{</span><span class="bu">len</span>(train_loader.sampler)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Examples in Valid Loader: </span><span class="sc">{</span><span class="bu">len</span>(valid_loader.sampler)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Batches in Train Loader: 469
+Batches in Valid Loader: 141
+Examples in Train Loader: 60000
+Examples in Valid Loader: 18000</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper function to plot images from DataLoader</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_images(images, targets, n_plot<span class="op">=</span><span class="dv">30</span>):</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="op">=</span> n_plot <span class="op">//</span> <span class="dv">10</span> <span class="op">+</span> ((n_plot <span class="op">%</span> <span class="dv">10</span>) <span class="op">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(n_rows, <span class="dv">10</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="fl">1.5</span> <span class="op">*</span> n_rows))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    axes <span class="op">=</span> np.atleast_2d(axes)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, (image, target) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(images[:n_plot], targets[:n_plot])):</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        row, col <span class="op">=</span> i <span class="op">//</span> <span class="dv">10</span>, i <span class="op">%</span> <span class="dv">10</span>    </span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        ax <span class="op">=</span> axes[row, col]</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        ax.set_title(<span class="st">'#</span><span class="sc">{}</span><span class="st"> - Label:</span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(i, target), {<span class="st">'size'</span>: <span class="dv">12</span>})</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># plot filter channel in grayscale</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        ax.imshow(image.squeeze(), cmap<span class="op">=</span><span class="st">'gray'</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ax <span class="kw">in</span> axes.flat:</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        ax.set_xticks([])</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        ax.set_yticks([])</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        ax.label_outer()</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fig</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">## Code taken from https://github.com/dvgodoy/PyTorchStepByStep/blob/master/plots/chapter5.py</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s plot some dataset images along with their labels from a batch.</p>
+<div class="cell" data-outputid="26584fa3-41ff-4c8e-e7ed-bf2470b688bf" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>images, labels <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(train_loader))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plot_images(images, labels, n_plot<span class="op">=</span><span class="dv">40</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline">Define a class to implement training, validation, and mini-batch processing pipeline</h2>
+<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are * <code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders * <code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Compute gradients i.e., find the direction and scale to update the weights to reduce the loss 4. Update weight parameters using gradients and the learning rate * <code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients. * <code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to 1. Get the next batch of data and labels (x, y) from the DataLoader iterator 2. Perform a step on the batch. A step can be either training or validation 3. Compute the average batch loss * <code>train</code>: Execute training and validation steps for given number of epoch * <code>predict</code>: Make a prediction from model on provided data</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DeepLearningPipeline(<span class="bu">object</span>):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, model, loss_fn, optimizer):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Here we define the attributes of our class</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># We start by storing the arguments as attributes </span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># to use them later</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model <span class="op">=</span> model</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.loss_fn <span class="op">=</span> loss_fn</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.optimizer <span class="op">=</span> optimizer</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.device <span class="op">=</span> <span class="st">'cuda'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Let's send the model to the specified device right away</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model.to(<span class="va">self</span>.device)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># These attributes are defined here, but since they are</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># not informed at the moment of creation, we keep them None</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_loader <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.writer <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># These attributes are going to be computed internally</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.losses <span class="op">=</span> []</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_losses <span class="op">=</span> []</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.total_epochs <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Creates the train_step function for our model, </span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># loss function and optimizer</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Note: there are NO ARGS there! It makes use of the class</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># attributes directly</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.train_step_fn <span class="op">=</span> <span class="va">self</span>._make_train_step_fn()</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Creates the val_step function for our model and loss</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_step_fn <span class="op">=</span> <span class="va">self</span>._make_val_step_fn()</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> set_loaders(<span class="va">self</span>, train_loader, val_loader<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This method allows the user to define which train_loader (and val_loader, optionally) to use</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Both loaders are then assigned to attributes of the class</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>        <span class="co"># So they can be referred to later</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> train_loader</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_loader <span class="op">=</span> val_loader</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _make_train_step_fn(<span class="va">self</span>):</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This method does not need ARGS... it can refer to</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># the attributes: self.model, self.loss_fn and self.optimizer</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Builds function that performs a step in the train loop</span></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> perform_train_step_fn(x, y):</span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Sets model to TRAIN mode</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.model.train()</span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>            yhat <span class="op">=</span> <span class="va">self</span>.model(x)</span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 2 - Computes the loss</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> <span class="va">self</span>.loss_fn(yhat, y)</span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 3 - Computes gradients for both "a" and "b" parameters</span></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>            loss.backward()</span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 4 - Updates parameters using gradients and the learning rate</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.optimizer.step()</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.optimizer.zero_grad()</span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Returns the loss</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> loss.item()</span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Returns the function that will be called inside the train loop</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> perform_train_step_fn</span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _make_val_step_fn(<span class="va">self</span>):</span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Builds function that performs a step in the validation loop</span></span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> perform_val_step_fn(x, y):</span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Sets model to EVAL mode</span></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.model.<span class="bu">eval</span>()</span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>            yhat <span class="op">=</span> <span class="va">self</span>.model(x)</span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 2 - Computes the loss</span></span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> <span class="va">self</span>.loss_fn(yhat, y)</span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>            <span class="co"># There is no need to compute Steps 3 and 4, </span></span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a>            <span class="co"># since we don't update parameters during evaluation</span></span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> loss.item()</span>
+<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> perform_val_step_fn</span>
+<span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _mini_batch(<span class="va">self</span>, validation<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The mini-batch can be used with both loaders</span></span>
+<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The argument `validation`defines which loader and </span></span>
+<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a>        <span class="co"># corresponding step function is going to be used</span></span>
+<span id="cb11-85"><a href="#cb11-85" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> validation:</span>
+<span id="cb11-86"><a href="#cb11-86" aria-hidden="true" tabindex="-1"></a>            data_loader <span class="op">=</span> <span class="va">self</span>.val_loader</span>
+<span id="cb11-87"><a href="#cb11-87" aria-hidden="true" tabindex="-1"></a>            step_fn <span class="op">=</span> <span class="va">self</span>.val_step_fn</span>
+<span id="cb11-88"><a href="#cb11-88" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb11-89"><a href="#cb11-89" aria-hidden="true" tabindex="-1"></a>            data_loader <span class="op">=</span> <span class="va">self</span>.train_loader</span>
+<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a>            step_fn <span class="op">=</span> <span class="va">self</span>.train_step_fn</span>
+<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> data_loader <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb11-93"><a href="#cb11-93" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb11-94"><a href="#cb11-94" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb11-95"><a href="#cb11-95" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Once the data loader and step function, this is the </span></span>
+<span id="cb11-96"><a href="#cb11-96" aria-hidden="true" tabindex="-1"></a>        <span class="co"># same mini-batch loop we had before</span></span>
+<span id="cb11-97"><a href="#cb11-97" aria-hidden="true" tabindex="-1"></a>        mini_batch_losses <span class="op">=</span> []</span>
+<span id="cb11-98"><a href="#cb11-98" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x_batch, y_batch <span class="kw">in</span> data_loader:</span>
+<span id="cb11-99"><a href="#cb11-99" aria-hidden="true" tabindex="-1"></a>            x_batch <span class="op">=</span> x_batch.to(<span class="va">self</span>.device)</span>
+<span id="cb11-100"><a href="#cb11-100" aria-hidden="true" tabindex="-1"></a>            y_batch <span class="op">=</span> y_batch.to(<span class="va">self</span>.device)</span>
+<span id="cb11-101"><a href="#cb11-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-102"><a href="#cb11-102" aria-hidden="true" tabindex="-1"></a>            mini_batch_loss <span class="op">=</span> step_fn(x_batch, y_batch)</span>
+<span id="cb11-103"><a href="#cb11-103" aria-hidden="true" tabindex="-1"></a>            mini_batch_losses.append(mini_batch_loss)</span>
+<span id="cb11-104"><a href="#cb11-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-105"><a href="#cb11-105" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> np.mean(mini_batch_losses)</span>
+<span id="cb11-106"><a href="#cb11-106" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> loss</span>
+<span id="cb11-107"><a href="#cb11-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-108"><a href="#cb11-108" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> set_seed(<span class="va">self</span>, seed<span class="op">=</span><span class="dv">42</span>):</span>
+<span id="cb11-109"><a href="#cb11-109" aria-hidden="true" tabindex="-1"></a>        torch.backends.cudnn.deterministic <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb11-110"><a href="#cb11-110" aria-hidden="true" tabindex="-1"></a>        torch.backends.cudnn.benchmark <span class="op">=</span> <span class="va">False</span>    </span>
+<span id="cb11-111"><a href="#cb11-111" aria-hidden="true" tabindex="-1"></a>        torch.manual_seed(seed)</span>
+<span id="cb11-112"><a href="#cb11-112" aria-hidden="true" tabindex="-1"></a>        np.random.seed(seed)</span>
+<span id="cb11-113"><a href="#cb11-113" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-114"><a href="#cb11-114" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> train(<span class="va">self</span>, n_epochs, seed<span class="op">=</span><span class="dv">42</span>):</span>
+<span id="cb11-115"><a href="#cb11-115" aria-hidden="true" tabindex="-1"></a>        <span class="co"># To ensure reproducibility of the training process</span></span>
+<span id="cb11-116"><a href="#cb11-116" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.set_seed(seed)</span>
+<span id="cb11-117"><a href="#cb11-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-118"><a href="#cb11-118" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(n_epochs):</span>
+<span id="cb11-119"><a href="#cb11-119" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Keeps track of the numbers of epochs</span></span>
+<span id="cb11-120"><a href="#cb11-120" aria-hidden="true" tabindex="-1"></a>            <span class="co"># by updating the corresponding attribute</span></span>
+<span id="cb11-121"><a href="#cb11-121" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.total_epochs <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb11-122"><a href="#cb11-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-123"><a href="#cb11-123" aria-hidden="true" tabindex="-1"></a>            <span class="co"># inner loop</span></span>
+<span id="cb11-124"><a href="#cb11-124" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Performs training using mini-batches</span></span>
+<span id="cb11-125"><a href="#cb11-125" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> <span class="va">self</span>._mini_batch(validation<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-126"><a href="#cb11-126" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.losses.append(loss)</span>
+<span id="cb11-127"><a href="#cb11-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-128"><a href="#cb11-128" aria-hidden="true" tabindex="-1"></a>            <span class="co"># VALIDATION</span></span>
+<span id="cb11-129"><a href="#cb11-129" aria-hidden="true" tabindex="-1"></a>            <span class="co"># no gradients in validation!</span></span>
+<span id="cb11-130"><a href="#cb11-130" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb11-131"><a href="#cb11-131" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Performs evaluation using mini-batches</span></span>
+<span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a>                val_loss <span class="op">=</span> <span class="va">self</span>._mini_batch(validation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.val_losses.append(val_loss)</span>
+<span id="cb11-134"><a href="#cb11-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-135"><a href="#cb11-135" aria-hidden="true" tabindex="-1"></a>            <span class="co"># If a SummaryWriter has been set...</span></span>
+<span id="cb11-136"><a href="#cb11-136" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="va">self</span>.writer:</span>
+<span id="cb11-137"><a href="#cb11-137" aria-hidden="true" tabindex="-1"></a>                scalars <span class="op">=</span> {<span class="st">'training'</span>: loss}</span>
+<span id="cb11-138"><a href="#cb11-138" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> val_loss <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb11-139"><a href="#cb11-139" aria-hidden="true" tabindex="-1"></a>                    scalars.update({<span class="st">'validation'</span>: val_loss})</span>
+<span id="cb11-140"><a href="#cb11-140" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Records both losses for each epoch under the main tag "loss"</span></span>
+<span id="cb11-141"><a href="#cb11-141" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.writer.add_scalars(main_tag<span class="op">=</span><span class="st">'loss'</span>,</span>
+<span id="cb11-142"><a href="#cb11-142" aria-hidden="true" tabindex="-1"></a>                                        tag_scalar_dict<span class="op">=</span>scalars,</span>
+<span id="cb11-143"><a href="#cb11-143" aria-hidden="true" tabindex="-1"></a>                                        global_step<span class="op">=</span>epoch)</span>
+<span id="cb11-144"><a href="#cb11-144" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb11-145"><a href="#cb11-145" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"epoch: </span><span class="sc">{</span>epoch<span class="sc">:3}</span><span class="ss">, train loss: </span><span class="sc">{</span>loss<span class="sc">:.5f}</span><span class="ss">, valid loss: </span><span class="sc">{</span>val_loss<span class="sc">:.5f}</span><span class="ss">"</span>)</span>
+<span id="cb11-146"><a href="#cb11-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-147"><a href="#cb11-147" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.writer:</span>
+<span id="cb11-148"><a href="#cb11-148" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Closes the writer</span></span>
+<span id="cb11-149"><a href="#cb11-149" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.writer.close()</span>
+<span id="cb11-150"><a href="#cb11-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-151"><a href="#cb11-151" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, x):</span>
+<span id="cb11-152"><a href="#cb11-152" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set is to evaluation mode for predictions</span></span>
+<span id="cb11-153"><a href="#cb11-153" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model.<span class="bu">eval</span>() </span>
+<span id="cb11-154"><a href="#cb11-154" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Takes aNumpy input and make it a float tensor</span></span>
+<span id="cb11-155"><a href="#cb11-155" aria-hidden="true" tabindex="-1"></a>        x_tensor <span class="op">=</span> torch.as_tensor(x).<span class="bu">float</span>()</span>
+<span id="cb11-156"><a href="#cb11-156" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Send input to device and uses model for prediction</span></span>
+<span id="cb11-157"><a href="#cb11-157" aria-hidden="true" tabindex="-1"></a>        y_hat_tensor <span class="op">=</span> <span class="va">self</span>.model(x_tensor.to(<span class="va">self</span>.device))</span>
+<span id="cb11-158"><a href="#cb11-158" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set it back to train mode</span></span>
+<span id="cb11-159"><a href="#cb11-159" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model.train()</span>
+<span id="cb11-160"><a href="#cb11-160" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Detaches it, brings it to CPU and back to Numpy</span></span>
+<span id="cb11-161"><a href="#cb11-161" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> y_hat_tensor.detach().cpu().numpy()</span>
+<span id="cb11-162"><a href="#cb11-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-163"><a href="#cb11-163" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> plot_losses(<span class="va">self</span>):</span>
+<span id="cb11-164"><a href="#cb11-164" aria-hidden="true" tabindex="-1"></a>        fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb11-165"><a href="#cb11-165" aria-hidden="true" tabindex="-1"></a>        plt.plot(<span class="va">self</span>.losses, label<span class="op">=</span><span class="st">'Training Loss'</span>, c<span class="op">=</span><span class="st">'b'</span>)</span>
+<span id="cb11-166"><a href="#cb11-166" aria-hidden="true" tabindex="-1"></a>        plt.plot(<span class="va">self</span>.val_losses, label<span class="op">=</span><span class="st">'Validation Loss'</span>, c<span class="op">=</span><span class="st">'r'</span>)</span>
+<span id="cb11-167"><a href="#cb11-167" aria-hidden="true" tabindex="-1"></a>        plt.yscale(<span class="st">'log'</span>)</span>
+<span id="cb11-168"><a href="#cb11-168" aria-hidden="true" tabindex="-1"></a>        plt.xlabel(<span class="st">'Epochs'</span>)</span>
+<span id="cb11-169"><a href="#cb11-169" aria-hidden="true" tabindex="-1"></a>        plt.ylabel(<span class="st">'Loss'</span>)</span>
+<span id="cb11-170"><a href="#cb11-170" aria-hidden="true" tabindex="-1"></a>        plt.legend()</span>
+<span id="cb11-171"><a href="#cb11-171" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
+<span id="cb11-172"><a href="#cb11-172" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="create-lenet-5-model-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="create-lenet-5-model-configuration">Create LeNet-5 model configuration</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-10-18-pytorch-mnist-convolutional-neural-networks/architecture_lenet.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">architecture_lenet.png</figcaption><p></p>
+</figure>
+</div>
+<p><em>Source: Generated using Alexander Lenail’s <a href="http://alexlenail.me/NN-SVG/">NN-SVG</a> and adapted by the author [“Daniel Voigt Godoy”]. For more details, see LeCun, Y., et al (1998). <a href="http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf">Gradient-based learning applied to document recognition</a>. Proceedings of the IEEE,86(11), 2278–2324</em></p>
+<p><em>Image taken from <a href="https://raw.githubusercontent.com/dvgodoy/PyTorchStepByStep/master/images/architecture_lenet.png">dvgodoy/PyTorchStepByStep</a></em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>lenet <span class="op">=</span> nn.Sequential()</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Featurizer</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Block 1: 1@28x28 -&gt; 6@28x28 -&gt; 6@14x14</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'C1'</span>, nn.Conv2d(in_channels<span class="op">=</span><span class="dv">1</span>, out_channels<span class="op">=</span><span class="dv">6</span>, kernel_size<span class="op">=</span><span class="dv">5</span>, padding<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'func1'</span>, nn.ReLU())</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'S2'</span>, nn.MaxPool2d(kernel_size<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Block 2: 6@14x14 -&gt; 16@10x10 -&gt; 16@5x5</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'C3'</span>, nn.Conv2d(in_channels<span class="op">=</span><span class="dv">6</span>, out_channels<span class="op">=</span><span class="dv">16</span>, kernel_size<span class="op">=</span><span class="dv">5</span>))</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'func2'</span>, nn.ReLU())</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'S4'</span>, nn.MaxPool2d(kernel_size<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Block 3: 16@5x5 -&gt; 120@1x1</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'C5'</span>, nn.Conv2d(in_channels<span class="op">=</span><span class="dv">16</span>, out_channels<span class="op">=</span><span class="dv">120</span>, kernel_size<span class="op">=</span><span class="dv">5</span>))</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'func2'</span>, nn.ReLU())</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Flattening</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'flatten'</span>, nn.Flatten())</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Classification</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Hidden Layer</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'F6'</span>, nn.Linear(in_features<span class="op">=</span><span class="dv">120</span>, out_features<span class="op">=</span><span class="dv">84</span>))</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'func3'</span>, nn.ReLU())</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Output Layer</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>lenet.add_module(<span class="st">'OUTPUT'</span>, nn.Linear(in_features<span class="op">=</span><span class="dv">84</span>, out_features<span class="op">=</span><span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now let’s create optimizer and a loss function.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">0.003</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">42</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> lenet</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> optim.SGD(model.parameters(), lr<span class="op">=</span>lr)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a BCE loss function</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now let’s train our model for 20 epochs.</p>
+<div class="cell" data-outputid="8348cf19-f0b9-42a5-a1cc-95343ac26af6">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>n_epochs <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>dlp <span class="op">=</span> DeepLearningPipeline(model, loss_fn, optimizer)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>dlp.set_loaders(train_loader, valid_loader)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>dlp.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>epoch:   0, train loss: 2.29349, valid loss: 2.28632
+epoch:   1, train loss: 2.27442, valid loss: 2.25871
+epoch:   2, train loss: 2.22077, valid loss: 2.15503
+epoch:   3, train loss: 1.85172, valid loss: 1.27419
+epoch:   4, train loss: 0.82061, valid loss: 0.59110
+epoch:   5, train loss: 0.50765, valid loss: 0.45872
+epoch:   6, train loss: 0.41486, valid loss: 0.39295
+epoch:   7, train loss: 0.36466, valid loss: 0.35130
+epoch:   8, train loss: 0.33108, valid loss: 0.32108
+epoch:   9, train loss: 0.30512, valid loss: 0.29665
+epoch:  10, train loss: 0.28347, valid loss: 0.27550
+epoch:  11, train loss: 0.26473, valid loss: 0.25711
+epoch:  12, train loss: 0.24807, valid loss: 0.24056
+epoch:  13, train loss: 0.23314, valid loss: 0.22590
+epoch:  14, train loss: 0.21989, valid loss: 0.21282
+epoch:  15, train loss: 0.20804, valid loss: 0.20097
+epoch:  16, train loss: 0.19743, valid loss: 0.19028
+epoch:  17, train loss: 0.18791, valid loss: 0.18065
+epoch:  18, train loss: 0.17929, valid loss: 0.17199
+epoch:  19, train loss: 0.17142, valid loss: 0.16408</code></pre>
+</div>
+</div>
+<p>Let’s see how our training and validation loss looks like.</p>
+<div class="cell" data-outputid="7d1cca70-43b6-43b4-ffe7-0818bd8d32b1">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> dlp.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-12-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="visualize-model-filters" class="level2">
+<h2 class="anchored" data-anchor-id="visualize-model-filters">Visualize model filters</h2>
+<p>Neural network convolutional layers are a stack of square matrices. We repeatedly apply these matrices or <code>filters</code> on images, and the output of this operation is called <code>convolutions</code>. These convolutions act as intermediate (or new) datasets generated from the images (a kind of dynamic feature engineering). We try to learn from these convolutions and calculate a loss for them. Initially, the value for these filters is randomly selected. If the loss is high, we try slowly changing values or <code>weights</code> for these filters. Changing filter values also create changes in outputs or convolutions. If a convolution results in a slight decrease in loss, we take it as a good sign and try to move in that direction (make more similar changes). If we try these steps repeatedly, we might find good convolutions (or good weights in the filter, as they are the source of convolutions). By “good weights”, we mean that the final loss is significantly lower than a random value.</p>
+<p>These convolutional filters are created in PyTorch using class <code>nn.Conv2d</code>. A filter can have one matrix or a stack of matrices under it. Matrices under a filter are sometimes called <code>kernels</code>, but I will stick to the filter and matrix terms to avoid confusion.</p>
+<p>So If we look at the LeNet-5 model configuration, we will find that we created three convolutional filters or <code>nn.Conv2d</code> layers. Let’s print the dimension of these layers.</p>
+<div class="cell" data-outputid="2cb9635a-6a3b-4400-d710-b2227d3570fd">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>model_weights <span class="op">=</span> [] </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>conv_layers <span class="op">=</span> [] </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>model_children <span class="op">=</span> <span class="bu">list</span>(model.children())</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># counter to keep count of the conv layers</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>counter <span class="op">=</span> <span class="dv">0</span> </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># append all the conv layers and their respective weights to the list</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(model_children)):</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">type</span>(model_children[i]) <span class="op">==</span> nn.Conv2d:</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        counter <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        model_weights.append(model_children[i].weight)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        conv_layers.append(model_children[i])</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total convolutional layers: </span><span class="sc">{</span>counter<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> weight, conv <span class="kw">in</span> <span class="bu">zip</span>(model_weights, conv_layers):</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"CONV: </span><span class="sc">{</span>conv<span class="sc">}</span><span class="ss"> ====&gt; SHAPE: </span><span class="sc">{</span>weight<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Total convolutional layers: 3
+CONV: Conv2d(1, 6, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2)) ====&gt; SHAPE: torch.Size([6, 1, 5, 5])
+CONV: Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1)) ====&gt; SHAPE: torch.Size([16, 6, 5, 5])
+CONV: Conv2d(16, 120, kernel_size=(5, 5), stride=(1, 1)) ====&gt; SHAPE: torch.Size([120, 16, 5, 5])</code></pre>
+</div>
+</div>
+<p>The output of the above cell tells us that * There are three convolutional layers * First layer has a dimension of <code>[6, 1, 5, 5]</code>. It means we have 6 filters in this layer. Each filter has 1 matrix of dimension 5x5 under it. * Second layer has a dimension of <code>[16, 6, 5, 5]</code>. It means we have 16 filters. Each filter has 6 matrices of size 5x5 under it. * Third layer has a dimension of <code>[120, 16, 5, 5]</code>. It means we have 120 filters. Each filter has 16 matrices of size 5x5 under it.</p>
+<p>Note that the learned weights from these matrices are stored in <code>model_weights</code> list, which we will visualize in the next section.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper function to visualize filters</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> visualize_filters(layer, n_plots<span class="op">=</span><span class="dv">30</span>):</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get layer dimensions. e.g. `[6, 1, 5, 5]` where</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># filters=6, kernels=1, kernel_height=5, kernel_weight=5</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    filters, kernels, kernel_height, kernel_weight <span class="op">=</span> layer.shape</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># total plots = total number of matrices present in a layer. </span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Each matrix weights can be plotted as an image</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    total_plots <span class="op">=</span> filters <span class="op">*</span> kernels</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># total_plots can be too many. So let's create an upper limit on them as 'MAX_PLOTS'</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    MAX_PLOTS <span class="op">=</span> <span class="bu">min</span>(n_plots, total_plots)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># number of columns for our plots 'MAX_COL_PLOTS'</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    MAX_COL_PLOTS <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># number of rows for our plots 'MAX_ROW_PLOTS'</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    MAX_ROW_PLOTS <span class="op">=</span> <span class="bu">max</span>(MAX_PLOTS <span class="op">//</span> MAX_COL_PLOTS, MAX_COL_PLOTS)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># specify some size of each plot image</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="fl">2.5</span><span class="op">*</span>MAX_ROW_PLOTS)) <span class="co"># width, height</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    plot_count <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># interate filters</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> f, <span class="bu">filter</span> <span class="kw">in</span> <span class="bu">enumerate</span>(layer):</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># iterate kernels under each filter</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> k, kernel <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">filter</span>):</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>            <span class="co"># plot a single kernel or a matrix</span></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>            plt.subplot(MAX_ROW_PLOTS, MAX_COL_PLOTS, plot_count)</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>            plt.imshow(kernel[:, :].detach().cpu().numpy(), cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>            plt.title(<span class="st">'#F:</span><span class="sc">{}</span><span class="st"> - K:</span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(f, k), {<span class="st">'size'</span>: <span class="dv">12</span>})</span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>            plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>            plot_count <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>            <span class="co"># terminate on `MAX_PLOTS` </span></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> plot_count <span class="op">&gt;</span> MAX_PLOTS:</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> plt.show()</span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="visualize-weights-for-first-conv2d-layer" class="level3">
+<h3 class="anchored" data-anchor-id="visualize-weights-for-first-conv2d-layer">Visualize weights for first ‘Conv2d’ layer</h3>
+<div class="cell" data-outputid="bfbcd89c-2988-45f7-f1c0-9bc466726428">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>visualize_filters(model_weights[<span class="dv">0</span>], <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="visualize-weights-for-second-conv2d-layer" class="level3">
+<h3 class="anchored" data-anchor-id="visualize-weights-for-second-conv2d-layer">Visualize weights for second ‘Conv2d’ layer</h3>
+<div class="cell" data-outputid="b9366b2b-d056-4f99-ce6b-c89c12a50d06">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>visualize_filters(model_weights[<span class="dv">1</span>], <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-16-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="visualize-weights-for-third-conv2d-layer" class="level3">
+<h3 class="anchored" data-anchor-id="visualize-weights-for-third-conv2d-layer">Visualize weights for third ‘Conv2d’ layer</h3>
+<div class="cell" data-outputid="f3baec43-d595-4d7d-e9cc-6f3c40ac1760">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>visualize_filters(model_weights[<span class="dv">2</span>], <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="what-do-these-filter-images-tell-us" class="level3">
+<h3 class="anchored" data-anchor-id="what-do-these-filter-images-tell-us">What do these filter images tell us?</h3>
+<p>These learned filter (2d matrix) images seem very random. How can these filters create an output (convolution or intermediate dataset) that can help our model to learn and classify an image to its correct class? Filters usually learn to find edges and curves from images. When these filters are applied to images, they amplify certain aspects of these images, like edges, curves, lines, or other patterns.</p>
+<p>Looking just at the filters does not give us much information. So in the next section, we will visualize the outputs (or convolutions) produced by these filters.</p>
+</section>
+</section>
+<section id="visualize-feature-maps-for-convolutional-layers" class="level2">
+<h2 class="anchored" data-anchor-id="visualize-feature-maps-for-convolutional-layers">Visualize feature maps for convolutional layers</h2>
+<p>The output produced by a neural net <code>layer</code> is called its feature map. These layers can be convolutional, flattening, or linear (fully connected). For example, in our LeNet-5 model, we have three convolutional layers, and each of these layers produces a feature map. In this section, we will visualize them.</p>
+<section id="define-a-hook" class="level3">
+<h3 class="anchored" data-anchor-id="define-a-hook">Define a hook</h3>
+<p>A <code>hook</code> is simply a function we can give to our model to execute after its forward or backward pass. While attaching (or registering) a hook to a model, we provide the layer name on which we want to connect it. A hook function takes three arguments. * a layer or a model * a tensor representing the inputs to the layer or model * a tensor representing the outputs from the layer or model</p>
+<p>Let’s define a function that will serve as our hook.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 'activation' is a dictionary to store the output from the layer</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># It should be defined outside the function, otherwise we will not be able to access it.</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>activation <span class="op">=</span> {}</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_activation(name):</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> hook(model, <span class="bu">input</span>, output):</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>        activation[name] <span class="op">=</span> output.detach()</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> hook</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s also define a function to visualize the feature maps.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper funtion to visualize the feature maps</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> visualize_feature_map(layer, n_plots<span class="op">=</span><span class="dv">30</span>, cmap<span class="op">=</span><span class="st">'gray'</span>, repeats<span class="op">=</span><span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">5</span>)):</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># get feature map values and store them as 'act'</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    act <span class="op">=</span> layer.squeeze()</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># if feature map has three dimension</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(act.shape) <span class="op">==</span> <span class="dv">3</span>:</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>        total_plots, plot_width, plot_height <span class="op">=</span> act.shape</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># total_plots can be too many so let's create an upper limit on them as 'MAX_PLOT'</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        MAX_PLOT <span class="op">=</span> <span class="bu">min</span>(total_plots, n_plots)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># number of columns for our plots as 'MAX_COL_PLOTS'</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        MAX_COL_PLOTS <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># number of rows for our plots as 'MAX_ROW_PLOTs'</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>        MAX_ROW_PLOTs <span class="op">=</span> <span class="bu">max</span>(MAX_PLOT <span class="op">//</span> MAX_COL_PLOTS, MAX_COL_PLOTS)</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># specify some size for each plot image</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>        plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="fl">3.5</span><span class="op">*</span>MAX_ROW_PLOTs)) <span class="co"># width, height</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>        plot_count <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(MAX_ROW_PLOTs):</span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(MAX_COL_PLOTS):</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>                plt.subplot(MAX_ROW_PLOTs, MAX_COL_PLOTS, plot_count<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>                plt.imshow(act[plot_count].detach().cpu().numpy(), cmap<span class="op">=</span>cmap)</span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>                plt.title(<span class="st">'#R:</span><span class="sc">{}</span><span class="st"> - C:</span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(i, j), {<span class="st">'size'</span>: <span class="dv">12</span>})</span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>                plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>                plot_count <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>                <span class="co"># terminate if plot_count reaches MAX_PLOT</span></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> plot_count <span class="op">&gt;=</span> MAX_PLOT:</span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">return</span> plt.show()</span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: <span class="co"># len(act.shape) == 3</span></span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># if feature map has two dimension</span></span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a>        arr_r <span class="op">=</span> np.repeat(act.reshape(<span class="dv">1</span>,<span class="op">-</span><span class="dv">1</span>), repeats<span class="op">=</span>repeats, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a>        plt.figure(figsize<span class="op">=</span>figsize) <span class="co"># width, height</span></span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a>        plt.imshow(arr_r, cmap<span class="op">=</span>cmap)</span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a>        plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="feature-map-from-first-conv2d-layer" class="level3">
+<h3 class="anchored" data-anchor-id="feature-map-from-first-conv2d-layer">Feature map from first ‘Conv2d’ layer</h3>
+<p>Let’s register our hook to first convolutional layer and visualize its feature map.</p>
+<div class="cell" data-outputid="72ac2a99-331b-42f9-b76f-bde9c15125d8">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"># empty 'activation' as a precaution</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>activation <span class="op">=</span> {}</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co"># first 'Conv2d' layer is named as 'C1'</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>handle <span class="op">=</span> model.C1.register_forward_hook(get_activation(<span class="st">'C1'</span>))</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co"># take any dataset image. image '7' is for three number</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>data, label <span class="op">=</span> train_dataset[<span class="dv">7</span>]</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>data.unsqueeze_(<span class="dv">0</span>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>output <span class="op">=</span> model(data)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="co"># remove hook</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>handle.remove()</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Dimensions for C1 feature map: </span><span class="sc">{</span>activation[<span class="st">'C1'</span>]<span class="sc">.</span>squeeze()<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dimensions for C1 feature map: torch.Size([6, 28, 28])</code></pre>
+</div>
+</div>
+<div class="cell" data-outputid="999beefd-ccf2-483e-bfc1-c6fc2eaadb27">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize the feature map</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dimensions: 6@28x28</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>visualize_feature_map(activation[<span class="st">'C1'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-21-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="feature-map-from-second-conv2d-layer" class="level3">
+<h3 class="anchored" data-anchor-id="feature-map-from-second-conv2d-layer">Feature map from second ‘Conv2d’ layer</h3>
+<p>Let’s register our hook to second convolutional layer and visualize its feature map.</p>
+<div class="cell" data-outputid="7ebf2cb9-5e51-48e4-f458-501003a2a629">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># empty 'activation' as a precaution</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>activation <span class="op">=</span> {}</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co"># second 'Conv2d' layer is named as 'C3'</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>handle <span class="op">=</span> model.C3.register_forward_hook(get_activation(<span class="st">'C3'</span>))</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="co"># take any dataset image. image '7' is for three number</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>data, label <span class="op">=</span> train_dataset[<span class="dv">7</span>]</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>data.unsqueeze_(<span class="dv">0</span>)</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>output <span class="op">=</span> model(data)</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="co"># remove hook</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>handle.remove()</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Dimensions for C3 feature map: </span><span class="sc">{</span>activation[<span class="st">'C3'</span>]<span class="sc">.</span>squeeze()<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dimensions for C3 feature map: torch.Size([16, 10, 10])</code></pre>
+</div>
+</div>
+<div class="cell" data-outputid="318fe723-f8bc-4c23-b59a-42e492954427">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize the feature map</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dimensions: 16@10x10</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>visualize_feature_map(activation[<span class="st">'C3'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-23-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="feature-maps-from-the-first-and-second-conv2d-layers-together" class="level3">
+<h3 class="anchored" data-anchor-id="feature-maps-from-the-first-and-second-conv2d-layers-together">Feature maps from the first and second ‘Conv2d’ layers together</h3>
+<p>Feature maps from the first layer show that they are sharper. Feature maps from the second layer show that they are more spread out or convolved. By spreading out or blurring effect, it seems like only the most significant features remain in the output, and the rest slowly disappear. For example, in the case of ‘3’ in the second feature map, only the horizontal edge signal remains, and any other signal gets dissolved.</p>
+<p>To get more intuition of what is happening here, let’s visualize both feature maps together and for multiple images.</p>
+<div class="cell" data-outputid="c9adc2f0-8e45-44f0-ef35-896f88a9ecf3">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize feature maps for C1 and C3 together</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize them for first 5 train images</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># just a separator.</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss"> IMAGE </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># empty 'activation' as a precaution</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    activation <span class="op">=</span> {}</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># create hooks for C1 and C3</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    handle1 <span class="op">=</span> model.C1.register_forward_hook(get_activation(<span class="st">'C1'</span>))</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    handle2 <span class="op">=</span> model.C3.register_forward_hook(get_activation(<span class="st">'C3'</span>))</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>    data, _ <span class="op">=</span> train_dataset[i]</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>    data.unsqueeze_(<span class="dv">0</span>)</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> model(data)</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># remove hooks</span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>    handle1.remove()</span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>    handle2.remove()</span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># visualize feature maps</span></span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># I have chaged the colors of output to sharpen the differences</span></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>    visualize_feature_map(activation[<span class="st">'C1'</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>)</span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>    visualize_feature_map(activation[<span class="st">'C3'</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** IMAGE 0 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** IMAGE 1 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-5.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-6.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** IMAGE 2 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-8.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-9.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** IMAGE 3 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-11.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-12.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** IMAGE 4 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-14.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-24-output-15.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="feature-map-from-third-conv2d-layer" class="level3">
+<h3 class="anchored" data-anchor-id="feature-map-from-third-conv2d-layer">Feature map from third ‘Conv2d’ layer</h3>
+<p>Let’s register our hook to third convolutional layer and visualize its feature map.</p>
+<div class="cell" data-outputid="51199546-fada-4758-c2f4-3fbd26998927">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># empty 'activation' as a precaution</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>activation <span class="op">=</span> {}</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co"># third 'Conv2d' layer is named as 'C5'</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>handle <span class="op">=</span> model.C5.register_forward_hook(get_activation(<span class="st">'C5'</span>))</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a><span class="co"># take any dataset image. image '7' is for three number</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>data, label <span class="op">=</span> train_dataset[<span class="dv">7</span>]</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>data.unsqueeze_(<span class="dv">0</span>)</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>output <span class="op">=</span> model(data)</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a><span class="co"># remove hook</span></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>handle.remove()</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Dimensions for C5 feature map: </span><span class="sc">{</span>activation[<span class="st">'C5'</span>]<span class="sc">.</span>squeeze()<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dimensions for C5 feature map: torch.Size([120])</code></pre>
+</div>
+</div>
+<div class="cell" data-outputid="d8f8982a-9231-47e7-9430-b41f3e81edda">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize the feature map</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dimensions: 120@1x1</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>visualize_feature_map(activation[<span class="st">'C5'</span>], figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">15</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-26-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="feature-map-from-third-conv2d-layer-for-multiple-images" class="level3">
+<h3 class="anchored" data-anchor-id="feature-map-from-third-conv2d-layer-for-multiple-images">Feature map from third ‘Conv2d’ layer for multiple images</h3>
+<p>The output from the third ‘Conv2d’ layer <code>C5</code> looks like a signature bar code that the model learns to associate with a particular target class. Let’s visualize more of them for a set of 1, 3, and 5 images together.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co"># create a collection of 1, 3, and 5 images</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>bucket <span class="op">=</span> {<span class="st">'1'</span>:[], <span class="st">'3'</span>:[], <span class="st">'5'</span>:[]}</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="co"># iterate through the dataset till we have 5 images for each class</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>count_1, count_3, count_5 <span class="op">=</span> <span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">100</span>):</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    _, label <span class="op">=</span> train_dataset[idx]</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> label <span class="op">==</span> <span class="dv">1</span> <span class="kw">and</span> count_1 <span class="op">&lt;</span> <span class="dv">5</span>:</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>        bucket[<span class="bu">str</span>(label)].append(idx)</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>        count_1 <span class="op">+=</span><span class="dv">1</span></span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> label <span class="op">==</span> <span class="dv">3</span> <span class="kw">and</span> count_3 <span class="op">&lt;</span> <span class="dv">5</span>:</span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>        bucket[<span class="bu">str</span>(label)].append(idx)</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>        count_3 <span class="op">+=</span><span class="dv">1</span></span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> label <span class="op">==</span> <span class="dv">5</span> <span class="kw">and</span> count_5 <span class="op">&lt;</span> <span class="dv">5</span>:</span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>        bucket[<span class="bu">str</span>(label)].append(idx)</span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>        count_5 <span class="op">+=</span><span class="dv">1</span></span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> count_1 <span class="op">+</span> count_3 <span class="op">+</span> count_5 <span class="op">==</span> <span class="dv">15</span>:</span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-outputid="f70c679b-fc14-4303-8625-3d1d051b495a">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize feature maps for a set of images from class 1, 3 and 5</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> key <span class="kw">in</span> bucket:</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss"> LAYER C5, LABEL </span><span class="sc">{</span>key<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(bucket[key])):</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>        activation <span class="op">=</span> {}</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># attach hook</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>        handle <span class="op">=</span> model.C5.register_forward_hook(get_activation(<span class="st">'C5'</span>))</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> bucket[key][i]</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>        data, label <span class="op">=</span> train_dataset[idx]</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>        data.unsqueeze_(<span class="dv">0</span>)</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>        output <span class="op">=</span> model(data)</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># remove hook</span></span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>        handle.remove()</span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># visualize feature map</span></span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># i have changed the output colormap to sharpen the differences</span></span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>        visualize_feature_map(activation[<span class="st">'C5'</span>], cmap<span class="op">=</span><span class="st">'hsv'</span>, figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">15</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER C5, LABEL 1 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-5.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-6.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER C5, LABEL 3 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-8.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-9.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-10.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-11.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-12.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER C5, LABEL 5 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-14.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-15.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-16.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-17.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-28-output-18.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="visualize-feature-maps-for-a-classifier-or-hidden-layer" class="level2">
+<h2 class="anchored" data-anchor-id="visualize-feature-maps-for-a-classifier-or-hidden-layer">Visualize feature maps for a classifier or hidden layer</h2>
+<p>We have two hidden layers or ‘nn.Linear’ in the classification part of our model. They are also called fully connected layers. Let’s visualize the feature maps for them.</p>
+<section id="visualize-feature-map-for-first-linear-layer" class="level3">
+<h3 class="anchored" data-anchor-id="visualize-feature-map-for-first-linear-layer">Visualize feature map for first ‘Linear’ layer</h3>
+<p>Let’s visualize the feature maps for the first hidden layer.</p>
+<div class="cell" data-outputid="3fea22a4-aa66-4afb-99a5-23628b02dd6a">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize differences for images 1,3 and 5</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> key <span class="kw">in</span> bucket:</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss"> LAYER F6, LABEL </span><span class="sc">{</span>key<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(bucket[key])):</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>        activation <span class="op">=</span> {}</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>        handle1 <span class="op">=</span> model.F6.register_forward_hook(get_activation(<span class="st">'F6'</span>))</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> bucket[key][i]</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>        data, label <span class="op">=</span> train_dataset[idx]</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>        data.unsqueeze_(<span class="dv">0</span>)</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>        output <span class="op">=</span> model(data)</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>        handle1.remove()</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>        visualize_feature_map(activation[<span class="st">'F6'</span>], cmap<span class="op">=</span><span class="st">'hsv'</span>, figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">15</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER F6, LABEL 1 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-5.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-6.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER F6, LABEL 3 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-8.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-9.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-10.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-11.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-12.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER F6, LABEL 5 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-14.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-15.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-16.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-17.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-29-output-18.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="visualize-feature-map-for-second-linear-layer" class="level3">
+<h3 class="anchored" data-anchor-id="visualize-feature-map-for-second-linear-layer">Visualize feature map for second ‘Linear’ layer</h3>
+<p>Let’s visualize the feature maps for the second hidden layer.</p>
+<div class="cell" data-outputid="99b189b7-1597-4422-f5ae-6bd72c905823">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize differences for images 1,3 and 5</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> key <span class="kw">in</span> bucket:</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss"> LAYER OUTPUT, LABEL </span><span class="sc">{</span>key<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'*'</span><span class="op">*</span><span class="dv">30</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(bucket[key])):</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>        activation <span class="op">=</span> {}</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>        handle1 <span class="op">=</span> model.OUTPUT.register_forward_hook(get_activation(<span class="st">'OUTPUT'</span>))</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> bucket[key][i]</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>        data, label <span class="op">=</span> train_dataset[idx]</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>        data.unsqueeze_(<span class="dv">0</span>)</span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>        output <span class="op">=</span> model(data)</span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>        handle1.remove()</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>        visualize_feature_map(activation[<span class="st">'OUTPUT'</span>], repeats<span class="op">=</span><span class="dv">1</span>,cmap<span class="op">=</span><span class="st">'hsv'</span>, figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER OUTPUT, LABEL 1 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-5.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-6.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER OUTPUT, LABEL 3 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-8.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-9.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-10.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-11.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-12.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>****************************** LAYER OUTPUT, LABEL 5 ******************************</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-14.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-15.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-16.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-17.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-30-output-18.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="what-do-these-output-feature-maps-tell-us" class="level3">
+<h3 class="anchored" data-anchor-id="what-do-these-output-feature-maps-tell-us">What do these OUTPUT feature maps tell us?</h3>
+<p>We can see that output feature maps of the same numbers are very similar. They show that our model has learned some hidden patterns that distinguish these images. For example * For label 1, all output feature maps have a RED bar at the extreme left and a BLUE bar at the right side * For label 3, there are two RED bars around the middle and a light BLUE bar running along them * For label 5, RED bars are in the middle and at the extreme right side.</p>
+<p>If we look at the first feature map from label 5, it is a bit different. A kind of outlier from the rest of label 5 feature maps. What could be the reason for this?</p>
+<p>Let’s plot these label 5 images to check their actual shape.</p>
+<div class="cell" data-outputid="f1054235-4287-43b9-b337-749fc40acfee">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="co"># label 5 image indexes</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>bucket[<span class="st">'5'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="56">
+<pre><code>[0, 11, 35, 47, 65]</code></pre>
+</div>
+</div>
+<div class="cell" data-outputid="b4664a3c-3a2c-4dff-8e95-211a8619965e">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot label 5 images</span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">10</span>))</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, idx <span class="kw">in</span> <span class="bu">enumerate</span>(bucket[<span class="st">'5'</span>]):</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    plt.subplot(<span class="dv">1</span>, <span class="dv">5</span>, i<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    plt.imshow(train_dataset.data[idx], cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"#Index:</span><span class="sc">{</span>idx<span class="sc">}</span><span class="ss"> "</span>)</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>    plt.axis(<span class="st">'off'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-10-18-pytorch-mnist-convolutional-neural-networks_files/figure-html/cell-32-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Now we can see the reason for the output feature map of the first label ‘5’ image being quite different from the rest. The first image from the left side is slightly different from the rest. So it is a bit weird number five image, and that weirdness got reflected in the feature map generated by it.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-28">
+<meta name="keywords" content="aws, lambda, s3, efs, sync, python">
+<meta name="description" content="A tutorial on synchronizing EFS with S3 bucket using a Lambda function.">
+
+<title>Random Thoughts - AWS EFS Sync to S3 Using Lambda</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - AWS EFS Sync to S3 Using Lambda">
+<meta property="og:description" content="A tutorial on synchronizing EFS with S3 bucket using a Lambda function.">
+<meta property="og:image" content="images/2022-03-28-efs-s3-sync-lambda.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - AWS EFS Sync to S3 Using Lambda">
+<meta name="twitter:description" content="A tutorial on synchronizing EFS with S3 bucket using a Lambda function.">
+<meta name="twitter:image" content="images/2022-03-28-efs-s3-sync-lambda.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  <li><a href="#steps" id="toc-steps" class="nav-link" data-scroll-target="#steps">Steps</a>
+  <ul class="collapse">
+  <li><a href="#create-an-s3-bucket" id="toc-create-an-s3-bucket" class="nav-link" data-scroll-target="#create-an-s3-bucket">Create an S3 bucket</a></li>
+  <li><a href="#create-a-lambda-function" id="toc-create-a-lambda-function" class="nav-link" data-scroll-target="#create-a-lambda-function">Create a Lambda function</a></li>
+  <li><a href="#create-s3-event-notifications" id="toc-create-s3-event-notifications" class="nav-link" data-scroll-target="#create-s3-event-notifications">Create S3 event notifications</a></li>
+  <li><a href="#test-s3-notifications" id="toc-test-s3-notifications" class="nav-link" data-scroll-target="#test-s3-notifications">Test S3 notifications</a></li>
+  <li><a href="#create-an-efs" id="toc-create-an-efs" class="nav-link" data-scroll-target="#create-an-efs">Create an EFS</a></li>
+  <li><a href="#note-on-efs-security-group-settings" id="toc-note-on-efs-security-group-settings" class="nav-link" data-scroll-target="#note-on-efs-security-group-settings">Note on EFS security group settings</a></li>
+  <li><a href="#mount-efs-to-lambda-function" id="toc-mount-efs-to-lambda-function" class="nav-link" data-scroll-target="#mount-efs-to-lambda-function">Mount EFS to Lambda Function</a></li>
+  <li><a href="#check-efs-mount-point-from-lambda" id="toc-check-efs-mount-point-from-lambda" class="nav-link" data-scroll-target="#check-efs-mount-point-from-lambda">Check EFS mount point from Lambda</a></li>
+  <li><a href="#configure-vpc-endpoint-for-s3" id="toc-configure-vpc-endpoint-for-s3" class="nav-link" data-scroll-target="#configure-vpc-endpoint-for-s3">Configure VPC endpoint for S3</a></li>
+  <li><a href="#configure-s3-permissions-for-lambda" id="toc-configure-s3-permissions-for-lambda" class="nav-link" data-scroll-target="#configure-s3-permissions-for-lambda">Configure S3 permissions for Lambda</a></li>
+  <li><a href="#process-s3-event-notifications" id="toc-process-s3-event-notifications" class="nav-link" data-scroll-target="#process-s3-event-notifications">Process S3 event notifications</a></li>
+  <li><a href="#verify-file-on-efs" id="toc-verify-file-on-efs" class="nav-link" data-scroll-target="#verify-file-on-efs">Verify file on EFS</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AWS EFS Sync to S3 Using Lambda</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+    <div class="quarto-category">lambda</div>
+    <div class="quarto-category">efs</div>
+    <div class="quarto-category">s3</div>
+    <div class="quarto-category">synchonization</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A tutorial on synchronizing EFS with S3 bucket using a Lambda function.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 28, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-03-28-efs-s3-sync-lambda.jpeg" class="img-fluid"></p>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This post documents all the steps required to synchronize <a href="https://aws.amazon.com/efs/">AWS EFS</a> with an <a href="https://aws.amazon.com/s3/">S3 bucket</a> using a <a href="https://aws.amazon.com/lambda/">lambda function</a>. The flow of information is from S3 to EFS and not vice versa.</p>
+<p>The approach is whenever a new file is uploaded or deleted from the S3 bucket, it will create an event notification. This event will trigger a lambda function that has the efs file system mounted to it. The Lambda function will then synchronize the files from S3 to EFS.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-28-efs-s3-sync-lambda/approach.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">approach</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="environment-details" class="level1">
+<h1>Environment Details</h1>
+<ul>
+<li>Python = 3.9.x</li>
+</ul>
+</section>
+<section id="steps" class="level1">
+<h1>Steps</h1>
+<section id="create-an-s3-bucket" class="level2">
+<h2 class="anchored" data-anchor-id="create-an-s3-bucket">Create an S3 bucket</h2>
+<p>Let’s first create an S3 bucket that will contain our data, and this is the bucket we would like to be in sync with EFS. I am naming the bucket <code>mydata-202203</code>. You may name it as you please. Choose a region of your choice and leave the rest of the settings as defaults.</p>
+</section>
+<section id="create-a-lambda-function" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-lambda-function">Create a Lambda function</h2>
+<p>Now create a lambda function that will receive event notifications from the S3 bucket, and sync files on efs. I am naming it <code>mydata-sync</code> and our runtime will be <code>Python 3.9</code>. Keep the rest of the settings as default, and create the function.</p>
+</section>
+<section id="create-s3-event-notifications" class="level2">
+<h2 class="anchored" data-anchor-id="create-s3-event-notifications">Create S3 event notifications</h2>
+<p>From the bucket, <code>mydata-sync</code> go to <code>Properties</code>. Scroll down to <code>Event notifications</code> and click <strong>create</strong>. Give any name to the event. I am calling it <code>object-sync</code>. From the provided event types select * s3:ObjectCreated:Put * s3:ObjectRemoved:Delete</p>
+<p>From the section <strong>Destination</strong> select <code>Lambda Function</code>, and from the list choose the lambda function name we created in the last section <strong>mydata-sync</strong></p>
+<p>Click <strong>Save Changes</strong></p>
+</section>
+<section id="test-s3-notifications" class="level2">
+<h2 class="anchored" data-anchor-id="test-s3-notifications">Test S3 notifications</h2>
+<p>Let’s now test if S3 event notifications are being received by our lambda function. For this update lambda function code and simply print the event received. After updating the lambda function, make sure to deploy it.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lambda_handler(event, context):</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(event)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">'statusCode'</span>: <span class="dv">200</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">'body'</span>: json.dumps(<span class="st">'Hello from Lambda!'</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now upload some files in our S3 bucket, and it should trigger our lambda function. For testing, I have uploaded an empty <code>test1.txt</code> file in our bucket. Once successfully uploaded I check the Lambda function logs to see if any event is received. For this go to lambda function <strong>mydata-sync</strong> &gt; Monitor &gt; Logs &gt; <strong>View logs in CloudWatch</strong>. For the CloudWatch console view the latest log stream. Below is the event I have received in the logs</p>
+<pre><code>{'Records': [{'eventVersion': '2.1', 'eventSource': 'aws:s3', 'awsRegion': 'us-east-1', 'eventTime': '2022-03-28T16:08:00.896Z', 'eventName': 'ObjectCreated:Put', 'userIdentity': {'principalId': 'AWS:AIDA3VIXXJNKIVU6P5NY3'}, 'requestParameters': {'sourceIPAddress': '202.163.113.76'}, 'responseElements': {'x-amz-request-id': '39MD61ZS00SNK2RT', 'x-amz-id-2': 'U+zPUWOrfzTuVi7kbaBONLHoJXKqUICsVqyKBg4yPKYbUV7pQLGc4Z5A2fSIVvDFtSJHC6v29EDJoXhypWsj2wXanUu8YrLocr3z+yK1qoo='}, 's3': {'s3SchemaVersion': '1.0', 'configurationId': 'object-sync', 'bucket': {'name': 'mydata-202203', 'ownerIdentity': {'principalId': 'AYAQOSFZ1VPK'}, 'arn': 'arn:aws:s3:::mydata-202203'}, 'object': {'key': 'test1.txt', 'size': 0, 'eTag': 'd41d8cd98f00b204e9800998ecf8427e', 'sequencer': '006241DD60D67A4556'}}}]}</code></pre>
+<p>let’s load this event in a dictionary and find some important parameters</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>event <span class="op">=</span> {<span class="st">'Records'</span>: [{<span class="st">'eventVersion'</span>: <span class="st">'2.1'</span>, <span class="st">'eventSource'</span>: <span class="st">'aws:s3'</span>, <span class="st">'awsRegion'</span>: <span class="st">'us-east-1'</span>, <span class="st">'eventTime'</span>: <span class="st">'2022-03-28T16:08:00.896Z'</span>, <span class="st">'eventName'</span>: <span class="st">'ObjectCreated:Put'</span>, <span class="st">'userIdentity'</span>: {<span class="st">'principalId'</span>: <span class="st">'AWS:AIDA3VIXXJNKIVU6P5NY3'</span>}, <span class="st">'requestParameters'</span>: {<span class="st">'sourceIPAddress'</span>: <span class="st">'202.163.113.76'</span>}, <span class="st">'responseElements'</span>: {<span class="st">'x-amz-request-id'</span>: <span class="st">'39MD61ZS00SNK2RT'</span>, <span class="st">'x-amz-id-2'</span>: <span class="st">'U+zPUWOrfzTuVi7kbaBONLHoJXKqUICsVqyKBg4yPKYbUV7pQLGc4Z5A2fSIVvDFtSJHC6v29EDJoXhypWsj2wXanUu8YrLocr3z+yK1qoo='</span>}, <span class="st">'s3'</span>: {<span class="st">'s3SchemaVersion'</span>: <span class="st">'1.0'</span>, <span class="st">'configurationId'</span>: <span class="st">'object-sync'</span>, <span class="st">'bucket'</span>: {<span class="st">'name'</span>: <span class="st">'mydata-202203'</span>, <span class="st">'ownerIdentity'</span>: {<span class="st">'principalId'</span>: <span class="st">'AYAQOSFZ1VPK'</span>}, <span class="st">'arn'</span>: <span class="st">'arn:aws:s3:::mydata-202203'</span>}, <span class="st">'object'</span>: {<span class="st">'key'</span>: <span class="st">'test1.txt'</span>, <span class="st">'size'</span>: <span class="dv">0</span>, <span class="st">'eTag'</span>: <span class="st">'d41d8cd98f00b204e9800998ecf8427e'</span>, <span class="st">'sequencer'</span>: <span class="st">'006241DD60D67A4556'</span>}}}]}</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>event</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>{'Records': [{'eventVersion': '2.1',
+   'eventSource': 'aws:s3',
+   'awsRegion': 'us-east-1',
+   'eventTime': '2022-03-28T16:08:00.896Z',
+   'eventName': 'ObjectCreated:Put',
+   'userIdentity': {'principalId': 'AWS:AIDA3VIXXJNKIVU6P5NY3'},
+   'requestParameters': {'sourceIPAddress': '202.163.113.76'},
+   'responseElements': {'x-amz-request-id': '39MD61ZS00SNK2RT',
+    'x-amz-id-2': 'U+zPUWOrfzTuVi7kbaBONLHoJXKqUICsVqyKBg4yPKYbUV7pQLGc4Z5A2fSIVvDFtSJHC6v29EDJoXhypWsj2wXanUu8YrLocr3z+yK1qoo='},
+   's3': {'s3SchemaVersion': '1.0',
+    'configurationId': 'object-sync',
+    'bucket': {'name': 'mydata-202203',
+     'ownerIdentity': {'principalId': 'AYAQOSFZ1VPK'},
+     'arn': 'arn:aws:s3:::mydata-202203'},
+    'object': {'key': 'test1.txt',
+     'size': 0,
+     'eTag': 'd41d8cd98f00b204e9800998ecf8427e',
+     'sequencer': '006241DD60D67A4556'}}}]}</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># event name</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>event[<span class="st">'Records'</span>][<span class="dv">0</span>][<span class="st">'eventName'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>'ObjectCreated:Put'</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># bucket name</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>event[<span class="st">'Records'</span>][<span class="dv">0</span>][<span class="st">'s3'</span>][<span class="st">'bucket'</span>][<span class="st">'name'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>'mydata-202203'</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># uploaded object key</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>event[<span class="st">'Records'</span>][<span class="dv">0</span>][<span class="st">'s3'</span>][<span class="st">'object'</span>][<span class="st">'key'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>'test1.txt'</code></pre>
+</div>
+</div>
+<p>Alright, we have seen that we are receiving notifications from S3 bucket so let’s now move on to the next section.</p>
+</section>
+<section id="create-an-efs" class="level2">
+<h2 class="anchored" data-anchor-id="create-an-efs">Create an EFS</h2>
+<p>From EFS console give name as <code>mydata-efs</code>. I am using default VPC for this post. Use <code>Regional</code> availability settings. Click <strong>Create</strong>. Once file system is created, click on <strong>Access points</strong> and create an access point for this efs to be mounted in other service. For access point use following settings * name = mydata-ap * root dir path = /efs * POSIX User * POSIX UID = 1000 * Group ID = 1000 * Root directory creation permissions * Owner user id = 1000 * Owner group id = 1000 * POSIX permissions = 777</p>
+<p>Click <strong>Create</strong>.</p>
+<p>Here I have used the root dir path as <code>/efs</code> this means that from this access point my access will be limited to folder <code>/efs</code>. If you want to provide full access to all folders then set to root path to <code>/</code>.</p>
+</section>
+<section id="note-on-efs-security-group-settings" class="level2">
+<h2 class="anchored" data-anchor-id="note-on-efs-security-group-settings">Note on EFS security group settings</h2>
+<p>In the last section, I have used a default VPC security group (sg) while creating EFS. default sg allows traffic for all protocols and all ports, both for inbound and outbound traffic. But if you are using a custom security group then make sure that you have an inbound rule for * Type = NFS * Protocol = TCP * Port range = 2049</p>
+<p>Otherwise, you will not be able to access EFS using NFS clients.</p>
+</section>
+<section id="mount-efs-to-lambda-function" class="level2">
+<h2 class="anchored" data-anchor-id="mount-efs-to-lambda-function">Mount EFS to Lambda Function</h2>
+<p>To mount an EFS to the Lambda function requires some additional steps.</p>
+<p>First add permissions to Lambda function. From lambda function &gt; Configurations &gt; Permissions &gt; <strong>Execution role</strong>. Click on the execution role to open it in IAM concole. For the selected role attach an additional policy <code>AmazonElasticFileSystemFullAccess</code>.</p>
+<p>Second, add the lambda to a VPC group in which efs was created. We have created efs in default VPC so let’s add lambda to it. For this from lambda Configurations &gt; <strong>VPC</strong> click edit. For the next pane select default VPC, all subnets, default VPC security group, and click <strong>save</strong>.</p>
+<p>Now we can add EFS to lambda. Go to lambda Configurations &gt; File Systems &gt; <strong>Add file system</strong>. Select the file system <strong>mydata-efs</strong> and associated access point <strong>mydata-ap</strong> and local mount point as <code>/mnt/efs</code>. The local mount point is the mounted directory from where we can access our EFS from inside the lambda environment. Click <strong>Save</strong></p>
+</section>
+<section id="check-efs-mount-point-from-lambda" class="level2">
+<h2 class="anchored" data-anchor-id="check-efs-mount-point-from-lambda">Check EFS mount point from Lambda</h2>
+<p>Let’s verify from lambda that EFS has been mounted and can we access it. So update the lambda code as below and deploy it.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lambda_handler(event, context):</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    mount_path <span class="op">=</span> <span class="st">'/mnt/efs'</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> os.path.exists(mount_path):</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>mount_path<span class="sc">}</span><span class="ss"> exists"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(os.listdir(<span class="st">'/mnt/efs'</span>))</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(event)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        <span class="st">'statusCode'</span>: <span class="dv">200</span>,</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">'body'</span>: json.dumps(<span class="st">'Hello from Lambda!'</span>)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now test this code using a test event <code>S3 Put</code>. For this go to lambda Test &gt; Create new event &gt; Template (<strong>s3-put</strong>). ‘S3 Put’ test event is similar to the one we saw in the last section. We can use this request template to simulate the event received from S3 bucket. Once the test is successfully executed, check the log output.</p>
+<pre><code>START RequestId: 2e307a14-f373-46d5-b763-594d5f406ae6 Version: $LATEST
+/mnt/efs exists
+[]
+{'Records': [{'eventVersion': '2.0', 'eventSource': 'aws:s3', 'awsRegion': 'us-east-1', 'eventTime': '1970-01-01T00:00:00.000Z', 'eventName': 'ObjectCreated:Put', 'userIdentity': {'principalId': 'EXAMPLE'}, 'requestParameters': {'sourceIPAddress': '127.0.0.1'}, 'responseElements': {'x-amz-request-id': 'EXAMPLE123456789', 'x-amz-id-2': 'EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH'}, 's3': {'s3SchemaVersion': '1.0', 'configurationId': 'testConfigRule', 'bucket': {'name': 'example-bucket', 'ownerIdentity': {'principalId': 'EXAMPLE'}, 'arn': 'arn:aws:s3:::example-bucket'}, 'object': {'key': 'test%2Fkey', 'size': 1024, 'eTag': '0123456789abcdef0123456789abcdef', 'sequencer': '0A1B2C3D4E5F678901'}}}]}
+END RequestId: 2e307a14-f373-46d5-b763-594d5f406ae6
+REPORT RequestId: 2e307a14-f373-46d5-b763-594d5f406ae6  Duration: 7.02 ms   Billed Duration: 8 ms   Memory Size: 128 MB Max Memory Used: 37 MB  Init Duration: 93.81 ms </code></pre>
+<p>From the logs we can see that the mounted EFS directory exists <code>/mnt/efs</code> but currently the folder is empty.</p>
+</section>
+<section id="configure-vpc-endpoint-for-s3" class="level2">
+<h2 class="anchored" data-anchor-id="configure-vpc-endpoint-for-s3">Configure VPC endpoint for S3</h2>
+<p>Till now we have configured S3 notifications to trigger a lambda function and also mounted EFS to it. Our next step is to process the event received in lambda, and download the file from S3 to EFS. But since our lambda function is configured for a VPC we cannot connect to S3 from it. Even though we can still receive S3 event notification, when we try to connect to S3 to download any file we will get a timeout error. To fix this we will create a VPC endpoint for S3 bucket.</p>
+<p>For this go to VPC console &gt; Endpoints &gt; <strong>Create endpoint</strong>, and set the following * name = mydata-ep * service category = aws services * services = com.amazonaws.us-east-1.s3 (Gateway) * vpc = default * route table = default (main route table) * policy = full access</p>
+<p>Click <strong>Create endpoint</strong></p>
+</section>
+<section id="configure-s3-permissions-for-lambda" class="level2">
+<h2 class="anchored" data-anchor-id="configure-s3-permissions-for-lambda">Configure S3 permissions for Lambda</h2>
+<p>For lambda to be able to connect to S3 we also need to give it proper permissions. For this go to Lambda &gt; Configurations &gt; Permissions &gt; Execution Role &gt; <strong>click on role name</strong>. From the IAM Role console select add permissions, and then select <code>AmazonS3FullAccess</code></p>
+</section>
+<section id="process-s3-event-notifications" class="level2">
+<h2 class="anchored" data-anchor-id="process-s3-event-notifications">Process S3 event notifications</h2>
+<p>Our lambda and EFS are ready and we can now process S3 events. Update the lambda code as below to process S3 events. It will download and delete from EFS to keep it in sync with S3 bucket.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> boto3</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>s3 <span class="op">=</span> boto3.client(<span class="st">"s3"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lambda_handler(event, context):</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    event_name <span class="op">=</span> event[<span class="st">"Records"</span>][<span class="dv">0</span>][<span class="st">"eventName"</span>]</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    bucket_name <span class="op">=</span> event[<span class="st">"Records"</span>][<span class="dv">0</span>][<span class="st">"s3"</span>][<span class="st">"bucket"</span>][<span class="st">"name"</span>]</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    object_key <span class="op">=</span> event[<span class="st">"Records"</span>][<span class="dv">0</span>][<span class="st">"s3"</span>][<span class="st">"object"</span>][<span class="st">"key"</span>]</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    efs_file_name <span class="op">=</span> <span class="st">"/mnt/efs/"</span> <span class="op">+</span> object_key</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># S3 put</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> event_name <span class="op">==</span> <span class="st">"ObjectCreated:Put"</span>:</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        s3.download_file(bucket_name, object_key, efs_file_name)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"file downloaded: </span><span class="sc">{</span>efs_file_name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># S3 delete</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> event_name <span class="op">==</span> <span class="st">"ObjectRemoved:Delete"</span>:</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># check if file exists on efs</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> os.path.exists(efs_file_name):</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>            os.remove(efs_file_name)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"file deleted: </span><span class="sc">{</span>efs_file_name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">"statusCode"</span>: <span class="dv">200</span>, <span class="st">"body"</span>: json.dumps(event)}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can test this code using the S3-put test event we used last time. Modify the event for bucket name and object key as below.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"Records"</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"eventVersion"</span><span class="fu">:</span> <span class="st">"2.0"</span><span class="fu">,</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"eventSource"</span><span class="fu">:</span> <span class="st">"aws:s3"</span><span class="fu">,</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"awsRegion"</span><span class="fu">:</span> <span class="st">"us-east-1"</span><span class="fu">,</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"eventTime"</span><span class="fu">:</span> <span class="st">"1970-01-01T00:00:00.000Z"</span><span class="fu">,</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"eventName"</span><span class="fu">:</span> <span class="st">"ObjectCreated:Put"</span><span class="fu">,</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"userIdentity"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"principalId"</span><span class="fu">:</span> <span class="st">"EXAMPLE"</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">},</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"requestParameters"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"sourceIPAddress"</span><span class="fu">:</span> <span class="st">"127.0.0.1"</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">},</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"responseElements"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"x-amz-request-id"</span><span class="fu">:</span> <span class="st">"EXAMPLE123456789"</span><span class="fu">,</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"x-amz-id-2"</span><span class="fu">:</span> <span class="st">"EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH"</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">},</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"s3"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"s3SchemaVersion"</span><span class="fu">:</span> <span class="st">"1.0"</span><span class="fu">,</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"configurationId"</span><span class="fu">:</span> <span class="st">"testConfigRule"</span><span class="fu">,</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"bucket"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>          <span class="dt">"name"</span><span class="fu">:</span> <span class="st">"mydata-202203"</span><span class="fu">,</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>          <span class="dt">"ownerIdentity"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"principalId"</span><span class="fu">:</span> <span class="st">"EXAMPLE"</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>          <span class="fu">},</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>          <span class="dt">"arn"</span><span class="fu">:</span> <span class="st">"arn:aws:s3:::example-bucket"</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">},</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"object"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>          <span class="dt">"key"</span><span class="fu">:</span> <span class="st">"test1.txt"</span><span class="fu">,</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>          <span class="dt">"size"</span><span class="fu">:</span> <span class="dv">1024</span><span class="fu">,</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>          <span class="dt">"eTag"</span><span class="fu">:</span> <span class="st">"0123456789abcdef0123456789abcdef"</span><span class="fu">,</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>          <span class="dt">"sequencer"</span><span class="fu">:</span> <span class="st">"0A1B2C3D4E5F678901"</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Click <strong>test</strong>. From the output logs, we can see that our code was able to download the file from S3 bucket and write it on EFS.</p>
+<pre><code>START RequestId: 7e9c0dc2-f970-426e-8372-e59b07f5536c Version: $LATEST
+file downloaded: /mnt/efs/test1.txt
+END RequestId: 7e9c0dc2-f970-426e-8372-e59b07f5536c
+REPORT RequestId: 7e9c0dc2-f970-426e-8372-e59b07f5536c  Duration: 370.00 ms Billed Duration: 371 ms Memory Size: 128 MB Max Memory Used: 72 MB  Init Duration: 367.68 ms</code></pre>
+<p>Note that if you get any permission errors then it could be due to the mounting path errors. Please do check the access point path and lambda mount path.</p>
+</section>
+<section id="verify-file-on-efs" class="level2">
+<h2 class="anchored" data-anchor-id="verify-file-on-efs">Verify file on EFS</h2>
+<p>We can verify files on EFS by directly mounting them to an EC2 machine and verifying from there. So let’s do that.</p>
+<p>Create an EC2 machine * AMI = Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type * Intance type = t2.micro (free tier) * Instance details * Network = default VPC * Auto-assign Public IP = Enable * Review and Lanunch &gt; Launch &gt; Proceed without key pair.</p>
+<p>Once the instance is up and running, click on it and connect using EC2 instance connect option. Create a dir ‘efs’ using the command</p>
+<pre><code>mkdir efs</code></pre>
+<p>In a separate tab open EFS, and click on the file system we have created. Click <strong>Attach</strong>. From “Mount via DNS” copy command for NFS client. paste that in EC2 bash terminal</p>
+<pre><code>sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-0c9526e2f48ece247.efs.us-east-1.amazonaws.com:/ efs</code></pre>
+<p>Once successfully mounted verify that the file ‘test1.txt’ exists in EFS. We can also delete the file from S3 and similarly verify from EFS that the file has been removed.</p>
+</section>
+</section>
+<section id="summary" class="level1">
+<h1>Summary</h1>
+<p>A summary of all the steps * Create an S3 bucket * Create a Lambda function * Create event notifications on the S3 bucket to trigger the lambda function * Create an EFS file system and its access point. Check the security group setting for inbound rules for NFS traffic * Add EFS and S3 permissions to lambda * Add lambda to VPC * Create VPC endpoint for S3 bucket * Update lambda code to process event notifications * Use EC2 to mount EFS and verify the files</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

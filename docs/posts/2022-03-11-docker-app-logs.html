@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-11">
+<meta name="keywords" content="docker, python, logs, wsl2, windows 10">
+<meta name="description" content="A tutorial on getting Python application logs running on Docker inside WSL2.">
+
+<title>Random Thoughts - Docker - Accessing Python Application Logs</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Docker - Accessing Python Application Logs">
+<meta property="og:description" content="A tutorial on getting Python application logs running on Docker inside WSL2.">
+<meta property="og:image" content="images/2022-03-11-docker-app-logs.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Docker - Accessing Python Application Logs">
+<meta name="twitter:description" content="A tutorial on getting Python application logs running on Docker inside WSL2.">
+<meta name="twitter:image" content="images/2022-03-11-docker-app-logs.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a>
+  <ul class="collapse">
+  <li><a href="#sample-application" id="toc-sample-application" class="nav-link" data-scroll-target="#sample-application">Sample Application</a></li>
+  </ul></li>
+  <li><a href="#dockerize-the-application" id="toc-dockerize-the-application" class="nav-link" data-scroll-target="#dockerize-the-application">Dockerize the application</a></li>
+  <li><a href="#log-files-physical-location" id="toc-log-files-physical-location" class="nav-link" data-scroll-target="#log-files-physical-location">Log Files Physical Location</a></li>
+  <li><a href="#application-log-files" id="toc-application-log-files" class="nav-link" data-scroll-target="#application-log-files">Application Log Files</a></li>
+  <li><a href="#docker-volume" id="toc-docker-volume" class="nav-link" data-scroll-target="#docker-volume">Docker Volume</a></li>
+  <li><a href="#application-log-files-from-the-docker-container" id="toc-application-log-files-from-the-docker-container" class="nav-link" data-scroll-target="#application-log-files-from-the-docker-container">Application log files from the docker container</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Docker - Accessing Python Application Logs</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">docker</div>
+    <div class="quarto-category">python</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A tutorial on getting Python application logs running on Docker inside WSL2.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 11, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-03-11-docker-app-logs.jpeg" class="img-fluid"></p>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This post is about the challenges on accessing Python application logs running on a Docker container inside WSL2 linux environment.</p>
+</section>
+<section id="environment-details" class="level1">
+<h1>Environment Details</h1>
+<ul>
+<li>Python = 3.8.x</li>
+<li>WSL version = 2</li>
+<li>WSL Ubuntu version = 20.04</li>
+<li>Docker Engine version = 20.10.12</li>
+<li>Docker Desktop version = 4.4.4</li>
+<li>Host OS = Windows 10</li>
+</ul>
+<section id="sample-application" class="level2">
+<h2 class="anchored" data-anchor-id="sample-application">Sample Application</h2>
+<p>Let us create a simple hello world application that will print “hello world” message to stdout, and also logs them in a logfile. After each message the application sleeps for 5 seconds, and keeps on doing this for 5 mins (300 sec). After this the program exists.</p>
+<p>Project structure of this application is</p>
+<pre><code>app/
+└── src/
+    ├── commons/
+    │   └── logger.py
+    └── hello.py</code></pre>
+<p>Where * <code>app/</code> is the project root folder * <code>src/</code> folder contain the python application code * <code>src/commons/logger.py</code> is the logging module * <code>src/hello.py</code> is the main application</p>
+<p>Code files are provided below</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app/src/commons/logger.py</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>logformat <span class="op">=</span> <span class="st">"</span><span class="sc">%(levelname)s</span><span class="st"> </span><span class="sc">%(asctime)s</span><span class="st"> - </span><span class="sc">%(message)s</span><span class="st">"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>filename <span class="op">=</span> <span class="st">"logfile.log"</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Setting the config of the log object</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>logging.basicConfig(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">format</span><span class="op">=</span>logformat,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    filename<span class="op">=</span>filename,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    level<span class="op">=</span>logging.INFO,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app/src/hello.py</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> commons.logger <span class="im">as</span> logger</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main():</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># run for about 5 min: 300 sec</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">60</span>):</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        now <span class="op">=</span> datetime.now()</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        dt_string <span class="op">=</span> now.strftime(<span class="st">"</span><span class="sc">%d</span><span class="st">/%m/%Y %H:%M:%S"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># prepare message</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        msg <span class="op">=</span> <span class="ss">f"hello world at </span><span class="sc">{</span>dt_string<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># put message to stdout and logs</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(msg)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        logger.logging.info(msg)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># sleep for some seconds</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        time.sleep(<span class="dv">5</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    main()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>When I run the hello.py file I get the output on the termial with hello world messages like this.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/helloworld_output.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">helloworld_output</figcaption><p></p>
+</figure>
+</div>
+<p>When we run the application a “logfile.log” will also appear in the project directory containing the logged messages.</p>
+<pre><code>.
+├── app/
+│   └── src/
+│       ├── commons/
+│       │   └── logger.py
+│       └── hello.py
+└── **logfile.log**</code></pre>
+<p>Contents of “logfile.log” file will look like this</p>
+<pre><code>INFO 2022-03-11 13:01:56,451 - hello world at 11/03/2022 13:01:56
+INFO 2022-03-11 13:02:01,464 - hello world at 11/03/2022 13:02:01
+INFO 2022-03-11 13:02:06,466 - hello world at 11/03/2022 13:02:06
+INFO 2022-03-11 13:02:11,480 - hello world at 11/03/2022 13:02:11
+INFO 2022-03-11 13:02:16,496 - hello world at 11/03/2022 13:02:16</code></pre>
+<p>All the code till this point can be found at GitHub repository https://github.com/hassaanbinaslam/snapshots-docker-post-11032022 * <a href="https://github.com/hassaanbinaslam/snapshots-docker-post-11032022/tree/10ee2d24f410dc38f40bdffb1285acbe5dd59d81">Project code files</a> * <a href="https://github.com/hassaanbinaslam/snapshots-docker-post-11032022/releases/tag/snapshot-01">Project zip file</a></p>
+</section>
+</section>
+<section id="dockerize-the-application" class="level1">
+<h1>Dockerize the application</h1>
+<p>Our hello-world application is ready now, and we can put it inside a docker container. For this let’s create a <code>Dockerfile</code> and place it in <code>app/</code> folder.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app/Dockerfile</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>FROM python:<span class="fl">3.8</span><span class="op">-</span>slim<span class="op">-</span>buster</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># set the working directory in the container</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>WORKDIR <span class="op">/</span>app</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># copy the content of the local src directory to the working directory</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>COPY src<span class="op">/</span> .</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># command to run on container start</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>CMD [ <span class="st">"python3"</span>, <span class="st">"./hello.py"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can build our docker image by running the command from terminal at folder <code>app/</code></p>
+<pre><code>docker build --tag python-docker .</code></pre>
+<p>Output of this command will look like this <img src="images/2022-03-11-docker/docker-build-cmd.png" class="img-fluid" alt="docker-build-cmd"></p>
+<p>We can check the created docker image using command from terminal</p>
+<pre><code>docker images</code></pre>
+<p>Output of this command will look like this <img src="images/2022-03-11-docker/docker-image.png" class="img-fluid" alt="docker-images-cmd"></p>
+<p>So our docker image is ready, we can now run it using command</p>
+<pre><code>docker run --name helloworld python-docker</code></pre>
+<p>After running this command you will observe that there is no output on the terminal. Even though we have run our image in an attached mode but still there is no output. We know that the container is running as control on terminal has not return back to us. We can also verify that the container is running by running command <code>docker ps</code> in a separate terminal. Output from this command will look like this</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/docker-running-ps.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">docker-running-ps</figcaption><p></p>
+</figure>
+</div>
+<p>We can also verify that the container is running from <code>Docker Desktop</code> container apps menu. Running container instance will appear like this</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/docker-running-desktop.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">docker-running-desktop</figcaption><p></p>
+</figure>
+</div>
+<p>The reason for logs not appearing on the terminal is because they are being buffered by docker internally. You will get all of them once docker container has finished execution and stopped. You can read more about docker buffereing the output from these StackOverflow posts * <a href="https://stackoverflow.com/questions/107705/disable-output-buffering">disable-output-buffering</a> * <a href="https://stackoverflow.com/questions/29663459/python-app-does-not-print-anything-when-running-detached-in-docker">python-app-does-not-print-anything-when-running-detached-in-docker</a></p>
+<p>To disable the output buffering we need to change the CMD in our docker file as</p>
+<pre><code>CMD [ "python3", "-u", "./hello.py"]</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app/Dockerfile</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>FROM python:<span class="fl">3.8</span><span class="op">-</span>slim<span class="op">-</span>buster</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># set the working directory in the container</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>WORKDIR <span class="op">/</span>app</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># copy the content of the local src directory to the working directory</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>COPY src<span class="op">/</span> .</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co"># command to run on container start</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>CMD [ <span class="st">"python3"</span>, <span class="st">"-u"</span>, <span class="st">"./hello.py"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We need to rebuild our docker image and then run it. Let’s do that will the following commands</p>
+<pre><code>docker build --tag python-docker .
+docker run --name helloworld python-docker</code></pre>
+<p>this time you can see the output directly on the terminal <img src="images/2022-03-11-docker/docker-run-output.png" class="img-fluid" alt="docker-run-output"></p>
+<p>We don’t have to run the docker container in an attached mode, and can still get the logs from a running container using <code>docker logs</code> command. Let’s do that then</p>
+<p>first run the docker image in a detached mode</p>
+<pre><code>docker run -d --name helloworld python-docker</code></pre>
+<p>this command will give the running container ID which will look something like this <code>06918cf824210c015b08ef072feed01768be30ee569e5dbc0eef8d3cd855ab47</code>. We can pass this ID to our next command to view the logs stream from a running container. Use this command</p>
+<pre><code>docker logs -f 06918cf824210c015b08ef072feed01768be30ee569e5dbc0eef8d3cd855ab47</code></pre>
+<p>Also note that we don’t need to provide the full container id, and can can also provide the first 2 or 3 digits of the ID that can uniquely identify the running container. So following command will also work</p>
+<pre><code>docker logs -f 069</code></pre>
+<p>Output on the terminal will look like this <img src="images/2022-03-11-docker/docker-run-detached.png" class="img-fluid" alt="docker-run-detached"></p>
+<p>All the project files till this point can be found at * <a href="https://github.com/hassaanbinaslam/snapshots-docker-post-11032022/tree/8805832aa0a0a2102f97eeb7f40070284eeac152">project code files</a></p>
+</section>
+<section id="log-files-physical-location" class="level1">
+<h1>Log Files Physical Location</h1>
+<p>Docker STDOUT / STDERR logs are also stored on host system as JSON files.</p>
+<p><strong>On linux</strong> You can find them at</p>
+<pre><code>/var/lib/docker/containers/&lt;container-id&gt;/&lt;container-id&gt;-json.log</code></pre>
+<p><strong>On Windows</strong> You can find them at</p>
+<pre><code>\\wsl$\docker-desktop-data\version-pack-data\community\docker\containers\&lt;container-id&gt;/&lt;container-id&gt;-json.log</code></pre>
+<p>In the above paths replace <code>&lt;container-id&gt;</code> with your full cotaniner ID. Also note that on Windows 10 you can open the folder location by directly pasting the path in folder explorer search bar.</p>
+<p>You can read more about them in the following StackOverflow post * <a href="https://stackoverflow.com/questions/56518032/windows-10-and-docker-container-logs-docker-logging-driver">windows-10-and-docker-container-logs-docker-logging-driver</a></p>
+</section>
+<section id="application-log-files" class="level1">
+<h1>Application Log Files</h1>
+<p>So far we have talked about the docker logs that were generated by application feed to STDOUT or STDERR. But now we are interested in app logs generated by logging module like the one we saw in our first example “logfile.log”. For this let’s first connect to running docker container and see where is this file located inside the docker running instance.</p>
+<p>Run a new docker container again using command</p>
+<pre><code>docker run -d --name helloworld python-docker</code></pre>
+<p>If container already exists you can just start it using command</p>
+<pre><code>docker start &lt;container-id&gt;</code></pre>
+<p>Or you can also use the docker desktop to start existing container by click the play button over it.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/docker-start-container.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">docker-start-container</figcaption><p></p>
+</figure>
+</div>
+<p>Once the docker container is running, you can connect to it by either using the CLI from docker desktop</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/docker-desktop-cli.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">docker-desktop-cli</figcaption><p></p>
+</figure>
+</div>
+<p>or from the command below</p>
+<pre><code>docker exec -it &lt;cotainer-id&gt; /bin/bash</code></pre>
+<p>Remember that container-id of a running container can be obtained by command <code>docker ps</code>. Output from the above command will look like this</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/docker-command-cli.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">docker-command-cli</figcaption><p></p>
+</figure>
+</div>
+<p>Note that the location of “logfile.log” is under <code>app/</code> folder</p>
+</section>
+<section id="docker-volume" class="level1">
+<h1>Docker Volume</h1>
+<p>We have seen the application logs by connecting to the docker container, but we would like to have these logs readily available outside the docker container so they can be consumed in real time for debugging. Fot this docker recommends using <a href="https://docs.docker.com/storage/volumes/">volume</a>. Let’s create a volume and then mount our application logs to it.</p>
+<p>To create a volume use command</p>
+<pre><code>docker volume create applogs</code></pre>
+<p>To remove a volume use command</p>
+<pre><code>docker rm create applogs</code></pre>
+<p>To inspect a created volume use command</p>
+<pre><code>docker volume inspect applogs</code></pre>
+<p>Output of this command will be like this where Mountpoint is the location of logs on host system.</p>
+<pre><code>[
+    {
+        "CreatedAt": "2022-03-11T13:12:57Z",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/lib/docker/volumes/applogs/_data",
+        "Name": "applogs",
+        "Options": {},
+        "Scope": "local"
+    }
+]</code></pre>
+<p>On Windows 10 you can find the location of these volumes at</p>
+<pre><code>\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\applogs\_data</code></pre>
+<p>Now let’s run our docker container with this volume mounted to it. Command for this is</p>
+<pre><code>docker run -d --name helloworld -v applogs:/app python-docker</code></pre>
+<p>Docker container will run as before, but if we check the volume on our host we will find that this time all the files and folders available in <code>app/</code> folder from inside the docker container are available. And they will persist on the host OS even if the container is stopped.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/docker-volume-mounted.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">docker-volume-mounted</figcaption><p></p>
+</figure>
+</div>
+<p>Note that the log file ‘logfile.log’ is also available outside the container, and we can poll it for debugging. But having all the contents of <code>app/</code> folder exposed can be a security issue, as they can contain secrets and passwords. We should only mount the <code>logfile.log</code> file on the volume as a best practice. So let’s do that next.</p>
+</section>
+<section id="application-log-files-from-the-docker-container" class="level1">
+<h1>Application log files from the docker container</h1>
+<p>To do this we need to slightly update our application, and create the <code>logfile.log</code> file in a designated <code>log/</code> folder inside the <code>app/</code>. This way we can only mount <code>app/log/</code> folder on the volume. In our application we will update the logging module as</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app/src/commons/logger.py</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> os.path.exists(<span class="st">"logs"</span>):</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    os.makedirs(<span class="st">"logs"</span>)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>logformat <span class="op">=</span> <span class="st">"</span><span class="sc">%(levelname)s</span><span class="st"> </span><span class="sc">%(asctime)s</span><span class="st"> - </span><span class="sc">%(message)s</span><span class="st">"</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>filename <span class="op">=</span> <span class="st">"logs/logfile.log"</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Setting the config of the log object</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>logging.basicConfig(</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">format</span><span class="op">=</span>logformat,</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>    filename<span class="op">=</span>filename,</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>    level<span class="op">=</span>logging.INFO,</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This is all we need to change in our application. To cleanup the volume we can either remove the old one and recreate a new one. Or we can directly delete all the files &amp; folders from the host OS from the directory</p>
+<pre><code>\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\applogs\_data</code></pre>
+<p>Since we have updated the application code we need to rebuild our docker image. Then create a new docker container, and this time only mount the <code>logs/</code> folder on the volume. Command for this is</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># delete the old volume</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>docker volume rm applogs</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># create a new volume</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>docker volume create applogs</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># build the docker image</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>docker build <span class="op">--</span>tag python<span class="op">-</span>docker .</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="co"># run the docker container and mount a specific folder on volume</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>docker run <span class="op">-</span>d <span class="op">--</span>name helloworld <span class="op">-</span>v applogs:<span class="op">/</span>app<span class="op">/</span>logs python<span class="op">-</span>docker</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If we check the mounted volume, this time only <code>logfile.log</code> is exposed.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-11-docker/docker-logs-mounted.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">docker-logs-mounted</figcaption><p></p>
+</figure>
+</div>
+<p>All the code for this post can be found at GitHub repository https://github.com/hassaanbinaslam/snapshots-docker-post-11032022 * <a href="https://github.com/hassaanbinaslam/snapshots-docker-post-11032022/tree/94051e7efbdeac0eafcf17b3b99f8116ddc856a3">Project code files</a> * <a href="https://github.com/hassaanbinaslam/snapshots-docker-post-11032022/releases/tag/snapshot-02">Project zip file</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

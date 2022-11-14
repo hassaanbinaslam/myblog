@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-16">
+<meta name="keywords" content="aws, lambda, docker, python, wsl2, windows 10, debug, vscode">
+<meta name="description" content="A tutorial on testing and debugging AWS Lambda function from Visual Studio Code.">
+
+<title>Random Thoughts - AWS Lambda - Test and Debug Locally in Visual Studio Code</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - AWS Lambda - Test and Debug Locally in Visual Studio Code">
+<meta property="og:description" content="A tutorial on testing and debugging AWS Lambda function from Visual Studio Code.">
+<meta property="og:image" content="images/2022-03-16-lambda-debug.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - AWS Lambda - Test and Debug Locally in Visual Studio Code">
+<meta name="twitter:description" content="A tutorial on testing and debugging AWS Lambda function from Visual Studio Code.">
+<meta name="twitter:image" content="images/2022-03-16-lambda-debug.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a>
+  <ul class="collapse">
+  <li><a href="#sample-application" id="toc-sample-application" class="nav-link" data-scroll-target="#sample-application">Sample Application</a></li>
+  </ul></li>
+  <li><a href="#sam-project-directory" id="toc-sam-project-directory" class="nav-link" data-scroll-target="#sam-project-directory">SAM Project Directory</a></li>
+  <li><a href="#run-lambda-locally" id="toc-run-lambda-locally" class="nav-link" data-scroll-target="#run-lambda-locally">Run Lambda Locally</a></li>
+  <li><a href="#run-api-gateway-locally" id="toc-run-api-gateway-locally" class="nav-link" data-scroll-target="#run-api-gateway-locally">Run API Gateway Locally</a></li>
+  <li><a href="#debug-lambda-application-locally" id="toc-debug-lambda-application-locally" class="nav-link" data-scroll-target="#debug-lambda-application-locally">Debug Lambda Application Locally</a>
+  <ul class="collapse">
+  <li><a href="#option-1-debug-through-sam-template" id="toc-option-1-debug-through-sam-template" class="nav-link" data-scroll-target="#option-1-debug-through-sam-template">Option 1: Debug through SAM template</a></li>
+  <li><a href="#option-2-debug-lambda-directly-from-code" id="toc-option-2-debug-lambda-directly-from-code" class="nav-link" data-scroll-target="#option-2-debug-lambda-directly-from-code">Option 2: Debug Lambda Directly from Code</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AWS Lambda - Test and Debug Locally in Visual Studio Code</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+    <div class="quarto-category">lambda</div>
+    <div class="quarto-category">docker</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A tutorial on testing and debugging AWS Lambda function from Visual Studio Code.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 16, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-03-16-lambda-debug.jpeg" class="img-fluid"></p>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This post is about running, and debugging <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> function locally from <a href="https://code.visualstudio.com/">Visual Studio Code</a> environment and it extensions <a href="https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.AWSToolkitforVisualStudio2022">AWS Toolkit</a>.</p>
+</section>
+<section id="environment-details" class="level1">
+<h1>Environment Details</h1>
+<ul>
+<li>Python = 3.8.x</li>
+<li>WSL version = 2</li>
+<li>WSL Ubuntu version = 20.04</li>
+<li>Docker Engine version = 20.10.12</li>
+<li>Docker Desktop version = 4.4.4</li>
+<li>Host OS = Windows 10</li>
+<li>VSCode version = 1.65</li>
+<li>SAM CLI version = 1.40.1</li>
+</ul>
+<section id="sample-application" class="level2">
+<h2 class="anchored" data-anchor-id="sample-application">Sample Application</h2>
+<p>For this post we will use a simple hello world application as our focus is on debugging. We will use AWS SAM CLI to create our application. You can follow the steps provided in tutorial <a href="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started.html">AWS SAM Developer Guide&gt;Getting started with AWS SAM</a> to create this application.</p>
+<p>From the provided link (SAM Developer Guide): This application implements a basic API backend. It consists of an Amazon API Gateway endpoint and an AWS Lambda function. When you send a GET request to the API Gateway endpoint, the Lambda function is invoked. This function returns a hello world message.</p>
+<p>The following diagram shows the components of this application:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/sam-getting-started-hello-world.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">sam-getting-started-hello-world</figcaption><p></p>
+</figure>
+</div>
+<p>To initialize a serverless app use command</p>
+<pre><code>sam init</code></pre>
+<p>Complete the SAM initialization setup steps</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode powershell code-with-copy"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">PS</span> C<span class="op">:</span>\MyWorkspace\gitrepos\2022<span class="op">-</span>03<span class="op">-</span>16<span class="op">-</span>lambda<span class="op">-</span>debug<span class="op">&gt;</span> sam init</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>You can preselect a particular runtime or package <span class="fu">type</span> when <span class="kw">using</span> the `sam init` experience<span class="op">.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Call `sam init <span class="op">--</span>help` to learn more<span class="op">.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>Which template source would you like to use<span class="op">?</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        1 <span class="op">-</span> AWS Quick <span class="fu">Start</span> Templates</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        2 <span class="op">-</span> Custom Template Location</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Choice<span class="op">:</span> 1</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>Choose an AWS Quick <span class="fu">Start</span> application template</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        1 <span class="op">-</span> Hello World Example</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        2 <span class="op">-</span> Multi<span class="op">-</span>step <span class="kw">workflow</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        3 <span class="op">-</span> Serverless API</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        4 <span class="op">-</span> Scheduled task</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        5 <span class="op">-</span> Standalone <span class="kw">function</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        6 <span class="op">-</span> <span class="kw">Data</span> processing</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        7 <span class="op">-</span> Infrastructure event management</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        8 <span class="op">-</span> Machine Learning</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>Template<span class="op">:</span> 1</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a> Use the most popular runtime and package <span class="fu">type</span><span class="op">?</span> <span class="op">(</span>Python and zip<span class="op">)</span> <span class="op">[</span>y<span class="op">/</span>N<span class="op">]:</span> y</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>Project name <span class="op">[</span>sam<span class="op">-</span>app<span class="op">]:</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>Cloning <span class="kw">from</span> https<span class="op">://</span>github<span class="op">.</span><span class="fu">com</span><span class="op">/</span>aws<span class="op">/</span>aws<span class="op">-</span>sam<span class="op">-</span>cli<span class="op">-</span>app<span class="op">-</span>templates <span class="op">(</span><span class="kw">process</span> may take a moment<span class="op">)</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">-----------------------</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    Generating application<span class="op">:</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="op">-----------------------</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    Name<span class="op">:</span> sam<span class="op">-</span>app</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    Runtime<span class="op">:</span> python3<span class="op">.</span><span class="fu">9</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    Architectures<span class="op">:</span> x86_64</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    Dependency Manager<span class="op">:</span> pip</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    Application Template<span class="op">:</span> hello<span class="op">-</span>world</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    Output Directory<span class="op">:</span> <span class="op">.</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    Next steps can be found <span class="kw">in</span> the README file at <span class="op">./</span>sam<span class="op">-</span>app<span class="op">/</span>README<span class="op">.</span><span class="fu">md</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    Commands you can use next</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    <span class="op">=========================</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">[*]</span> Create pipeline<span class="op">:</span> <span class="fu">cd</span> sam<span class="op">-</span>app <span class="op">&amp;&amp;</span> sam pipeline init <span class="op">--</span>bootstrap</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="op">[*]</span> Test <span class="kw">Function</span> <span class="kw">in</span> the Cloud<span class="op">:</span> sam sync <span class="op">--</span>stack<span class="op">-</span>name <span class="op">{</span>stack<span class="op">-</span>name<span class="op">}</span> <span class="op">--</span>watch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Once the application is initialized the project structure will look like this</p>
+<pre><code>sam-app/
+   ├── README.md
+   ├── events/
+   │   └── event.json
+   ├── hello_world/
+   │   ├── __init__.py
+   │   ├── app.py            #Contains your AWS Lambda handler logic.
+   │   └── requirements.txt  #Contains any Python dependencies the application requires, used for sam build
+   ├── template.yaml         #Contains the AWS SAM template defining your application's AWS resources.
+   └── tests/
+       └── unit/
+           ├── __init__.py
+           └── test_handler.py</code></pre>
+<p>There are three especially important files:</p>
+<ul>
+<li><code>template.yaml</code>: Contains the AWS SAM template that defines your application’s AWS resources.</li>
+<li><code>hello_world/app.py</code>: Contains your actual Lambda handler logic.</li>
+<li><code>hello_world/requirements.txt</code>: Contains any Python dependencies that the application requires, and is used for sam build.</li>
+</ul>
+<p>Follow the instructions from the tutorial to build, test, and deploy the application.</p>
+<p>All the code used for this post can be obtained from the GitHub repository <a href="https://github.com/hassaanbinaslam/2022-03-16-lambda-debug">hassaanbinaslam/2022-03-16-lambda-debug</a></p>
+<ul>
+<li><a href="https://github.com/hassaanbinaslam/2022-03-16-lambda-debug/tree/fdbbf7a208fe8a89ba94ce71b948d1ad6054939a">Project code files</a></li>
+<li><a href="https://github.com/hassaanbinaslam/2022-03-16-lambda-debug/releases/tag/snapshot-01">Project zip file</a></li>
+</ul>
+</section>
+</section>
+<section id="sam-project-directory" class="level1">
+<h1>SAM Project Directory</h1>
+<ul>
+<li>SAM CLI
+<ul>
+<li>After project initialization from <code>sam init</code> make sure that you move to project root folder</li>
+<li>Project root folder is the one that contain <code>template.yaml</code> defining application AWS resources. In this app case project root folder is <code>sam-app/</code></li>
+<li>All the subsequest commands including project <code>sam build</code>, <code>sam deploy</code>, invoke and test lambda should be done from project root folder</li>
+</ul></li>
+<li>VSCode
+<ul>
+<li>When you open the project make sure that your project root directory is pointing to <code>sam-app/</code> folder as shown in image below</li>
+</ul></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/vscode-project-root.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">vscode-project-root</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="run-lambda-locally" class="level1">
+<h1>Run Lambda Locally</h1>
+<p>To invoke lambda function locally use SAM CLI command</p>
+<pre><code>sam local invoke</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode powershell code-with-copy"><code class="sourceCode powershell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">PS</span> C<span class="op">:</span>\MyWorkspace\gitrepos\2022<span class="op">-</span>03<span class="op">-</span>16<span class="op">-</span>lambda<span class="op">-</span>debug\sam<span class="op">-</span>app<span class="op">&gt;</span> sam local invoke</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Invoking app<span class="op">.</span><span class="fu">lambda_handler</span> <span class="op">(</span>python3<span class="op">.</span><span class="fu">9</span><span class="op">)</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>Skip pulling image and use local one<span class="op">:</span> public<span class="op">.</span><span class="fu">ecr</span><span class="op">.</span><span class="fu">aws</span><span class="op">/</span>sam<span class="op">/</span>emulation<span class="op">-</span>python3<span class="op">.</span><span class="fu">9</span><span class="op">:</span>rapid<span class="op">-</span>1<span class="op">.</span><span class="fu">40</span><span class="op">.</span><span class="fu">1</span><span class="op">-</span>x86_64<span class="op">.</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>Mounting C<span class="op">:</span>\MyWorkspace\gitrepos\2022<span class="op">-</span>03<span class="op">-</span>16<span class="op">-</span>lambda<span class="op">-</span>debug\sam<span class="op">-</span>app\hello_world as <span class="op">/</span><span class="kw">var</span><span class="op">/</span>task<span class="op">:</span>ro<span class="op">,</span>delegated inside runtime container</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">START</span> RequestId<span class="op">:</span> 1d4e45de<span class="op">-</span>38be<span class="op">-</span>4b91<span class="op">-</span>8e9f<span class="op">-</span>4d3c7da8788a Version<span class="op">:</span> <span class="va">$LATEST</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">END</span> RequestId<span class="op">:</span> 1d4e45de<span class="op">-</span>38be<span class="op">-</span>4b91<span class="op">-</span>8e9f<span class="op">-</span>4d3c7da8788a</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>REPORT RequestId<span class="op">:</span> 1d4e45de<span class="op">-</span>38be<span class="op">-</span>4b91<span class="op">-</span>8e9f<span class="op">-</span>4d3c7da8788a  Init Duration<span class="op">:</span> 1<span class="op">.</span><span class="fu">40</span> ms  Duration<span class="op">:</span> 990<span class="op">.</span><span class="fu">84</span> ms     Billed Duration<span class="op">:</span> 991 ms Memory Size<span class="op">:</span> 128 MB  Max Memory Used<span class="op">:</span> 128 MB</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">{</span><span class="st">"statusCode"</span><span class="op">:</span> 200<span class="op">,</span> <span class="st">"body"</span><span class="op">:</span> <span class="st">"{\"</span>message\<span class="st">": \"</span>hello world\<span class="st">"}"</span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you have multiple lambda functions in the app, you can invoke a specific lambda function by using it’s name in invoke command as</p>
+<pre><code>sam local invoke "HelloWorldFunction"</code></pre>
+</section>
+<section id="run-api-gateway-locally" class="level1">
+<h1>Run API Gateway Locally</h1>
+<p>You can run API Gateway locally to test HTTP request response functionality using command</p>
+<pre><code>sam local start-api</code></pre>
+<p>This command will start a local instance of API Gateway and provide you with a URL that you can use to send a request using CURL commmand</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode powershell code-with-copy"><code class="sourceCode powershell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">PS</span> C<span class="op">:</span>\MyWorkspace\gitrepos\2022<span class="op">-</span>03<span class="op">-</span>16<span class="op">-</span>lambda<span class="op">-</span>debug\sam<span class="op">-</span>app<span class="op">&gt;</span> sam local start<span class="op">-</span>api</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>Mounting HelloWorldFunction at http<span class="op">://</span>127<span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">1</span><span class="op">:</span>3000<span class="op">/</span>hello <span class="op">[</span>GET<span class="op">]</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>You can now browse to the above endpoints to invoke your functions<span class="op">.</span> You <span class="kw">do</span> not need to restart<span class="op">/</span>reload SAM <span class="fu">CLI</span> <span class="kw">while</span> working on your functions<span class="op">,</span> changes will be reflected instantly<span class="op">/</span>automatically<span class="op">.</span> You only need to restart SAM <span class="fu">CLI</span> <span class="kw">if</span> you update your AWS SAM template</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>2022<span class="op">-</span>03<span class="op">-</span>17 11<span class="op">:</span>41<span class="op">:</span>55  <span class="op">*</span> Running on http<span class="op">://</span>127<span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">1</span><span class="op">:</span>3000<span class="op">/</span> <span class="op">(</span>Press CTRL<span class="op">+</span>C to quit<span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>From terminal output you can find tha <code>HelloWorldFunction</code> is mounted at <code>http://127.0.0.1:3000/hello</code>. From another terminal we can call this URL</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode powershell code-with-copy"><code class="sourceCode powershell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">PS</span> C<span class="op">:</span>\MyWorkspace\gitrepos\2022<span class="op">-</span>03<span class="op">-</span>16<span class="op">-</span>lambda<span class="op">-</span>debug\sam<span class="op">-</span>app<span class="op">&gt;</span> <span class="fu">curl</span> http<span class="op">://</span>127<span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">1</span><span class="op">:</span>3000<span class="op">/</span>hello</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>StatusCode        <span class="op">:</span> 200</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>StatusDescription <span class="op">:</span> OK</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>Content           <span class="op">:</span> <span class="op">{</span><span class="st">"message"</span><span class="op">:</span> <span class="st">"hello world"</span><span class="op">}</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>RawContent        <span class="op">:</span> HTTP<span class="op">/</span>1<span class="op">.</span><span class="fu">0</span> 200 OK</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                    Content<span class="op">-</span>Length<span class="op">:</span> 26</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                    Content<span class="op">-</span>Type<span class="op">:</span> application<span class="op">/</span>json</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                    Date<span class="op">:</span> Thu<span class="op">,</span> 17 Mar 2022 06<span class="op">:</span>43<span class="op">:</span>08 GMT</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                    Server<span class="op">:</span> Werkzeug<span class="op">/</span>1<span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">1</span> Python<span class="op">/</span>3<span class="op">.</span><span class="fu">8</span><span class="op">.</span><span class="fu">8</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>                    <span class="op">{</span><span class="st">"message"</span><span class="op">:</span> <span class="st">"hello world"</span><span class="op">}</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>Forms             <span class="op">:</span> <span class="op">{}</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>Headers           <span class="op">:</span> <span class="op">{[</span>Content<span class="op">-</span>Length<span class="op">,</span> 26<span class="op">],</span> <span class="op">[</span>Content<span class="op">-</span>Type<span class="op">,</span> application<span class="op">/</span>json<span class="op">],</span> <span class="op">[</span>Date<span class="op">,</span> Thu<span class="op">,</span> 17 Mar 2022 06<span class="op">:</span>43<span class="op">:</span>08 GMT<span class="op">],</span> <span class="op">[</span>Server<span class="op">,</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>                    Werkzeug<span class="op">/</span>1<span class="op">.</span><span class="fu">0</span><span class="op">.</span><span class="fu">1</span> Python<span class="op">/</span>3<span class="op">.</span><span class="fu">8</span><span class="op">.</span><span class="fu">8</span><span class="op">]}</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>Images            <span class="op">:</span> <span class="op">{}</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>InputFields       <span class="op">:</span> <span class="op">{}</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>Links             <span class="op">:</span> <span class="op">{}</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>ParsedHtml        <span class="op">:</span> mshtml<span class="op">.</span><span class="fu">HTMLDocumentClass</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>RawContentLength  <span class="op">:</span> 26</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="debug-lambda-application-locally" class="level1">
+<h1>Debug Lambda Application Locally</h1>
+<p>To debug a lambda function we have following options</p>
+<section id="option-1-debug-through-sam-template" class="level2">
+<h2 class="anchored" data-anchor-id="option-1-debug-through-sam-template">Option 1: Debug through SAM template</h2>
+<p>From VSCode open <code>template.yaml</code>, and go to the resources section of the template that defines serverless resources. Click on the lambda function resource, which in our case is <code>HelloWorldFunction</code>. A tooltip will appear over it saying <code>AWS: Add Debug Configuration</code>. Click it as shown below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/sam-template-add-debug-config.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">sam-template-add-debug-config</figcaption><p></p>
+</figure>
+</div>
+<p>This will create a new folder in the project with debug launch configuration <code>launch.json</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/debug-launch-config.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">debug-launch-config</figcaption><p></p>
+</figure>
+</div>
+<p>Let’s add a breakpoint in our lambda handler code <code>hello_world/app.py</code>, and start debugging by clicking the green “play” button in the <strong>RUN</strong> view. When the debugging sessions starts, the DEBUG CONSOLE panel shows debugging output and displays any values returned by the Lambda function.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/lambda-debug-template.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">lambda-debug-template</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="option-2-debug-lambda-directly-from-code" class="level2">
+<h2 class="anchored" data-anchor-id="option-2-debug-lambda-directly-from-code">Option 2: Debug Lambda Directly from Code</h2>
+<p>From VSCode open lambda handler code <code>sam-app/hello_world/app.py</code>. A tooltip will appear above the <code>lambda_handler</code> function with options * AWS: Add Debug Configuration * AWS: Edit Debug Configuration</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/lambda-debug-tooltip.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">lambda-debug-tooltip</figcaption><p></p>
+</figure>
+</div>
+<p>Click on <code>AWS: Add Debug Configuration</code> and it will show two further options * template.yaml:HelloWorldFunction (to debug only the lambda function) * template.yaml:HelloWorldFunction (API Event: HelloWorld) (to debug lambda function along with API gateway)</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/lambda-debug-options.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">lambda-debug-options</figcaption><p></p>
+</figure>
+</div>
+<p>Let’s select API option this time. It will again create a launch configuration, and now we can debug our code. Click on the green “play” button again to start the debug session with request request coming from API Gateway to Lambda function.</p>
+<p>You can also edit the debug config visually by selecting the <code>AWS: Edit Debug Configuration</code>, and a side pane will appear from where we can easily edit and update our debug configuration.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2022-03-16-lambda-debug/edit-debug-config.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">edit-debug-config</figcaption><p></p>
+</figure>
+</div>
+<p>All the code used for this post can be obtained from the GitHub repository <a href="https://github.com/hassaanbinaslam/2022-03-16-lambda-debug">hassaanbinaslam/2022-03-16-lambda-debug</a></p>
+<ul>
+<li><a href="https://github.com/hassaanbinaslam//tree/76b73cd24757709edd56e5e3bbbe38e0f4e4cb74">Project code files</a></li>
+<li><a href="https://github.com/hassaanbinaslam/2022-03-16-lambda-debug/releases/tag/snapshot-02">Project zip file</a></li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

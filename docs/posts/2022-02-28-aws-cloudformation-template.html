@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-02-28">
+<meta name="description" content="Some useful notes on AWS CloudFormation template sections, intrinsic functions, and other tips.">
+
+<title>Random Thoughts - AWS CloudFormation Template, Functions, and Commands</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - AWS CloudFormation Template, Functions, and Commands">
+<meta property="og:description" content="Some useful notes on AWS CloudFormation template sections, intrinsic functions, and other tips.">
+<meta property="og:image" content="images/2022-02-28-aws-cloudformation-template.jpeg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - AWS CloudFormation Template, Functions, and Commands">
+<meta name="twitter:description" content="Some useful notes on AWS CloudFormation template sections, intrinsic functions, and other tips.">
+<meta name="twitter:image" content="images/2022-02-28-aws-cloudformation-template.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
+  <li><a href="#template-anatomy" id="toc-template-anatomy" class="nav-link" data-scroll-target="#template-anatomy">Template Anatomy</a></li>
+  <li><a href="#template-sections" id="toc-template-sections" class="nav-link" data-scroll-target="#template-sections">Template Sections</a>
+  <ul class="collapse">
+  <li><a href="#awstemplateformatversion-optional" id="toc-awstemplateformatversion-optional" class="nav-link" data-scroll-target="#awstemplateformatversion-optional">AWSTemplateFormatVersion (optional)</a></li>
+  <li><a href="#description-optional" id="toc-description-optional" class="nav-link" data-scroll-target="#description-optional">Description (optional)</a></li>
+  <li><a href="#metadata-optional" id="toc-metadata-optional" class="nav-link" data-scroll-target="#metadata-optional">Metadata (optional)</a>
+  <ul class="collapse">
+  <li><a href="#syntax" id="toc-syntax" class="nav-link" data-scroll-target="#syntax">Syntax</a></li>
+  </ul></li>
+  <li><a href="#parameters-optional" id="toc-parameters-optional" class="nav-link" data-scroll-target="#parameters-optional">Parameters (optional)</a>
+  <ul class="collapse">
+  <li><a href="#syntax-1" id="toc-syntax-1" class="nav-link" data-scroll-target="#syntax-1">Syntax</a></li>
+  </ul></li>
+  <li><a href="#rules-optional" id="toc-rules-optional" class="nav-link" data-scroll-target="#rules-optional">Rules (optional)</a>
+  <ul class="collapse">
+  <li><a href="#syntax-2" id="toc-syntax-2" class="nav-link" data-scroll-target="#syntax-2">Syntax</a></li>
+  </ul></li>
+  <li><a href="#mappings-optional" id="toc-mappings-optional" class="nav-link" data-scroll-target="#mappings-optional">Mappings (optional)</a></li>
+  <li><a href="#conditions-optional" id="toc-conditions-optional" class="nav-link" data-scroll-target="#conditions-optional">Conditions (optional)</a>
+  <ul class="collapse">
+  <li><a href="#syntax-3" id="toc-syntax-3" class="nav-link" data-scroll-target="#syntax-3">Syntax</a></li>
+  <li><a href="#difference-between-rules-and-conditions-usage" id="toc-difference-between-rules-and-conditions-usage" class="nav-link" data-scroll-target="#difference-between-rules-and-conditions-usage">Difference between Rules and Conditions usage?</a></li>
+  </ul></li>
+  <li><a href="#transform-optional" id="toc-transform-optional" class="nav-link" data-scroll-target="#transform-optional">Transform (optional)</a>
+  <ul class="collapse">
+  <li><a href="#syntax-4" id="toc-syntax-4" class="nav-link" data-scroll-target="#syntax-4">Syntax</a></li>
+  </ul></li>
+  <li><a href="#resources-required" id="toc-resources-required" class="nav-link" data-scroll-target="#resources-required">Resources (required)</a>
+  <ul class="collapse">
+  <li><a href="#syntax-5" id="toc-syntax-5" class="nav-link" data-scroll-target="#syntax-5">Syntax</a></li>
+  </ul></li>
+  <li><a href="#outputs-optional" id="toc-outputs-optional" class="nav-link" data-scroll-target="#outputs-optional">Outputs (optional)</a>
+  <ul class="collapse">
+  <li><a href="#syntax-6" id="toc-syntax-6" class="nav-link" data-scroll-target="#syntax-6">Syntax</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#some-other-important-intrinsic-functions" id="toc-some-other-important-intrinsic-functions" class="nav-link" data-scroll-target="#some-other-important-intrinsic-functions">Some other important Intrinsic Functions</a>
+  <ul class="collapse">
+  <li><a href="#fngetatt" id="toc-fngetatt" class="nav-link" data-scroll-target="#fngetatt">Fn::GetAtt</a>
+  <ul class="collapse">
+  <li><a href="#syntax-7" id="toc-syntax-7" class="nav-link" data-scroll-target="#syntax-7">Syntax</a></li>
+  </ul></li>
+  <li><a href="#fnimportvalue" id="toc-fnimportvalue" class="nav-link" data-scroll-target="#fnimportvalue">Fn::ImportValue</a>
+  <ul class="collapse">
+  <li><a href="#syntax-8" id="toc-syntax-8" class="nav-link" data-scroll-target="#syntax-8">Syntax</a></li>
+  </ul></li>
+  <li><a href="#fnsub" id="toc-fnsub" class="nav-link" data-scroll-target="#fnsub">Fn::Sub</a>
+  <ul class="collapse">
+  <li><a href="#syntax-9" id="toc-syntax-9" class="nav-link" data-scroll-target="#syntax-9">Syntax</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#important-cloudformation-cli-commands" id="toc-important-cloudformation-cli-commands" class="nav-link" data-scroll-target="#important-cloudformation-cli-commands">Important CloudFormation CLI Commands</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AWS CloudFormation Template, Functions, and Commands</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Some useful notes on AWS CloudFormation template sections, intrinsic functions, and other tips.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 28, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-02-28-aws-cloudformation-template.jpeg" class="img-fluid"></p>
+<section id="about" class="level1">
+<h1>About</h1>
+<p>This post is a collection of useful notes on various sections of AWS CloudFormation template, and intrinsic functions. Knowledge about them is often tested in AWS certifications. For more details on this subject refer to its user guide (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)</p>
+</section>
+<section id="template-anatomy" class="level1">
+<h1>Template Anatomy</h1>
+<p>The following is an example of AWS CloudFormation template and its sections in YAML format. There is no sequence to writing these sections besides that if there is a <strong>Description</strong> section then it must be put after <strong>AWSTemplateFormatVersion</strong>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AWSTemplateFormatVersion</span><span class="kw">:</span><span class="at"> </span><span class="st">"version date"</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">Description</span><span class="kw">:</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">  String</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">Metadata</span><span class="kw">:</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">  template metadata</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">Parameters</span><span class="kw">:</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">  set of parameters</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">Rules</span><span class="kw">:</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">  set of rules</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">Mappings</span><span class="kw">:</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="at">  set of mappings</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">Conditions</span><span class="kw">:</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="at">  set of conditions</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">Transform</span><span class="kw">:</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="at">  set of transforms</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">Resources</span><span class="kw">:</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="at">  set of resources</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">Outputs</span><span class="kw">:</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="at">  set of outputs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="template-sections" class="level1">
+<h1>Template Sections</h1>
+<section id="awstemplateformatversion-optional" class="level2">
+<h2 class="anchored" data-anchor-id="awstemplateformatversion-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html">AWSTemplateFormatVersion (optional)</a></h2>
+<p>The AWS CloudFormation template version that the template conforms to. ### Syntax</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AWSTemplateFormatVersion</span><span class="kw">:</span><span class="at"> </span><span class="st">"2010-09-09"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="description-optional" class="level2">
+<h2 class="anchored" data-anchor-id="description-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-description-structure.html">Description (optional)</a></h2>
+<p>A text string that describes the template. This section must always follow the template format version section. ### Syntax</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Description</span><span class="kw">: </span><span class="ch">&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  Here are some</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  details about</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  the template.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="metadata-optional" class="level2">
+<h2 class="anchored" data-anchor-id="metadata-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html">Metadata (optional)</a></h2>
+<p>Objects that provide additional information about the template.</p>
+<ul>
+<li>Difference between <strong>Metadata</strong> and <strong>Description</strong> is that some cloudformation features can refer to the objects that are defined in Metadata section. For example, you can use a metadata key <code>AWS::CloudFormation::Interface</code> to define how parameters are grouped and sorted on AWS cloudformation console. By default, cloudformation console alphbetically sorts the parameters by their logical ID.</li>
+<li>AWS strongly recommends not to use this section for storing sensitive information such as passwords or secrets.</li>
+</ul>
+<section id="syntax" class="level3">
+<h3 class="anchored" data-anchor-id="syntax">Syntax</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Metadata</span><span class="kw">:</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Instances</span><span class="kw">:</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> </span><span class="st">"Information about the instances"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Databases</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> </span><span class="st">"Information about the databases"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="parameters-optional" class="level2">
+<h2 class="anchored" data-anchor-id="parameters-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html">Parameters (optional)</a></h2>
+<p>Parameters enable you to input custom values to your template each time you create or update a stack. You can refer to parameters from the <strong>Resources</strong> and <strong>Outputs</strong> sections of the template using <strong>Ref</strong> intrinsic function.</p>
+<p>CloudFormation currently supports the following parameter types</p>
+<ul>
+<li>String – A literal string</li>
+<li>Number – An integer or float</li>
+<li><code>List&lt;Number&gt;</code> – An array of integers or floats</li>
+<li>CommaDelimitedList – An array of literal strings that are separated by commas</li>
+<li><code>AWS::EC2::KeyPair::KeyName</code> – An Amazon EC2 key pair name</li>
+<li><code>AWS::EC2::SecurityGroup::Id</code> – A security group ID</li>
+<li><code>AWS::EC2::Subnet::Id</code> – A subnet ID</li>
+<li><code>AWS::EC2::VPC::Id</code> – A VPC ID</li>
+<li><code>List&lt;AWS::EC2::VPC::Id&gt;</code> – An array of VPC IDs</li>
+<li><code>List&lt;AWS::EC2::SecurityGroup::Id&gt;</code> – An array of security group IDs</li>
+<li><code>List&lt;AWS::EC2::Subnet::Id&gt;</code> – An array of subnet IDs</li>
+</ul>
+<section id="syntax-1" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-1">Syntax</h3>
+<p>The following example declares a parameter named <code>InstanceTypeParameter</code>. This parameter lets you specify the Amazon EC2 instance type for the stack to use when you create or update the stack.</p>
+<p>Note that <code>InstanceTypeParameter</code> has a default value of <code>t2.micro</code>. This is the value that AWS CloudFormation will use to provision the stack unless another value is provided.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Parameters</span><span class="kw">:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">InstanceTypeParameter</span><span class="kw">:</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> String</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Default</span><span class="kw">:</span><span class="at"> t2.micro</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">AllowedValues</span><span class="kw">:</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> t2.micro</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> m1.small</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> m1.large</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> Enter t2.micro, m1.small, or m1.large. Default is t2.micro.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="referencing-a-parameter-in-template-ref-function" class="level4">
+<h4 class="anchored" data-anchor-id="referencing-a-parameter-in-template-ref-function"><strong>Referencing a parameter in template (<code>Ref function</code>)</strong></h4>
+<p>In the following example, the <code>InstanceType</code> property of the EC2 instance resource references the <code>InstanceTypeParameter</code> parameter value.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Ec2Instance</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> AWS::EC2::Instance</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Properties</span><span class="kw">:</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">InstanceType</span><span class="kw">:</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">Ref</span><span class="kw">:</span><span class="at"> InstanceTypeParameter</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ImageId</span><span class="kw">:</span><span class="at"> ami-0ff8a91507f77f867</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="rules-optional" class="level2">
+<h2 class="anchored" data-anchor-id="rules-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/rules-section-structure.html">Rules (optional)</a></h2>
+<p>Validates a parameter or a combination of parameters that are passed to a template during a stack creation or stack update.</p>
+<p>You can use the following rule-specific intrinsic functions to define rule conditions and assertions: * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-and">Fn::And</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-Contains">Fn::Contains</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-EachMemberEquals">Fn::EachMemberEquals</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-EachMemberIn">Fn::EachMemberIn</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-equals">Fn::Equals</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-if">Fn::If</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-not">Fn::Not</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-or">Fn::Or</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-refall">Fn::RefAll</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-valueof">Fn::ValueOf</a> * <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-rules.html#fn-valueofall">Fn::ValueOfAll</a></p>
+<section id="syntax-2" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-2">Syntax</h3>
+<p>In the following example, the rule checks the value of the <code>InstanceType</code> parameter. The user must specify <code>a1.medium</code>, if the value of the environment parameter is <code>test</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Rules</span><span class="kw">:</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">testInstanceType</span><span class="kw">:</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">RuleCondition</span><span class="kw">:</span><span class="at"> !Equals </span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> !Ref Environment</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> test</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Assertions</span><span class="kw">:</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">Assert</span><span class="kw">:</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">'Fn::Contains'</span><span class="kw">:</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="kw">-</span><span class="at"> </span><span class="kw">-</span><span class="at"> a1.medium</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="kw">-</span><span class="at"> !Ref InstanceType</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">AssertDescription</span><span class="kw">:</span><span class="at"> </span><span class="st">'For a test environment, the instance type must be a1.medium'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="mappings-optional" class="level2">
+<h2 class="anchored" data-anchor-id="mappings-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/mappings-section-structure.html">Mappings (optional)</a></h2>
+<p>The optional Mappings section matches a key to a corresponding set of named values similar to a lookup table. For example, if you want to set values based on a region, you can create a mapping that uses the region name as a key and contains the values you want to specify for each specific region. You use the <code>Fn::FindInMap</code> intrinsic function in the <strong>Resources</strong> and <strong>Outputs</strong> to retrieve values in a map. Note that you can’t include parameters, pseudo parameters, or intrinsic functions in the Mappings section.</p>
+<section id="fnfindinmap" class="level4">
+<h4 class="anchored" data-anchor-id="fnfindinmap"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-findinmap.html">Fn::FindInMap</a></h4>
+<p>The intrinsic function <code>Fn::FindInMap</code> returns the value corresponding to keys in a two-level map that’s declared in the Mappings section.</p>
+<p>Syntax for the short form:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">!FindInMap [ MapName, TopLevelKey, SecondLevelKey ] </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Parameters</strong> * MapName * The logical name of a mapping declared in the Mappings section that contains the keys and values. * TopLevelKey * The top-level key name. Its value is a list of key-value pairs. * SecondLevelKey * The second-level key name, which is set to one of the keys from the list assigned to TopLevelKey.</p>
+<p>A more concrete example</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Mappings</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">RegionMap</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">us-east-1</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">HVM64</span><span class="kw">:</span><span class="at"> </span><span class="st">"ami-0ff8a91507f77f867"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">HVMG2</span><span class="kw">:</span><span class="at"> </span><span class="st">"ami-0a584ac55a7631c0c"</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">Resources</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">myEC2Instance</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> </span><span class="st">"AWS::EC2::Instance"</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Properties</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ImageId</span><span class="kw">:</span><span class="at"> !FindInMap</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> RegionMap</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> !Ref 'AWS::Region'</span><span class="co"> # us-east-1</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> HVM64</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">InstanceType</span><span class="kw">:</span><span class="at"> m1.small</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="conditions-optional" class="level2">
+<h2 class="anchored" data-anchor-id="conditions-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/conditions-section-structure.html">Conditions (optional)</a></h2>
+<p>Conditions that control whether certain resources are created or whether certain resource properties are assigned a value during stack creation or update. For example, you could conditionally create a resource that depends on whether the stack is for a production or test environment.</p>
+<p>Conditions are defined in <code>Conditions</code> section, and are then applied in following sections. * Parameters * Resources * Outputs</p>
+<p>You can use following intrinsic functions to define your conditions * Fn::And * Fn::Equals * Fn::If * Fn::Not * Fn::Or</p>
+<section id="syntax-3" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-3">Syntax</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Conditions</span><span class="kw">:</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Logical ID</span><span class="kw">:</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="at">    Intrinsic function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A more concrete example</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AWSTemplateFormatVersion</span><span class="kw">:</span><span class="at"> 2010-09-09</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Parameters</span><span class="kw">:</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">EnvType</span><span class="kw">:</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> Environment type.</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Default</span><span class="kw">:</span><span class="at"> test</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> String</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">AllowedValues</span><span class="kw">:</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> prod</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> test</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ConstraintDescription</span><span class="kw">:</span><span class="at"> must specify prod or test.</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="fu">Conditions</span><span class="kw">:</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">CreateProdResources</span><span class="kw">:</span><span class="at"> !Equals </span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> !Ref EnvType</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> prod</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">Resources</span><span class="kw">:</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">EC2Instance</span><span class="kw">:</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> </span><span class="st">'AWS::EC2::Instance'</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Properties</span><span class="kw">:</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ImageId</span><span class="kw">:</span><span class="at"> ami-0ff8a91507f77f867</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">MountPoint</span><span class="kw">:</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> </span><span class="st">'AWS::EC2::VolumeAttachment'</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Condition</span><span class="kw">:</span><span class="at"> CreateProdResources</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Properties</span><span class="kw">:</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">InstanceId</span><span class="kw">:</span><span class="at"> !Ref EC2Instance</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">VolumeId</span><span class="kw">:</span><span class="at"> !Ref NewVolume</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">Device</span><span class="kw">:</span><span class="at"> /dev/sdh</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">NewVolume</span><span class="kw">:</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> </span><span class="st">'AWS::EC2::Volume'</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Condition</span><span class="kw">:</span><span class="at"> CreateProdResources</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Properties</span><span class="kw">:</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">Size</span><span class="kw">:</span><span class="at"> </span><span class="dv">100</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">AvailabilityZone</span><span class="kw">:</span><span class="at"> !GetAtt </span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> EC2Instance</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> AvailabilityZone</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="difference-between-rules-and-conditions-usage" class="level3">
+<h3 class="anchored" data-anchor-id="difference-between-rules-and-conditions-usage">Difference between Rules and Conditions usage?</h3>
+<ul>
+<li>Rules are used to evaluate the input given by the user in Parameters</li>
+<li>Conditions turn come after all rules have been evaluated</li>
+<li>Conditions are not limited to Parameters and can also work with Resources and Outputs</li>
+</ul>
+</section>
+</section>
+<section id="transform-optional" class="level2">
+<h2 class="anchored" data-anchor-id="transform-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html">Transform (optional)</a></h2>
+<p>For <a href="https://docs.aws.amazon.com/lambda/latest/dg/deploying-lambda-apps.html">serverless applications</a> (also referred to as Lambda-based applications), specifies the version of the <a href="https://github.com/awslabs/serverless-application-specification">AWS Serverless Application Model (AWS SAM)</a> to use. When you specify a transform, you can use AWS SAM syntax to declare resources in your template. The model defines the syntax that you can use and how it's processed.</p>
+<p>You can also use <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/create-reusable-transform-function-snippets-and-add-to-your-template-with-aws-include-transform.html">AWS::Include</a> transforms to work with template snippets that are stored separately from the main AWS CloudFormation template. You can store your snippet files in an Amazon S3 bucket and then reuse the functions across multiple templates.</p>
+<section id="syntax-4" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-4">Syntax</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Transform</span><span class="kw">:</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> MyMacro</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">'AWS::Serverless'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="awsinclude-transform" class="level4">
+<h4 class="anchored" data-anchor-id="awsinclude-transform"><strong>AWS::Include transform</strong></h4>
+<p>Use the AWS::Include transform, which is a macro hosted by AWS CloudFormation, to insert boilerplate content into your templates. The <code>AWS::Include</code> transform lets you create a reference to a template snippet in an Amazon S3 bucket. The <code>AWS::Include</code> function behaves similarly to an include, copy, or import directive in programming languages.</p>
+<section id="example" class="level5">
+<h5 class="anchored" data-anchor-id="example">Example</h5>
+<div class="sourceCode" id="cb13"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Transform</span><span class="kw">:</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Name</span><span class="kw">:</span><span class="at"> </span><span class="st">'AWS::Include'</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Parameters</span><span class="kw">:</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Location</span><span class="kw">:</span><span class="at"> </span><span class="st">'s3://MyAmazonS3BucketName/MyFileName.yaml'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+</section>
+<section id="resources-required" class="level2">
+<h2 class="anchored" data-anchor-id="resources-required"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html">Resources (required)</a></h2>
+<p>Specifies the stack resources and their properties, such as an Amazon Elastic Compute Cloud instance or an Amazon Simple Storage Service bucket. You can refer to resources in the Resources and Outputs sections of the template.</p>
+<section id="syntax-5" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-5">Syntax</h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Resources</span><span class="kw">:</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Logical ID</span><span class="kw">:</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> Resource type</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Properties</span><span class="kw">:</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">      Set of properties</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A more concrete example</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Resources</span><span class="kw">:</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">MyEC2Instance</span><span class="kw">:</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Type</span><span class="kw">:</span><span class="at"> </span><span class="st">"AWS::EC2::Instance"</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Properties</span><span class="kw">:</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ImageId</span><span class="kw">:</span><span class="at"> </span><span class="st">"ami-0ff8a91507f77f867"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="outputs-optional" class="level2">
+<h2 class="anchored" data-anchor-id="outputs-optional"><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html">Outputs (optional)</a></h2>
+<p>The optional Outputs&nbsp;section declares output values that you can&nbsp;<a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html">import into other stacks</a>&nbsp;(to&nbsp;<a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/walkthrough-crossstackref.html">create cross-stack references</a>), return in response (to describe stack calls), or&nbsp;<a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-view-stack-data-resources.html">view on the AWS CloudFormation console</a>. For example, you can output the S3 bucket name from a stack to make the bucket easier to find.</p>
+<p>Notes * You can declare a maximum of 200 outputs in a template. * AWS strongly recommend you don’t use this section to output sensitive information, such as passwords or secrets * Output values are available after the stack operation is complete. Stack output values aren’t available when a stack status is in any of the IN_PROGRESS status. * AWS also does not recommend establishing dependencies between a service runtime and the stack output value because output values might not be available at all times.</p>
+<section id="syntax-6" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-6">Syntax</h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Outputs</span><span class="kw">:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Logical ID</span><span class="kw">:</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> Information about the value</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Value</span><span class="kw">:</span><span class="at"> Value to return</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Export</span><span class="kw">:</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">Name</span><span class="kw">:</span><span class="at"> Name of resource to export</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A more concrete example where certain values are shown as output at the end of stack creation.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Outputs</span><span class="kw">:</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">BackupLoadBalancerDNSName</span><span class="kw">:</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> The DNSName of the backup load balancer</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Value</span><span class="kw">:</span><span class="at"> !GetAtt BackupLoadBalancer.DNSName</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Condition</span><span class="kw">:</span><span class="at"> CreateProdResources</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">InstanceID</span><span class="kw">:</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> The Instance ID</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Value</span><span class="kw">:</span><span class="at"> !Ref EC2Instance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For Cross-Stack output use <strong>Export</strong> tag. Values outputed with “Export” tag can be imported in other stacks “in the same region”. Then, use the <code>Fn::ImportValue</code> intrinsic function to import the value in another stack “in the same region”.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Outputs</span><span class="kw">:</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">StackVPC</span><span class="kw">:</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Description</span><span class="kw">:</span><span class="at"> The ID of the VPC</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Value</span><span class="kw">:</span><span class="at"> !Ref MyVPC</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">Export</span><span class="kw">:</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">Name</span><span class="kw">:</span><span class="at"> !Sub "${AWS::StackName}-VPCID"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="some-other-important-intrinsic-functions" class="level1">
+<h1>Some other important Intrinsic Functions</h1>
+<section id="fngetatt" class="level2">
+<h2 class="anchored" data-anchor-id="fngetatt">Fn::GetAtt</h2>
+<p>The <code>Fn::GetAtt</code> intrinsic function returns the value of an attribute from a resource in the template.</p>
+<section id="syntax-7" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-7">Syntax</h3>
+<p><code>!GetAtt logicalNameOfResource.attributeName</code></p>
+<ul>
+<li>logicalNameOfResource
+<ul>
+<li>The logical name (also called logical ID) of the resource that contains the attribute that you want.</li>
+</ul></li>
+<li>attributeName
+<ul>
+<li>The name of the resource-specific attribute whose value you want. See the resource’s reference page for details about the attributes available for that resource type.</li>
+</ul></li>
+<li>Return value
+<ul>
+<li>The attribute value.</li>
+</ul></li>
+</ul>
+<p>A more concrete example</p>
+<p><code>!GetAtt myELB.DNSName</code></p>
+<p>Notes: * For the <code>Fn::GetAtt</code> logical resource name, you can’t use functions. You must specify a string that’s a resource’s logical ID. * For the <code>Fn::GetAtt</code> attribute name, you can use the <code>Ref function</code>.</p>
+</section>
+</section>
+<section id="fnimportvalue" class="level2">
+<h2 class="anchored" data-anchor-id="fnimportvalue">Fn::ImportValue</h2>
+<p>The intrinsic function <code>Fn::ImportValue</code> returns the value of an output exported by another stack. You typically use this function to create cross-stack references.</p>
+<p>Notes: * For each AWS account, Export names must be unique within a region. * You can’t create cross-stack references across regions. You can use the intrinsic function <code>Fn::ImportValue</code> to import only values that have been exported within the same region. * You can’t delete a stack if another stack references one of its outputs. * You can’t modify or remove an output value that is referenced by another stack.</p>
+<section id="syntax-8" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-8">Syntax</h3>
+<p><code>!ImportValue sharedValueToImport</code></p>
+<p>A more concrete example.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="at">Fn:</span><span class="fu">:ImportValue</span><span class="kw">:</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="at">  !Sub "${NetworkStackName}-SecurityGroupID"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="fnsub" class="level2">
+<h2 class="anchored" data-anchor-id="fnsub">Fn::Sub</h2>
+<p>The intrinsic function <code>Fn::Sub</code> substitutes variables in an input string with values that you specify. In your templates, you can use this function to construct commands or outputs that include values that aren’t available until you create or update a stack.</p>
+<section id="syntax-9" class="level3">
+<h3 class="anchored" data-anchor-id="syntax-9">Syntax</h3>
+<div class="sourceCode" id="cb20"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="at">!Sub</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> String</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">VarName</span><span class="kw">:</span><span class="at"> VarValue</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="parameters" class="level4">
+<h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
+<ul>
+<li>String
+<ul>
+<li>A string with variables that AWS CloudFormation substitutes with their associated values at runtime. Write variables as <code>${MyVarName}</code>. Variables can be template parameter names, resource logical IDs, resource attributes, or a variable in a key-value map.</li>
+</ul></li>
+<li>VarName
+<ul>
+<li>The name of a variable that you included in the <code>String</code> parameter.</li>
+</ul></li>
+<li>VarValue
+<ul>
+<li>The value that CloudFormation substitutes for the associated variable name at runtime.</li>
+</ul></li>
+</ul>
+<p>A more concrete example. The following example uses a mapping to substitute the <code>${Domain}</code> variable with the resulting value from the <code>Ref</code> function.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Name</span><span class="kw">:</span><span class="at"> !Sub </span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">'www.${Domain}'</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">Domain</span><span class="kw">:</span><span class="at"> !Ref RootDomainName</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+</section>
+<section id="important-cloudformation-cli-commands" class="level1">
+<h1>Important CloudFormation CLI Commands</h1>
+<ul>
+<li>Package a template using <code>aws cloudformation package</code> command</li>
+<li>Validate a CloudFormation template using <code>aws cloudformation validate-template</code> command</li>
+<li>Deploy a template using the <code>aws cloudformation deploy</code> command</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
