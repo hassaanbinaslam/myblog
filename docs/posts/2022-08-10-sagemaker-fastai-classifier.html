@@ -539,8 +539,44 @@ image.
 </div>
 </div>
 <p><strong>Summary of the functions used till now</strong></p>
-<p>Functions we have seen till now are summarized in this section. * <code>download_url</code>: Download <code>url</code> to <code>dest</code> and show progress. This function is from module <code>fastdownload\core.py</code>. <a href="https://fastdownload.fast.ai/">Fastdownload</a> is a separate library from the fastai team, and its use is to “Easily download, verify, and extract archives”. * Documentation: <a href="https://fastdownload.fast.ai/">fastdownload.fast.ai</a> * Source code: <a href="https://github.com/fastai/fastdownload/blob/master/00_core.ipynb">fastai/fastdownload</a> * <code>Image.open</code>: Opens and identifies the given image file. This is a lazy operation; this function identifies the file, but the file remains open, and the actual image data is not read from the file until you try to process the data. this function is from <code>pil\image.py</code> or <a href="https://pillow.readthedocs.io/en/stable/index.html">Python Pillow Image library</a>. Fastai installs this library for us. Fastai vision module internally loads Pillow for us. It has defined wrapper functions to make it easier to use this library in machine learning work. * Check fastai dependencies: <a href="https://github.com/fastai/fastai/blob/master/settings.ini#L16">settings.ini</a> It contains external dependent libraries that fastai installs for us. Some important libraries from that list include * fastdownload * fastcore * fastprogress * matplotlib * pandas * pillow * scikit-learn * pytorch * Pillow image library documentation: https://pillow.readthedocs.io/en/stable/index.html * <code>Image.open</code> documentation link: <a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open">PIL.Image.open</a> * <code>Image.to_thumb</code>: Same as <code>thumbnail</code>, but uses a copy. This function is from <code>fastai\vision\core.py</code> module. It is a wrapper function around the PIL <strong>thumbnail</strong> function. * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/07_vision.core.ipynb">07_vision.core.ipynb</a> * <code>Image.thumbnail</code>: Make this image into a thumbnail. This method modifies the image to contain a thumbnail version of itself, no larger than the given size. This method calculates an appropriate thumbnail size to preserve the image’s aspect, calls the draft() method to configure the file reader (where applicable), and finally resizes the image. Note that this function modifies the Image object in place. If you need to use the full resolution image, apply this method to a copy() of the original image. This function is from <code>pil\image.py</code> * Documentation: <a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.thumbnail">PIL.Image.Image.thumbnail</a></p>
-<p><strong>Summary of the steps performed till now</strong> * Defined a function to search images and return their URLs * Defined the search strings to find images on the Internet * Downloaded an image using its URL and showed it as a thumbnail</p>
+<p>Functions we have seen till now are summarized in this section.</p>
+<ul>
+<li><code>download_url</code>: Download <code>url</code> to <code>dest</code> and show progress. This function is from module <code>fastdownload\core.py</code>. <a href="https://fastdownload.fast.ai/">Fastdownload</a> is a separate library from the fastai team, and its use is to “Easily download, verify, and extract archives”.
+<ul>
+<li>Documentation: <a href="https://fastdownload.fast.ai/">fastdownload.fast.ai</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastdownload/blob/master/00_core.ipynb">fastai/fastdownload</a></li>
+</ul></li>
+<li><code>Image.open</code>: Opens and identifies the given image file. This is a lazy operation; this function identifies the file, but the file remains open, and the actual image data is not read from the file until you try to process the data. this function is from <code>pil\image.py</code> or <a href="https://pillow.readthedocs.io/en/stable/index.html">Python Pillow Image library</a>. Fastai installs this library for us. Fastai vision module internally loads Pillow for us. It has defined wrapper functions to make it easier to use this library in machine learning work.
+<ul>
+<li>Check fastai dependencies: <a href="https://github.com/fastai/fastai/blob/master/settings.ini#L16">settings.ini</a> It contains external dependent libraries that fastai installs for us. Some important libraries from that list include
+<ul>
+<li>fastdownload</li>
+<li>fastcore</li>
+<li>fastprogress</li>
+<li>matplotlib</li>
+<li>pandas</li>
+<li>pillow</li>
+<li>scikit-learn</li>
+<li>pytorch</li>
+</ul></li>
+<li>Pillow image library documentation: https://pillow.readthedocs.io/en/stable/index.html</li>
+<li><code>Image.open</code> documentation link: <a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open">PIL.Image.open</a></li>
+</ul></li>
+<li><code>Image.to_thumb</code>: Same as <code>thumbnail</code>, but uses a copy. This function is from <code>fastai\vision\core.py</code> module. It is a wrapper function around the PIL <strong>thumbnail</strong> function.
+<ul>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/07_vision.core.ipynb">07_vision.core.ipynb</a></li>
+</ul></li>
+<li><code>Image.thumbnail</code>: Make this image into a thumbnail. This method modifies the image to contain a thumbnail version of itself, no larger than the given size. This method calculates an appropriate thumbnail size to preserve the image’s aspect, calls the draft() method to configure the file reader (where applicable), and finally resizes the image. Note that this function modifies the Image object in place. If you need to use the full resolution image, apply this method to a copy() of the original image. This function is from <code>pil\image.py</code>
+<ul>
+<li>Documentation: <a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.thumbnail">PIL.Image.Image.thumbnail</a></li>
+</ul></li>
+</ul>
+<p><strong>Summary of the steps performed till now</strong></p>
+<ul>
+<li>Defined a function to search images and return their URLs</li>
+<li>Defined the search strings to find images on the Internet</li>
+<li>Downloaded an image using its URL and showed it as a thumbnail</li>
+</ul>
 <p>Let’s proceed with our work. First, define a filesystem “images” path where files from the search engine will be downloaded.</p>
 <div class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
@@ -569,7 +605,25 @@ but cannot instantiate a WindowsPath on a POSIX system or vice versa.
 </div>
 </div>
 </div>
-<p>From the documentation, we find that the <code>Path</code> class is from Python standard library module <code>pathlib</code>. Python’s official documentation page for this module is <a href="https://docs.python.org/3/library/pathlib.html">pathlib.html</a>. We have not loaded this module, so it begs the question, who loaded it for us? When I checked the fastai code repository, I found a file named <a href="https://github.com/fastai/fastai/blob/master/fastai/imports.py">fastai/imports.py</a>. This file has many imports defined in it, and fastai is loading it for us behind the scenes. This <code>imports.py</code> file is loaded in many core fastai modules (data, vision, tabular, etc.). A typical loading sequence is as follows * <code>from fast.vision.all import *</code> loads <code>fastai.vision.core.py</code> * source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/vision/all.py">fast.vision.all</a> * <code>fastai.vision.core.py</code> loads <code>fastai.torch_basics.py</code> * source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/vision/core.py">fastai.vision.core.py</a> * <code>fastai.torch_basics.py</code> loads <code>fastai.imports.py</code> * source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/torch_basics.py">fastai.torch_basics.py</a> * <code>fastai.imports.py</code> loads <code>from pathlib import Path</code> * source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/imports.py">fastai.imports.py</a></p>
+<p>From the documentation, we find that the <code>Path</code> class is from Python standard library module <code>pathlib</code>. Python’s official documentation page for this module is <a href="https://docs.python.org/3/library/pathlib.html">pathlib.html</a>. We have not loaded this module, so it begs the question, who loaded it for us? When I checked the fastai code repository, I found a file named <a href="https://github.com/fastai/fastai/blob/master/fastai/imports.py">fastai/imports.py</a>. This file has many imports defined in it, and fastai is loading it for us behind the scenes. This <code>imports.py</code> file is loaded in many core fastai modules (data, vision, tabular, etc.). A typical loading sequence is as follows</p>
+<ul>
+<li><code>from fast.vision.all import *</code> loads <code>fastai.vision.core.py</code>
+<ul>
+<li>source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/vision/all.py">fast.vision.all</a></li>
+</ul></li>
+<li><code>fastai.vision.core.py</code> loads <code>fastai.torch_basics.py</code>
+<ul>
+<li>source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/vision/core.py">fastai.vision.core.py</a></li>
+</ul></li>
+<li><code>fastai.torch_basics.py</code> loads <code>fastai.imports.py</code>
+<ul>
+<li>source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/torch_basics.py">fastai.torch_basics.py</a></li>
+</ul></li>
+<li><code>fastai.imports.py</code> loads <code>from pathlib import Path</code>
+<ul>
+<li>source code for <a href="https://github.com/fastai/fastai/blob/master/fastai/imports.py">fastai.imports.py</a></li>
+</ul></li>
+</ul>
 <p>Okay, we have understood how Path library is loaded implicitly for us. So let’s continue with our work and download images using the search strings to the <code>Path</code> folder.</p>
 <div class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
@@ -741,8 +795,44 @@ soccer images count:  193
 basketball images count:  190</code></pre>
 </div>
 </div>
-<p><strong>Summary of the functions used till now</strong> * <code>Path</code>: Is from Python standard library <code>pathlib</code> module. fastai loads this module for us * Documentation: <a href="https://docs.python.org/3/library/pathlib.html">pathlib.html</a> * <code>resize_images</code>: Is from fastai library vision module. Its purpose is to resize images to a given MAX size and store them in a destination folder * Documentation: <a href="https://docs.fast.ai/vision.utils.html#resize_image">vision.utils.html#resize_image</a> * Souce code: <a href="https://github.com/fastai/fastai/blob/master/nbs/09b_vision.utils.ipynb">09b_vision.utils.ipynb</a> * <code>get_image_files</code>: Is from fastai library data module. It returns a list (L class) of image file paths. Internally it calls <code>get_files</code> function * Documentation: <a href="https://docs.fast.ai/data.transforms.html#get_image_files">data.transforms.html#get_image_files</a> * Souce code: <a href="https://github.com/fastai/fastai/blob/master/nbs/05_data.transforms.ipynb">05_data.transforms.ipynb</a> * <code>get_files</code>: This is also from fastai library data module. It returns <code>L</code> class list of file paths * Documentation: <a href="https://docs.fast.ai/data.transforms.html#get_files">data.transforms.html#get_files</a> * Souce code: <a href="https://github.com/fastai/fastai/blob/master/nbs/05_data.transforms.ipynb">05_data.transforms.ipynb</a> * <code>L</code> class object: Is from fastcore library. It extends Python <code>list</code> object features * Documentation: <a href="https://fastcore.fast.ai/#l">fastcore.fast.ai/#l</a> * Souce code: <a href="https://github.com/fastai/fastcore/blob/master/nbs/02_foundation.ipynb">02_foundation.ipynb</a> * <code>verify_images</code>: Is from fastai library vision module. It verifies images and returns paths of images that cannot be opened * Documentation: <a href="https://docs.fast.ai/vision.utils.html#verify_images">vision.utils.html#verify_images</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/09b_vision.utils.ipynb">09b_vision.utils.ipynb</a></p>
-<p><strong>Summary of the steps performed till now</strong> * Use each search string to search and download images to a local folder. Resize the downloaded images to a given size. * Get the downloaded images file paths as a list of type <code>L</code> * Verify the images and remove any corrupted image</p>
+<p><strong>Summary of the functions used till now</strong></p>
+<ul>
+<li><code>Path</code>: Is from Python standard library <code>pathlib</code> module. fastai loads this module for us
+<ul>
+<li>Documentation: <a href="https://docs.python.org/3/library/pathlib.html">pathlib.html</a></li>
+</ul></li>
+<li><code>resize_images</code>: Is from fastai library vision module. Its purpose is to resize images to a given MAX size and store them in a destination folder
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/vision.utils.html#resize_image">vision.utils.html#resize_image</a></li>
+<li>Souce code: <a href="https://github.com/fastai/fastai/blob/master/nbs/09b_vision.utils.ipynb">09b_vision.utils.ipynb</a></li>
+</ul></li>
+<li><code>get_image_files</code>: Is from fastai library data module. It returns a list (L class) of image file paths. Internally it calls <code>get_files</code> function
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.transforms.html#get_image_files">data.transforms.html#get_image_files</a></li>
+<li>Souce code: <a href="https://github.com/fastai/fastai/blob/master/nbs/05_data.transforms.ipynb">05_data.transforms.ipynb</a></li>
+</ul></li>
+<li><code>get_files</code>: This is also from fastai library data module. It returns <code>L</code> class list of file paths
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.transforms.html#get_files">data.transforms.html#get_files</a></li>
+<li>Souce code: <a href="https://github.com/fastai/fastai/blob/master/nbs/05_data.transforms.ipynb">05_data.transforms.ipynb</a></li>
+</ul></li>
+<li><code>L</code> class object: Is from fastcore library. It extends Python <code>list</code> object features
+<ul>
+<li>Documentation: <a href="https://fastcore.fast.ai/#l">fastcore.fast.ai/#l</a></li>
+<li>Souce code: <a href="https://github.com/fastai/fastcore/blob/master/nbs/02_foundation.ipynb">02_foundation.ipynb</a></li>
+</ul></li>
+<li><code>verify_images</code>: Is from fastai library vision module. It verifies images and returns paths of images that cannot be opened
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/vision.utils.html#verify_images">vision.utils.html#verify_images</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/09b_vision.utils.ipynb">09b_vision.utils.ipynb</a></li>
+</ul></li>
+</ul>
+<p><strong>Summary of the steps performed till now</strong></p>
+<ul>
+<li>Use each search string to search and download images to a local folder. Resize the downloaded images to a given size.</li>
+<li>Get the downloaded images file paths as a list of type <code>L</code></li>
+<li>Verify the images and remove any corrupted image</li>
+</ul>
 </section>
 <section id="create-a-data-block" class="level1">
 <h1>Create a data block</h1>
@@ -790,7 +880,12 @@ DataBlock<span class="ansi-blue-fg">(</span>
 <p>It tells us that it is from fastai data module. On its usage, it says it is a <code>Generic container</code> to build <code>DataLoaders</code>. Let’s deconstruct the arguments we have passed to this class to understand them.</p>
 <p>The first argument that we have passed is the <code>blocks</code>.</p>
 <pre><code>blocks=(ImageBlock, CategoryBlock)</code></pre>
-<p><code>blocks</code> are themselves predefined domain-specific containers (or pipelines) with default transformations defined for common use cases. For example, <strong>CategoryBlock</strong> is for “single-label categorical targets”. And the default transformations for this type of data are * Encode categories like one-hot-encoding * sort them * fill empty values</p>
+<p><code>blocks</code> are themselves predefined domain-specific containers (or pipelines) with default transformations defined for common use cases. For example, <strong>CategoryBlock</strong> is for “single-label categorical targets”. And the default transformations for this type of data are</p>
+<ul>
+<li>Encode categories like one-hot-encoding</li>
+<li>sort them</li>
+<li>fill empty values</li>
+</ul>
 <p>Similary, many other built-in blocks are available in the fastai library for various data types and domains. All these blocks are like pipelines with default transformations defined (or simply generic containers with a set of instructions). So, by <code>blocks=(ImageBlock, CategoryBlock)</code>, we are defining a blueprint and saying that for <code>X</code> and <code>y</code> of our data, treat them with <code>ImageBlock</code> and <code>CategoryBlock</code>, respectively. Here <code>X</code> is our training data (or images), and <code>y</code> is our labels i.e.&nbsp;tennis ball, cricket ball, etc.</p>
 <p>The next argument in DataBlock is <code>get_items</code></p>
 <pre><code>get_items=get_image_files</code></pre>
@@ -933,7 +1028,11 @@ Datasets<span class="ansi-blue-fg">(</span>
 </div>
 </div>
 </div>
-<p>It tells us that it is defined in fastai data module. * Documentation: <a href="https://docs.fast.ai/data.core.html#datasets">data.core.html#datasets</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></p>
+<p>It tells us that it is defined in fastai data module.</p>
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.core.html#datasets">data.core.html#datasets</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></li>
+</ul>
 <p>Let’s do the same for <code>DataLoaders</code> and check its documentation.</p>
 <div class="cell" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
@@ -949,8 +1048,18 @@ Datasets<span class="ansi-blue-fg">(</span>
 </div>
 </div>
 </div>
-<p>It tells us that <strong>DataLoaders</strong> class is also defined in fastai library data module. * Documentation: <a href="https://docs.fast.ai/data.core.html#dataloaders">data.core.html#dataloaders</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></p>
-<p>Important notes from <strong>DataLoaders</strong> documentation: * <code>DataLoaders.train</code>: Training DataLoader * <code>DataLoaders.valid</code>: Validation DataLoader * <code>DataLoaders.train_ds</code>: Training Dataset * <code>DataLoaders.valid_ds</code>: Validation Dataset</p>
+<p>It tells us that <strong>DataLoaders</strong> class is also defined in fastai library data module.</p>
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.core.html#dataloaders">data.core.html#dataloaders</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></li>
+</ul>
+<p>Important notes from <strong>DataLoaders</strong> documentation:</p>
+<ul>
+<li><code>DataLoaders.train</code>: Training DataLoader</li>
+<li><code>DataLoaders.valid</code>: Validation DataLoader</li>
+<li><code>DataLoaders.train_ds</code>: Training Dataset</li>
+<li><code>DataLoaders.valid_ds</code>: Validation Dataset</li>
+</ul>
 <p>We can also check the data loader object’s data type to confirm its class name and origin.</p>
 <div class="cell" data-execution_count="39">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
@@ -1140,7 +1249,11 @@ TfmdDL<span class="ansi-blue-fg">(</span>
 <li>Documentation: <a href="https://docs.fast.ai/data.core.html#tfmddl">data.core.html#tfmddl</a></li>
 <li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></li>
 </ul>
-<p>To clarify, <code>DataLoaders</code> and <code>DataLoader</code> are two separate classes. * our object “dls” is of <strong>DataLoaders</strong> origin. This class is a wrapper around several <code>DataLoader</code>s. We have checked this class doc before * dls attributes “dls.train” and “dls.valid” are of <strong>DataLoader</strong> origin. <code>TfmdDL</code> (transformed data loader) is one of its kind, and we have seen its docs in the last cell.</p>
+<p>To clarify, <code>DataLoaders</code> and <code>DataLoader</code> are two separate classes.</p>
+<ul>
+<li>our object “dls” is of <strong>DataLoaders</strong> origin. This class is a wrapper around several <code>DataLoader</code>s. We have checked this class doc before</li>
+<li>dls attributes “dls.train” and “dls.valid” are of <strong>DataLoader</strong> origin. <code>TfmdDL</code> (transformed data loader) is one of its kind, and we have seen its docs in the last cell.</li>
+</ul>
 <p>Let’s also visit the documentation for the <code>DataLoader</code> class from which <code>TfmdDL</code> is derived.</p>
 <div class="cell" data-execution_count="42">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
@@ -1186,7 +1299,11 @@ DataLoader<span class="ansi-blue-fg">(</span>
 </div>
 </div>
 </div>
-<p>It tells us that it is an extension to PyTorch DataLoader with more flexibility (or functionality). This class is defined in fastai data module. * Documentation: <a href="https://docs.fast.ai/data.load.html#dataloader">data.load.html#dataloader</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/02_data.load.ipynb">02_data.load.ipynb</a></p>
+<p>It tells us that it is an extension to PyTorch DataLoader with more flexibility (or functionality). This class is defined in fastai data module.</p>
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.load.html#dataloader">data.load.html#dataloader</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/02_data.load.ipynb">02_data.load.ipynb</a></li>
+</ul>
 <p>Let us continue with our work and visualize a small batch from our validation set.</p>
 <div class="cell" data-execution_count="44">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
@@ -1227,8 +1344,36 @@ TfmdDL<span class="ansi-blue-fg">.</span>show_batch<span class="ansi-blue-fg">(<
 </div>
 </div>
 </div>
-<p><strong>Summary of the functions used till now</strong> * <code>DataBlock</code>: Is from fastai data module. It is a generic container to build <code>DataLoaders</code> * Documentation: <a href="https://docs.fast.ai/data.block.html#datablock">data.block.html#datablock</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/06_data.block.ipynb">06_data.block.ipynb</a> * <code>DataBlock.dataloaders(Path)</code>: to create a <code>DataLoaders</code> object from <code>DataBlock</code> * <code>DataLoaders</code>: Is from fastai library data module. It is a basic wrapper around several <code>DataLoader</code>s * Documentation: <a href="https://docs.fast.ai/data.core.html#dataloaders">data.core.html#dataloaders</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a> * <code>DataLoader</code>: Is an extension to PyTorch DataLoader with more flexibility (or functionality). This class is defined in fastai data module. * Documentation: <a href="https://docs.fast.ai/data.load.html#dataloader">data.load.html#dataloader</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/02_data.load.ipynb">02_data.load.ipynb</a> * <code>TfmdDL</code>: A transformed DataLoader * Documentation: <a href="https://docs.fast.ai/data.core.html#tfmddl">data.core.html#tfmddl</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></p>
-<p><strong>Summary of the steps till now</strong> * Created a DataBlock object * Created a DataLoaders object * Viewed a small batch using <code>show_batch</code> function</p>
+<p><strong>Summary of the functions used till now</strong></p>
+<ul>
+<li><code>DataBlock</code>: Is from fastai data module. It is a generic container to build <code>DataLoaders</code>
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.block.html#datablock">data.block.html#datablock</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/06_data.block.ipynb">06_data.block.ipynb</a></li>
+</ul></li>
+<li><code>DataBlock.dataloaders(Path)</code>: to create a <code>DataLoaders</code> object from <code>DataBlock</code></li>
+<li><code>DataLoaders</code>: Is from fastai library data module. It is a basic wrapper around several <code>DataLoader</code>s
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.core.html#dataloaders">data.core.html#dataloaders</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></li>
+</ul></li>
+<li><code>DataLoader</code>: Is an extension to PyTorch DataLoader with more flexibility (or functionality). This class is defined in fastai data module.
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.load.html#dataloader">data.load.html#dataloader</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/02_data.load.ipynb">02_data.load.ipynb</a></li>
+</ul></li>
+<li><code>TfmdDL</code>: A transformed DataLoader
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/data.core.html#tfmddl">data.core.html#tfmddl</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/03_data.core.ipynb">03_data.core.ipynb</a></li>
+</ul></li>
+</ul>
+<p><strong>Summary of the steps till now</strong></p>
+<ul>
+<li>Created a DataBlock object</li>
+<li>Created a DataLoaders object</li>
+<li>Viewed a small batch using <code>show_batch</code> function</li>
+</ul>
 </section>
 <section id="train-an-image-classifier" class="level1">
 <h1>Train an image classifier</h1>
@@ -1335,7 +1480,11 @@ TfmdDL<span class="ansi-blue-fg">.</span>show_batch<span class="ansi-blue-fg">(<
 </table>
 </div>
 </div>
-<p>In the last cell, we have performed two steps: 1. Created a vision learner using a <code>vision_learner()</code> method 2. Then used the learner object <code>fine_tune()</code> method to train a model</p>
+<p>In the last cell, we have performed two steps:</p>
+<ol type="1">
+<li>Created a vision learner using a <code>vision_learner()</code> method</li>
+<li>Then used the learner object <code>fine_tune()</code> method to train a model</li>
+</ol>
 <p>Let’s deconstruct these two steps. First, check the documentation on the <code>vision_learner</code> function.</p>
 <div class="cell" data-execution_count="48">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
@@ -1382,7 +1531,20 @@ vision_learner<span class="ansi-blue-fg">(</span>
 </div>
 </div>
 </div>
-<p>It tells us that this method is from the fastai vision module, and the docstring says that its purpose is to “Build a vision learner from <code>dls</code> and <code>arch</code>”. We are getting limited information here. So let’s check the documentation pages <a href="https://docs.fast.ai/vision.learner.html#learner-convenience-functions">vision.learner.html#learner-convenience-functions</a>. From the documentation page, we get the following information * It is a “convenience function” for <code>Learner</code> class objects * fastai “vision learner” module purpose is defined as “All the functions necessary to build Learner suitable for transfer learning in computer vision” * The most essential functions of this module are <em>vision_learner</em> and <em>unet_learner</em>. * They will help you define a <em>Learner</em> using a pre-trained model. * Arguments passed to this function * <code>dls</code> refers to DataLoaders object * <code>arch</code> refers to model architecture to use</p>
+<p>It tells us that this method is from the fastai vision module, and the docstring says that its purpose is to “Build a vision learner from <code>dls</code> and <code>arch</code>”. We are getting limited information here. So let’s check the documentation pages <a href="https://docs.fast.ai/vision.learner.html#learner-convenience-functions">vision.learner.html#learner-convenience-functions</a>. From the documentation page, we get the following information</p>
+<ul>
+<li>It is a “convenience function” for <code>Learner</code> class objects</li>
+<li>fastai “vision learner” module purpose is defined as “All the functions necessary to build Learner suitable for transfer learning in computer vision”
+<ul>
+<li>The most essential functions of this module are <em>vision_learner</em> and <em>unet_learner</em>.</li>
+<li>They will help you define a <em>Learner</em> using a pre-trained model.</li>
+</ul></li>
+<li>Arguments passed to this function
+<ul>
+<li><code>dls</code> refers to DataLoaders object</li>
+<li><code>arch</code> refers to model architecture to use</li>
+</ul></li>
+</ul>
 <p>So basically, <code>vision_learner</code> is a helper function for <code>Learner</code> class to create its object. This means we need to understand the <code>Learner</code> concept to complete the picture.</p>
 <div class="cell" data-execution_count="49">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
@@ -1497,8 +1659,34 @@ Learner<span class="ansi-blue-fg">.</span>fine_tune<span class="ansi-blue-fg">(<
 </div>
 </div>
 <p>It tells us that it is from fastai callback module, and its purpose is defined as “Fine tune with <code>Learner.freeze</code> for <code>freeze_epochs</code>, then with <code>Learner.unfreeze</code> for <code>epochs</code>, using discriminative LR.”</p>
-<p><strong>Summary of the functions used till now</strong> * <code>vision_learner</code>: Is a helper function from the fastai <code>Learner</code> class. It is used to conveniently create a learner object * Documentation: <a href="https://docs.fast.ai/vision.learner.html#vision_learner">vision.learner.html#vision_learner</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/21_vision.learner.ipynb">21_vision.learner.ipynb</a> * <code>Learner</code>: Is a fastai class that combines data, model, and error function into a single pipeline. * Documentation: <a href="https://docs.fast.ai/learner.html#learner">learner.html#learner</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/21_vision.learner.ipynb">21_vision.learner.ipynb</a> * <code>resnet18</code>: Is a Pytorch pre-trained model with ResNet-18 architecture for image recognition. * Documentation: <a href="https://pytorch.org/vision/stable/index.html">pytorch.org/vision</a> * <code>error_rate</code>: Is a fastai metric function * <code>Learner.fine_tune</code>: Is a <em>Learner</em> class function that trains a model * Documentation: <a href="https://docs.fast.ai/callback.schedule.html#learner.fine_tune">callback.schedule.html#learner.fine_tune</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/14_callback.schedule.ipynb">14_callback.schedule.ipynb</a></p>
-<p><strong>Summary of the steps till now</strong> * Create an image classifier <code>Learner</code> object * Train a model using <code>Learner.fine_tune</code> method</p>
+<p><strong>Summary of the functions used till now</strong></p>
+<ul>
+<li><code>vision_learner</code>: Is a helper function from the fastai <code>Learner</code> class. It is used to conveniently create a learner object
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/vision.learner.html#vision_learner">vision.learner.html#vision_learner</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/21_vision.learner.ipynb">21_vision.learner.ipynb</a></li>
+</ul></li>
+<li><code>Learner</code>: Is a fastai class that combines data, model, and error function into a single pipeline.
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/learner.html#learner">learner.html#learner</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/21_vision.learner.ipynb">21_vision.learner.ipynb</a></li>
+</ul></li>
+<li><code>resnet18</code>: Is a Pytorch pre-trained model with ResNet-18 architecture for image recognition.
+<ul>
+<li>Documentation: <a href="https://pytorch.org/vision/stable/index.html">pytorch.org/vision</a></li>
+</ul></li>
+<li><code>error_rate</code>: Is a fastai metric function</li>
+<li><code>Learner.fine_tune</code>: Is a <em>Learner</em> class function that trains a model
+<ul>
+<li>Documentation: <a href="https://docs.fast.ai/callback.schedule.html#learner.fine_tune">callback.schedule.html#learner.fine_tune</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/14_callback.schedule.ipynb">14_callback.schedule.ipynb</a></li>
+</ul></li>
+</ul>
+<p><strong>Summary of the steps till now</strong></p>
+<ul>
+<li>Create an image classifier <code>Learner</code> object</li>
+<li>Train a model using <code>Learner.fine_tune</code> method</li>
+</ul>
 </section>
 <section id="interpret-the-trained-model" class="level1">
 <h1>Interpret the trained model</h1>
@@ -1612,13 +1800,29 @@ ClassificationInterpretation<span class="ansi-blue-fg">(</span>
 <p><img src="2022-08-10-sagemaker-fastai-classifier_files/figure-html/cell-51-output-3.png" class="img-fluid"></p>
 </div>
 </div>
-<p>Let’s analyze the results from the last cell. It outputs model performance as “Prediction/Actual/Loss/Confidence” * Prediction: What label has our model predicted for a given image * Actual: What label does our validation data have for that image * Loss: A quantitative measure of how wrong was the model prediction. Making a wrong prediction with high confidence gets a high score * Confidence: The confidence/probability that the model thinks a given image has the predicted label</p>
-<p>Now let’s check the output images. * First image gets the highest loss. Our model thinks (very confidently) that this image is a tennis ball. But in our validation set, it is a cricket ball with green color. This makes sense because our model has learned that green balls are tennis balls. * The second image model again thinks it is a tennis ball. It seems right as it looks like a tennis ball to the human eye. We can remove this image from validation if we are unsure about it. * In the third image, our model thinks it is a cricket ball though it is a soccer ball. What do we learn from this? Our model has not seen soccer ball images before that have green and red colors in it. So we may include more soccer ball images with that color.</p>
+<p>Let’s analyze the results from the last cell. It outputs model performance as “Prediction/Actual/Loss/Confidence”</p>
+<ul>
+<li>Prediction: What label has our model predicted for a given image</li>
+<li>Actual: What label does our validation data have for that image</li>
+<li>Loss: A quantitative measure of how wrong was the model prediction. Making a wrong prediction with high confidence gets a high score</li>
+<li>Confidence: The confidence/probability that the model thinks a given image has the predicted label</li>
+</ul>
+<p>Now let’s check the output images.</p>
+<ul>
+<li>First image gets the highest loss. Our model thinks (very confidently) that this image is a tennis ball. But in our validation set, it is a cricket ball with green color. This makes sense because our model has learned that green balls are tennis balls.</li>
+<li>The second image model again thinks it is a tennis ball. It seems right as it looks like a tennis ball to the human eye. We can remove this image from validation if we are unsure about it.</li>
+<li>In the third image, our model thinks it is a cricket ball though it is a soccer ball. What do we learn from this? Our model has not seen soccer ball images before that have green and red colors in it. So we may include more soccer ball images with that color.</li>
+</ul>
 <p>Similarly, we can analyze the remaining results and take action accordingly.</p>
 </section>
 <section id="export-and-load-a-trained-model" class="level1">
 <h1>Export and load a trained model</h1>
-<p>So we have trained our image classifier and are happy with the results. The next phase in ML work is to copy/transfer this artifact to a server where it can be hosted for inference work. Remember, a trained model consists of the architecture and the trained parameters. So to store a model, we need to save both these parts, and no information is lost. For this, we can use <code>Learner.export</code> method to keep the model in a <code>pickle</code> binary format. * You can learn more about <em>Learner.export</em> from documentation <a href="https://docs.fast.ai/learner.html#learner.export">learner.html#learner.export</a> * Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/13a_learner.ipynb">13a_learner.ipynb</a> * To read about <code>pickle</code> Python object serialization module check the official docs <a href="https://docs.python.org/3/library/pickle.html">pickle.html</a></p>
+<p>So we have trained our image classifier and are happy with the results. The next phase in ML work is to copy/transfer this artifact to a server where it can be hosted for inference work. Remember, a trained model consists of the architecture and the trained parameters. So to store a model, we need to save both these parts, and no information is lost. For this, we can use <code>Learner.export</code> method to keep the model in a <code>pickle</code> binary format.</p>
+<ul>
+<li>You can learn more about <em>Learner.export</em> from documentation <a href="https://docs.fast.ai/learner.html#learner.export">learner.html#learner.export</a></li>
+<li>Source code: <a href="https://github.com/fastai/fastai/blob/master/nbs/13a_learner.ipynb">13a_learner.ipynb</a></li>
+<li>To read about <code>pickle</code> Python object serialization module check the official docs <a href="https://docs.python.org/3/library/pickle.html">pickle.html</a></li>
+</ul>
 <div class="cell" data-execution_count="56">
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
 <span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Define export file name and path</span></span>
@@ -1696,7 +1900,12 @@ ClassificationInterpretation<span class="ansi-blue-fg">(</span>
  TensorBase([1.0414e-05, 1.6653e-05, 2.1281e-06, 9.9997e-01]))</code></pre>
 </div>
 </div>
-<p>It has returned three items: * The predicted category in the format we provided the labels * The index of the predicted category “3”. Indexes start from 0 * And the probabilities of each category</p>
+<p>It has returned three items:</p>
+<ul>
+<li>The predicted category in the format we provided the labels</li>
+<li>The index of the predicted category “3”. Indexes start from 0</li>
+<li>And the probabilities of each category</li>
+</ul>
 <p>If you want to get a list of all the categories, then you can access <code>DataLoaders</code> attribute of the <code>Learner</code>.</p>
 <div class="cell" data-execution_count="68">
 <div class="sourceCode cell-code" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
