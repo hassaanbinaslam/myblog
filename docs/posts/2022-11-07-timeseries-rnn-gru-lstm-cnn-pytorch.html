@@ -280,7 +280,11 @@ ga('send', {
 <p><img src="images/2022-11-07-timeseries-rnn-gru-lstm-cnn-pytorch.jpeg" class="img-fluid"></p>
 <section id="credits" class="level2">
 <h2 class="anchored" data-anchor-id="credits">Credits</h2>
-<p>This notebook takes inspiration and ideas from the following sources. * The outstanding book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://colab.research.google.com/github/dvgodoy/PyTorchStepByStep/blob/master/Chapter03.ipynb">chapter 3</a> and <a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter08.ipynb">chapter 8</a> notebooks of the same book. * Very helpful Kaggle notebook from ‘TARON ZAKARYAN’ to predict stock prices using LSTM. <a href="https://www.kaggle.com/code/taronzakaryan/predicting-stock-price-using-lstm-model-pytorch/notebook">Link here</a></p>
+<p>This notebook takes inspiration and ideas from the following sources.</p>
+<ul>
+<li>The outstanding book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://colab.research.google.com/github/dvgodoy/PyTorchStepByStep/blob/master/Chapter03.ipynb">chapter 3</a> and <a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter08.ipynb">chapter 8</a> notebooks of the same book.</li>
+<li>Very helpful Kaggle notebook from ‘TARON ZAKARYAN’ to predict stock prices using LSTM. <a href="https://www.kaggle.com/code/taronzakaryan/predicting-stock-price-using-lstm-model-pytorch/notebook">Link here</a></li>
+</ul>
 </section>
 <section id="environment" class="level2">
 <h2 class="anchored" data-anchor-id="environment">Environment</h2>
@@ -824,7 +828,31 @@ seaborn==0.11.2</code></pre>
 </section>
 <section id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline">Define a class to implement training, validation, and mini-batch processing pipeline</h2>
-<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are * <code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders * <code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Compute gradients i.e., find the direction and scale to update the weights to reduce the loss 4. Update weight parameters using gradients and the learning rate * <code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients. * <code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to 1. Get the next batch of data and labels (x, y) from the DataLoader iterator 2. Perform a step on the batch. A step can be either training or validation 3. Compute the average batch loss * <code>train</code>: Execute training and validation steps for given number of epoch * <code>predict</code>: Make a prediction from model on provided data</p>
+<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are</p>
+<ul>
+<li><code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders</li>
+<li><code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Compute gradients i.e., find the direction and scale to update the weights to reduce the loss</li>
+<li>Update weight parameters using gradients and the learning rate</li>
+</ol></li>
+<li><code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients.</li>
+</ol></li>
+<li><code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to
+<ol type="1">
+<li>Get the next batch of data and labels (x, y) from the DataLoader iterator</li>
+<li>Perform a step on the batch. A step can be either training or validation</li>
+<li>Compute the average batch loss</li>
+</ol></li>
+<li><code>train</code>: Execute training and validation steps for given number of epoch</li>
+<li><code>predict</code>: Make a prediction from model on provided data</li>
+</ul>
 <div class="cell" data-execution_count="10">
 <details open="">
 <summary>Code</summary>
@@ -1130,7 +1158,7 @@ Test Score: 0.05 RMSE</code></pre>
 <p><img src="2022-11-07-timeseries-rnn-gru-lstm-cnn-pytorch_files/figure-html/cell-18-output-1.png" class="img-fluid"></p>
 </div>
 </div>
-<p>That is the end of Section 1. We have successfully trained a recurrent neural network on ordered sequence data, and our predicted values are very close to the actual values. We have also learned to use ordered sequences to generate training and test data sets with features and labels.</p>
+<p>That is the end of Section I. We have successfully trained a recurrent neural network on ordered sequence data, and our predicted values are very close to the actual values. We have also learned to use ordered sequences to generate training and test data sets with features and labels.</p>
 </section>
 </section>
 <section id="section-ii" class="level1">
@@ -1309,9 +1337,34 @@ Test Score: 2.37 RMSE</code></pre>
 </blockquote>
 <p><a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter08.ipynb">PyTorch Step By Step Chapter 8</a> does a great job of explaining the internal working of an RNN Cell. I have taken the following image from the book’s official GitHub repo.</p>
 <p><img src="images/2022-11-07-timeseries-rnn-gru-lstm-cnn-pytorch/rnn_cell_diagram.png" class="img-fluid" alt="rnn_cell_diagram.png"> <em><a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter08.ipynb">Image Source: dvgodoy/PyTorchStepByStep/blob/master/Chapter08</a></em></p>
-<p>From this image we can reason the following * There are two types of weight layers * First weight layer (Wi) which processes the input. Let’s call it as ‘input linear layer’ or in short <code>linear_input</code> * Second weight layer (Wh) which processes the hidden state. Let’s call it as hidden linear layer or in short <code>linear_hidden</code> * RNN cell processes two types of input at the same time * Sequence data input or <code>X</code> * and the Hidden state. Hidden state is also the output of the RNN cell at each step, and it is returned as an input for the next step</p>
-<p>The processing of an RNN cell can be described in the following steps 1. Pass input (<code>X=[x0, x1]</code>) to input linear layer (linear_input) and get the output (<code>tx=[t0, t1</code>]) 2. Pass the last “hidden state” to the hidden linear layer (linear_hidden), and get the output (<code>th=[h0, h1</code>]). Since at the start we don’t have a hidden state from the last step, we can manually assign hidden state as zeros and pass it to hidden linear layer. 3. Add both outputs <code>tx</code> and <code>th</code>. Let’s call it <code>adding</code> 4. pass the ‘adding’ to activation function <code>tanh</code>. The output is the new “hidden state” and will be used in the next step.</p>
-<p>Now that we have learned how an RNN cell works let’s build it ourselves without relying on PyTorch <code>nn.RNN</code> class. To ensure that our custom RNN cell produces the same output as nn.RNN, we will do the following test * Create two linear layers that will represent input and hidden layers (<code>linear_input</code> and <code>linear_hidden</code> respectively) * Create an nn.RNN cell * Copy and assign the weights from nn.RNN cell to input and hidden linear layers * Train both linear layers and nn.RNN cell on an input data point * Compare the weight states of both. If they match, then we have successfully replicated the internal functionality of an.RNN cell.</p>
+<p>From this image we can reason the following</p>
+<ul>
+<li>There are two types of weight layers
+<ul>
+<li>First weight layer (Wi) which processes the input. Let’s call it as ‘input linear layer’ or in short <code>linear_input</code></li>
+<li>Second weight layer (Wh) which processes the hidden state. Let’s call it as hidden linear layer or in short <code>linear_hidden</code></li>
+</ul></li>
+<li>RNN cell processes two types of input at the same time
+<ul>
+<li>Sequence data input or <code>X</code></li>
+<li>and the Hidden state. Hidden state is also the output of the RNN cell at each step, and it is returned as an input for the next step</li>
+</ul></li>
+</ul>
+<p>The processing of an RNN cell can be described in the following steps</p>
+<ol type="1">
+<li>Pass input (<code>X=[x0, x1]</code>) to input linear layer (linear_input) and get the output (<code>tx=[t0, t1</code>])</li>
+<li>Pass the last “hidden state” to the hidden linear layer (linear_hidden), and get the output (<code>th=[h0, h1</code>]). Since at the start we don’t have a hidden state from the last step, we can manually assign hidden state as zeros and pass it to hidden linear layer.</li>
+<li>Add both outputs <code>tx</code> and <code>th</code>. Let’s call it <code>adding</code></li>
+<li>pass the ‘adding’ to activation function <code>tanh</code>. The output is the new “hidden state” and will be used in the next step.</li>
+</ol>
+<p>Now that we have learned how an RNN cell works let’s build it ourselves without relying on PyTorch <code>nn.RNN</code> class. To ensure that our custom RNN cell produces the same output as nn.RNN, we will do the following test</p>
+<ul>
+<li>Create two linear layers that will represent input and hidden layers (<code>linear_input</code> and <code>linear_hidden</code> respectively)</li>
+<li>Create an nn.RNN cell</li>
+<li>Copy and assign the weights from nn.RNN cell to input and hidden linear layers</li>
+<li>Train both linear layers and nn.RNN cell on an input data point</li>
+<li>Compare the weight states of both. If they match, then we have successfully replicated the internal functionality of an.RNN cell.</li>
+</ul>
 <div class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="co"># create input and hidden linear layers</span></span>
@@ -1507,7 +1560,20 @@ Test Score: 2.68 RMSE</code></pre>
 <section id="gru-cell-in-detail" class="level3">
 <h3 class="anchored" data-anchor-id="gru-cell-in-detail">GRU cell in detail</h3>
 <p><img src="images/2022-11-07-timeseries-rnn-gru-lstm-cnn-pytorch/gru_cell.png" class="img-fluid" alt="gru_cell.png"> <em><a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter08.ipynb">Image Source: dvgodoy/PyTorchStepByStep/blob/master/Chapter08</a></em></p>
-<p>From the above image we can see that GRU cell is more advanced than a simple RNN cell. It has two more weight layers commonly referred as <strong>gates</strong> * <code>Reset gate</code>: This weight layer is used to control how much of the past is needed to neglect or forget. This gate has a control <code>r</code> which is learned during training. * If we decrease r to 0, then the current state of cell <strong>n</strong> is less and less influenced by the old hidden state * If we increase r all the way to 1, then the current state will have maximum affect of the last hidden state. * <code>Update gate</code>: This weight layer is used to control how much of the past information is needed to be passed on to the next step. This gate has a control <code>z</code> which is also learned during training. * If we decrease z all the way to 0, then the new hidden state <strong>h<code>** is closer and closer to current state of the cell. In the figure the current state is **n**     * If we increase z all the way to 1, then new hidden state **h</code></strong> is simply a copy of last hidden state <strong>h</strong> * If we decrease both r and z to 0, then GRU is simply a linear layer followed by an activation layer.</p>
+<p>From the above image we can see that GRU cell is more advanced than a simple RNN cell. It has two more weight layers commonly referred as <strong>gates</strong></p>
+<ul>
+<li><code>Reset gate</code>: This weight layer is used to control how much of the past is needed to neglect or forget. This gate has a control <code>r</code> which is learned during training.
+<ul>
+<li>If we decrease r to 0, then the current state of cell <strong>n</strong> is less and less influenced by the old hidden state</li>
+<li>If we increase r all the way to 1, then the current state will have maximum affect of the last hidden state.</li>
+</ul></li>
+<li><code>Update gate</code>: This weight layer is used to control how much of the past information is needed to be passed on to the next step. This gate has a control <code>z</code> which is also learned during training.
+<ul>
+<li>If we decrease z all the way to 0, then the new hidden state <strong>h`</strong> is closer and closer to current state of the cell. In the figure the current state is <strong>n</strong></li>
+<li>If we increase z all the way to 1, then new hidden state <strong>h`</strong> is simply a copy of last hidden state <strong>h</strong></li>
+</ul></li>
+<li>If we decrease both r and z to 0, then GRU is simply a linear layer followed by an activation layer.</li>
+</ul>
 <p><strong>How does having two extra learnable weight layers and their controls make GRU better than RNN?</strong></p>
 <ul>
 <li>It is like giving more control to a neural network to decide which information it wants to retain and which to forget as time passes.</li>
@@ -1620,7 +1686,12 @@ Test Score: 0.93 RMSE</code></pre>
 <section id="lstm-cell-in-detail" class="level3">
 <h3 class="anchored" data-anchor-id="lstm-cell-in-detail">LSTM cell in detail</h3>
 <p><img src="images/2022-11-07-timeseries-rnn-gru-lstm-cnn-pytorch/lstm_cell.png" class="img-fluid" alt="lstm_cell.png"> <em><a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter08.ipynb">Image Source: dvgodoy/PyTorchStepByStep/blob/master/Chapter08</a></em></p>
-<p>The above image shows that LSTM network has more learnable parameters and controls compared to RNN and GRU. There is * <code>Forget gate</code>: Similar to the reset gate in GRU, it controls which information needs attention and which can be ignored. * <code>Input gate and Cell state</code>: LSTM is unique in that besides the hidden state, it also maintains a separate state called <code>cell state</code>. Cell state acts as a long-term memory, while the hidden state acts like a working or short-term memory. Input gate controls how to update the cell state based on past hidden state, past cell state, and new input. * <code>Update gate</code>: Update gate controls how to update the hidden state to generate a new hidden state value. It gets influenced by past hidden states and new input. Cell state does not affect this gate.</p>
+<p>The above image shows that LSTM network has more learnable parameters and controls compared to RNN and GRU. There is</p>
+<ul>
+<li><code>Forget gate</code>: Similar to the reset gate in GRU, it controls which information needs attention and which can be ignored.</li>
+<li><code>Input gate and Cell state</code>: LSTM is unique in that besides the hidden state, it also maintains a separate state called <code>cell state</code>. Cell state acts as a long-term memory, while the hidden state acts like a working or short-term memory. Input gate controls how to update the cell state based on past hidden state, past cell state, and new input.</li>
+<li><code>Update gate</code>: Update gate controls how to update the hidden state to generate a new hidden state value. It gets influenced by past hidden states and new input. Cell state does not affect this gate.</li>
+</ul>
 </section>
 </section>
 <section id="one-dimensional-convolutional-neural-network-1d-convnet" class="level2">
@@ -1759,7 +1830,11 @@ Test Score: 2.07 RMSE</code></pre>
 </div>
 <p>1D ConvNet results stand between GRU and LSTM. It is performing better than RNN and GRU but less than LSTM.</p>
 <p><strong>How does 1D ConvNet compare to RNN?</strong></p>
-<p>1D ConvNets have 1D convolutions, i.e.&nbsp;they move the filter in one dimension from left to right like a moving window. These kernels (or filters) behave similarly to the hidden state in RNN * In RNN, we process one data point at a step and move forward, incrementing the steps till we reach the end of the sequence * In 1D-ConvNet, we process one sequence at a time and move the filter along the entire length of the sequence</p>
+<p>1D ConvNets have 1D convolutions, i.e.&nbsp;they move the filter in one dimension from left to right like a moving window. These kernels (or filters) behave similarly to the hidden state in RNN</p>
+<ul>
+<li>In RNN, we process one data point at a step and move forward, incrementing the steps till we reach the end of the sequence</li>
+<li>In 1D-ConvNet, we process one sequence at a time and move the filter along the entire length of the sequence</li>
+</ul>
 
 
 </section>
