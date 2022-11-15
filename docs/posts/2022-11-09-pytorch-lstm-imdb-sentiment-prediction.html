@@ -378,7 +378,12 @@ Test dataset size:  25000</code></pre>
 </section>
 <section id="data-preprocessing-steps" class="level3">
 <h3 class="anchored" data-anchor-id="data-preprocessing-steps">Data preprocessing steps</h3>
-<p>From these two reviews, we can deduce that * We have two labels. ‘pos’ for a positive and ‘neg’ for a negative review * From the second review (from valid_dataset), we also get that text may contain HTML tags, special characters, and emoticons besides normal English words. It will require some preprocessing to remove them for proper word tokenization. * Reviews can have varying text lengths. It will require some padding to make all review texts the same size.</p>
+<p>From these two reviews, we can deduce that</p>
+<ul>
+<li>We have two labels. ‘pos’ for a positive and ‘neg’ for a negative review</li>
+<li>From the second review (from valid_dataset), we also get that text may contain HTML tags, special characters, and emoticons besides normal English words. It will require some preprocessing to remove them for proper word tokenization.</li>
+<li>Reviews can have varying text lengths. It will require some padding to make all review texts the same size.</li>
+</ul>
 <p>Let’s take a simple text example and apply these steps to understand why these steps are essential in preprocessing. In the last step, we will create tokens from the preprocessed text.</p>
 <div class="cell" data-outputid="740babb1-00b7-4066-caa2-5cc5fe47053e" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>example_text <span class="op">=</span> <span class="st">'''This is awesome movie &lt;br /&gt;&lt;br /&gt;. I loved it so much :-) I</span><span class="ch">\'</span><span class="st">m goona watch it again :)'''</span></span>
@@ -555,7 +560,12 @@ Test dataset size:  25000</code></pre>
 <blockquote class="blockquote">
 <p>Note that the ordering in which key value pairs were inserted in the ordered_dict will be respected when building the vocab. Therefore if sorting by token frequency is important to the user, the ordered_dict should be created in a way to reflect this.</p>
 </blockquote>
-<p>It highlights three points: * It maps tokens to indices * It requires an ordered dictionary (<code>OrderedDict</code>) to work * Tokens in vocab at the starting indices reflect higher frequency</p>
+<p>It highlights three points:</p>
+<ul>
+<li>It maps tokens to indices</li>
+<li>It requires an ordered dictionary (<code>OrderedDict</code>) to work</li>
+<li>Tokens in vocab at the starting indices reflect higher frequency</li>
+</ul>
 <div class="cell" data-outputid="d97dfd64-f37e-4372-cd52-339466927997" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="co"># step 1: convert our sorted list of tokens to OrderedDict</span></span>
@@ -666,7 +676,11 @@ an  --&gt;  35
 example  --&gt;  457</code></pre>
 </div>
 </div>
-<p>We have added two extra tokens to our vocabulary. * “pad” for padding. This token will come in handy when we pad our reviews to make them of the same length * “unk” for unknown. This token will come in handy if we find any token in the validation or test set that was not part of the train set</p>
+<p>We have added two extra tokens to our vocabulary.</p>
+<ul>
+<li>“pad” for padding. This token will come in handy when we pad our reviews to make them of the same length</li>
+<li>“unk” for unknown. This token will come in handy if we find any token in the validation or test set that was not part of the train set</li>
+</ul>
 <p>Let’s also print the tokens present at the first ten indices of our vocab object.</p>
 <div class="cell" data-outputid="8a12125d-d609-43ed-d83e-7e855b55bc33" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>vb.get_itos()[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -697,8 +711,15 @@ example  --&gt;  457</code></pre>
 <section id="define-data-processing-pipelines" class="level2">
 <h2 class="anchored" data-anchor-id="define-data-processing-pipelines">Define data processing pipelines</h2>
 <p>At this point, we have our tokenizer function and vocabulary lookup ready. For each review item from the dataset, we are supposed to perform the following preprocessing steps:</p>
-<p><strong>For review text</strong> * Create tokens from the review text * Assign a unique integer to each token from the vocab lookup</p>
-<p><strong>For review label</strong> * Assign 1 for <code>pos</code> and 0 for <code>neg</code> label</p>
+<p><strong>For review text</strong></p>
+<ul>
+<li>Create tokens from the review text</li>
+<li>Assign a unique integer to each token from the vocab lookup</li>
+</ul>
+<p><strong>For review label</strong></p>
+<ul>
+<li>Assign 1 for <code>pos</code> and 0 for <code>neg</code> label</li>
+</ul>
 <p>Let’s create two simple functions (inline lambda) for review text and label processing.</p>
 <div class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
@@ -803,7 +824,11 @@ example  --&gt;  457</code></pre>
 <pre><code>tensor([5, 2, 1, 6, 3, 7, 4, 8, 9])</code></pre>
 </div>
 </div>
-<p>Here the tensor still holds all the original tensor values (1 to 9) but is very condensed and has no extra padded token. So how does this tensor know which tokens belong to which token? For this, it stores some additional information. * batch sizes (or original tensor length) * tensor indices</p>
+<p>Here the tensor still holds all the original tensor values (1 to 9) but is very condensed and has no extra padded token. So how does this tensor know which tokens belong to which token? For this, it stores some additional information.</p>
+<ul>
+<li>batch sizes (or original tensor length)</li>
+<li>tensor indices</li>
+</ul>
 <p>We can move back and forth between the padded pack and unpacked sequences using this information.</p>
 <div class="cell" data-outputid="4041dad4-e6f7-48c9-8153-bd4cf94fc075" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>pack_pad_seq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -941,7 +966,13 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 </section>
 <section id="rnn-model-configuration-loss-function-and-optimizer" class="level2">
 <h2 class="anchored" data-anchor-id="rnn-model-configuration-loss-function-and-optimizer">RNN model configuration, loss function, and optimizer</h2>
-<p>We have seen the review text, which can be long sequences. We will use the LSTM layer for capturing the long-term dependencies. Our sentiment analysis model is composed of the following layers * Start with an <strong>Embedding layer</strong>. Placing the embedding layer is similar to one-hot-encoding, where each word token is converted to a separate feature (or vector or column). But this can lead to too many features (curse of dimensionality or dimensional explosion). To avoid this, we try to map tokens to fixed-size vectors (or columns). In such a feature matrix, different elements denote different tokens. Tokens that are closed are also placed together. Further, during training, we also learn and update the positioning of tokens. Similar tokens are placed into closer and closer locations. Such a matrix layer is termed an embedding layer. * After the embedding layer, there is the RNN layer (LSTM to be specific). * Then we have a fully connected layer followed by activation and another fully connected layer. * Finally, we have a logistic sigmoid layer for prediction</p>
+<p>We have seen the review text, which can be long sequences. We will use the LSTM layer for capturing the long-term dependencies. Our sentiment analysis model is composed of the following layers</p>
+<ul>
+<li>Start with an <strong>Embedding layer</strong>. Placing the embedding layer is similar to one-hot-encoding, where each word token is converted to a separate feature (or vector or column). But this can lead to too many features (curse of dimensionality or dimensional explosion). To avoid this, we try to map tokens to fixed-size vectors (or columns). In such a feature matrix, different elements denote different tokens. Tokens that are closed are also placed together. Further, during training, we also learn and update the positioning of tokens. Similar tokens are placed into closer and closer locations. Such a matrix layer is termed an embedding layer.</li>
+<li>After the embedding layer, there is the RNN layer (LSTM to be specific).</li>
+<li>Then we have a fully connected layer followed by activation and another fully connected layer.</li>
+<li>Finally, we have a logistic sigmoid layer for prediction</li>
+</ul>
 <div class="cell" data-execution_count="40">
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
 <span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://github.com/rasbt/machine-learning-book/blob/main/ch15/ch15_part2.ipynb</span></span>
