@@ -277,7 +277,13 @@ ga('send', {
 <p><img src="images/2022-10-18-pytorch-mnist-convolutional-neural-networks.jpeg" class="img-fluid"></p>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>We will train a LeNet-5 CNN model with PyTorch on the MNIST dataset in this notebook. Given below is the summary of the steps followed in this notebook. * Download the MNIST dataset. Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class * Create a Neural Net model configuration, an SGD optimizer, and a loss function * Create a pipeline that will train the model on given data and update the weights based on the loss * Visualize filters and feature maps from the trained model</p>
+<p>We will train a LeNet-5 CNN model with PyTorch on the MNIST dataset in this notebook. Given below is the summary of the steps followed in this notebook.</p>
+<ul>
+<li>Download the MNIST dataset. Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class</li>
+<li>Create a Neural Net model configuration, an SGD optimizer, and a loss function</li>
+<li>Create a pipeline that will train the model on given data and update the weights based on the loss</li>
+<li>Visualize filters and feature maps from the trained model</li>
+</ul>
 </section>
 <section id="environment" class="level2">
 <h2 class="anchored" data-anchor-id="environment">Environment</h2>
@@ -303,11 +309,20 @@ matplotlib==3.2.2</code></pre>
 </section>
 <section id="credits" class="level2">
 <h2 class="anchored" data-anchor-id="credits">Credits</h2>
-<p>This notebook takes inspiration and ideas from the following two sources. * The outstanding book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks and can be used independently: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter05.ipynb">chapter 5 notebook</a> of the same book. * A great post by “Eugenia Anello” with the title <a href="https://medium.com/dataseries/visualizing-the-feature-maps-and-filters-by-convolutional-neural-networks-e1462340518e">Visualizing the Feature Maps and Filters by Convolutional Neural Networks</a>. You can click the title to reach the post on the <code>medium.com</code> platform. <code>Eugenia Anello</code> can also be found on her <a href="https://www.linkedin.com/in/eugenia-anello">linkedin profile</a>.</p>
+<p>This notebook takes inspiration and ideas from the following two sources.</p>
+<ul>
+<li>The outstanding book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks and can be used independently: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://github.com/dvgodoy/PyTorchStepByStep/blob/master/Chapter05.ipynb">chapter 5 notebook</a> of the same book.</li>
+<li>A great post by “Eugenia Anello” with the title <a href="https://medium.com/dataseries/visualizing-the-feature-maps-and-filters-by-convolutional-neural-networks-e1462340518e">Visualizing the Feature Maps and Filters by Convolutional Neural Networks</a>. You can click the title to reach the post on the <code>medium.com</code> platform. <code>Eugenia Anello</code> can also be found on her <a href="https://www.linkedin.com/in/eugenia-anello">linkedin profile</a>.</li>
+</ul>
 </section>
 <section id="download-mnist-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="download-mnist-dataset">Download MNIST Dataset</h2>
-<p>MNIST dataset can be downloaded easily from PyTorch built-in datasets provided under <code>torchvision.datasets</code>. In this section, we will download it, split it into train and test datasets, and then convert it into PyTorch tensors. * Read more about the PyTorch MNIST dataset <a href="https://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html#torchvision.datasets.MNIST">here</a> * <code>torchvision.transforms.Compose</code> is like a container to hold a list of transformations you intend to apply. Read more about it <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html">here</a> * <code>torchvision.transforms.ToTensor</code> converts a <code>PIL Image</code> or <code>numpy.ndarray</code> to tensor. It converts a PIL Image or numpy.ndarray <strong>(H x W x C) in the range [0, 255]</strong> to a torch.FloatTensor of shape <strong>(C x H x W) in the range [0.0, 1.0]</strong>. Here C=Channel, H=Height, W=Width. Read more about this transformation <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html">here</a></p>
+<p>MNIST dataset can be downloaded easily from PyTorch built-in datasets provided under <code>torchvision.datasets</code>. In this section, we will download it, split it into train and test datasets, and then convert it into PyTorch tensors.</p>
+<ul>
+<li>Read more about the PyTorch MNIST dataset <a href="https://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html#torchvision.datasets.MNIST">here</a></li>
+<li><code>torchvision.transforms.Compose</code> is like a container to hold a list of transformations you intend to apply. Read more about it <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html">here</a></li>
+<li><code>torchvision.transforms.ToTensor</code> converts a <code>PIL Image</code> or <code>numpy.ndarray</code> to tensor. It converts a PIL Image or numpy.ndarray <strong>(H x W x C) in the range [0, 255]</strong> to a torch.FloatTensor of shape <strong>(C x H x W) in the range [0.0, 1.0]</strong>. Here C=Channel, H=Height, W=Width. Read more about this transformation <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html">here</a></li>
+</ul>
 <div class="cell" data-outputid="b05959d6-bffa-4084-9125-42279f9d9fcf" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision</span>
@@ -469,7 +484,31 @@ Examples in Valid Loader: 18000</code></pre>
 </section>
 <section id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline">Define a class to implement training, validation, and mini-batch processing pipeline</h2>
-<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are * <code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders * <code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Compute gradients i.e., find the direction and scale to update the weights to reduce the loss 4. Update weight parameters using gradients and the learning rate * <code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients. * <code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to 1. Get the next batch of data and labels (x, y) from the DataLoader iterator 2. Perform a step on the batch. A step can be either training or validation 3. Compute the average batch loss * <code>train</code>: Execute training and validation steps for given number of epoch * <code>predict</code>: Make a prediction from model on provided data</p>
+<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are</p>
+<ul>
+<li><code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders</li>
+<li><code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Compute gradients i.e., find the direction and scale to update the weights to reduce the loss</li>
+<li>Update weight parameters using gradients and the learning rate</li>
+</ol></li>
+<li><code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients.</li>
+</ol></li>
+<li><code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to
+<ol type="1">
+<li>Get the next batch of data and labels (x, y) from the DataLoader iterator</li>
+<li>Perform a step on the batch. A step can be either training or validation</li>
+<li>Compute the average batch loss</li>
+</ol></li>
+<li><code>train</code>: Execute training and validation steps for given number of epoch</li>
+<li><code>predict</code>: Make a prediction from model on provided data</li>
+</ul>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
@@ -768,7 +807,13 @@ CONV: Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1)) ====&gt; SHAPE: torch.Siz
 CONV: Conv2d(16, 120, kernel_size=(5, 5), stride=(1, 1)) ====&gt; SHAPE: torch.Size([120, 16, 5, 5])</code></pre>
 </div>
 </div>
-<p>The output of the above cell tells us that * There are three convolutional layers * First layer has a dimension of <code>[6, 1, 5, 5]</code>. It means we have 6 filters in this layer. Each filter has 1 matrix of dimension 5x5 under it. * Second layer has a dimension of <code>[16, 6, 5, 5]</code>. It means we have 16 filters. Each filter has 6 matrices of size 5x5 under it. * Third layer has a dimension of <code>[120, 16, 5, 5]</code>. It means we have 120 filters. Each filter has 16 matrices of size 5x5 under it.</p>
+<p>The output of the above cell tells us that</p>
+<ul>
+<li>There are three convolutional layers</li>
+<li>First layer has a dimension of <code>[6, 1, 5, 5]</code>. It means we have 6 filters in this layer. Each filter has 1 matrix of dimension 5x5 under it.</li>
+<li>Second layer has a dimension of <code>[16, 6, 5, 5]</code>. It means we have 16 filters. Each filter has 6 matrices of size 5x5 under it.</li>
+<li>Third layer has a dimension of <code>[120, 16, 5, 5]</code>. It means we have 120 filters. Each filter has 16 matrices of size 5x5 under it.</li>
+</ul>
 <p>Note that the learned weights from these matrices are stored in <code>model_weights</code> list, which we will visualize in the next section.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
@@ -847,7 +892,12 @@ CONV: Conv2d(16, 120, kernel_size=(5, 5), stride=(1, 1)) ====&gt; SHAPE: torch.S
 <p>The output produced by a neural net <code>layer</code> is called its feature map. These layers can be convolutional, flattening, or linear (fully connected). For example, in our LeNet-5 model, we have three convolutional layers, and each of these layers produces a feature map. In this section, we will visualize them.</p>
 <section id="define-a-hook" class="level3">
 <h3 class="anchored" data-anchor-id="define-a-hook">Define a hook</h3>
-<p>A <code>hook</code> is simply a function we can give to our model to execute after its forward or backward pass. While attaching (or registering) a hook to a model, we provide the layer name on which we want to connect it. A hook function takes three arguments. * a layer or a model * a tensor representing the inputs to the layer or model * a tensor representing the outputs from the layer or model</p>
+<p>A <code>hook</code> is simply a function we can give to our model to execute after its forward or backward pass. While attaching (or registering) a hook to a model, we provide the layer name on which we want to connect it. A hook function takes three arguments.</p>
+<ul>
+<li>a layer or a model</li>
+<li>a tensor representing the inputs to the layer or model</li>
+<li>a tensor representing the outputs from the layer or model</li>
+</ul>
 <p>Let’s define a function that will serve as our hook.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
@@ -1345,7 +1395,12 @@ CONV: Conv2d(16, 120, kernel_size=(5, 5), stride=(1, 1)) ====&gt; SHAPE: torch.S
 </section>
 <section id="what-do-these-output-feature-maps-tell-us" class="level3">
 <h3 class="anchored" data-anchor-id="what-do-these-output-feature-maps-tell-us">What do these OUTPUT feature maps tell us?</h3>
-<p>We can see that output feature maps of the same numbers are very similar. They show that our model has learned some hidden patterns that distinguish these images. For example * For label 1, all output feature maps have a RED bar at the extreme left and a BLUE bar at the right side * For label 3, there are two RED bars around the middle and a light BLUE bar running along them * For label 5, RED bars are in the middle and at the extreme right side.</p>
+<p>We can see that output feature maps of the same numbers are very similar. They show that our model has learned some hidden patterns that distinguish these images. For example</p>
+<ul>
+<li>For label 1, all output feature maps have a RED bar at the extreme left and a BLUE bar at the right side</li>
+<li>For label 3, there are two RED bars around the middle and a light BLUE bar running along them</li>
+<li>For label 5, RED bars are in the middle and at the extreme right side.</li>
+</ul>
 <p>If we look at the first feature map from label 5, it is a bit different. A kind of outlier from the rest of label 5 feature maps. What could be the reason for this?</p>
 <p>Let’s plot these label 5 images to check their actual shape.</p>
 <div class="cell" data-outputid="f1054235-4287-43b9-b337-749fc40acfee">
