@@ -267,7 +267,14 @@ ga('send', {
 <p><img src="images/2022-10-11-pytorch-two-class-logistic-regression.jpeg" class="img-fluid"></p>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this notebook, we will train a logistic regression model using PyTorch. Given below is the summary of the steps followed in this notebook. * Create a synthetic binary class dataset * Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class * Create a Neural Net model configuration, an SGD optimizer, and a loss function * Create a pipeline that will train the model on given data and update the weights based on the loss * Compare the results with a scikit-learn logistic regression model</p>
+<p>In this notebook, we will train a logistic regression model using PyTorch. Given below is the summary of the steps followed in this notebook.</p>
+<ul>
+<li>Create a synthetic binary class dataset</li>
+<li>Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class</li>
+<li>Create a Neural Net model configuration, an SGD optimizer, and a loss function</li>
+<li>Create a pipeline that will train the model on given data and update the weights based on the loss</li>
+<li>Compare the results with a scikit-learn logistic regression model</li>
+</ul>
 </section>
 <section id="environment" class="level2">
 <h2 class="anchored" data-anchor-id="environment">Environment</h2>
@@ -394,7 +401,31 @@ matplotlib==3.2.2</code></pre>
 </section>
 <section id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline">Define a class to implement training, validation, and mini-batch processing pipeline</h2>
-<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are * <code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders * <code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Compute gradients i.e., find the direction and scale to update the weights to reduce the loss 4. Update weight parameters using gradients and the learning rate * <code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients. * <code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to 1. Get the next batch of data and labels (x, y) from the DataLoader iterator 2. Perform a step on the batch. A step can be either training or validation 3. Compute the average batch loss * <code>train</code>: Execute training and validation steps for given number of epoch * <code>predict</code>: Make a prediction from model on provided data</p>
+<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are</p>
+<ul>
+<li><code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders</li>
+<li><code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Compute gradients i.e., find the direction and scale to update the weights to reduce the loss</li>
+<li>Update weight parameters using gradients and the learning rate</li>
+</ol></li>
+<li><code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients.</li>
+</ol></li>
+<li><code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to
+<ol type="1">
+<li>Get the next batch of data and labels (x, y) from the DataLoader iterator</li>
+<li>Perform a step on the batch. A step can be either training or validation</li>
+<li>Compute the average batch loss</li>
+</ol></li>
+<li><code>train</code>: Execute training and validation steps for given number of epoch</li>
+<li><code>predict</code>: Make a prediction from model on provided data</li>
+</ul>
 <div class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
