@@ -262,7 +262,14 @@ ga('send', {
 <p><img src="images/2022-10-10-pytorch-linear-regression.jpeg" class="img-fluid"></p>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this notebook, we will train a linear regression model using PyTorch. Given below is the summary of the steps followed in this notebook. * Create a synthetic linear dataset * Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class * Create a Linear Neural Net model configuration, an SGD optimizer, and a loss function * Create a pipeline that will train the model on given data and update the weights based on the loss * View the training results using TensorBoard graphical view</p>
+<p>In this notebook, we will train a linear regression model using PyTorch. Given below is the summary of the steps followed in this notebook.</p>
+<ul>
+<li>Create a synthetic linear dataset</li>
+<li>Split the data into <code>Train</code> and <code>Validation</code> datasets. Then convert them into mini-batches using PyTorch <code>DataLoader</code> class</li>
+<li>Create a Linear Neural Net model configuration, an SGD optimizer, and a loss function</li>
+<li>Create a pipeline that will train the model on given data and update the weights based on the loss</li>
+<li>View the training results using TensorBoard graphical view</li>
+</ul>
 </section>
 <section id="environment" class="level2">
 <h2 class="anchored" data-anchor-id="environment">Environment</h2>
@@ -443,8 +450,15 @@ matplotlib==3.2.2</code></pre>
 </section>
 <section id="define-training-validation-and-mini-batch-processing-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="define-training-validation-and-mini-batch-processing-pipeline">Define training, validation and mini-batch processing pipeline</h2>
-<p>In this section, we will define our pipelines for training and validation. * Training pipeline is usually called “training step” which includes the following steps 1. Computes our model’s predicted output - the forward pass 2. Computes the loss 3. Computes gradients i.e., find the direction and scale to update the weight to reduce the loss 4. Updates parameters using gradients and the learning rate</p>
+<p>In this section, we will define our pipelines for training and validation.</p>
 <ul>
+<li>Training pipeline is usually called “training step” which includes the following steps
+<ol type="1">
+<li>Computes our model’s predicted output - the forward pass</li>
+<li>Computes the loss</li>
+<li>Computes gradients i.e., find the direction and scale to update the weight to reduce the loss</li>
+<li>Updates parameters using gradients and the learning rate</li>
+</ol></li>
 <li>Validation pipeline is usually called the “validation step” which includes the following steps
 <ol type="1">
 <li>Computes our model’s predicted output - the forward pass</li>
@@ -507,7 +521,12 @@ matplotlib==3.2.2</code></pre>
 <span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates the val_step function for our model and loss function</span></span>
 <span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>val_step_fn <span class="op">=</span> make_val_step_fn(model, loss_fn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now let’s define the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to 1. Get the next batch of data and labels (x, y) from the DataLoader iterator 2. Perform a step on the batch. A step can be either training or validation 3. Compute the average batch loss</p>
+<p>Now let’s define the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to</p>
+<ol type="1">
+<li>Get the next batch of data and labels (x, y) from the DataLoader iterator</li>
+<li>Perform a step on the batch. A step can be either training or validation</li>
+<li>Compute the average batch loss</li>
+</ol>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper function for minibatch processing</span></span>
@@ -828,7 +847,11 @@ epoch: 199, train loss: 0.01018, valid loss: 0.00771</code></pre>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>reg <span class="op">=</span> LinearRegression().fit(x_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Our Sklearn model is ready so let’s also get its weight and bias. For sklearn LinearRegressor * coef_ = coefficient = m * intercept_ = intercept = b</p>
+<p>Our Sklearn model is ready so let’s also get its weight and bias. For sklearn LinearRegressor</p>
+<ul>
+<li>coef_ = coefficient = m</li>
+<li>intercept_ = intercept = b</li>
+</ul>
 <div class="cell" data-outputid="a7630650-4e12-4bf4-b99f-451d867266cf" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>reg.coef_, reg.intercept_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
