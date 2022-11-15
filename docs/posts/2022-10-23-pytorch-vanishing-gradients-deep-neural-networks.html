@@ -145,6 +145,7 @@ ga('send', {
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Random Thoughts - Detect Vanishing Gradients in Deep Neural Networks by Plotting Gradient Distributions">
@@ -282,7 +283,12 @@ ga('send', {
 <p><img src="images/2022-10-23-pytorch-vanishing-gradients-deep-neural-networks.jpeg" class="img-fluid"></p>
 <section id="credits" class="level2">
 <h2 class="anchored" data-anchor-id="credits">Credits</h2>
-<p>This notebook takes inspiration and ideas from the following sources. * A great post from <code>MATLAB</code> company <code>MathWorks</code> with the same title: <a href="https://www.mathworks.com/help/deeplearning/ug/detect-vanishing-gradients-in-deep-neural-networks.html">Detect Vanishing Gradients in Deep Neural Networks by Plotting Gradient Distributions</a>. That post is written for the MATLAB audience, and I have tried translating its ideas for Python and PyTorch community. * The outstanding book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks and can be used independently: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://colab.research.google.com/github/dvgodoy/PyTorchStepByStep/blob/master/Chapter03.ipynb">chapter 3 notebook</a> of the same book. * University of Amsterdam (UvA) Deep Learning Course series. <a href="https://uvadlc.github.io/">uvadlc.github.io</a>. Their lecture on “activation functions and gradients” discusses the same topic. Here is the link: <a href="https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial3/Activation_Functions.html">tutorial3/Activation_Functions.html</a>. The course is outstanding, and lectures and notebooks are also openly shared. From the course site <em>“This course is taught in the MSc program in Artificial Intelligence of the University of Amsterdam. In this course we study the theory of deep learning, namely of modern, multi-layered neural networks trained on big data.”</em></p>
+<p>This notebook takes inspiration and ideas from the following sources.</p>
+<ul>
+<li>A great post from <code>MATLAB</code> company <code>MathWorks</code> with the same title: <a href="https://www.mathworks.com/help/deeplearning/ug/detect-vanishing-gradients-in-deep-neural-networks.html">Detect Vanishing Gradients in Deep Neural Networks by Plotting Gradient Distributions</a>. That post is written for the MATLAB audience, and I have tried translating its ideas for Python and PyTorch community.</li>
+<li>The outstanding book “Deep Learning with PyTorch Step-by-Step” by “Daniel Voigt Godoy”. You can get the book from its website: <a href="https://pytorchstepbystep.com/">pytorchstepbystep</a>. In addition, the GitHub repository for this book has valuable notebooks and can be used independently: <a href="https://github.com/dvgodoy/PyTorchStepByStep">github.com/dvgodoy/PyTorchStepByStep</a>. Parts of the code you see in this notebook are taken from <a href="https://colab.research.google.com/github/dvgodoy/PyTorchStepByStep/blob/master/Chapter03.ipynb">chapter 3 notebook</a> of the same book.</li>
+<li>University of Amsterdam (UvA) Deep Learning Course series. <a href="https://uvadlc.github.io/">uvadlc.github.io</a>. Their lecture on “activation functions and gradients” discusses the same topic. Here is the link: <a href="https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial3/Activation_Functions.html">tutorial3/Activation_Functions.html</a>. The course is outstanding, and lectures and notebooks are also openly shared. From the course site <em>“This course is taught in the MSc program in Artificial Intelligence of the University of Amsterdam. In this course we study the theory of deep learning, namely of modern, multi-layered neural networks trained on big data.”</em></li>
+</ul>
 </section>
 <section id="environment" class="level2">
 <h2 class="anchored" data-anchor-id="environment">Environment</h2>
@@ -321,12 +327,15 @@ seaborn==0.11.2</code></pre>
 <section id="sigmoid" class="level4">
 <h4 class="anchored" data-anchor-id="sigmoid">Sigmoid</h4>
 <p>Sigmoid function is normally used to refer specifically to the logistic function, also called the logistic sigmoid function. It is defined as</p>
-<p>$ Sigmoid(x) = $</p>
+<p><span class="math display">\[
+Sigmoid(x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-x} }
+\]</span></p>
 </section>
 <section id="relu" class="level4">
 <h4 class="anchored" data-anchor-id="relu">ReLU</h4>
 <p>ReLU function is defined as</p>
-<p>$ Relu(x) = max(0,x) $</p>
+<p><span class="math display">\[ Relu(x) = max(0,x)
+\]</span></p>
 </section>
 </section>
 <section id="visualising-activation-functions-and-their-gradients" class="level3">
@@ -407,7 +416,14 @@ seaborn==0.11.2</code></pre>
 <p><img src="2022-10-23-pytorch-vanishing-gradients-deep-neural-networks_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
 </div>
 </div>
-<p>We can take the following explanations from the above plots. * The sigmoid output is bounded, as it remains between 0 and 1. The gradients are the highest when the input is close to zero and diminishes as the input value moves away from it. Notice that <strong>the sigmoid gradient curve is less than 1 for the entire range; therefore, a network containing sigmoid activation functions can suffer from a vanishing gradients problem</strong>. * The output value for ReLU is not bounded. It keeps on increasing on the positive side. And for positive output values, the gradients do not diminish but remain constant at 1. As the gradient is not decreasing, it reduces the chances of the vanishing gradients problem. However, the gradient is zero for negative values, and this state is sometimes referred to as dead ReLU. It means that if ReLU ends up in this situation, it is improbable that it will recover from it. * Why will it not recover? Because the gradient from the activation function is zero for negative inputs, it will also not update the weights during the backward pass, thus leaving the weights in that perpetual state.</p>
+<p>We can take the following explanations from the above plots.</p>
+<ul>
+<li>The sigmoid output is bounded, as it remains between 0 and 1. The gradients are the highest when the input is close to zero and diminishes as the input value moves away from it. Notice that <strong>the sigmoid gradient curve is less than 1 for the entire range; therefore, a network containing sigmoid activation functions can suffer from a vanishing gradients problem</strong>.</li>
+<li>The output value for ReLU is not bounded. It keeps on increasing on the positive side. And for positive output values, the gradients do not diminish but remain constant at 1. As the gradient is not decreasing, it reduces the chances of the vanishing gradients problem. However, the gradient is zero for negative values, and this state is sometimes referred to as dead ReLU. It means that if ReLU ends up in this situation, it is improbable that it will recover from it.
+<ul>
+<li>Why will it not recover? Because the gradient from the activation function is zero for negative inputs, it will also not update the weights during the backward pass, thus leaving the weights in that perpetual state.</li>
+</ul></li>
+</ul>
 <p>In the coming sections, we will build networks and try to visualize how gradients flow between different layers and the effect of activation functions on them.</p>
 </section>
 </section>
@@ -416,7 +432,12 @@ seaborn==0.11.2</code></pre>
 <p>I have split the notebook into two sections. In this first section, we will create two multi-layer models: one with sigmoids and the other with ReLU. We will train them on MNIST data and plot their losses. Then in the next section, we will plot their gradients to see how activation functions can affect the behavior of a model.</p>
 <section id="download-mnist-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="download-mnist-dataset">Download MNIST dataset</h2>
-<p>MNIST dataset can be downloaded easily from PyTorch built-in datasets provided under <code>torchvision.datasets</code>. In this section, we will download it, split it into train and test datasets, and then convert them into PyTorch tensors. * Read more about the PyTorch MNIST dataset <a href="https://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html#torchvision.datasets.MNIST">here</a> * <code>torchvision.transforms.Compose</code> is like a container to hold a list of transformations you intend to apply. Read more about it <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html">here</a> * <code>torchvision.transforms.ToTensor</code> converts a <code>PIL Image</code> or <code>numpy.ndarray</code> to tensor. It converts a PIL Image or numpy.ndarray <strong>(H x W x C) in the range [0, 255]</strong> to a torch.FloatTensor of shape <strong>(C x H x W) in the range [0.0, 1.0]</strong>. Here C=Channel, H=Height, W=Width. Read more about this transformation <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html">here</a></p>
+<p>MNIST dataset can be downloaded easily from PyTorch built-in datasets provided under <code>torchvision.datasets</code>. In this section, we will download it, split it into train and test datasets, and then convert them into PyTorch tensors.</p>
+<ul>
+<li>Read more about the PyTorch MNIST dataset <a href="https://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html#torchvision.datasets.MNIST">here</a></li>
+<li><code>torchvision.transforms.Compose</code> is like a container to hold a list of transformations you intend to apply. Read more about it <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html">here</a></li>
+<li><code>torchvision.transforms.ToTensor</code> converts a <code>PIL Image</code> or <code>numpy.ndarray</code> to tensor. It converts a PIL Image or numpy.ndarray <strong>(H x W x C) in the range [0, 255]</strong> to a torch.FloatTensor of shape <strong>(C x H x W) in the range [0.0, 1.0]</strong>. Here C=Channel, H=Height, W=Width. Read more about this transformation <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html">here</a></li>
+</ul>
 <div class="cell" data-outputid="1fe8ea0b-fac4-4984-e708-9f9267c80a23" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision</span>
@@ -532,7 +553,31 @@ Examples in Valid Loader: 18000</code></pre>
 </section>
 <section id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline">Define a class to implement training, validation, and mini-batch processing pipeline</h2>
-<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are * <code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders * <code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Compute gradients i.e., find the direction and scale to update the weights to reduce the loss 4. Update weight parameters using gradients and the learning rate * <code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps 1. Compute our model’s predicted output - the forward pass 2. Compute the loss 3. Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients. * <code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to 1. Get the next batch of data and labels (x, y) from the DataLoader iterator 2. Perform a step on the batch. A step can be either training or validation 3. Compute the average batch loss * <code>train</code>: Execute training and validation steps for given number of epoch * <code>predict</code>: Make a prediction from model on provided data</p>
+<p>In this section we will implement a class that encapsulates all the usual steps required in training a PyTorch model. This way we can focus more on the model architecture and performance, and less concerned about the boilerplate training loop. Important parts of this class are</p>
+<ul>
+<li><code>__init__</code>: Class constructor to define the main actors in a training cycle including model, optimizer, loss function, training and validation DataLoaders</li>
+<li><code>_make_train_step_fn</code>: Training pipeline is usually called “training step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Compute gradients i.e., find the direction and scale to update the weights to reduce the loss</li>
+<li>Update weight parameters using gradients and the learning rate</li>
+</ol></li>
+<li><code>_make_val_step_fn</code>: Validation pipeline is usually called the “validation step” which includes the following steps
+<ol type="1">
+<li>Compute our model’s predicted output - the forward pass</li>
+<li>Compute the loss</li>
+<li>Note that during validation, we are only concerned about the loss, i.e., how well our model performs on the validation dataset. Therefore, we don’t use it to calculate the gradients.</li>
+</ol></li>
+<li><code>_mini_batch</code>: It defines the steps to process a single minibatch in a helper function. For a mini-batch processing, we want to
+<ol type="1">
+<li>Get the next batch of data and labels (x, y) from the DataLoader iterator</li>
+<li>Perform a step on the batch. A step can be either training or validation</li>
+<li>Compute the average batch loss</li>
+</ol></li>
+<li><code>train</code>: Execute training and validation steps for given number of epoch</li>
+<li><code>predict</code>: Make a prediction from model on provided data</li>
+</ul>
 <div class="cell" data-execution_count="8">
 <details open="">
 <summary>Code</summary>
@@ -1164,7 +1209,11 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <pre><code>['L1.weight', 'L2.weight', 'L3.weight', 'L4.weight']</code></pre>
 </div>
 </div>
-<p>Store the gradients for each layer in a separate DataFrame. Each DataFrame has two columns * <code>x</code>: for the gradient value * <code>g</code>: for epoch</p>
+<p>Store the gradients for each layer in a separate DataFrame. Each DataFrame has two columns</p>
+<ul>
+<li><code>x</code>: for the gradient value</li>
+<li><code>g</code>: for epoch</li>
+</ul>
 <div class="cell" data-outputid="3810fa67-b4e1-49e0-9371-d1530aa7c90a" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>df0_sigmoid_v1 <span class="op">=</span> get_layer_gradients(weight_layers_sigmoid_v1[<span class="dv">0</span>], dlp_sigmoid_v1.grad)</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>df1_sigmoid_v1 <span class="op">=</span> get_layer_gradients(weight_layers_sigmoid_v1[<span class="dv">1</span>], dlp_sigmoid_v1.grad)</span>
@@ -1548,7 +1597,11 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 </div>
 <section id="what-do-we-get-from-these-ridge-plots-1" class="level4">
 <h4 class="anchored" data-anchor-id="what-do-we-get-from-these-ridge-plots-1">What do we get from these ridge plots?</h4>
-<p>The results are consistent with earlier plots. * Gradients are not diminishing between weight layers. * Gradients are shrinking between epochs, and we need to increase the learning rate for later epochs.</p>
+<p>The results are consistent with earlier plots.</p>
+<ul>
+<li>Gradients are not diminishing between weight layers.</li>
+<li>Gradients are shrinking between epochs, and we need to increase the learning rate for later epochs.</li>
+</ul>
 
 
 </section>
