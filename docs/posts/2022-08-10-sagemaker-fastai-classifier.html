@@ -270,13 +270,13 @@ ga('send', {
 <p>This notebook is prepared using Amazon SageMaker studio’s <code>Python 3 (PyTorch 1.10 Python 3.8 GPU Optimized)</code> kernel running on the <code>ml.t3.medium</code> instance. I have also tried other images, including <code>Data Science</code> and <code>Data Science 2.0</code>, but fastai does not work smoothly with them. <code>ml.t3.medium</code> does not have any GPU attached to it but somehow <code>Python 3 (PyTorch 1.10 Python 3.8 CPU Optimized)</code> kernel was giving slow performance compare to GPU optimized.</p>
 <p>You may run this notebook on any other system without any issue.</p>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>aws <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">!</span>aws <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>aws-cli/1.22.68 Python/3.8.10 Linux/4.14.287-215.504.amzn2.x86_64 botocore/1.24.13</code></pre>
 </div>
 </div>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>python3 <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">!</span>python3 <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Python 3.8.10</code></pre>
 </div>
@@ -286,19 +286,19 @@ ga('send', {
 <h1>Fastai setup</h1>
 <p>Intall fastai library. I have used IPython magic cell <code>%%capture</code> to capture and discard output of this cell. You may read more about this magic command from <a href="https://notebook.community/lifeinoppo/littlefishlet-scode/RES/REF/python_sourcecode/ipython-master/examples/IPython%20Kernel/Capturing%20Output">Capturing Output With %%capture</a></p>
 <div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>capture</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install <span class="op">-</span>U fastai</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="op">%%</span>capture</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="op">!</span>pip install <span class="op">-</span>U fastai</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, I will install the library “duckduckgo_search” that can be used to “Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine.”</p>
 <div class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>capture</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install <span class="op">-</span>Uqq duckduckgo_search</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="op">%%</span>capture</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="op">!</span>pip install <span class="op">-</span>Uqq duckduckgo_search</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Checking the version of the installed fastai library.</p>
 <div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> fastai</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>fastai.__version__</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">import</span> fastai</span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a>fastai.__version__</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>'2.7.9'</code></pre>
 </div>
@@ -308,30 +308,30 @@ ga('send', {
 <h1>Prepare data set</h1>
 <p>We will download training data images from <a href="https://duckduckgo.com/">DuckDuckGo search engine</a>. The following function uses the search engine to “query” for an image and returns searched image URLs.</p>
 <div class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Define a function to search images and return URLs</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Use 'duckduckgo' search engine to find image URLs</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> duckduckgo_search <span class="im">import</span> ddg_images</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> search_images(term, max_images<span class="op">=</span><span class="dv">200</span>):</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Searching for '</span><span class="sc">{</span>term<span class="sc">}</span><span class="ss">'"</span>)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> L(ddg_images(term, max_results<span class="op">=</span>max_images)).itemgot(<span class="st">'image'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">##</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="co"># Step: Define a function to search images and return URLs</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="co"># Use 'duckduckgo' search engine to find image URLs</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="im">from</span> duckduckgo_search <span class="im">import</span> ddg_images</span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="im">from</span> fastcore.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="kw">def</span> search_images(term, max_images<span class="op">=</span><span class="dv">200</span>):</span>
+<span id="cb9-9"><a href="#cb9-9"></a>    <span class="bu">print</span>(<span class="ss">f"Searching for '</span><span class="sc">{</span>term<span class="sc">}</span><span class="ss">'"</span>)</span>
+<span id="cb9-10"><a href="#cb9-10"></a>    <span class="cf">return</span> L(ddg_images(term, max_results<span class="op">=</span>max_images)).itemgot(<span class="st">'image'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now let’s define the search strings to download images for tennis, cricket, soccer, and basketball balls.</p>
 <div class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Define the search strings to find images on the Internet</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>searches <span class="op">=</span> {</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tennis"</span>: <span class="st">"tennis ball photo"</span>,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cricket"</span>: <span class="st">"cricket hard ball photo"</span>,</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"soccer"</span>: <span class="st">"soccer ball photo"</span>,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"basketball"</span>: <span class="st">"basketball ball photos"</span>,</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>searches</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">##</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="co"># Step: Define the search strings to find images on the Internet</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a></span>
+<span id="cb10-4"><a href="#cb10-4"></a>searches <span class="op">=</span> {</span>
+<span id="cb10-5"><a href="#cb10-5"></a>    <span class="st">"tennis"</span>: <span class="st">"tennis ball photo"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6"></a>    <span class="st">"cricket"</span>: <span class="st">"cricket hard ball photo"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7"></a>    <span class="st">"soccer"</span>: <span class="st">"soccer ball photo"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8"></a>    <span class="st">"basketball"</span>: <span class="st">"basketball ball photos"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9"></a>}</span>
+<span id="cb10-10"><a href="#cb10-10"></a></span>
+<span id="cb10-11"><a href="#cb10-11"></a>searches</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>{'tennis': 'tennis ball photo',
  'cricket': 'cricket hard ball photo',
@@ -341,11 +341,11 @@ ga('send', {
 </div>
 <p>Search and get the URL for a tennis ball image.</p>
 <div class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Search an image URL for tennis balls</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>urls <span class="op">=</span> search_images(searches[<span class="st">'tennis'</span>], max_images<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>urls[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="co"># Step: Search an image URL for tennis balls</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a></span>
+<span id="cb12-4"><a href="#cb12-4"></a>urls <span class="op">=</span> search_images(searches[<span class="st">'tennis'</span>], max_images<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb12-5"><a href="#cb12-5"></a>urls[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Searching for 'tennis ball photo'</code></pre>
 </div>
@@ -355,25 +355,25 @@ ga('send', {
 </div>
 <p>Define a local path to store all the downloaded images.</p>
 <div class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Define a local path that will be root directory for this project</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># All the artifacts related to this post will be stored under this folder</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>local_path <span class="op">=</span> <span class="st">"./datasets/2022-08-10-sagemaker-fastai-classifier"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">##</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="co"># Step: Define a local path that will be root directory for this project</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="co"># All the artifacts related to this post will be stored under this folder</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a> </span>
+<span id="cb15-5"><a href="#cb15-5"></a>local_path <span class="op">=</span> <span class="st">"./datasets/2022-08-10-sagemaker-fastai-classifier"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Download a sample image and view it.</p>
 <div class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Download an image using its URL, and show it as a thumbnail</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastdownload <span class="im">import</span> download_url</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>dest <span class="op">=</span> <span class="ss">f'</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">/sample/tennis_ball.jpg'</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>download_url(urls[<span class="dv">0</span>], dest, show_progress<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(dest)</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>im.to_thumb(<span class="dv">256</span>,<span class="dv">256</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="co">##</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="co"># Step: Download an image using its URL, and show it as a thumbnail</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a></span>
+<span id="cb16-4"><a href="#cb16-4"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="im">from</span> fastdownload <span class="im">import</span> download_url</span>
+<span id="cb16-6"><a href="#cb16-6"></a></span>
+<span id="cb16-7"><a href="#cb16-7"></a>dest <span class="op">=</span> <span class="ss">f'</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">/sample/tennis_ball.jpg'</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a>download_url(urls[<span class="dv">0</span>], dest, show_progress<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb16-9"><a href="#cb16-9"></a></span>
+<span id="cb16-10"><a href="#cb16-10"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(dest)</span>
+<span id="cb16-11"><a href="#cb16-11"></a>im.to_thumb(<span class="dv">256</span>,<span class="dv">256</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/opt/conda/lib/python3.8/site-packages/torchvision/io/image.py:11: UserWarning: Failed to load image Python extension: 
   warn(f"Failed to load image Python extension: {e}")</code></pre>
@@ -411,8 +411,8 @@ ga('send', {
 <p>We have now downloaded a sample image from the Internet using the DuckDuckGo search engine and shown it as a thumbnail. For this, we have also used a few functions. So let’s deconstruct them to understand them better.</p>
 <p>The first function we have used is <code>download_url</code>. Let’s check its documentation.</p>
 <div class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>??download_url</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>??download_url</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> download_url<span class="ansi-blue-fg">(</span>url<span class="ansi-blue-fg">,</span> dest<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> timeout<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> show_progress<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span>
@@ -433,8 +433,8 @@ ga('send', {
 <p>This tells us that <strong>download_url</strong> function is from <code>fastdownload</code> library. This library is also published by the fastai team. Its purpose is “Easily download, verify, and extract archives”. You may read more about this library from its documentation site <a href="https://fastdownload.fast.ai/">fastdownload.fast.ai</a></p>
 <p>The next function we have used is <code>Image.open</code>. Let’s check its documentation too.</p>
 <div class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>?Image.<span class="bu">open</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a>?Image.<span class="bu">open</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> Image<span class="ansi-blue-fg">.</span>open<span class="ansi-blue-fg">(</span>fp<span class="ansi-blue-fg">,</span> mode<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">'r'</span><span class="ansi-blue-fg">,</span> formats<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
@@ -471,8 +471,8 @@ the file until you try to process the data (or call the
 <p>It tells us that this function is from <strong>Python Pillow library</strong> and is used to open and read an image file. Refer to this library documentation for more information <a href="https://python-pillow.org/">python-pillow.org</a></p>
 <p>The next function that we used is <code>Image.to_thumb</code>. Let’s check its documentation.</p>
 <div class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>??Image.Image.to_thumb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a>??Image.Image.to_thumb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> Image<span class="ansi-blue-fg">.</span>Image<span class="ansi-blue-fg">.</span>to_thumb<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">:</span> <span class="ansi-blue-fg">'Image.Image'</span><span class="ansi-blue-fg">,</span> h<span class="ansi-blue-fg">,</span> w<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
@@ -493,8 +493,8 @@ the file until you try to process the data (or call the
 <p>So this function is actually from the <strong>fastai</strong> library, and its docstring tells us that it is the same as the Pillow library <code>thumbnail</code> function but uses a copy of the image.</p>
 <p>Let’s check Pillow <strong>thumbnail</strong> function documentation as well.</p>
 <div class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>?Image.Image.thumbnail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a>?Image.Image.thumbnail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> Image<span class="ansi-blue-fg">.</span>Image<span class="ansi-blue-fg">.</span>thumbnail<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> size<span class="ansi-blue-fg">,</span> resample<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">3</span><span class="ansi-blue-fg">,</span> reducing_gap<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">2.0</span><span class="ansi-blue-fg">)</span>
@@ -579,15 +579,15 @@ image.
 </ul>
 <p>Let’s proceed with our work. First, define a filesystem “images” path where files from the search engine will be downloaded.</p>
 <div class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Define a folder path where downloaded images will be stored</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">/images'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="co">##</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="co"># Step: Define a folder path where downloaded images will be stored</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a></span>
+<span id="cb22-4"><a href="#cb22-4"></a>path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">/images'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We have used a <code>Path</code> class so let’s check its documentation.</p>
 <div class="cell" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>?Path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>?Path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span> Path<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
@@ -626,14 +626,14 @@ but cannot instantiate a WindowsPath on a POSIX system or vice versa.
 </ul>
 <p>Okay, we have understood how Path library is loaded implicitly for us. So let’s continue with our work and download images using the search strings to the <code>Path</code> folder.</p>
 <div class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Use each search string to search and download images</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> key, value <span class="kw">in</span> searches.items():</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    dest <span class="op">=</span> (path<span class="op">/</span>key)</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    dest.mkdir(exist_ok<span class="op">=</span><span class="va">True</span>, parents<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    download_images(dest, urls<span class="op">=</span>search_images(value))</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    resize_images(path<span class="op">/</span>key, max_size<span class="op">=</span><span class="dv">400</span>, dest<span class="op">=</span>path<span class="op">/</span>key)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="co">##</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="co"># Step: Use each search string to search and download images</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a></span>
+<span id="cb24-4"><a href="#cb24-4"></a><span class="cf">for</span> key, value <span class="kw">in</span> searches.items():</span>
+<span id="cb24-5"><a href="#cb24-5"></a>    dest <span class="op">=</span> (path<span class="op">/</span>key)</span>
+<span id="cb24-6"><a href="#cb24-6"></a>    dest.mkdir(exist_ok<span class="op">=</span><span class="va">True</span>, parents<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb24-7"><a href="#cb24-7"></a>    download_images(dest, urls<span class="op">=</span>search_images(value))</span>
+<span id="cb24-8"><a href="#cb24-8"></a>    resize_images(path<span class="op">/</span>key, max_size<span class="op">=</span><span class="dv">400</span>, dest<span class="op">=</span>path<span class="op">/</span>key)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/opt/conda/lib/python3.8/site-packages/PIL/Image.py:945: UserWarning: Palette images with Transparency expressed in bytes should be converted to RGBA images
   warnings.warn(
@@ -647,8 +647,8 @@ but cannot instantiate a WindowsPath on a POSIX system or vice versa.
 </div>
 <p>In the last cell, we have introduced another function <code>resize_images</code>. So let’s check its docs too.</p>
 <div class="cell" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>?resize_images</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>?resize_images</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span>
@@ -675,19 +675,19 @@ resize_images<span class="ansi-blue-fg">(</span>
 <p>It tells us that this function is from the fastai vision module. Its purpose is to resize images to a given MAX size and store them in a destination folder. If any image size exceeds the max size, this function will resize it to a given size. Otherwise (smaller than max size), the image is left as it is.</p>
 <p>So our images are now downloaded. Let’s check them.</p>
 <div class="cell" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Check the downloaded image files</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>fns <span class="op">=</span> get_image_files(path)</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>fns</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a><span class="co">##</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="co"># Step: Check the downloaded image files</span></span>
+<span id="cb27-3"><a href="#cb27-3"></a></span>
+<span id="cb27-4"><a href="#cb27-4"></a>fns <span class="op">=</span> get_image_files(path)</span>
+<span id="cb27-5"><a href="#cb27-5"></a>fns</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="25">
 <pre><code>(#757) [Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/ee4bb413-b78d-4f2a-8e41-3f32bbad79a2.jpeg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/647709da-50e5-4344-8cd5-9895448d47dc.jpg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/8a9378aa-6c9d-4456-8a8e-19ddc1a00354.jpeg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/84fd1455-607d-40c9-9454-8d06c18c8eab.jpg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/20711509-3b5e-4b06-93e1-2013a1d40279.jpeg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/ae3b15ca-748b-4fdd-868d-e602bf37c79e.jpg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/df19cf58-1da4-4dbc-8c9c-0224c6ffa32b.jpg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/5775d55d-1c61-4477-aab5-0dd0feb9c5ba.jpg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/31dfd24b-35ca-43fa-8cb9-5227b6ee9dac.jpg'),Path('datasets/2022-08-10-sagemaker-fastai-classifier/images/tennis/bf9ec4b8-f237-4030-b77b-ca02fcbf96c2.jpg')...]</code></pre>
 </div>
 </div>
 <p>Checking the documentation for <code>get_image_files</code></p>
 <div class="cell" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>??get_image_files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a>??get_image_files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> get_image_files<span class="ansi-blue-fg">(</span>path<span class="ansi-blue-fg">,</span> recurse<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">,</span> folders<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
@@ -703,8 +703,8 @@ resize_images<span class="ansi-blue-fg">(</span>
 </div>
 <p>It tells us that this function is from the fastai data module. It gets image files in the directory recursively. Internally it is calling another function <code>get_files</code>. Let’s check it as well.</p>
 <div class="cell" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>??get_files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a>??get_files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span>
@@ -741,8 +741,8 @@ get_files<span class="ansi-blue-fg">(</span>
 </div>
 <p>This tells us that this function is also from the fastai data module. It reads the files from the folder and returns their paths as “L” class objects. <code>L</code> class is new to us so let’s check what this class is about.</p>
 <div class="cell" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>?L</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a>?L</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span> L<span class="ansi-blue-fg">(</span>items<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>rest<span class="ansi-blue-fg">,</span> use_list<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span> match<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
@@ -756,20 +756,20 @@ get_files<span class="ansi-blue-fg">(</span>
 </div>
 <p>It tells us that <code>L</code> class is from a separate library <code>fastcore</code>, also released by the fastai team. The purpose of this library is defined as <strong>Python supercharged for the fastai library</strong>. An important takeaway from this class documentation is that it extends the Python <code>list</code> functionality and calls it the <strong>L</strong> class. You may read more on this library from <a href="https://fastcore.fast.ai/">fastcore.fast.ai</a></p>
 <div class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Verify the downloaded images</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># If any image is corrupt then remove it.</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>failed <span class="op">=</span> verify_images(fns)</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>failed.<span class="bu">map</span>(Path.unlink)</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(failed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co">##</span></span>
+<span id="cb32-2"><a href="#cb32-2"></a><span class="co"># Step: Verify the downloaded images</span></span>
+<span id="cb32-3"><a href="#cb32-3"></a><span class="co"># If any image is corrupt then remove it.</span></span>
+<span id="cb32-4"><a href="#cb32-4"></a>failed <span class="op">=</span> verify_images(fns)</span>
+<span id="cb32-5"><a href="#cb32-5"></a>failed.<span class="bu">map</span>(Path.unlink)</span>
+<span id="cb32-6"><a href="#cb32-6"></a><span class="bu">len</span>(failed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="22">
 <pre><code>3</code></pre>
 </div>
 </div>
 <p>A new function, <code>verify_images</code> is used in the above cell. First, let’s check its documentation.</p>
 <div class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>?verify_images</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb34-2"><a href="#cb34-2"></a>?verify_images</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> verify_images<span class="ansi-blue-fg">(</span>fns<span class="ansi-blue-fg">)</span>
@@ -782,12 +782,12 @@ get_files<span class="ansi-blue-fg">(</span>
 </div>
 <p>This tells us that <strong>verify_images</strong> is from fastai vision module, and it simply returns images (Paths) that cannot be opened. So we removed these corrupt image files to make our data clean.</p>
 <div class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: print count of images downloaded against each search string</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> search <span class="kw">in</span> searches:</span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    fns <span class="op">=</span> get_image_files(path<span class="op">/</span>search)</span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(search, <span class="st">"images count: "</span>, <span class="bu">len</span>(fns))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="co">##</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a><span class="co"># Step: print count of images downloaded against each search string</span></span>
+<span id="cb35-3"><a href="#cb35-3"></a></span>
+<span id="cb35-4"><a href="#cb35-4"></a><span class="cf">for</span> search <span class="kw">in</span> searches:</span>
+<span id="cb35-5"><a href="#cb35-5"></a>    fns <span class="op">=</span> get_image_files(path<span class="op">/</span>search)</span>
+<span id="cb35-6"><a href="#cb35-6"></a>    <span class="bu">print</span>(search, <span class="st">"images count: "</span>, <span class="bu">len</span>(fns))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>tennis images count:  189
 cricket images count:  185
@@ -838,21 +838,21 @@ basketball images count:  190</code></pre>
 <h1>Create a data block</h1>
 <p>We have our training data (images) downloaded in a folder. So let’s continue with our work and create a <code>DataBlock</code> on them.</p>
 <div class="cell" data-execution_count="31">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Create a data block</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>balls <span class="op">=</span> DataBlock(</span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    blocks<span class="op">=</span>(ImageBlock, CategoryBlock), </span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    get_items<span class="op">=</span>get_image_files, </span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    splitter<span class="op">=</span>RandomSplitter(valid_pct<span class="op">=</span><span class="fl">0.2</span>, seed<span class="op">=</span><span class="dv">42</span>),</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    get_y<span class="op">=</span>parent_label,</span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    item_tfms<span class="op">=</span>[Resize(<span class="dv">128</span>, method<span class="op">=</span><span class="st">'squish'</span>)]</span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a><span class="co">##</span></span>
+<span id="cb37-2"><a href="#cb37-2"></a><span class="co"># Step: Create a data block</span></span>
+<span id="cb37-3"><a href="#cb37-3"></a></span>
+<span id="cb37-4"><a href="#cb37-4"></a>balls <span class="op">=</span> DataBlock(</span>
+<span id="cb37-5"><a href="#cb37-5"></a>    blocks<span class="op">=</span>(ImageBlock, CategoryBlock), </span>
+<span id="cb37-6"><a href="#cb37-6"></a>    get_items<span class="op">=</span>get_image_files, </span>
+<span id="cb37-7"><a href="#cb37-7"></a>    splitter<span class="op">=</span>RandomSplitter(valid_pct<span class="op">=</span><span class="fl">0.2</span>, seed<span class="op">=</span><span class="dv">42</span>),</span>
+<span id="cb37-8"><a href="#cb37-8"></a>    get_y<span class="op">=</span>parent_label,</span>
+<span id="cb37-9"><a href="#cb37-9"></a>    item_tfms<span class="op">=</span>[Resize(<span class="dv">128</span>, method<span class="op">=</span><span class="st">'squish'</span>)]</span>
+<span id="cb37-10"><a href="#cb37-10"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A “DataBlock” is like a package or a pipeline with instructions that tell the type of data we are dealing with and how we want to process it. It is like a blueprint that defines how we want to process our data. If you are coming from <code>scikit-learn</code> world, you may think of it as a sklearn <code>Pipeline</code> and <code>ColumnTransformer</code>. Let’s check this class documentation for a better understanding.</p>
 <div class="cell" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>?DataBlock</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb38-2"><a href="#cb38-2"></a>?DataBlock</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -896,8 +896,8 @@ DataBlock<span class="ansi-blue-fg">(</span>
 <p>Note that each DataBlock blueprint requires four things: the types of your input/labels (or blocks), and at least two functions: get_items and splitter.</p>
 <p>We have passed a class <code>RandomSplitter</code> for a splitting strategy. Let’s check this class doc for more clarity.</p>
 <div class="cell" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>?RandomSplitter</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb42-2"><a href="#cb42-2"></a>?RandomSplitter</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> RandomSplitter<span class="ansi-blue-fg">(</span>valid_pct<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0.2</span><span class="ansi-blue-fg">,</span> seed<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
@@ -912,8 +912,8 @@ DataBlock<span class="ansi-blue-fg">(</span>
 <p>In the <code>DataBlock</code> constructor, we also passed an argument <code>get_y</code> that defined how to get the labels. Note that we have not defined anything for <code>X</code>, so the library will automatically take the data found in <code>get_items</code> as X. for <code>get_y</code> we have passed a class <code>parent_label</code>. Let’s check its documentation to understand what it is for.</p>
 <pre><code>get_y=parent_label</code></pre>
 <div class="cell" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>?parent_label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb44-2"><a href="#cb44-2"></a>?parent_label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> parent_label<span class="ansi-blue-fg">(</span>o<span class="ansi-blue-fg">)</span>
@@ -928,8 +928,8 @@ DataBlock<span class="ansi-blue-fg">(</span>
 <p>The last argument we have passed is <code>item_tfms</code> (item transformations). This argument defines if we want to apply any other transformation besides those described in blocks on each data point. Here we are telling it to use the <code>Resize</code> method on each item (from X). What does this function do? Let’s check the docs.</p>
 <pre><code>item_tfms=[Resize(128, method='squish')]</code></pre>
 <div class="cell" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse_output</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>??Resize</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="co">#collapse_output</span></span>
+<span id="cb46-2"><a href="#cb46-2"></a>??Resize</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -993,15 +993,15 @@ Resize<span class="ansi-blue-fg">(</span>
 <p>Read more about it from Pytorch documentation <a href="https://pytorch.org/tutorials/beginner/basics/data_tutorial.html">data_tutorial.html</a></p>
 <p>What fastai provides is that it builds on these Pytorch constructs and extends their functionality. You can say that while working with Pytorch fastai team found many repeated steps for everyday tasks in their machine learning work. So they created higher-level functions in fastai that do many of these repeated and common tasks for us (though internally, it is still using Pytorch). This way, we developers can achieve more with fewer lines of code in fastai. So using fastai, we don’t need to create a Dataset and then a Dataloader. Instead, we can get a <code>Dataloader</code> by pointing our <code>DataBlock</code> to data and asking it to return a DataLoader. In the next cell, we are doing that.</p>
 <div class="cell" data-execution_count="36">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Create a DataLoader</span></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> balls.dataloaders(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a><span class="co">##</span></span>
+<span id="cb47-2"><a href="#cb47-2"></a><span class="co"># Step: Create a DataLoader</span></span>
+<span id="cb47-3"><a href="#cb47-3"></a></span>
+<span id="cb47-4"><a href="#cb47-4"></a>dls <span class="op">=</span> balls.dataloaders(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To complete the picture, let’s also check the documentation of <code>Datasets</code> from the fastai library.</p>
 <div class="cell" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>?Datasets</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb48-2"><a href="#cb48-2"></a>?Datasets</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -1035,8 +1035,8 @@ Datasets<span class="ansi-blue-fg">(</span>
 </ul>
 <p>Let’s do the same for <code>DataLoaders</code> and check its documentation.</p>
 <div class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>?DataLoaders</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb49-2"><a href="#cb49-2"></a>?DataLoaders</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span> DataLoaders<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>loaders<span class="ansi-blue-fg">,</span> path<span class="ansi-blue-fg">:</span> <span class="ansi-blue-fg">'str | Path'</span> <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">'.'</span><span class="ansi-blue-fg">,</span> device<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
@@ -1062,18 +1062,18 @@ Datasets<span class="ansi-blue-fg">(</span>
 </ul>
 <p>We can also check the data loader object’s data type to confirm its class name and origin.</p>
 <div class="cell" data-execution_count="39">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="co"># dataloader object type</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span>(dls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a><span class="co">##</span></span>
+<span id="cb50-2"><a href="#cb50-2"></a><span class="co"># dataloader object type</span></span>
+<span id="cb50-3"><a href="#cb50-3"></a><span class="bu">type</span>(dls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="39">
 <pre><code>fastai.data.core.DataLoaders</code></pre>
 </div>
 </div>
 <div class="cell" data-execution_count="40">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="co"># check types for dataloaders.train and dataloaders.valid</span></span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(dls.train))</span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(dls.valid))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a><span class="co">##</span></span>
+<span id="cb52-2"><a href="#cb52-2"></a><span class="co"># check types for dataloaders.train and dataloaders.valid</span></span>
+<span id="cb52-3"><a href="#cb52-3"></a><span class="bu">print</span>(<span class="bu">type</span>(dls.train))</span>
+<span id="cb52-4"><a href="#cb52-4"></a><span class="bu">print</span>(<span class="bu">type</span>(dls.valid))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;class 'fastai.data.core.TfmdDL'&gt;
 &lt;class 'fastai.data.core.TfmdDL'&gt;</code></pre>
@@ -1081,8 +1081,8 @@ Datasets<span class="ansi-blue-fg">(</span>
 </div>
 <p>Data type for <code>dls.train</code> and <code>dls.valid</code> are of a different class. Let’s check the documentation for <code>TfmdDL</code> to get more clarity.</p>
 <div class="cell" data-execution_count="41">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>??TfmdDL</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb54-2"><a href="#cb54-2"></a>??TfmdDL</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -1256,8 +1256,8 @@ TfmdDL<span class="ansi-blue-fg">(</span>
 </ul>
 <p>Let’s also visit the documentation for the <code>DataLoader</code> class from which <code>TfmdDL</code> is derived.</p>
 <div class="cell" data-execution_count="42">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>?DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb55-2"><a href="#cb55-2"></a>?DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -1306,25 +1306,25 @@ DataLoader<span class="ansi-blue-fg">(</span>
 </ul>
 <p>Let us continue with our work and visualize a small batch from our validation set.</p>
 <div class="cell" data-execution_count="44">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Show a small batch from validation set</span></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>dls.valid.show_batch(max_n<span class="op">=</span><span class="dv">9</span>, nrows<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1"></a><span class="co">##</span></span>
+<span id="cb56-2"><a href="#cb56-2"></a><span class="co"># Step: Show a small batch from validation set</span></span>
+<span id="cb56-3"><a href="#cb56-3"></a>dls.valid.show_batch(max_n<span class="op">=</span><span class="dv">9</span>, nrows<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-08-10-sagemaker-fastai-classifier_files/figure-html/cell-39-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 <div class="cell" data-execution_count="45">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Show a small batch from training set</span></span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>dls.train.show_batch(max_n<span class="op">=</span><span class="dv">9</span>, nrows<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1"></a><span class="co">##</span></span>
+<span id="cb57-2"><a href="#cb57-2"></a><span class="co"># Step: Show a small batch from training set</span></span>
+<span id="cb57-3"><a href="#cb57-3"></a>dls.train.show_batch(max_n<span class="op">=</span><span class="dv">9</span>, nrows<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-08-10-sagemaker-fastai-classifier_files/figure-html/cell-40-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 <p><code>show_batch</code> is a very convenient function from fastai with which you can quickly verify a sample from the training dataset. You can also check that all the images are of the same size and have been appropriately labeled. Let’s quickly review the docs for this function.</p>
 <div class="cell" data-execution_count="46">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>?TfmdDL.show_batch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb58-2"><a href="#cb58-2"></a>?TfmdDL.show_batch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span>
@@ -1379,10 +1379,10 @@ TfmdDL<span class="ansi-blue-fg">.</span>show_batch<span class="ansi-blue-fg">(<
 <h1>Train an image classifier</h1>
 <p>At this point, our data is ready for training. Let’s train an image classifier on this data.</p>
 <div class="cell" data-execution_count="47">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Train an image classifier</span></span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> vision_learner(dls, resnet18, metrics<span class="op">=</span>error_rate)</span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>learn.fine_tune(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1"></a><span class="co">##</span></span>
+<span id="cb59-2"><a href="#cb59-2"></a><span class="co"># Step: Train an image classifier</span></span>
+<span id="cb59-3"><a href="#cb59-3"></a>learn <span class="op">=</span> vision_learner(dls, resnet18, metrics<span class="op">=</span>error_rate)</span>
+<span id="cb59-4"><a href="#cb59-4"></a>learn.fine_tune(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 
 <style>
@@ -1487,8 +1487,8 @@ TfmdDL<span class="ansi-blue-fg">.</span>show_batch<span class="ansi-blue-fg">(<
 </ol>
 <p>Let’s deconstruct these two steps. First, check the documentation on the <code>vision_learner</code> function.</p>
 <div class="cell" data-execution_count="48">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>?vision_learner</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb60-2"><a href="#cb60-2"></a>?vision_learner</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span>
@@ -1547,8 +1547,8 @@ vision_learner<span class="ansi-blue-fg">(</span>
 </ul>
 <p>So basically, <code>vision_learner</code> is a helper function for <code>Learner</code> class to create its object. This means we need to understand the <code>Learner</code> concept to complete the picture.</p>
 <div class="cell" data-execution_count="49">
-<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>?Learner</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb61-2"><a href="#cb61-2"></a>?Learner</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -1579,7 +1579,7 @@ Learner<span class="ansi-blue-fg">(</span>
 </div>
 <p>It tells us that a <strong>Learner</strong> “Group together a <code>model</code>, some <code>dls</code> and a <code>loss_func</code> to handle training”. It is also a container that combines data, model, and a loss function into a single pipeline; we get this pipeline using a helper function <code>vision_learner</code>. Let’s also check the type of our “learn” object.</p>
 <div class="cell" data-execution_count="50">
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span>(learn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1"></a><span class="bu">type</span>(learn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="50">
 <pre><code>fastai.learner.Learner</code></pre>
 </div>
@@ -1593,8 +1593,8 @@ Learner<span class="ansi-blue-fg">(</span>
 </ul>
 <p>Let’s check <code>resnet18</code> first.</p>
 <div class="cell" data-execution_count="51">
-<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>?resnet18</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb65-2"><a href="#cb65-2"></a>?resnet18</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> resnet18<span class="ansi-blue-fg">(</span>pretrained<span class="ansi-blue-fg">:</span> bool <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span> progress<span class="ansi-blue-fg">:</span> bool <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">:</span> Any<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> torchvision<span class="ansi-blue-fg">.</span>models<span class="ansi-blue-fg">.</span>resnet<span class="ansi-blue-fg">.</span>ResNet
@@ -1613,8 +1613,8 @@ Args:
 <p>It tells us that this model architecture is defined in <code>torchvision</code> library or <strong>PyTorch vision</strong> module. From the docstring, we get that it is a pre-trained “ResNet-18 model for <code>Deep Residual Learning for Image Recognition</code>”.</p>
 <p>Let’s check the next argument, <code>error_rate</code>.</p>
 <div class="cell" data-execution_count="52">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>?error_rate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb66-2"><a href="#cb66-2"></a>?error_rate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span> error_rate<span class="ansi-blue-fg">(</span>inp<span class="ansi-blue-fg">,</span> targ<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">-</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span>
@@ -1629,8 +1629,8 @@ Args:
 <p>Now let’s go back to the image classifier training step and comprehend the second line.</p>
 <pre><code>learn.fine_tune(3)</code></pre>
 <div class="cell" data-execution_count="53">
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>?Learner.fine_tune</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb68-2"><a href="#cb68-2"></a>?Learner.fine_tune</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Signature:</span>
@@ -1692,11 +1692,11 @@ Learner<span class="ansi-blue-fg">.</span>fine_tune<span class="ansi-blue-fg">(<
 <h1>Interpret the trained model</h1>
 <p>In the last section, we trained an image classifier that can distinguish between 4 different ball images: cricket, tennis, soccer, and basketball. But how good is our model? A confusion matrix is the best tool to interpret a model for classification problems. It visualizes and summarizes the performance of a classification algorithm. Let’s do it next.</p>
 <div class="cell" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Interpret the model using confusion matrix</span></span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>interp <span class="op">=</span> ClassificationInterpretation.from_learner(learn)</span>
-<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>interp.plot_confusion_matrix()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1"></a><span class="co">##</span></span>
+<span id="cb69-2"><a href="#cb69-2"></a><span class="co"># Step: Interpret the model using confusion matrix</span></span>
+<span id="cb69-3"><a href="#cb69-3"></a></span>
+<span id="cb69-4"><a href="#cb69-4"></a>interp <span class="op">=</span> ClassificationInterpretation.from_learner(learn)</span>
+<span id="cb69-5"><a href="#cb69-5"></a>interp.plot_confusion_matrix()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 
 <style>
@@ -1745,7 +1745,7 @@ Learner<span class="ansi-blue-fg">.</span>fine_tune<span class="ansi-blue-fg">(<
 </div>
 <p>Again, we would like to know more about class <code>ClassificationInterpretation</code> as to which library it belongs. For this, let’s check the documentation.</p>
 <div class="cell" data-execution_count="54">
-<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>?ClassificationInterpretation</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1"></a>?ClassificationInterpretation</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg">Init signature:</span>
@@ -1771,10 +1771,10 @@ ClassificationInterpretation<span class="ansi-blue-fg">(</span>
 <p>There are many useful functions in fastai <strong>Interpretation</strong> class, and I would encourage you to check them from the documentation. Once such method is <code>plot_top_losses</code>. Its purpose is “Show k largest(/smallest) preds and losses” from the validation set and plot the data points where our model has the high loss score. Usually, a model makes a wrong prediction when it has low confidence (or the model can be very confident in a wrong prediction). So this function can be valuable in understanding a model’s performance.</p>
 <p>Let’s use this function next. You may read more about this function from docs <a href="https://docs.fast.ai/interpret.html#interpretation.plot_top_losses">interpret.html#interpretation.plot_top_losses</a></p>
 <div class="cell" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Plot top losses</span></span>
-<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>interp.plot_top_losses(<span class="dv">9</span>, nrows<span class="op">=</span><span class="dv">9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1"></a><span class="co">##</span></span>
+<span id="cb71-2"><a href="#cb71-2"></a><span class="co"># Step: Plot top losses</span></span>
+<span id="cb71-3"><a href="#cb71-3"></a></span>
+<span id="cb71-4"><a href="#cb71-4"></a>interp.plot_top_losses(<span class="dv">9</span>, nrows<span class="op">=</span><span class="dv">9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 
 <style>
@@ -1824,55 +1824,55 @@ ClassificationInterpretation<span class="ansi-blue-fg">(</span>
 <li>To read about <code>pickle</code> Python object serialization module check the official docs <a href="https://docs.python.org/3/library/pickle.html">pickle.html</a></li>
 </ul>
 <div class="cell" data-execution_count="56">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Define export file name and path</span></span>
-<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>export_file <span class="op">=</span> local_path <span class="op">+</span> <span class="st">"/export_model.pkl"</span></span>
-<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>export_file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1"></a><span class="co">##</span></span>
+<span id="cb72-2"><a href="#cb72-2"></a><span class="co"># Step: Define export file name and path</span></span>
+<span id="cb72-3"><a href="#cb72-3"></a></span>
+<span id="cb72-4"><a href="#cb72-4"></a>export_file <span class="op">=</span> local_path <span class="op">+</span> <span class="st">"/export_model.pkl"</span></span>
+<span id="cb72-5"><a href="#cb72-5"></a>export_file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="56">
 <pre><code>'./datasets/2022-08-10-sagemaker-fastai-classifier/export_model.pkl'</code></pre>
 </div>
 </div>
 <div class="cell" data-execution_count="57">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Export the model</span></span>
-<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>learn.export(export_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1"></a><span class="co">##</span></span>
+<span id="cb74-2"><a href="#cb74-2"></a><span class="co"># Step: Export the model</span></span>
+<span id="cb74-3"><a href="#cb74-3"></a></span>
+<span id="cb74-4"><a href="#cb74-4"></a>learn.export(export_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Check the local directory contents if the model pickle file is present.</p>
 <div class="cell" data-execution_count="61">
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Check local directory for .pkl file</span></span>
-<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> Path(local_path)</span>
-<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>p.ls(file_exts<span class="op">=</span><span class="st">".pkl"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1"></a><span class="co">##</span></span>
+<span id="cb75-2"><a href="#cb75-2"></a><span class="co"># Step: Check local directory for .pkl file</span></span>
+<span id="cb75-3"><a href="#cb75-3"></a></span>
+<span id="cb75-4"><a href="#cb75-4"></a>p <span class="op">=</span> Path(local_path)</span>
+<span id="cb75-5"><a href="#cb75-5"></a>p.ls(file_exts<span class="op">=</span><span class="st">".pkl"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="61">
 <pre><code>(#1) [Path('datasets/2022-08-10-sagemaker-fastai-classifier/export_model.pkl')]</code></pre>
 </div>
 </div>
 <p>Now let’s load the exported model again using <code>load_learner</code> function. Read its docs <a href="https://docs.fast.ai/learner.html#load_learner">learner.html#load_learner</a></p>
 <div class="cell" data-execution_count="62">
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Load a model</span></span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>learn_inf <span class="op">=</span> load_learner(export_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1"></a><span class="co">##</span></span>
+<span id="cb77-2"><a href="#cb77-2"></a><span class="co"># Step: Load a model</span></span>
+<span id="cb77-3"><a href="#cb77-3"></a></span>
+<span id="cb77-4"><a href="#cb77-4"></a>learn_inf <span class="op">=</span> load_learner(export_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Recall that we downloaded a sample tennis ball image at the start of this notebook. Let’s use that to make a prediction on the loaded model.</p>
 <div class="cell" data-execution_count="66">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Sample tennis ball image</span></span>
-<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(dest)</span>
-<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>im.to_thumb(<span class="dv">256</span>,<span class="dv">256</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1"></a><span class="co">##</span></span>
+<span id="cb78-2"><a href="#cb78-2"></a><span class="co"># Step: Sample tennis ball image</span></span>
+<span id="cb78-3"><a href="#cb78-3"></a></span>
+<span id="cb78-4"><a href="#cb78-4"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(dest)</span>
+<span id="cb78-5"><a href="#cb78-5"></a>im.to_thumb(<span class="dv">256</span>,<span class="dv">256</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="66">
 <p><img src="2022-08-10-sagemaker-fastai-classifier_files/figure-html/cell-56-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 <div class="cell" data-execution_count="67">
-<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Make a prediction</span></span>
-<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>learn_inf.predict(dest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1"></a><span class="co">##</span></span>
+<span id="cb79-2"><a href="#cb79-2"></a><span class="co"># Step: Make a prediction</span></span>
+<span id="cb79-3"><a href="#cb79-3"></a></span>
+<span id="cb79-4"><a href="#cb79-4"></a>learn_inf.predict(dest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 
 <style>
@@ -1908,10 +1908,10 @@ ClassificationInterpretation<span class="ansi-blue-fg">(</span>
 </ul>
 <p>If you want to get a list of all the categories, then you can access <code>DataLoaders</code> attribute of the <code>Learner</code>.</p>
 <div class="cell" data-execution_count="68">
-<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Step: Get a list of all categories from Learner</span></span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>learn_inf.dls.vocab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1"></a><span class="co">##</span></span>
+<span id="cb81-2"><a href="#cb81-2"></a><span class="co"># Step: Get a list of all categories from Learner</span></span>
+<span id="cb81-3"><a href="#cb81-3"></a></span>
+<span id="cb81-4"><a href="#cb81-4"></a>learn_inf.dls.vocab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="68">
 <pre><code>['basketball', 'cricket', 'soccer', 'tennis']</code></pre>
 </div>

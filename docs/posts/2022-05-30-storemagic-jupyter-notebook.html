@@ -260,7 +260,7 @@ ga('send', {
 <section id="enviornment" class="level1">
 <h1>Enviornment</h1>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>jupyter <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">!</span>jupyter <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Selected Jupyter core packages...
 IPython          : 7.29.0
@@ -291,45 +291,45 @@ traitlets        : 5.1.0</code></pre>
 <h2 class="anchored" data-anchor-id="store-a-variable">Store a variable</h2>
 <p>Use <code>%store</code> magic for lightweight persistence. It stores variables, aliases and macros in IPython’s database. Let’s create a variable and then store it using this magic.</p>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># create a variable</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>var_hello <span class="op">=</span> <span class="st">"hello world!"</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># store this variable</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">##</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="co"># create a variable</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>var_hello <span class="op">=</span> <span class="st">"hello world!"</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co"># store this variable</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="op">%</span>store var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Stored 'var_hello' (str)</code></pre>
 </div>
 </div>
 <p>Now I am going to intentionally restart the kernel. We can check that our created variable is now gone from the memory.</p>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a>var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
 <pre><code>NameError: name 'var_hello' is not defined</code></pre>
 </div>
 </div>
 <p>But no worries. We have it stored safely using our magic. So let’s get it back.</p>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># get the variable back from store</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store <span class="op">-</span>r var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## </span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co"># get the variable back from store</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="op">%</span>store <span class="op">-</span>r var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Okay, we have our variable back and (with a sigh of relief) we can use it again.</p>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <pre><code>'hello world!'</code></pre>
 </div>
 </div>
 <p>Let’s create a few more variables and do some more magic with them.</p>
 <div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># create variables</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>var_foo <span class="op">=</span> [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>]</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>var_bar <span class="op">=</span> {<span class="st">'a'</span>:var_hello}</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># store multiple variables</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store var_foo var_bar</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">##</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="co"># create variables</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>var_foo <span class="op">=</span> [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>]</span>
+<span id="cb10-4"><a href="#cb10-4"></a>var_bar <span class="op">=</span> {<span class="st">'a'</span>:var_hello}</span>
+<span id="cb10-5"><a href="#cb10-5"></a></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="co"># store multiple variables</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a><span class="op">%</span>store var_foo var_bar</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Stored 'var_foo' (list)
 Stored 'var_bar' (dict)</code></pre>
@@ -340,7 +340,7 @@ Stored 'var_bar' (dict)</code></pre>
 <h2 class="anchored" data-anchor-id="check-all-stored-varaibles">Check all stored varaibles</h2>
 <p>We can check all the varaibles stored using the following magic command.</p>
 <div class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="op">%</span>store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Stored variables and their in-db values:
 var_bar               -&gt; {'a': 'hello world!'}
@@ -353,15 +353,15 @@ var_hello             -&gt; 'hello world!'</code></pre>
 <h2 class="anchored" data-anchor-id="remove-a-variable-from-store">Remove a variable from store</h2>
 <p>To remove a variable from our storage is also straight forward. Put its name after <code>%store -d</code> flag</p>
 <div class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># remove 'var_hello'</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store <span class="op">-</span>d var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="co">##</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="co"># remove 'var_hello'</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="op">%</span>store <span class="op">-</span>d var_hello</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>‘var_hello’ is now gone. Forever …</p>
 <div class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># check the remaining variables in store</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">##</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="co"># check the remaining variables in store</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="op">%</span>store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Stored variables and their in-db values:
 var_bar             -&gt; {'a': 'hello world!'}
@@ -373,15 +373,15 @@ var_foo             -&gt; [1, 2, 3, 4]</code></pre>
 <h2 class="anchored" data-anchor-id="remove-all-variables-from-store">Remove all variables from store</h2>
 <p>If you want to remove all the varaibles from store and start clean then use <code>-z</code> flag</p>
 <div class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># remove all variables</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store <span class="op">-</span>z</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">##</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a><span class="co"># remove all variables</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a><span class="op">%</span>store <span class="op">-</span>z</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Kaboom! all variables are gone.</p>
 <div class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># check store</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">##</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="co"># check store</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a><span class="op">%</span>store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Stored variables and their in-db values:</code></pre>
 </div>

@@ -362,120 +362,120 @@ ga('send', {
 <h3 class="anchored" data-anchor-id="prepare-agent-configuration-file">3. Prepare agent configuration file</h3>
 <p>Prepare agent configuration file. This config file will be provided to the agent in the run command. One such sample is provided below. For more details on this config file you may take help from this link <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/create-cloudwatch-agent-configuration-file.html">create-cloudwatch-agent-configuration-file</a>. Note the path of this config file (<strong>agent config</strong>) as we will need it in later commands.</p>
 <div class="cell" data-vscode="{&quot;languageId&quot;:&quot;json&quot;}">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">//</span> config<span class="op">-</span>cloudwatchagent.json</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>{</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"agent"</span>: {</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>      <span class="st">"metrics_collection_interval"</span>: <span class="dv">10</span>,</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>      <span class="st">"logfile"</span>: <span class="st">"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"</span>,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"run_as_user"</span>: <span class="st">"ubuntu"</span>,</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">"debug"</span>: false</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    },</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"metrics"</span>: {</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">"namespace"</span>: <span class="st">"myblog/cloudwatchagent/demo"</span>,</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      <span class="st">"metrics_collected"</span>: {</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"cpu"</span>: {</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">"*"</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"name"</span>: <span class="st">"cpu_usage_idle"</span>, <span class="st">"rename"</span>: <span class="st">"CPU_USAGE_IDLE"</span>, <span class="st">"unit"</span>: <span class="st">"Percent"</span>},</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"name"</span>: <span class="st">"cpu_usage_nice"</span>, <span class="st">"unit"</span>: <span class="st">"Percent"</span>},</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">"cpu_usage_guest"</span>,</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">"cpu_usage_active"</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>          <span class="st">"totalcpu"</span>: true,</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">10</span></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>        },</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">"disk"</span>: {</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>            <span class="st">"/"</span>,</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>            <span class="st">"/tmp"</span></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"name"</span>: <span class="st">"free"</span>, <span class="st">"rename"</span>: <span class="st">"DISK_FREE"</span>, <span class="st">"unit"</span>: <span class="st">"Gigabytes"</span>},</span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>            <span class="st">"total"</span>,</span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>            <span class="st">"used"</span></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>           <span class="st">"ignore_file_system_types"</span>: [</span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>            <span class="st">"sysfs"</span>, <span class="st">"devtmpfs"</span></span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>        },</span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>        <span class="st">"diskio"</span>: {</span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>            <span class="st">"*"</span></span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>            <span class="st">"reads"</span>,</span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>            <span class="st">"writes"</span>,</span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>            <span class="st">"read_time"</span>,</span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>            <span class="st">"write_time"</span>,</span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>            <span class="st">"io_time"</span></span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>        },</span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"swap"</span>: {</span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>            <span class="st">"swap_used"</span>,</span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>            <span class="st">"swap_free"</span>,</span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>            <span class="st">"swap_used_percent"</span></span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>          ]</span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>        },</span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>        <span class="st">"mem"</span>: {</span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>            <span class="st">"mem_used"</span>,</span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>            <span class="st">"mem_cached"</span>,</span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>            <span class="st">"mem_total"</span></span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">1</span></span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>        },</span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>        <span class="st">"net"</span>: {</span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>          <span class="st">"resources"</span>: [</span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>            <span class="st">"eth0"</span></span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>            <span class="st">"bytes_sent"</span>,</span>
-<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a>            <span class="st">"bytes_recv"</span>,</span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>            <span class="st">"drop_in"</span>,</span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>            <span class="st">"drop_out"</span></span>
-<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>          ]</span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>        },</span>
-<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>        <span class="st">"netstat"</span>: {</span>
-<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>            <span class="st">"tcp_established"</span>,</span>
-<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>            <span class="st">"tcp_syn_sent"</span>,</span>
-<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>            <span class="st">"tcp_close"</span></span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>          ],</span>
-<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>        },</span>
-<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a>        <span class="st">"processes"</span>: {</span>
-<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a>          <span class="st">"measurement"</span>: [</span>
-<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a>            <span class="st">"running"</span>,</span>
-<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>            <span class="st">"sleeping"</span>,</span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>            <span class="st">"dead"</span></span>
-<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a>          ]</span>
-<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>      },</span>
-<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>      <span class="st">"force_flush_interval"</span> : <span class="dv">30</span></span>
-<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>    },</span>
-<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a>    <span class="st">"logs"</span>: {</span>
-<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a>      <span class="st">"logs_collected"</span>: {</span>
-<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a>        <span class="st">"files"</span>: {</span>
-<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a>          <span class="st">"collect_list"</span>: [</span>
-<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a>            {</span>
-<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a>              <span class="st">"file_path"</span>: <span class="st">"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"</span>,</span>
-<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a>              <span class="st">"log_group_name"</span>: <span class="st">"myblog/onprem/ubuntu/amazon-cloudwatch-agent"</span>,</span>
-<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a>              <span class="st">"log_stream_name"</span>: <span class="st">"myblog-cloudwatchagent-demo.log"</span>,</span>
-<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a>              <span class="st">"timezone"</span>: <span class="st">"UTC"</span></span>
-<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a>            }</span>
-<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a>          ]</span>
-<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a>      },</span>
-<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>      <span class="st">"log_stream_name"</span>: <span class="st">"my_log_stream_name"</span>,</span>
-<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>      <span class="st">"force_flush_interval"</span> : <span class="dv">15</span></span>
-<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="op">//</span> config<span class="op">-</span>cloudwatchagent.json</span>
+<span id="cb10-2"><a href="#cb10-2"></a>{</span>
+<span id="cb10-3"><a href="#cb10-3"></a>    <span class="st">"agent"</span>: {</span>
+<span id="cb10-4"><a href="#cb10-4"></a>      <span class="st">"metrics_collection_interval"</span>: <span class="dv">10</span>,</span>
+<span id="cb10-5"><a href="#cb10-5"></a>      <span class="st">"logfile"</span>: <span class="st">"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6"></a>      <span class="st">"run_as_user"</span>: <span class="st">"ubuntu"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7"></a>      <span class="st">"debug"</span>: false</span>
+<span id="cb10-8"><a href="#cb10-8"></a>    },</span>
+<span id="cb10-9"><a href="#cb10-9"></a>    <span class="st">"metrics"</span>: {</span>
+<span id="cb10-10"><a href="#cb10-10"></a>      <span class="st">"namespace"</span>: <span class="st">"myblog/cloudwatchagent/demo"</span>,</span>
+<span id="cb10-11"><a href="#cb10-11"></a>      <span class="st">"metrics_collected"</span>: {</span>
+<span id="cb10-12"><a href="#cb10-12"></a>        <span class="st">"cpu"</span>: {</span>
+<span id="cb10-13"><a href="#cb10-13"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-14"><a href="#cb10-14"></a>            <span class="st">"*"</span></span>
+<span id="cb10-15"><a href="#cb10-15"></a>          ],</span>
+<span id="cb10-16"><a href="#cb10-16"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-17"><a href="#cb10-17"></a>            {<span class="st">"name"</span>: <span class="st">"cpu_usage_idle"</span>, <span class="st">"rename"</span>: <span class="st">"CPU_USAGE_IDLE"</span>, <span class="st">"unit"</span>: <span class="st">"Percent"</span>},</span>
+<span id="cb10-18"><a href="#cb10-18"></a>            {<span class="st">"name"</span>: <span class="st">"cpu_usage_nice"</span>, <span class="st">"unit"</span>: <span class="st">"Percent"</span>},</span>
+<span id="cb10-19"><a href="#cb10-19"></a>            <span class="st">"cpu_usage_guest"</span>,</span>
+<span id="cb10-20"><a href="#cb10-20"></a>            <span class="st">"cpu_usage_active"</span></span>
+<span id="cb10-21"><a href="#cb10-21"></a>            </span>
+<span id="cb10-22"><a href="#cb10-22"></a>          ],</span>
+<span id="cb10-23"><a href="#cb10-23"></a>          <span class="st">"totalcpu"</span>: true,</span>
+<span id="cb10-24"><a href="#cb10-24"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">10</span></span>
+<span id="cb10-25"><a href="#cb10-25"></a>        },</span>
+<span id="cb10-26"><a href="#cb10-26"></a>        <span class="st">"disk"</span>: {</span>
+<span id="cb10-27"><a href="#cb10-27"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-28"><a href="#cb10-28"></a>            <span class="st">"/"</span>,</span>
+<span id="cb10-29"><a href="#cb10-29"></a>            <span class="st">"/tmp"</span></span>
+<span id="cb10-30"><a href="#cb10-30"></a>          ],</span>
+<span id="cb10-31"><a href="#cb10-31"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-32"><a href="#cb10-32"></a>            {<span class="st">"name"</span>: <span class="st">"free"</span>, <span class="st">"rename"</span>: <span class="st">"DISK_FREE"</span>, <span class="st">"unit"</span>: <span class="st">"Gigabytes"</span>},</span>
+<span id="cb10-33"><a href="#cb10-33"></a>            <span class="st">"total"</span>,</span>
+<span id="cb10-34"><a href="#cb10-34"></a>            <span class="st">"used"</span></span>
+<span id="cb10-35"><a href="#cb10-35"></a>          ],</span>
+<span id="cb10-36"><a href="#cb10-36"></a>           <span class="st">"ignore_file_system_types"</span>: [</span>
+<span id="cb10-37"><a href="#cb10-37"></a>            <span class="st">"sysfs"</span>, <span class="st">"devtmpfs"</span></span>
+<span id="cb10-38"><a href="#cb10-38"></a>          ],</span>
+<span id="cb10-39"><a href="#cb10-39"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
+<span id="cb10-40"><a href="#cb10-40"></a>        },</span>
+<span id="cb10-41"><a href="#cb10-41"></a>        <span class="st">"diskio"</span>: {</span>
+<span id="cb10-42"><a href="#cb10-42"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-43"><a href="#cb10-43"></a>            <span class="st">"*"</span></span>
+<span id="cb10-44"><a href="#cb10-44"></a>          ],</span>
+<span id="cb10-45"><a href="#cb10-45"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-46"><a href="#cb10-46"></a>            <span class="st">"reads"</span>,</span>
+<span id="cb10-47"><a href="#cb10-47"></a>            <span class="st">"writes"</span>,</span>
+<span id="cb10-48"><a href="#cb10-48"></a>            <span class="st">"read_time"</span>,</span>
+<span id="cb10-49"><a href="#cb10-49"></a>            <span class="st">"write_time"</span>,</span>
+<span id="cb10-50"><a href="#cb10-50"></a>            <span class="st">"io_time"</span></span>
+<span id="cb10-51"><a href="#cb10-51"></a>          ],</span>
+<span id="cb10-52"><a href="#cb10-52"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
+<span id="cb10-53"><a href="#cb10-53"></a>        },</span>
+<span id="cb10-54"><a href="#cb10-54"></a>        <span class="st">"swap"</span>: {</span>
+<span id="cb10-55"><a href="#cb10-55"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-56"><a href="#cb10-56"></a>            <span class="st">"swap_used"</span>,</span>
+<span id="cb10-57"><a href="#cb10-57"></a>            <span class="st">"swap_free"</span>,</span>
+<span id="cb10-58"><a href="#cb10-58"></a>            <span class="st">"swap_used_percent"</span></span>
+<span id="cb10-59"><a href="#cb10-59"></a>          ]</span>
+<span id="cb10-60"><a href="#cb10-60"></a>        },</span>
+<span id="cb10-61"><a href="#cb10-61"></a>        <span class="st">"mem"</span>: {</span>
+<span id="cb10-62"><a href="#cb10-62"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-63"><a href="#cb10-63"></a>            <span class="st">"mem_used"</span>,</span>
+<span id="cb10-64"><a href="#cb10-64"></a>            <span class="st">"mem_cached"</span>,</span>
+<span id="cb10-65"><a href="#cb10-65"></a>            <span class="st">"mem_total"</span></span>
+<span id="cb10-66"><a href="#cb10-66"></a>          ],</span>
+<span id="cb10-67"><a href="#cb10-67"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">1</span></span>
+<span id="cb10-68"><a href="#cb10-68"></a>        },</span>
+<span id="cb10-69"><a href="#cb10-69"></a>        <span class="st">"net"</span>: {</span>
+<span id="cb10-70"><a href="#cb10-70"></a>          <span class="st">"resources"</span>: [</span>
+<span id="cb10-71"><a href="#cb10-71"></a>            <span class="st">"eth0"</span></span>
+<span id="cb10-72"><a href="#cb10-72"></a>          ],</span>
+<span id="cb10-73"><a href="#cb10-73"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-74"><a href="#cb10-74"></a>            <span class="st">"bytes_sent"</span>,</span>
+<span id="cb10-75"><a href="#cb10-75"></a>            <span class="st">"bytes_recv"</span>,</span>
+<span id="cb10-76"><a href="#cb10-76"></a>            <span class="st">"drop_in"</span>,</span>
+<span id="cb10-77"><a href="#cb10-77"></a>            <span class="st">"drop_out"</span></span>
+<span id="cb10-78"><a href="#cb10-78"></a>          ]</span>
+<span id="cb10-79"><a href="#cb10-79"></a>        },</span>
+<span id="cb10-80"><a href="#cb10-80"></a>        <span class="st">"netstat"</span>: {</span>
+<span id="cb10-81"><a href="#cb10-81"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-82"><a href="#cb10-82"></a>            <span class="st">"tcp_established"</span>,</span>
+<span id="cb10-83"><a href="#cb10-83"></a>            <span class="st">"tcp_syn_sent"</span>,</span>
+<span id="cb10-84"><a href="#cb10-84"></a>            <span class="st">"tcp_close"</span></span>
+<span id="cb10-85"><a href="#cb10-85"></a>          ],</span>
+<span id="cb10-86"><a href="#cb10-86"></a>          <span class="st">"metrics_collection_interval"</span>: <span class="dv">60</span></span>
+<span id="cb10-87"><a href="#cb10-87"></a>        },</span>
+<span id="cb10-88"><a href="#cb10-88"></a>        <span class="st">"processes"</span>: {</span>
+<span id="cb10-89"><a href="#cb10-89"></a>          <span class="st">"measurement"</span>: [</span>
+<span id="cb10-90"><a href="#cb10-90"></a>            <span class="st">"running"</span>,</span>
+<span id="cb10-91"><a href="#cb10-91"></a>            <span class="st">"sleeping"</span>,</span>
+<span id="cb10-92"><a href="#cb10-92"></a>            <span class="st">"dead"</span></span>
+<span id="cb10-93"><a href="#cb10-93"></a>          ]</span>
+<span id="cb10-94"><a href="#cb10-94"></a>        }</span>
+<span id="cb10-95"><a href="#cb10-95"></a>      },</span>
+<span id="cb10-96"><a href="#cb10-96"></a>      <span class="st">"force_flush_interval"</span> : <span class="dv">30</span></span>
+<span id="cb10-97"><a href="#cb10-97"></a>    },</span>
+<span id="cb10-98"><a href="#cb10-98"></a>    <span class="st">"logs"</span>: {</span>
+<span id="cb10-99"><a href="#cb10-99"></a>      <span class="st">"logs_collected"</span>: {</span>
+<span id="cb10-100"><a href="#cb10-100"></a>        <span class="st">"files"</span>: {</span>
+<span id="cb10-101"><a href="#cb10-101"></a>          <span class="st">"collect_list"</span>: [</span>
+<span id="cb10-102"><a href="#cb10-102"></a>            {</span>
+<span id="cb10-103"><a href="#cb10-103"></a>              <span class="st">"file_path"</span>: <span class="st">"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"</span>,</span>
+<span id="cb10-104"><a href="#cb10-104"></a>              <span class="st">"log_group_name"</span>: <span class="st">"myblog/onprem/ubuntu/amazon-cloudwatch-agent"</span>,</span>
+<span id="cb10-105"><a href="#cb10-105"></a>              <span class="st">"log_stream_name"</span>: <span class="st">"myblog-cloudwatchagent-demo.log"</span>,</span>
+<span id="cb10-106"><a href="#cb10-106"></a>              <span class="st">"timezone"</span>: <span class="st">"UTC"</span></span>
+<span id="cb10-107"><a href="#cb10-107"></a>            }</span>
+<span id="cb10-108"><a href="#cb10-108"></a>          ]</span>
+<span id="cb10-109"><a href="#cb10-109"></a>        }</span>
+<span id="cb10-110"><a href="#cb10-110"></a>      },</span>
+<span id="cb10-111"><a href="#cb10-111"></a>      <span class="st">"log_stream_name"</span>: <span class="st">"my_log_stream_name"</span>,</span>
+<span id="cb10-112"><a href="#cb10-112"></a>      <span class="st">"force_flush_interval"</span> : <span class="dv">15</span></span>
+<span id="cb10-113"><a href="#cb10-113"></a>    }</span>
+<span id="cb10-114"><a href="#cb10-114"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Some important parts of this config file</p>
 <p><strong>logfile</strong></p>

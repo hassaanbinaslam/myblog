@@ -403,38 +403,38 @@ ga('send', {
 <p>Leave the rest of the settings as default, update the code as below, and deploy.</p>
 <p>In the code, we are first filtering the object key for which the event is generated. Then we trigger the datasync task and pass the object key as a filter string. With the filter key provided datasync job will only sync provided object from S3 to EFS.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json  </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> boto3  </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os  </span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>DataSync_task_arn <span class="op">=</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a'</span>  </span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>DataSync <span class="op">=</span> boto3.client(<span class="st">'datasync'</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lambda_handler(event, context):  </span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    objectKey <span class="op">=</span> <span class="st">''</span>  </span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:  </span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        objectKey <span class="op">=</span> event[<span class="st">"Records"</span>][<span class="dv">0</span>][<span class="st">"s3"</span>][<span class="st">"object"</span>][<span class="st">"key"</span>]  </span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">KeyError</span>:  </span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">KeyError</span>(<span class="st">"Received invalid event - unable to locate Object key to upload."</span>, event)  </span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> DataSync.start_task_execution(  </span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        TaskArn<span class="op">=</span>DataSync_task_arn,  </span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        OverrideOptions<span class="op">=</span>{  </span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">'OverwriteMode'</span> : <span class="st">'ALWAYS'</span>,</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">'PreserveDeletedFiles'</span> : <span class="st">'REMOVE'</span>,</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        },  </span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        Includes<span class="op">=</span>[  </span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>            {  </span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                <span class="st">'FilterType'</span>: <span class="st">'SIMPLE_PATTERN'</span>,  </span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                <span class="st">'Value'</span>: <span class="st">'/'</span> <span class="op">+</span> os.path.basename(objectKey)  </span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>            }  </span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        ]  </span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    )  </span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"response= </span><span class="sc">{</span>response<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {  </span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">'response'</span> : response  </span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    } </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> json  </span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="im">import</span> boto3  </span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="im">import</span> os  </span>
+<span id="cb3-4"><a href="#cb3-4"></a>  </span>
+<span id="cb3-5"><a href="#cb3-5"></a>DataSync_task_arn <span class="op">=</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a'</span>  </span>
+<span id="cb3-6"><a href="#cb3-6"></a>DataSync <span class="op">=</span> boto3.client(<span class="st">'datasync'</span>)</span>
+<span id="cb3-7"><a href="#cb3-7"></a>      </span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="kw">def</span> lambda_handler(event, context):  </span>
+<span id="cb3-9"><a href="#cb3-9"></a>    objectKey <span class="op">=</span> <span class="st">''</span>  </span>
+<span id="cb3-10"><a href="#cb3-10"></a>    <span class="cf">try</span>:  </span>
+<span id="cb3-11"><a href="#cb3-11"></a>        objectKey <span class="op">=</span> event[<span class="st">"Records"</span>][<span class="dv">0</span>][<span class="st">"s3"</span>][<span class="st">"object"</span>][<span class="st">"key"</span>]  </span>
+<span id="cb3-12"><a href="#cb3-12"></a>    <span class="cf">except</span> <span class="pp">KeyError</span>:  </span>
+<span id="cb3-13"><a href="#cb3-13"></a>        <span class="cf">raise</span> <span class="pp">KeyError</span>(<span class="st">"Received invalid event - unable to locate Object key to upload."</span>, event)  </span>
+<span id="cb3-14"><a href="#cb3-14"></a>          </span>
+<span id="cb3-15"><a href="#cb3-15"></a>    response <span class="op">=</span> DataSync.start_task_execution(  </span>
+<span id="cb3-16"><a href="#cb3-16"></a>        TaskArn<span class="op">=</span>DataSync_task_arn,  </span>
+<span id="cb3-17"><a href="#cb3-17"></a>        OverrideOptions<span class="op">=</span>{  </span>
+<span id="cb3-18"><a href="#cb3-18"></a>            <span class="st">'OverwriteMode'</span> : <span class="st">'ALWAYS'</span>,</span>
+<span id="cb3-19"><a href="#cb3-19"></a>            <span class="st">'PreserveDeletedFiles'</span> : <span class="st">'REMOVE'</span>,</span>
+<span id="cb3-20"><a href="#cb3-20"></a>        },  </span>
+<span id="cb3-21"><a href="#cb3-21"></a>        Includes<span class="op">=</span>[  </span>
+<span id="cb3-22"><a href="#cb3-22"></a>            {  </span>
+<span id="cb3-23"><a href="#cb3-23"></a>                <span class="st">'FilterType'</span>: <span class="st">'SIMPLE_PATTERN'</span>,  </span>
+<span id="cb3-24"><a href="#cb3-24"></a>                <span class="st">'Value'</span>: <span class="st">'/'</span> <span class="op">+</span> os.path.basename(objectKey)  </span>
+<span id="cb3-25"><a href="#cb3-25"></a>            }  </span>
+<span id="cb3-26"><a href="#cb3-26"></a>        ]  </span>
+<span id="cb3-27"><a href="#cb3-27"></a>    )  </span>
+<span id="cb3-28"><a href="#cb3-28"></a>      </span>
+<span id="cb3-29"><a href="#cb3-29"></a>    <span class="bu">print</span>(<span class="ss">f"response= </span><span class="sc">{</span>response<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30"></a>    <span class="cf">return</span> {  </span>
+<span id="cb3-31"><a href="#cb3-31"></a>        <span class="st">'response'</span> : response  </span>
+<span id="cb3-32"><a href="#cb3-32"></a>    } </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Add policy <code>AWSDataSyncFullAccess</code> to this lambda function role otherwise it will not be able to trigger datasync task.</p>
 </section>
@@ -458,7 +458,7 @@ ga('send', {
 </figure>
 </div>
 <p>We can also verify that the datasync job was triggered from lambda CloudWatch logs.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>response<span class="op">=</span> {<span class="st">'TaskExecutionArn'</span><span class="op">:</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a/execution/exec-020e456f670ca2419'</span><span class="op">,</span> <span class="st">'ResponseMetadata'</span><span class="op">:</span> {<span class="st">'RequestId'</span><span class="op">:</span> <span class="st">'c8166ce4-ef14-415c-beff-09cc7720f4a3'</span><span class="op">,</span> <span class="st">'HTTPStatusCode'</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span> <span class="st">'HTTPHeaders'</span><span class="op">:</span> {<span class="st">'date'</span><span class="op">:</span> <span class="st">'Wed, 30 Mar 2022 13:27:45 GMT'</span><span class="op">,</span> <span class="st">'content-type'</span><span class="op">:</span> <span class="st">'application/x-amz-json-1.1'</span><span class="op">,</span> <span class="st">'content-length'</span><span class="op">:</span> <span class="st">'123'</span><span class="op">,</span> <span class="st">'connection'</span><span class="op">:</span> <span class="st">'keep-alive'</span><span class="op">,</span> <span class="st">'x-amzn-requestid'</span><span class="op">:</span> <span class="st">'c8166ce4-ef14-415c-beff-09cc7720f4a3'</span>}<span class="op">,</span> <span class="st">'RetryAttempts'</span><span class="op">:</span> <span class="dv">0</span>}}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource js number-lines code-with-copy"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1"></a>response<span class="op">=</span> {<span class="st">'TaskExecutionArn'</span><span class="op">:</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a/execution/exec-020e456f670ca2419'</span><span class="op">,</span> <span class="st">'ResponseMetadata'</span><span class="op">:</span> {<span class="st">'RequestId'</span><span class="op">:</span> <span class="st">'c8166ce4-ef14-415c-beff-09cc7720f4a3'</span><span class="op">,</span> <span class="st">'HTTPStatusCode'</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span> <span class="st">'HTTPHeaders'</span><span class="op">:</span> {<span class="st">'date'</span><span class="op">:</span> <span class="st">'Wed, 30 Mar 2022 13:27:45 GMT'</span><span class="op">,</span> <span class="st">'content-type'</span><span class="op">:</span> <span class="st">'application/x-amz-json-1.1'</span><span class="op">,</span> <span class="st">'content-length'</span><span class="op">:</span> <span class="st">'123'</span><span class="op">,</span> <span class="st">'connection'</span><span class="op">:</span> <span class="st">'keep-alive'</span><span class="op">,</span> <span class="st">'x-amzn-requestid'</span><span class="op">:</span> <span class="st">'c8166ce4-ef14-415c-beff-09cc7720f4a3'</span>}<span class="op">,</span> <span class="st">'RetryAttempts'</span><span class="op">:</span> <span class="dv">0</span>}}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>In the logs we have task execution id <code>exec-020e456f670ca2419</code> , and we can use that to verify task’s status from datasync console.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -485,26 +485,26 @@ ga('send', {
 <li>runtime = Python 3.9</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json  </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> boto3  </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os  </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>DataSync_task_arn <span class="op">=</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a'</span>  </span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>DataSync <span class="op">=</span> boto3.client(<span class="st">'datasync'</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lambda_handler(event, context):</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> DataSync.start_task_execution(  </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        TaskArn<span class="op">=</span>DataSync_task_arn,  </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        OverrideOptions<span class="op">=</span>{  </span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">'OverwriteMode'</span> : <span class="st">'ALWAYS'</span>,</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>            <span class="st">'PreserveDeletedFiles'</span> : <span class="st">'REMOVE'</span>,</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    )  </span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"response= </span><span class="sc">{</span>response<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {  </span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">'response'</span> : response  </span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    } </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> json  </span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="im">import</span> boto3  </span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="im">import</span> os  </span>
+<span id="cb5-4"><a href="#cb5-4"></a>  </span>
+<span id="cb5-5"><a href="#cb5-5"></a>DataSync_task_arn <span class="op">=</span> <span class="st">'arn:aws:datasync:us-east-1:801598032724:task/task-0c04a4a15668b6b8a'</span>  </span>
+<span id="cb5-6"><a href="#cb5-6"></a>DataSync <span class="op">=</span> boto3.client(<span class="st">'datasync'</span>)</span>
+<span id="cb5-7"><a href="#cb5-7"></a>      </span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="kw">def</span> lambda_handler(event, context):</span>
+<span id="cb5-9"><a href="#cb5-9"></a>    response <span class="op">=</span> DataSync.start_task_execution(  </span>
+<span id="cb5-10"><a href="#cb5-10"></a>        TaskArn<span class="op">=</span>DataSync_task_arn,  </span>
+<span id="cb5-11"><a href="#cb5-11"></a>        OverrideOptions<span class="op">=</span>{  </span>
+<span id="cb5-12"><a href="#cb5-12"></a>            <span class="st">'OverwriteMode'</span> : <span class="st">'ALWAYS'</span>,</span>
+<span id="cb5-13"><a href="#cb5-13"></a>            <span class="st">'PreserveDeletedFiles'</span> : <span class="st">'REMOVE'</span>,</span>
+<span id="cb5-14"><a href="#cb5-14"></a>        }</span>
+<span id="cb5-15"><a href="#cb5-15"></a>    )  </span>
+<span id="cb5-16"><a href="#cb5-16"></a>    </span>
+<span id="cb5-17"><a href="#cb5-17"></a>    <span class="bu">print</span>(<span class="ss">f"response= </span><span class="sc">{</span>response<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-18"><a href="#cb5-18"></a>    <span class="cf">return</span> {  </span>
+<span id="cb5-19"><a href="#cb5-19"></a>        <span class="st">'response'</span> : response  </span>
+<span id="cb5-20"><a href="#cb5-20"></a>    } </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-eventbridge-event" class="level2">
