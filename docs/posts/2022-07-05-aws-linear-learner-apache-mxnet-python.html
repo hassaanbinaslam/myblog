@@ -275,17 +275,17 @@ ga('send', {
 </figure>
 </div>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># AWS CLI version</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>aws <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">##</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="co"># AWS CLI version</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="op">!</span>aws <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>aws-cli/1.22.42 Python/3.8.10 Linux/4.14.281-212.502.amzn2.x86_64 botocore/1.23.42</code></pre>
 </div>
 </div>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># OS version</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">/</span>etc<span class="op">/</span>os<span class="op">-</span>release</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">##</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="co"># OS version</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="op">!</span>cat <span class="op">/</span>etc<span class="op">/</span>os<span class="op">-</span>release</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>NAME="Ubuntu"
 VERSION="20.04.3 LTS (Focal Fossa)"
@@ -306,18 +306,18 @@ UBUNTU_CODENAME=focal</code></pre>
 <h1>Loading a SageMaker Linear Learner model with Apache MXNet in Python</h1>
 <p>Let’s initialize SageMaker API session.</p>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sagemaker</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> sagemaker.Session()</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>role <span class="op">=</span> sagemaker.get_execution_role()</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>bucket <span class="op">=</span> session.default_bucket()</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> session.boto_region_name</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"sagemaker.__version__: </span><span class="sc">{</span>sagemaker<span class="sc">.</span>__version__<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Session: </span><span class="sc">{</span>session<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Role: </span><span class="sc">{</span>role<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Bucket: </span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Region: </span><span class="sc">{</span>region<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="im">import</span> sagemaker</span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a>session <span class="op">=</span> sagemaker.Session()</span>
+<span id="cb6-4"><a href="#cb6-4"></a>role <span class="op">=</span> sagemaker.get_execution_role()</span>
+<span id="cb6-5"><a href="#cb6-5"></a>bucket <span class="op">=</span> session.default_bucket()</span>
+<span id="cb6-6"><a href="#cb6-6"></a>region <span class="op">=</span> session.boto_region_name</span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="bu">print</span>(<span class="ss">f"sagemaker.__version__: </span><span class="sc">{</span>sagemaker<span class="sc">.</span>__version__<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="bu">print</span>(<span class="ss">f"Session: </span><span class="sc">{</span>session<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="bu">print</span>(<span class="ss">f"Role: </span><span class="sc">{</span>role<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="bu">print</span>(<span class="ss">f"Bucket: </span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="bu">print</span>(<span class="ss">f"Region: </span><span class="sc">{</span>region<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>sagemaker.__version__: 2.73.0
 Session: &lt;sagemaker.session.Session object at 0x7f6b0500a760&gt;
@@ -328,32 +328,32 @@ Region: us-east-1</code></pre>
 </div>
 <p>We have our trained model artifacts available on S3 bucket. Let’s define that bucket path.</p>
 <div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>model_data <span class="op">=</span> <span class="st">"s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/linear-learner-2022-06-16-09-04-57-576/output/model.tar.gz"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>model_data <span class="op">=</span> <span class="st">"s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/linear-learner-2022-06-16-09-04-57-576/output/model.tar.gz"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will use SageMaker SDK to download model artifacts from the S3 bucket to a local directory. Let’s define the local path.</p>
 <div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>local_path <span class="op">=</span> <span class="st">"datasets/2022-07-05-aws-linear-learner-apache-mxnet-python/"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>local_path <span class="op">=</span> <span class="st">"datasets/2022-07-05-aws-linear-learner-apache-mxnet-python/"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Download the model artifacts.</p>
 <div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sagemaker.s3 <span class="im">import</span> S3Downloader</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>S3Downloader.download(</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    s3_uri<span class="op">=</span>model_data, </span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    local_path<span class="op">=</span>local_path, </span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    sagemaker_session<span class="op">=</span>session</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">from</span> sagemaker.s3 <span class="im">import</span> S3Downloader</span>
+<span id="cb10-2"><a href="#cb10-2"></a></span>
+<span id="cb10-3"><a href="#cb10-3"></a>S3Downloader.download(</span>
+<span id="cb10-4"><a href="#cb10-4"></a>    s3_uri<span class="op">=</span>model_data, </span>
+<span id="cb10-5"><a href="#cb10-5"></a>    local_path<span class="op">=</span>local_path, </span>
+<span id="cb10-6"><a href="#cb10-6"></a>    sagemaker_session<span class="op">=</span>session</span>
+<span id="cb10-7"><a href="#cb10-7"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Once downloaded, you will find an archive “model.tar.gz” in the local directory. Let’s extract this file.</p>
 <div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tar <span class="op">-</span>xzvf $local_path<span class="op">/</span>model.tar.gz <span class="op">-</span>C $local_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="op">!</span>tar <span class="op">-</span>xzvf $local_path<span class="op">/</span>model.tar.gz <span class="op">-</span>C $local_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>model_algo-1</code></pre>
 </div>
 </div>
 <p>Extracting once will give us a zip file. Let’s unzip it to get the model contents</p>
 <div class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>unzip $local_path<span class="op">/</span>model_algo<span class="op">-</span><span class="dv">1</span> <span class="op">-</span>d $local_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="op">!</span>unzip $local_path<span class="op">/</span>model_algo<span class="op">-</span><span class="dv">1</span> <span class="op">-</span>d $local_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Archive:  datasets/2022-07-05-aws-linear-learner-apache-mxnet-python//model_algo-1
  extracting: datasets/2022-07-05-aws-linear-learner-apache-mxnet-python/additional-params.json  
@@ -365,22 +365,22 @@ Region: us-east-1</code></pre>
 <p>Extracted model has two important files. * <code>mx-mod-symbol.json</code> is the JSON file that defines the computational graph for the model * <code>mx-mod-0000.params</code> is a binary file that contains the parameters for the trained model</p>
 <p>Serializing models as JSON files has the benefit that these models can be loaded from other language bindings like C++ or Scala for faster inference or inference in different environments. You can read more about it here: <a href="https://mxnet.apache.org/versions/1.9.1/api/python/docs/tutorials/packages/gluon/blocks/save_load_params.html">Saving and Loading Gluon Models</a>.</p>
 <div class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> mxnet</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pprint</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> mxnet <span class="im">import</span> gluon</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> json <span class="im">import</span> load <span class="im">as</span> json_load</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> json <span class="im">import</span> dumps <span class="im">as</span> json_dumps</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> mxnet</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="im">import</span> pprint</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="im">from</span> mxnet <span class="im">import</span> gluon</span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="im">from</span> json <span class="im">import</span> load <span class="im">as</span> json_load</span>
+<span id="cb15-6"><a href="#cb15-6"></a><span class="im">from</span> json <span class="im">import</span> dumps <span class="im">as</span> json_dumps</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Gluon API is a wrapper around low level MXNet API to provide a simple interface for deep learning. You may read more about this API here: <a href="https://mxnet.apache.org/versions/1.6/api/python/docs/api/gluon/index.html">mxnet.gluon</a></p>
 <p>Let’s read model computational graph.</p>
 <div class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>sym_json <span class="op">=</span> json_load(<span class="bu">open</span>(<span class="ss">f"</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">mx-mod-symbol.json"</span>))</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>sym_json_string <span class="op">=</span> json_dumps(sym_json)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>sym_json <span class="op">=</span> json_load(<span class="bu">open</span>(<span class="ss">f"</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">mx-mod-symbol.json"</span>))</span>
+<span id="cb16-2"><a href="#cb16-2"></a>sym_json_string <span class="op">=</span> json_dumps(sym_json)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pprint <span class="im">import</span> pprint</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>pprint(sym_json)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="im">from</span> pprint <span class="im">import</span> pprint</span>
+<span id="cb17-2"><a href="#cb17-2"></a>pprint(sym_json)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{'arg_nodes': [0, 1, 3, 5],
  'attrs': {'mxnet_version': ['int', 10301]},
@@ -406,12 +406,12 @@ Region: us-east-1</code></pre>
 </div>
 </div>
 <div class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># initialize the model graph</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> gluon.nn.SymbolBlock(</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=</span>mxnet.sym.load_json(sym_json_string), </span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    inputs<span class="op">=</span>mxnet.sym.var(<span class="st">"data"</span>)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="co"># initialize the model graph</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a>model <span class="op">=</span> gluon.nn.SymbolBlock(</span>
+<span id="cb19-4"><a href="#cb19-4"></a>    outputs<span class="op">=</span>mxnet.sym.load_json(sym_json_string), </span>
+<span id="cb19-5"><a href="#cb19-5"></a>    inputs<span class="op">=</span>mxnet.sym.var(<span class="st">"data"</span>)</span>
+<span id="cb19-6"><a href="#cb19-6"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/usr/local/lib/python3.8/dist-packages/mxnet/gluon/block.py:1849: UserWarning: Cannot decide type for the following arguments. Consider providing them as input:
     data: None
@@ -419,14 +419,14 @@ Region: us-east-1</code></pre>
 </div>
 </div>
 <div class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># load the model parameters</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>model.load_parameters(<span class="ss">f"</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">mx-mod-0000.params"</span>, allow_missing<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">##</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="co"># load the model parameters</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a>model.load_parameters(<span class="ss">f"</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">mx-mod-0000.params"</span>, allow_missing<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># finally initialize our model</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>model.initialize()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="co">##</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="co"># finally initialize our model</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a>model.initialize()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/usr/local/lib/python3.8/dist-packages/mxnet/gluon/parameter.py:896: UserWarning: Parameter 'fc0_weight' is already initialized, ignoring. Set force_reinit=True to re-initialize.
   v.initialize(None, ctx, init, force_reinit=force_reinit)
@@ -437,28 +437,28 @@ Region: us-east-1</code></pre>
 <p>At this point our model is ready in our local environment, and we can use it to make some predictions.</p>
 <p>Let’s prepare an input request. This request is same as used in the <a href="https://hassaanbinaslam.github.io/myblog/aws/ml/sagemaker/2022/06/08/sagemaker-training-overview.html">model training blog post</a>.</p>
 <div class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>input_request <span class="op">=</span> [</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.00632</span>,</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="fl">18.00</span>,</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="fl">2.310</span>,</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>,</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.5380</span>,</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="fl">6.5750</span>,</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="fl">65.20</span>,</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="fl">4.0900</span>,</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>,</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="fl">296.0</span>,</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="fl">15.30</span>,</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="fl">4.98</span>,</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>input_request <span class="op">=</span> [</span>
+<span id="cb24-2"><a href="#cb24-2"></a>    <span class="fl">0.00632</span>,</span>
+<span id="cb24-3"><a href="#cb24-3"></a>    <span class="fl">18.00</span>,</span>
+<span id="cb24-4"><a href="#cb24-4"></a>    <span class="fl">2.310</span>,</span>
+<span id="cb24-5"><a href="#cb24-5"></a>    <span class="dv">0</span>,</span>
+<span id="cb24-6"><a href="#cb24-6"></a>    <span class="fl">0.5380</span>,</span>
+<span id="cb24-7"><a href="#cb24-7"></a>    <span class="fl">6.5750</span>,</span>
+<span id="cb24-8"><a href="#cb24-8"></a>    <span class="fl">65.20</span>,</span>
+<span id="cb24-9"><a href="#cb24-9"></a>    <span class="fl">4.0900</span>,</span>
+<span id="cb24-10"><a href="#cb24-10"></a>    <span class="dv">1</span>,</span>
+<span id="cb24-11"><a href="#cb24-11"></a>    <span class="fl">296.0</span>,</span>
+<span id="cb24-12"><a href="#cb24-12"></a>    <span class="fl">15.30</span>,</span>
+<span id="cb24-13"><a href="#cb24-13"></a>    <span class="fl">4.98</span>,</span>
+<span id="cb24-14"><a href="#cb24-14"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We need to convert our request Python list to MXNet array to be used for inference.</p>
 <div class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>input_request_nd <span class="op">=</span> mxnet.nd.array(input_request)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a>input_request_nd <span class="op">=</span> mxnet.nd.array(input_request)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"type(input_request): </span><span class="sc">{</span><span class="bu">type</span>(input_request)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"type(input_request_nd): </span><span class="sc">{</span><span class="bu">type</span>(input_request_nd)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="bu">print</span>(<span class="ss">f"type(input_request): </span><span class="sc">{</span><span class="bu">type</span>(input_request)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb26-2"><a href="#cb26-2"></a><span class="bu">print</span>(<span class="ss">f"type(input_request_nd): </span><span class="sc">{</span><span class="bu">type</span>(input_request_nd)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>type(input_request): &lt;class 'list'&gt;
 type(input_request_nd): &lt;class 'mxnet.ndarray.ndarray.NDArray'&gt;</code></pre>
@@ -466,7 +466,7 @@ type(input_request_nd): &lt;class 'mxnet.ndarray.ndarray.NDArray'&gt;</code></pr
 </div>
 <p>Let’s pass our converted request to model for inference.</p>
 <div class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>model(input_request_nd)[<span class="dv">0</span>].asscalar()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a>model(input_request_nd)[<span class="dv">0</span>].asscalar()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Extension horovod.torch has not been built: /usr/local/lib/python3.8/dist-packages/horovod/torch/mpi_lib/_mpi_lib.cpython-38-x86_64-linux-gnu.so not found
 If this is not expected, reinstall Horovod with HOROVOD_WITH_PYTORCH=1 to debug the build error.
@@ -480,8 +480,8 @@ Warning! MPI libs are missing, but python applications are still avaiable.
 </div>
 <p>That’s it. We have loaded SageMaker built-in model in our local envionment and have done prediction from it. But we can go one step further and explore this model’s trained parameters.</p>
 <div class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> model.collect_params()</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>params</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>params <span class="op">=</span> model.collect_params()</span>
+<span id="cb31-2"><a href="#cb31-2"></a>params</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
 <pre><code>(
   Parameter fc0_weight (shape=(12, 1), dtype=&lt;class 'numpy.float32'&gt;)
@@ -492,15 +492,15 @@ Warning! MPI libs are missing, but python applications are still avaiable.
 </div>
 <p>Let’s define a function to extract model’s weights and biases</p>
 <div class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> extract_weight_and_bias(model):</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    params <span class="op">=</span> model.collect_params()</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    weight <span class="op">=</span> params[<span class="st">"fc0_weight"</span>].data().asnumpy()</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    bias <span class="op">=</span> params[<span class="st">"fc0_bias"</span>].data()[<span class="dv">0</span>].asscalar()</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">"weight"</span>: weight, <span class="st">"bias"</span>: bias}</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>weight_and_bias <span class="op">=</span> extract_weight_and_bias(model)</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>weight_and_bias</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">def</span> extract_weight_and_bias(model):</span>
+<span id="cb33-2"><a href="#cb33-2"></a>    params <span class="op">=</span> model.collect_params()</span>
+<span id="cb33-3"><a href="#cb33-3"></a>    weight <span class="op">=</span> params[<span class="st">"fc0_weight"</span>].data().asnumpy()</span>
+<span id="cb33-4"><a href="#cb33-4"></a>    bias <span class="op">=</span> params[<span class="st">"fc0_bias"</span>].data()[<span class="dv">0</span>].asscalar()</span>
+<span id="cb33-5"><a href="#cb33-5"></a>    <span class="cf">return</span> {<span class="st">"weight"</span>: weight, <span class="st">"bias"</span>: bias}</span>
+<span id="cb33-6"><a href="#cb33-6"></a></span>
+<span id="cb33-7"><a href="#cb33-7"></a></span>
+<span id="cb33-8"><a href="#cb33-8"></a>weight_and_bias <span class="op">=</span> extract_weight_and_bias(model)</span>
+<span id="cb33-9"><a href="#cb33-9"></a>weight_and_bias</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>{'weight': array([[-1.6160294e-01],
         [ 5.2438524e-02],
@@ -525,23 +525,23 @@ Warning! MPI libs are missing, but python applications are still avaiable.
 </figure>
 </div>
 <div class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># convert the input request to np.array</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>input_request <span class="op">=</span> np.array(input_request)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="co">##</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a><span class="co"># convert the input request to np.array</span></span>
+<span id="cb35-3"><a href="#cb35-3"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb35-4"><a href="#cb35-4"></a></span>
+<span id="cb35-5"><a href="#cb35-5"></a>input_request <span class="op">=</span> np.array(input_request)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"># extract weights and biases</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>weight <span class="op">=</span> weight_and_bias[<span class="st">"weight"</span>]</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>bias <span class="op">=</span> weight_and_bias[<span class="st">"bias"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">##</span></span>
+<span id="cb36-2"><a href="#cb36-2"></a><span class="co"># extract weights and biases</span></span>
+<span id="cb36-3"><a href="#cb36-3"></a>weight <span class="op">=</span> weight_and_bias[<span class="st">"weight"</span>]</span>
+<span id="cb36-4"><a href="#cb36-4"></a>bias <span class="op">=</span> weight_and_bias[<span class="st">"bias"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We have all the ingredients ready. Let’s use them to calcualte the prediction ourselves.</p>
 <div class="cell" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the final prediction</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">sum</span>(input_request.reshape((<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)) <span class="op">*</span> weight) <span class="op">+</span> bias</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a><span class="co">##</span></span>
+<span id="cb37-2"><a href="#cb37-2"></a><span class="co"># calculate the final prediction</span></span>
+<span id="cb37-3"><a href="#cb37-3"></a>np.<span class="bu">sum</span>(input_request.reshape((<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)) <span class="op">*</span> weight) <span class="op">+</span> bias</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <pre><code>29.98671686516441</code></pre>
 </div>

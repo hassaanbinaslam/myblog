@@ -282,14 +282,14 @@ ga('send', {
 <div class="cell" data-outputid="c31a99d7-b02f-4b9d-d5e2-127bca9e7e2e" data-execution_count="1">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn, numpy, matplotlib, pandas, torch</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"sklearn=="</span> <span class="op">+</span> sklearn.__version__)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> sklearn, numpy, matplotlib, pandas, torch</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"sklearn=="</span> <span class="op">+</span> sklearn.__version__)</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>python==3.7.14
@@ -311,27 +311,27 @@ matplotlib==3.2.2</code></pre>
 <p>Make two interleaving half circles. A simple toy dataset to visualize clustering and classification algorithms … It generates 2d binary classification datasets that are challenging to certain algorithms (e.g.&nbsp;centroid-based clustering or linear classification), including optional Gaussian noise.</p>
 </blockquote>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Synthetic data generation</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> make_moons</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_moons(n_samples<span class="op">=</span><span class="dv">100</span>, noise<span class="op">=</span><span class="fl">0.3</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># split data into train-validation sets using 80-20 ratio</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>X_train, X_val, y_train, y_val <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">.2</span>, random_state<span class="op">=</span><span class="dv">13</span>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># standardize data</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>sc <span class="op">=</span> StandardScaler()</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>sc.fit(X_train)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>X_train <span class="op">=</span> sc.transform(X_train)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>X_val <span class="op">=</span> sc.transform(X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">## </span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="co"># Synthetic data generation</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> make_moons</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a>X, y <span class="op">=</span> make_moons(n_samples<span class="op">=</span><span class="dv">100</span>, noise<span class="op">=</span><span class="fl">0.3</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co"># split data into train-validation sets using 80-20 ratio</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>X_train, X_val, y_train, y_val <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">.2</span>, random_state<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb3-11"><a href="#cb3-11"></a></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="co"># standardize data</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>sc <span class="op">=</span> StandardScaler()</span>
+<span id="cb3-14"><a href="#cb3-14"></a>sc.fit(X_train)</span>
+<span id="cb3-15"><a href="#cb3-15"></a></span>
+<span id="cb3-16"><a href="#cb3-16"></a>X_train <span class="op">=</span> sc.transform(X_train)</span>
+<span id="cb3-17"><a href="#cb3-17"></a>X_val <span class="op">=</span> sc.transform(X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s view the first ten elements of the generated data. Note that <code>X_train</code> has two features (2 columns), and <code>y_train</code> has 0,1 classes as labels.</p>
 <div class="cell" data-outputid="5ea67728-ffa6-4efb-832a-9e0fe085efb4" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X_train[:<span class="dv">10</span>], y_train[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>X_train[:<span class="dv">10</span>], y_train[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <pre><code>(array([[-0.59635346, -0.51713419],
         [ 0.3937561 , -1.35813138],
@@ -347,21 +347,21 @@ matplotlib==3.2.2</code></pre>
 </div>
 <p>Let’s plot our generated data to see how it looks.</p>
 <div class="cell" data-outputid="b165e565-731a-4ad9-b5ab-8c39de014687" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>figure, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>,<span class="dv">5</span>))</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>figure.suptitle(<span class="st">'Train and Validation Dataset'</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">'Training Data'</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].scatter(X_train[:, <span class="dv">0</span>], X_train[:, <span class="dv">1</span>], c<span class="op">=</span>y_train)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">'Validation Data'</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].set_title(<span class="st">'Combined Data'</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].scatter(X_train[:, <span class="dv">0</span>], X_train[:, <span class="dv">1</span>], c<span class="op">=</span>y_train)</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a>figure, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>,<span class="dv">5</span>))</span>
+<span id="cb6-4"><a href="#cb6-4"></a>figure.suptitle(<span class="st">'Train and Validation Dataset'</span>)</span>
+<span id="cb6-5"><a href="#cb6-5"></a></span>
+<span id="cb6-6"><a href="#cb6-6"></a>axes[<span class="dv">0</span>].set_title(<span class="st">'Training Data'</span>)</span>
+<span id="cb6-7"><a href="#cb6-7"></a>axes[<span class="dv">0</span>].scatter(X_train[:, <span class="dv">0</span>], X_train[:, <span class="dv">1</span>], c<span class="op">=</span>y_train)</span>
+<span id="cb6-8"><a href="#cb6-8"></a></span>
+<span id="cb6-9"><a href="#cb6-9"></a>axes[<span class="dv">1</span>].set_title(<span class="st">'Validation Data'</span>)</span>
+<span id="cb6-10"><a href="#cb6-10"></a>axes[<span class="dv">1</span>].scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
+<span id="cb6-11"><a href="#cb6-11"></a></span>
+<span id="cb6-12"><a href="#cb6-12"></a>axes[<span class="dv">2</span>].set_title(<span class="st">'Combined Data'</span>)</span>
+<span id="cb6-13"><a href="#cb6-13"></a>axes[<span class="dv">2</span>].scatter(X_train[:, <span class="dv">0</span>], X_train[:, <span class="dv">1</span>], c<span class="op">=</span>y_train)</span>
+<span id="cb6-14"><a href="#cb6-14"></a>axes[<span class="dv">2</span>].scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
+<span id="cb6-15"><a href="#cb6-15"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
 </div>
@@ -375,28 +375,28 @@ matplotlib==3.2.2</code></pre>
 </blockquote>
 <p>For this, we first need to convert NumPy data arrays to PyTorch tensors.</p>
 <div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Builds tensors from numpy arrays</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>x_train_tensor <span class="op">=</span> torch.as_tensor(X_train).<span class="bu">float</span>()</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>y_train_tensor <span class="op">=</span> torch.as_tensor(y_train.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)).<span class="bu">float</span>()</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>x_val_tensor <span class="op">=</span> torch.as_tensor(X_val).<span class="bu">float</span>()</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>y_val_tensor <span class="op">=</span> torch.as_tensor(y_val.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)).<span class="bu">float</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">import</span> torch</span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co"># Builds tensors from numpy arrays</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>x_train_tensor <span class="op">=</span> torch.as_tensor(X_train).<span class="bu">float</span>()</span>
+<span id="cb7-5"><a href="#cb7-5"></a>y_train_tensor <span class="op">=</span> torch.as_tensor(y_train.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)).<span class="bu">float</span>()</span>
+<span id="cb7-6"><a href="#cb7-6"></a></span>
+<span id="cb7-7"><a href="#cb7-7"></a>x_val_tensor <span class="op">=</span> torch.as_tensor(X_val).<span class="bu">float</span>()</span>
+<span id="cb7-8"><a href="#cb7-8"></a>y_val_tensor <span class="op">=</span> torch.as_tensor(y_val.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)).<span class="bu">float</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now load the tensors into Dataset and DataLoader class. PyTorch Dataset is a helper class that converts data and labels into a list of tuples. DataLoader is another helper class to create batches from Dataset tuples. <code>batch_size</code> means the number of tuples we want in a single batch. We have used 16 here since our data is small. So each fetch from DataLoader will give us a list of 16 tuples.</p>
 <div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">## </span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Load tensors into Dataset and DataLoader</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, TensorDataset</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Builds dataset containing ALL data points</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>train_dataset <span class="op">=</span> TensorDataset(x_train_tensor, y_train_tensor)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>val_dataset <span class="op">=</span> TensorDataset(x_val_tensor, y_val_tensor)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Builds a loader of each set</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>train_loader <span class="op">=</span> DataLoader(dataset<span class="op">=</span>train_dataset, batch_size<span class="op">=</span><span class="dv">16</span>, shuffle<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>val_loader <span class="op">=</span> DataLoader(dataset<span class="op">=</span>val_dataset, batch_size<span class="op">=</span><span class="dv">16</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="co">## </span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="co"># Load tensors into Dataset and DataLoader</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, TensorDataset</span>
+<span id="cb8-4"><a href="#cb8-4"></a></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="co"># Builds dataset containing ALL data points</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>train_dataset <span class="op">=</span> TensorDataset(x_train_tensor, y_train_tensor)</span>
+<span id="cb8-7"><a href="#cb8-7"></a>val_dataset <span class="op">=</span> TensorDataset(x_val_tensor, y_val_tensor)</span>
+<span id="cb8-8"><a href="#cb8-8"></a></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co"># Builds a loader of each set</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>train_loader <span class="op">=</span> DataLoader(dataset<span class="op">=</span>train_dataset, batch_size<span class="op">=</span><span class="dv">16</span>, shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-11"><a href="#cb8-11"></a>val_loader <span class="op">=</span> DataLoader(dataset<span class="op">=</span>val_dataset, batch_size<span class="op">=</span><span class="dv">16</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="define-a-class-to-implement-training-validation-and-mini-batch-processing-pipeline" class="level2">
@@ -427,180 +427,180 @@ matplotlib==3.2.2</code></pre>
 <li><code>predict</code>: Make a prediction from model on provided data</li>
 </ul>
 <div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.tensorboard <span class="im">import</span> SummaryWriter</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DeepLearningPipeline(<span class="bu">object</span>):</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, model, loss_fn, optimizer):</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Here we define the attributes of our class</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># We start by storing the arguments as attributes </span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># to use them later</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model <span class="op">=</span> model</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.loss_fn <span class="op">=</span> loss_fn</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.optimizer <span class="op">=</span> optimizer</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.device <span class="op">=</span> <span class="st">'cuda'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Let's send the model to the specified device right away</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model.to(<span class="va">self</span>.device)</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># These attributes are defined here, but since they are</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># not informed at the moment of creation, we keep them None</span></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_loader <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.writer <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># These attributes are going to be computed internally</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.losses <span class="op">=</span> []</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_losses <span class="op">=</span> []</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.total_epochs <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Creates the train_step function for our model, </span></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># loss function and optimizer</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Note: there are NO ARGS there! It makes use of the class</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>        <span class="co"># attributes directly</span></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.train_step_fn <span class="op">=</span> <span class="va">self</span>._make_train_step_fn()</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Creates the val_step function for our model and loss</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_step_fn <span class="op">=</span> <span class="va">self</span>._make_val_step_fn()</span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> set_loaders(<span class="va">self</span>, train_loader, val_loader<span class="op">=</span><span class="va">None</span>):</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This method allows the user to define which train_loader (and val_loader, optionally) to use</span></span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Both loaders are then assigned to attributes of the class</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>        <span class="co"># So they can be referred to later</span></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> train_loader</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val_loader <span class="op">=</span> val_loader</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _make_train_step_fn(<span class="va">self</span>):</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This method does not need ARGS... it can refer to</span></span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># the attributes: self.model, self.loss_fn and self.optimizer</span></span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Builds function that performs a step in the train loop</span></span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> perform_train_step_fn(x, y):</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Sets model to TRAIN mode</span></span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.model.train()</span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>            yhat <span class="op">=</span> <span class="va">self</span>.model(x)</span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 2 - Computes the loss</span></span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> <span class="va">self</span>.loss_fn(yhat, y)</span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 3 - Computes gradients for both "a" and "b" parameters</span></span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>            loss.backward()</span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 4 - Updates parameters using gradients and the learning rate</span></span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.optimizer.step()</span>
-<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.optimizer.zero_grad()</span>
-<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Returns the loss</span></span>
-<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> loss.item()</span>
-<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Returns the function that will be called inside the train loop</span></span>
-<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> perform_train_step_fn</span>
-<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _make_val_step_fn(<span class="va">self</span>):</span>
-<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Builds function that performs a step in the validation loop</span></span>
-<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> perform_val_step_fn(x, y):</span>
-<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Sets model to EVAL mode</span></span>
-<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.model.<span class="bu">eval</span>()</span>
-<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
-<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>            yhat <span class="op">=</span> <span class="va">self</span>.model(x)</span>
-<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Step 2 - Computes the loss</span></span>
-<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> <span class="va">self</span>.loss_fn(yhat, y)</span>
-<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>            <span class="co"># There is no need to compute Steps 3 and 4, </span></span>
-<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>            <span class="co"># since we don't update parameters during evaluation</span></span>
-<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> loss.item()</span>
-<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> perform_val_step_fn</span>
-<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _mini_batch(<span class="va">self</span>, validation<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The mini-batch can be used with both loaders</span></span>
-<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The argument `validation`defines which loader and </span></span>
-<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>        <span class="co"># corresponding step function is going to be used</span></span>
-<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> validation:</span>
-<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>            data_loader <span class="op">=</span> <span class="va">self</span>.val_loader</span>
-<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>            step_fn <span class="op">=</span> <span class="va">self</span>.val_step_fn</span>
-<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>            data_loader <span class="op">=</span> <span class="va">self</span>.train_loader</span>
-<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>            step_fn <span class="op">=</span> <span class="va">self</span>.train_step_fn</span>
-<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> data_loader <span class="kw">is</span> <span class="va">None</span>:</span>
-<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">None</span></span>
-<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Once the data loader and step function, this is the </span></span>
-<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>        <span class="co"># same mini-batch loop we had before</span></span>
-<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>        mini_batch_losses <span class="op">=</span> []</span>
-<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x_batch, y_batch <span class="kw">in</span> data_loader:</span>
-<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>            x_batch <span class="op">=</span> x_batch.to(<span class="va">self</span>.device)</span>
-<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>            y_batch <span class="op">=</span> y_batch.to(<span class="va">self</span>.device)</span>
-<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>            mini_batch_loss <span class="op">=</span> step_fn(x_batch, y_batch)</span>
-<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>            mini_batch_losses.append(mini_batch_loss)</span>
-<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> np.mean(mini_batch_losses)</span>
-<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> loss</span>
-<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> set_seed(<span class="va">self</span>, seed<span class="op">=</span><span class="dv">42</span>):</span>
-<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>        torch.backends.cudnn.deterministic <span class="op">=</span> <span class="va">True</span></span>
-<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>        torch.backends.cudnn.benchmark <span class="op">=</span> <span class="va">False</span>    </span>
-<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>        torch.manual_seed(seed)</span>
-<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>        np.random.seed(seed)</span>
-<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> train(<span class="va">self</span>, n_epochs, seed<span class="op">=</span><span class="dv">42</span>):</span>
-<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>        <span class="co"># To ensure reproducibility of the training process</span></span>
-<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.set_seed(seed)</span>
-<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(n_epochs):</span>
-<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Keeps track of the numbers of epochs</span></span>
-<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>            <span class="co"># by updating the corresponding attribute</span></span>
-<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.total_epochs <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a>            <span class="co"># inner loop</span></span>
-<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Performs training using mini-batches</span></span>
-<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> <span class="va">self</span>._mini_batch(validation<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.losses.append(loss)</span>
-<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>            <span class="co"># VALIDATION</span></span>
-<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a>            <span class="co"># no gradients in validation!</span></span>
-<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> torch.no_grad():</span>
-<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Performs evaluation using mini-batches</span></span>
-<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a>                val_loss <span class="op">=</span> <span class="va">self</span>._mini_batch(validation<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.val_losses.append(val_loss)</span>
-<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>            <span class="co"># If a SummaryWriter has been set...</span></span>
-<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="va">self</span>.writer:</span>
-<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>                scalars <span class="op">=</span> {<span class="st">'training'</span>: loss}</span>
-<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> val_loss <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a>                    scalars.update({<span class="st">'validation'</span>: val_loss})</span>
-<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Records both losses for each epoch under the main tag "loss"</span></span>
-<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.writer.add_scalars(main_tag<span class="op">=</span><span class="st">'loss'</span>,</span>
-<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>                                        tag_scalar_dict<span class="op">=</span>scalars,</span>
-<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a>                                        global_step<span class="op">=</span>epoch)</span>
-<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.writer:</span>
-<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Closes the writer</span></span>
-<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.writer.close()</span>
-<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, x):</span>
-<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set is to evaluation mode for predictions</span></span>
-<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model.<span class="bu">eval</span>() </span>
-<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Takes aNumpy input and make it a float tensor</span></span>
-<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a>        x_tensor <span class="op">=</span> torch.as_tensor(x).<span class="bu">float</span>()</span>
-<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Send input to device and uses model for prediction</span></span>
-<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>        y_hat_tensor <span class="op">=</span> <span class="va">self</span>.model(x_tensor.to(<span class="va">self</span>.device))</span>
-<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set it back to train mode</span></span>
-<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model.train()</span>
-<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Detaches it, brings it to CPU and back to Numpy</span></span>
-<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> y_hat_tensor.detach().cpu().numpy()</span>
-<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> plot_losses(<span class="va">self</span>):</span>
-<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a>        fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
-<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>        plt.plot(<span class="va">self</span>.losses, label<span class="op">=</span><span class="st">'Training Loss'</span>, c<span class="op">=</span><span class="st">'b'</span>)</span>
-<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>        plt.plot(<span class="va">self</span>.val_losses, label<span class="op">=</span><span class="st">'Validation Loss'</span>, c<span class="op">=</span><span class="st">'r'</span>)</span>
-<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>        plt.yscale(<span class="st">'log'</span>)</span>
-<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>        plt.xlabel(<span class="st">'Epochs'</span>)</span>
-<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>        plt.ylabel(<span class="st">'Loss'</span>)</span>
-<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>        plt.legend()</span>
-<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
-<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="im">import</span> datetime</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="im">from</span> torch.utils.tensorboard <span class="im">import</span> SummaryWriter</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="kw">class</span> DeepLearningPipeline(<span class="bu">object</span>):</span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, model, loss_fn, optimizer):</span>
+<span id="cb9-7"><a href="#cb9-7"></a>        <span class="co"># Here we define the attributes of our class</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>        </span>
+<span id="cb9-9"><a href="#cb9-9"></a>        <span class="co"># We start by storing the arguments as attributes </span></span>
+<span id="cb9-10"><a href="#cb9-10"></a>        <span class="co"># to use them later</span></span>
+<span id="cb9-11"><a href="#cb9-11"></a>        <span class="va">self</span>.model <span class="op">=</span> model</span>
+<span id="cb9-12"><a href="#cb9-12"></a>        <span class="va">self</span>.loss_fn <span class="op">=</span> loss_fn</span>
+<span id="cb9-13"><a href="#cb9-13"></a>        <span class="va">self</span>.optimizer <span class="op">=</span> optimizer</span>
+<span id="cb9-14"><a href="#cb9-14"></a>        <span class="va">self</span>.device <span class="op">=</span> <span class="st">'cuda'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a>        <span class="co"># Let's send the model to the specified device right away</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a>        <span class="va">self</span>.model.to(<span class="va">self</span>.device)</span>
+<span id="cb9-17"><a href="#cb9-17"></a></span>
+<span id="cb9-18"><a href="#cb9-18"></a>        <span class="co"># These attributes are defined here, but since they are</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>        <span class="co"># not informed at the moment of creation, we keep them None</span></span>
+<span id="cb9-20"><a href="#cb9-20"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a>        <span class="va">self</span>.val_loader <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb9-22"><a href="#cb9-22"></a>        <span class="va">self</span>.writer <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb9-23"><a href="#cb9-23"></a>        </span>
+<span id="cb9-24"><a href="#cb9-24"></a>        <span class="co"># These attributes are going to be computed internally</span></span>
+<span id="cb9-25"><a href="#cb9-25"></a>        <span class="va">self</span>.losses <span class="op">=</span> []</span>
+<span id="cb9-26"><a href="#cb9-26"></a>        <span class="va">self</span>.val_losses <span class="op">=</span> []</span>
+<span id="cb9-27"><a href="#cb9-27"></a>        <span class="va">self</span>.total_epochs <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb9-28"><a href="#cb9-28"></a></span>
+<span id="cb9-29"><a href="#cb9-29"></a>        <span class="co"># Creates the train_step function for our model, </span></span>
+<span id="cb9-30"><a href="#cb9-30"></a>        <span class="co"># loss function and optimizer</span></span>
+<span id="cb9-31"><a href="#cb9-31"></a>        <span class="co"># Note: there are NO ARGS there! It makes use of the class</span></span>
+<span id="cb9-32"><a href="#cb9-32"></a>        <span class="co"># attributes directly</span></span>
+<span id="cb9-33"><a href="#cb9-33"></a>        <span class="va">self</span>.train_step_fn <span class="op">=</span> <span class="va">self</span>._make_train_step_fn()</span>
+<span id="cb9-34"><a href="#cb9-34"></a>        <span class="co"># Creates the val_step function for our model and loss</span></span>
+<span id="cb9-35"><a href="#cb9-35"></a>        <span class="va">self</span>.val_step_fn <span class="op">=</span> <span class="va">self</span>._make_val_step_fn()</span>
+<span id="cb9-36"><a href="#cb9-36"></a></span>
+<span id="cb9-37"><a href="#cb9-37"></a>    <span class="kw">def</span> set_loaders(<span class="va">self</span>, train_loader, val_loader<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb9-38"><a href="#cb9-38"></a>        <span class="co"># This method allows the user to define which train_loader (and val_loader, optionally) to use</span></span>
+<span id="cb9-39"><a href="#cb9-39"></a>        <span class="co"># Both loaders are then assigned to attributes of the class</span></span>
+<span id="cb9-40"><a href="#cb9-40"></a>        <span class="co"># So they can be referred to later</span></span>
+<span id="cb9-41"><a href="#cb9-41"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> train_loader</span>
+<span id="cb9-42"><a href="#cb9-42"></a>        <span class="va">self</span>.val_loader <span class="op">=</span> val_loader</span>
+<span id="cb9-43"><a href="#cb9-43"></a></span>
+<span id="cb9-44"><a href="#cb9-44"></a>    <span class="kw">def</span> _make_train_step_fn(<span class="va">self</span>):</span>
+<span id="cb9-45"><a href="#cb9-45"></a>        <span class="co"># This method does not need ARGS... it can refer to</span></span>
+<span id="cb9-46"><a href="#cb9-46"></a>        <span class="co"># the attributes: self.model, self.loss_fn and self.optimizer</span></span>
+<span id="cb9-47"><a href="#cb9-47"></a>        </span>
+<span id="cb9-48"><a href="#cb9-48"></a>        <span class="co"># Builds function that performs a step in the train loop</span></span>
+<span id="cb9-49"><a href="#cb9-49"></a>        <span class="kw">def</span> perform_train_step_fn(x, y):</span>
+<span id="cb9-50"><a href="#cb9-50"></a>            <span class="co"># Sets model to TRAIN mode</span></span>
+<span id="cb9-51"><a href="#cb9-51"></a>            <span class="va">self</span>.model.train()</span>
+<span id="cb9-52"><a href="#cb9-52"></a></span>
+<span id="cb9-53"><a href="#cb9-53"></a>            <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
+<span id="cb9-54"><a href="#cb9-54"></a>            yhat <span class="op">=</span> <span class="va">self</span>.model(x)</span>
+<span id="cb9-55"><a href="#cb9-55"></a>            <span class="co"># Step 2 - Computes the loss</span></span>
+<span id="cb9-56"><a href="#cb9-56"></a>            loss <span class="op">=</span> <span class="va">self</span>.loss_fn(yhat, y)</span>
+<span id="cb9-57"><a href="#cb9-57"></a>            <span class="co"># Step 3 - Computes gradients for both "a" and "b" parameters</span></span>
+<span id="cb9-58"><a href="#cb9-58"></a>            loss.backward()</span>
+<span id="cb9-59"><a href="#cb9-59"></a>            <span class="co"># Step 4 - Updates parameters using gradients and the learning rate</span></span>
+<span id="cb9-60"><a href="#cb9-60"></a>            <span class="va">self</span>.optimizer.step()</span>
+<span id="cb9-61"><a href="#cb9-61"></a>            <span class="va">self</span>.optimizer.zero_grad()</span>
+<span id="cb9-62"><a href="#cb9-62"></a></span>
+<span id="cb9-63"><a href="#cb9-63"></a>            <span class="co"># Returns the loss</span></span>
+<span id="cb9-64"><a href="#cb9-64"></a>            <span class="cf">return</span> loss.item()</span>
+<span id="cb9-65"><a href="#cb9-65"></a></span>
+<span id="cb9-66"><a href="#cb9-66"></a>        <span class="co"># Returns the function that will be called inside the train loop</span></span>
+<span id="cb9-67"><a href="#cb9-67"></a>        <span class="cf">return</span> perform_train_step_fn</span>
+<span id="cb9-68"><a href="#cb9-68"></a>    </span>
+<span id="cb9-69"><a href="#cb9-69"></a>    <span class="kw">def</span> _make_val_step_fn(<span class="va">self</span>):</span>
+<span id="cb9-70"><a href="#cb9-70"></a>        <span class="co"># Builds function that performs a step in the validation loop</span></span>
+<span id="cb9-71"><a href="#cb9-71"></a>        <span class="kw">def</span> perform_val_step_fn(x, y):</span>
+<span id="cb9-72"><a href="#cb9-72"></a>            <span class="co"># Sets model to EVAL mode</span></span>
+<span id="cb9-73"><a href="#cb9-73"></a>            <span class="va">self</span>.model.<span class="bu">eval</span>()</span>
+<span id="cb9-74"><a href="#cb9-74"></a></span>
+<span id="cb9-75"><a href="#cb9-75"></a>            <span class="co"># Step 1 - Computes our model's predicted output - forward pass</span></span>
+<span id="cb9-76"><a href="#cb9-76"></a>            yhat <span class="op">=</span> <span class="va">self</span>.model(x)</span>
+<span id="cb9-77"><a href="#cb9-77"></a>            <span class="co"># Step 2 - Computes the loss</span></span>
+<span id="cb9-78"><a href="#cb9-78"></a>            loss <span class="op">=</span> <span class="va">self</span>.loss_fn(yhat, y)</span>
+<span id="cb9-79"><a href="#cb9-79"></a>            <span class="co"># There is no need to compute Steps 3 and 4, </span></span>
+<span id="cb9-80"><a href="#cb9-80"></a>            <span class="co"># since we don't update parameters during evaluation</span></span>
+<span id="cb9-81"><a href="#cb9-81"></a>            <span class="cf">return</span> loss.item()</span>
+<span id="cb9-82"><a href="#cb9-82"></a></span>
+<span id="cb9-83"><a href="#cb9-83"></a>        <span class="cf">return</span> perform_val_step_fn</span>
+<span id="cb9-84"><a href="#cb9-84"></a>            </span>
+<span id="cb9-85"><a href="#cb9-85"></a>    <span class="kw">def</span> _mini_batch(<span class="va">self</span>, validation<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb9-86"><a href="#cb9-86"></a>        <span class="co"># The mini-batch can be used with both loaders</span></span>
+<span id="cb9-87"><a href="#cb9-87"></a>        <span class="co"># The argument `validation`defines which loader and </span></span>
+<span id="cb9-88"><a href="#cb9-88"></a>        <span class="co"># corresponding step function is going to be used</span></span>
+<span id="cb9-89"><a href="#cb9-89"></a>        <span class="cf">if</span> validation:</span>
+<span id="cb9-90"><a href="#cb9-90"></a>            data_loader <span class="op">=</span> <span class="va">self</span>.val_loader</span>
+<span id="cb9-91"><a href="#cb9-91"></a>            step_fn <span class="op">=</span> <span class="va">self</span>.val_step_fn</span>
+<span id="cb9-92"><a href="#cb9-92"></a>        <span class="cf">else</span>:</span>
+<span id="cb9-93"><a href="#cb9-93"></a>            data_loader <span class="op">=</span> <span class="va">self</span>.train_loader</span>
+<span id="cb9-94"><a href="#cb9-94"></a>            step_fn <span class="op">=</span> <span class="va">self</span>.train_step_fn</span>
+<span id="cb9-95"><a href="#cb9-95"></a></span>
+<span id="cb9-96"><a href="#cb9-96"></a>        <span class="cf">if</span> data_loader <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb9-97"><a href="#cb9-97"></a>            <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb9-98"><a href="#cb9-98"></a>            </span>
+<span id="cb9-99"><a href="#cb9-99"></a>        <span class="co"># Once the data loader and step function, this is the </span></span>
+<span id="cb9-100"><a href="#cb9-100"></a>        <span class="co"># same mini-batch loop we had before</span></span>
+<span id="cb9-101"><a href="#cb9-101"></a>        mini_batch_losses <span class="op">=</span> []</span>
+<span id="cb9-102"><a href="#cb9-102"></a>        <span class="cf">for</span> x_batch, y_batch <span class="kw">in</span> data_loader:</span>
+<span id="cb9-103"><a href="#cb9-103"></a>            x_batch <span class="op">=</span> x_batch.to(<span class="va">self</span>.device)</span>
+<span id="cb9-104"><a href="#cb9-104"></a>            y_batch <span class="op">=</span> y_batch.to(<span class="va">self</span>.device)</span>
+<span id="cb9-105"><a href="#cb9-105"></a></span>
+<span id="cb9-106"><a href="#cb9-106"></a>            mini_batch_loss <span class="op">=</span> step_fn(x_batch, y_batch)</span>
+<span id="cb9-107"><a href="#cb9-107"></a>            mini_batch_losses.append(mini_batch_loss)</span>
+<span id="cb9-108"><a href="#cb9-108"></a></span>
+<span id="cb9-109"><a href="#cb9-109"></a>        loss <span class="op">=</span> np.mean(mini_batch_losses)</span>
+<span id="cb9-110"><a href="#cb9-110"></a>        <span class="cf">return</span> loss</span>
+<span id="cb9-111"><a href="#cb9-111"></a></span>
+<span id="cb9-112"><a href="#cb9-112"></a>    <span class="kw">def</span> set_seed(<span class="va">self</span>, seed<span class="op">=</span><span class="dv">42</span>):</span>
+<span id="cb9-113"><a href="#cb9-113"></a>        torch.backends.cudnn.deterministic <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb9-114"><a href="#cb9-114"></a>        torch.backends.cudnn.benchmark <span class="op">=</span> <span class="va">False</span>    </span>
+<span id="cb9-115"><a href="#cb9-115"></a>        torch.manual_seed(seed)</span>
+<span id="cb9-116"><a href="#cb9-116"></a>        np.random.seed(seed)</span>
+<span id="cb9-117"><a href="#cb9-117"></a>    </span>
+<span id="cb9-118"><a href="#cb9-118"></a>    <span class="kw">def</span> train(<span class="va">self</span>, n_epochs, seed<span class="op">=</span><span class="dv">42</span>):</span>
+<span id="cb9-119"><a href="#cb9-119"></a>        <span class="co"># To ensure reproducibility of the training process</span></span>
+<span id="cb9-120"><a href="#cb9-120"></a>        <span class="va">self</span>.set_seed(seed)</span>
+<span id="cb9-121"><a href="#cb9-121"></a></span>
+<span id="cb9-122"><a href="#cb9-122"></a>        <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(n_epochs):</span>
+<span id="cb9-123"><a href="#cb9-123"></a>            <span class="co"># Keeps track of the numbers of epochs</span></span>
+<span id="cb9-124"><a href="#cb9-124"></a>            <span class="co"># by updating the corresponding attribute</span></span>
+<span id="cb9-125"><a href="#cb9-125"></a>            <span class="va">self</span>.total_epochs <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb9-126"><a href="#cb9-126"></a></span>
+<span id="cb9-127"><a href="#cb9-127"></a>            <span class="co"># inner loop</span></span>
+<span id="cb9-128"><a href="#cb9-128"></a>            <span class="co"># Performs training using mini-batches</span></span>
+<span id="cb9-129"><a href="#cb9-129"></a>            loss <span class="op">=</span> <span class="va">self</span>._mini_batch(validation<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb9-130"><a href="#cb9-130"></a>            <span class="va">self</span>.losses.append(loss)</span>
+<span id="cb9-131"><a href="#cb9-131"></a></span>
+<span id="cb9-132"><a href="#cb9-132"></a>            <span class="co"># VALIDATION</span></span>
+<span id="cb9-133"><a href="#cb9-133"></a>            <span class="co"># no gradients in validation!</span></span>
+<span id="cb9-134"><a href="#cb9-134"></a>            <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb9-135"><a href="#cb9-135"></a>                <span class="co"># Performs evaluation using mini-batches</span></span>
+<span id="cb9-136"><a href="#cb9-136"></a>                val_loss <span class="op">=</span> <span class="va">self</span>._mini_batch(validation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-137"><a href="#cb9-137"></a>                <span class="va">self</span>.val_losses.append(val_loss)</span>
+<span id="cb9-138"><a href="#cb9-138"></a></span>
+<span id="cb9-139"><a href="#cb9-139"></a>            <span class="co"># If a SummaryWriter has been set...</span></span>
+<span id="cb9-140"><a href="#cb9-140"></a>            <span class="cf">if</span> <span class="va">self</span>.writer:</span>
+<span id="cb9-141"><a href="#cb9-141"></a>                scalars <span class="op">=</span> {<span class="st">'training'</span>: loss}</span>
+<span id="cb9-142"><a href="#cb9-142"></a>                <span class="cf">if</span> val_loss <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb9-143"><a href="#cb9-143"></a>                    scalars.update({<span class="st">'validation'</span>: val_loss})</span>
+<span id="cb9-144"><a href="#cb9-144"></a>                <span class="co"># Records both losses for each epoch under the main tag "loss"</span></span>
+<span id="cb9-145"><a href="#cb9-145"></a>                <span class="va">self</span>.writer.add_scalars(main_tag<span class="op">=</span><span class="st">'loss'</span>,</span>
+<span id="cb9-146"><a href="#cb9-146"></a>                                        tag_scalar_dict<span class="op">=</span>scalars,</span>
+<span id="cb9-147"><a href="#cb9-147"></a>                                        global_step<span class="op">=</span>epoch)</span>
+<span id="cb9-148"><a href="#cb9-148"></a></span>
+<span id="cb9-149"><a href="#cb9-149"></a>        <span class="cf">if</span> <span class="va">self</span>.writer:</span>
+<span id="cb9-150"><a href="#cb9-150"></a>            <span class="co"># Closes the writer</span></span>
+<span id="cb9-151"><a href="#cb9-151"></a>            <span class="va">self</span>.writer.close()</span>
+<span id="cb9-152"><a href="#cb9-152"></a></span>
+<span id="cb9-153"><a href="#cb9-153"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, x):</span>
+<span id="cb9-154"><a href="#cb9-154"></a>        <span class="co"># Set is to evaluation mode for predictions</span></span>
+<span id="cb9-155"><a href="#cb9-155"></a>        <span class="va">self</span>.model.<span class="bu">eval</span>() </span>
+<span id="cb9-156"><a href="#cb9-156"></a>        <span class="co"># Takes aNumpy input and make it a float tensor</span></span>
+<span id="cb9-157"><a href="#cb9-157"></a>        x_tensor <span class="op">=</span> torch.as_tensor(x).<span class="bu">float</span>()</span>
+<span id="cb9-158"><a href="#cb9-158"></a>        <span class="co"># Send input to device and uses model for prediction</span></span>
+<span id="cb9-159"><a href="#cb9-159"></a>        y_hat_tensor <span class="op">=</span> <span class="va">self</span>.model(x_tensor.to(<span class="va">self</span>.device))</span>
+<span id="cb9-160"><a href="#cb9-160"></a>        <span class="co"># Set it back to train mode</span></span>
+<span id="cb9-161"><a href="#cb9-161"></a>        <span class="va">self</span>.model.train()</span>
+<span id="cb9-162"><a href="#cb9-162"></a>        <span class="co"># Detaches it, brings it to CPU and back to Numpy</span></span>
+<span id="cb9-163"><a href="#cb9-163"></a>        <span class="cf">return</span> y_hat_tensor.detach().cpu().numpy()</span>
+<span id="cb9-164"><a href="#cb9-164"></a></span>
+<span id="cb9-165"><a href="#cb9-165"></a>    <span class="kw">def</span> plot_losses(<span class="va">self</span>):</span>
+<span id="cb9-166"><a href="#cb9-166"></a>        fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb9-167"><a href="#cb9-167"></a>        plt.plot(<span class="va">self</span>.losses, label<span class="op">=</span><span class="st">'Training Loss'</span>, c<span class="op">=</span><span class="st">'b'</span>)</span>
+<span id="cb9-168"><a href="#cb9-168"></a>        plt.plot(<span class="va">self</span>.val_losses, label<span class="op">=</span><span class="st">'Validation Loss'</span>, c<span class="op">=</span><span class="st">'r'</span>)</span>
+<span id="cb9-169"><a href="#cb9-169"></a>        plt.yscale(<span class="st">'log'</span>)</span>
+<span id="cb9-170"><a href="#cb9-170"></a>        plt.xlabel(<span class="st">'Epochs'</span>)</span>
+<span id="cb9-171"><a href="#cb9-171"></a>        plt.ylabel(<span class="st">'Loss'</span>)</span>
+<span id="cb9-172"><a href="#cb9-172"></a>        plt.legend()</span>
+<span id="cb9-173"><a href="#cb9-173"></a>        plt.tight_layout()</span>
+<span id="cb9-174"><a href="#cb9-174"></a>        <span class="cf">return</span> fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-model-configuration" class="level2">
@@ -617,54 +617,54 @@ matplotlib==3.2.2</code></pre>
 <section id="logistic-regression-model-without-sigmoid-layer" class="level3">
 <h3 class="anchored" data-anchor-id="logistic-regression-model-without-sigmoid-layer">Logistic regression model without Sigmoid layer</h3>
 <div class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Logistic model configuration without Sigmoid layer</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">42</span>)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>model_1 <span class="op">=</span> nn.Sequential()</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>model_1.add_module(<span class="st">'linear'</span>, nn.Linear(<span class="dv">2</span>, <span class="dv">1</span>))</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>optimizer_1 <span class="op">=</span> optim.SGD(model_1.parameters(), lr<span class="op">=</span>lr)</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a BCE loss function</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>loss_fn_1 <span class="op">=</span> nn.BCEWithLogitsLoss()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">##</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="co"># Logistic model configuration without Sigmoid layer</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
+<span id="cb10-5"><a href="#cb10-5"></a></span>
+<span id="cb10-6"><a href="#cb10-6"></a>lr <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a></span>
+<span id="cb10-8"><a href="#cb10-8"></a>torch.manual_seed(<span class="dv">42</span>)</span>
+<span id="cb10-9"><a href="#cb10-9"></a>model_1 <span class="op">=</span> nn.Sequential()</span>
+<span id="cb10-10"><a href="#cb10-10"></a>model_1.add_module(<span class="st">'linear'</span>, nn.Linear(<span class="dv">2</span>, <span class="dv">1</span>))</span>
+<span id="cb10-11"><a href="#cb10-11"></a></span>
+<span id="cb10-12"><a href="#cb10-12"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
+<span id="cb10-13"><a href="#cb10-13"></a>optimizer_1 <span class="op">=</span> optim.SGD(model_1.parameters(), lr<span class="op">=</span>lr)</span>
+<span id="cb10-14"><a href="#cb10-14"></a></span>
+<span id="cb10-15"><a href="#cb10-15"></a><span class="co"># Defines a BCE loss function</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a>loss_fn_1 <span class="op">=</span> nn.BCEWithLogitsLoss()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now let’s train our model for 100 epochs.</p>
 <div class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>n_epochs <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>dlp_1 <span class="op">=</span> DeepLearningPipeline(model_1, loss_fn_1, optimizer_1)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>dlp_1.set_loaders(train_loader, val_loader)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>dlp_1.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>n_epochs <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a></span>
+<span id="cb11-3"><a href="#cb11-3"></a>dlp_1 <span class="op">=</span> DeepLearningPipeline(model_1, loss_fn_1, optimizer_1)</span>
+<span id="cb11-4"><a href="#cb11-4"></a>dlp_1.set_loaders(train_loader, val_loader)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>dlp_1.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s see how our training and validation loss looks like.</p>
 <div class="cell" data-outputid="2a62e10e-9f27-412e-9506-8cb4098b4d1a" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> dlp_1.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a>fig <span class="op">=</span> dlp_1.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-11-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 <p>Let’s also print the weights learned by our model. Note that there are two weights in the linear layer, as there were two features (or columns) for our X_train data.</p>
 <div class="cell" data-outputid="27497540-f4a6-41f4-8074-3ac5c601d524" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model_1.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="bu">print</span>(model_1.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>OrderedDict([('linear.weight', tensor([[ 1.1806, -1.8693]])), ('linear.bias', tensor([-0.0591]))])</code></pre>
 </div>
 </div>
 <p>Let’s also create a confusion matrix for our validation data. Note that here we have used <code>torch.sigmoid</code> to convert the output from the model into probabilities.</p>
 <div class="cell" data-outputid="13b3e617-f222-4a73-d8f7-368a490a256d" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>logits_val <span class="op">=</span> dlp_1.predict(X_val)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>logits_val_tensor <span class="op">=</span> torch.from_numpy(logits_val)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>probabilities_val <span class="op">=</span> torch.sigmoid(logits_val_tensor).squeeze()</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, (probabilities_val <span class="op">&gt;=</span> <span class="fl">0.5</span>))</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
+<span id="cb15-2"><a href="#cb15-2"></a></span>
+<span id="cb15-3"><a href="#cb15-3"></a>logits_val <span class="op">=</span> dlp_1.predict(X_val)</span>
+<span id="cb15-4"><a href="#cb15-4"></a>logits_val_tensor <span class="op">=</span> torch.from_numpy(logits_val)</span>
+<span id="cb15-5"><a href="#cb15-5"></a>probabilities_val <span class="op">=</span> torch.sigmoid(logits_val_tensor).squeeze()</span>
+<span id="cb15-6"><a href="#cb15-6"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, (probabilities_val <span class="op">&gt;=</span> <span class="fl">0.5</span>))</span>
+<span id="cb15-7"><a href="#cb15-7"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <pre><code>array([[ 7,  2],
        [ 1, 10]])</code></pre>
@@ -672,7 +672,7 @@ matplotlib==3.2.2</code></pre>
 </div>
 <p>Let’s also print the output from model for five validation data points. Again, remember that the output is logits, not probabilities.</p>
 <div class="cell" data-outputid="4ebda8c0-f0c3-44b4-a07e-0bc4fe69d2da" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>logits_val[:<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>logits_val[:<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>array([[-0.37522304],
        [ 0.7390274 ],
@@ -686,45 +686,45 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="logistic-regression-model-with-sigmoid-layer">Logistic regression model with Sigmoid layer</h3>
 <p>Now let’s again create our model, but this time ‘Sigmoid’ layer is attached at the end.</p>
 <div class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Logistic model configuration with Sigmoid layer</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>model_2 <span class="op">=</span> nn.Sequential()</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>model_2.add_module(<span class="st">'linear'</span>, nn.Linear(<span class="dv">2</span>, <span class="dv">1</span>))</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>model_2.add_module(<span class="st">'sigmoid'</span>, nn.Sigmoid())</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>optimizer_2 <span class="op">=</span> optim.SGD(model_2.parameters(), lr<span class="op">=</span>lr)</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a BCE loss function</span></span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>loss_fn_2 <span class="op">=</span> nn.BCELoss(reduction<span class="op">=</span><span class="st">'mean'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="co"># Logistic model configuration with Sigmoid layer</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a>model_2 <span class="op">=</span> nn.Sequential()</span>
+<span id="cb19-4"><a href="#cb19-4"></a>model_2.add_module(<span class="st">'linear'</span>, nn.Linear(<span class="dv">2</span>, <span class="dv">1</span>))</span>
+<span id="cb19-5"><a href="#cb19-5"></a>model_2.add_module(<span class="st">'sigmoid'</span>, nn.Sigmoid())</span>
+<span id="cb19-6"><a href="#cb19-6"></a></span>
+<span id="cb19-7"><a href="#cb19-7"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a>optimizer_2 <span class="op">=</span> optim.SGD(model_2.parameters(), lr<span class="op">=</span>lr)</span>
+<span id="cb19-9"><a href="#cb19-9"></a></span>
+<span id="cb19-10"><a href="#cb19-10"></a><span class="co"># Defines a BCE loss function</span></span>
+<span id="cb19-11"><a href="#cb19-11"></a>loss_fn_2 <span class="op">=</span> nn.BCELoss(reduction<span class="op">=</span><span class="st">'mean'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>n_epochs <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>dlp_2 <span class="op">=</span> DeepLearningPipeline(model_2, loss_fn_2, optimizer_2)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>dlp_2.set_loaders(train_loader, val_loader)</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>dlp_2.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a>n_epochs <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a></span>
+<span id="cb20-3"><a href="#cb20-3"></a>dlp_2 <span class="op">=</span> DeepLearningPipeline(model_2, loss_fn_2, optimizer_2)</span>
+<span id="cb20-4"><a href="#cb20-4"></a>dlp_2.set_loaders(train_loader, val_loader)</span>
+<span id="cb20-5"><a href="#cb20-5"></a>dlp_2.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-outputid="0fc629de-d5c1-46ad-bc88-29b2ed33d2dd" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> dlp_2.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>fig <span class="op">=</span> dlp_2.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 <p>Let’s print the learned weights. They are slightly different from the last model.</p>
 <div class="cell" data-outputid="db527c10-f5e2-41e0-99c5-57b87072578a" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model_2.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="bu">print</span>(model_2.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>OrderedDict([('linear.weight', tensor([[ 1.1794, -1.8716]])), ('linear.bias', tensor([-0.0604]))])</code></pre>
 </div>
 </div>
 <p>Let’s also create a confusion matrix for comparison. Note that the results are same as from the first model.</p>
 <div class="cell" data-outputid="cdf1f073-d87f-4fb4-f3b2-4c59c0c4f314" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>probabilities_val <span class="op">=</span> dlp_2.predict(X_val).squeeze()</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, (probabilities_val <span class="op">&gt;=</span> <span class="fl">0.5</span>))</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
+<span id="cb24-2"><a href="#cb24-2"></a></span>
+<span id="cb24-3"><a href="#cb24-3"></a>probabilities_val <span class="op">=</span> dlp_2.predict(X_val).squeeze()</span>
+<span id="cb24-4"><a href="#cb24-4"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, (probabilities_val <span class="op">&gt;=</span> <span class="fl">0.5</span>))</span>
+<span id="cb24-5"><a href="#cb24-5"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>array([[ 7,  2],
        [ 1, 10]])</code></pre>
@@ -737,7 +737,7 @@ matplotlib==3.2.2</code></pre>
 <li><code>0.0704094</code> –&gt; class 0</li>
 </ul>
 <div class="cell" data-outputid="766c132f-2311-4f62-bab1-396df8a33e6c" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>probabilities_val[:<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a>probabilities_val[:<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
 <pre><code>array([0.4070907 , 0.67689914, 0.07040942, 0.28118652, 0.15702702],
       dtype=float32)</code></pre>
@@ -748,29 +748,29 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="comparison-with-scikit-learn-logisticregression-model">Comparison with Scikit-learn LogisticRegression model</h3>
 <p>Let’s also compare our model with sklearn logistic regression and see how our neural net model compares to it.</p>
 <div class="cell" data-outputid="d06e1cfd-d756-4a8b-88e5-1bee59e6435b" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparison with sklearn logistic regression</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>logreg <span class="op">=</span> LogisticRegression()</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>logreg.fit(X_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">##</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="co"># Comparison with sklearn logistic regression</span></span>
+<span id="cb28-3"><a href="#cb28-3"></a></span>
+<span id="cb28-4"><a href="#cb28-4"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
+<span id="cb28-5"><a href="#cb28-5"></a>logreg <span class="op">=</span> LogisticRegression()</span>
+<span id="cb28-6"><a href="#cb28-6"></a>logreg.fit(X_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>LogisticRegression()</code></pre>
 </div>
 </div>
 <p>Let’s see the weights learned by the model.</p>
 <div class="cell" data-outputid="01594104-b345-4cc9-b5ef-a1c4f5d0ebdb" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>logreg.coef_ , logreg.intercept_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>logreg.coef_ , logreg.intercept_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>(array([[ 1.03955962, -1.60876812]]), array([-0.05857131]))</code></pre>
 </div>
 </div>
 <p>Let’s create a confusion matrix for comparison. Note that the results are identical.</p>
 <div class="cell" data-outputid="8e179046-34b7-434d-86e1-1668ef6e2205" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> logreg.predict(X_val)</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>probabilities_val <span class="op">=</span> logreg.predict_proba(X_val)</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, predictions)</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>predictions <span class="op">=</span> logreg.predict(X_val)</span>
+<span id="cb32-2"><a href="#cb32-2"></a>probabilities_val <span class="op">=</span> logreg.predict_proba(X_val)</span>
+<span id="cb32-3"><a href="#cb32-3"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, predictions)</span>
+<span id="cb32-4"><a href="#cb32-4"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="22">
 <pre><code>array([[ 7,  2],
        [ 1, 10]])</code></pre>
@@ -779,7 +779,7 @@ matplotlib==3.2.2</code></pre>
 <p>Let’s also print the output from model for five validation data points. Again, remember the output is probabilities, and the sum of each row is 1.</p>
 <p>Note that the scikit-learn model output has two columns. Both show the probabilities of a point for class 0 or 1 (left to right). PyTorch model only outputs the probability of a point belonging to class 1 (right column). Since the sum of probabilities is equal to 1, we can find the other class probability (for binary classifiers only) if we have one class probability.</p>
 <div class="cell" data-outputid="aeb94e88-2eea-4051-aaef-e420607f8c7e" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>probabilities_val[:<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a>probabilities_val[:<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <pre><code>array([[0.58380158, 0.41619842],
        [0.34949557, 0.65050443],
@@ -811,64 +811,64 @@ matplotlib==3.2.2</code></pre>
 <div class="cell" data-execution_count="24">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_decision_boundary(model, X_train, X_val):</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    x_min, x_max <span class="op">=</span> <span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    y_min, y_max <span class="op">=</span> <span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> <span class="fl">.02</span></span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    xx, yy <span class="op">=</span> np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check if model is PyTorch model</span></span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">type</span>(model) <span class="op">==</span> torch.nn.modules.container.Sequential:</span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># get predictions</span></span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> model(torch.as_tensor(np.c_[xx.ravel(), yy.ravel()]).<span class="bu">float</span>())</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># check if model's last layer is Linear, then apply Sigmoid on predictions to get probabilities</span></span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">type</span>(model[<span class="op">-</span><span class="dv">1</span>]) <span class="op">==</span> torch.nn.modules.linear.Linear:</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>            logits_proba <span class="op">=</span> torch.sigmoid(logits).squeeze()</span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>            logits_proba <span class="op">=</span> logits.clone()</span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> logits.detach().cpu().numpy().reshape(xx.shape)</span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>        logits_proba <span class="op">=</span> logits_proba.detach().cpu().numpy().reshape(xx.shape)</span>
-<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: <span class="co"># Sklean model</span></span>
-<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> logreg.predict_proba(np.c_[xx.ravel(), yy.ravel()])</span>
-<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> logits[:,<span class="dv">1</span>]</span>
-<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> logits.reshape(xx.shape)</span>
-<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>        logits_proba <span class="op">=</span> logits</span>
-<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">14</span>,<span class="dv">7</span>))</span>
-<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>    fig.suptitle(<span class="st">'Plot Model Decision Boundary'</span>)</span>
-<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot 1</span></span>
-<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a>    ax1 <span class="op">=</span> plt.subplot(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">1</span>)</span>
-<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>    ax1.set_title(<span class="st">'In 2D Plane'</span>)</span>
-<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ax1.scatter(X_train[:, 0], X_train[:, 1], c=y_train)</span></span>
-<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a>    ax1.scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
-<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>    ax1.contour(xx, yy, logits_proba, levels<span class="op">=</span>[<span class="fl">0.5</span>], cmap<span class="op">=</span><span class="st">"Greys"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot 2</span></span>
-<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a>    ax2 <span class="op">=</span> plt.subplot(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">2</span>, projection<span class="op">=</span><span class="st">'3d'</span>)</span>
-<span id="cb36-38"><a href="#cb36-38" aria-hidden="true" tabindex="-1"></a>    ax2.set_title(<span class="st">'In 3D Plane - View 1'</span>)</span>
-<span id="cb36-39"><a href="#cb36-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ax2.scatter(X_train[:, 0], X_train[:, 1], c=y_train)</span></span>
-<span id="cb36-40"><a href="#cb36-40" aria-hidden="true" tabindex="-1"></a>    ax2.scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
-<span id="cb36-41"><a href="#cb36-41" aria-hidden="true" tabindex="-1"></a>    ax2.plot_surface(xx, yy, logits, color<span class="op">=</span><span class="st">'lightgreen'</span>)</span>
-<span id="cb36-42"><a href="#cb36-42" aria-hidden="true" tabindex="-1"></a>    ax2.view_init(<span class="dv">10</span>, <span class="dv">10</span>)</span>
-<span id="cb36-43"><a href="#cb36-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot 3</span></span>
-<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a>    ax3 <span class="op">=</span> plt.subplot(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">3</span>, projection<span class="op">=</span><span class="st">'3d'</span>)</span>
-<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a>    ax3.set_title(<span class="st">'3D Plane - View 2'</span>)</span>
-<span id="cb36-47"><a href="#cb36-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ax3.scatter(X_train[:, 0], X_train[:, 1], c=y_train)</span></span>
-<span id="cb36-48"><a href="#cb36-48" aria-hidden="true" tabindex="-1"></a>    ax3.scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
-<span id="cb36-49"><a href="#cb36-49" aria-hidden="true" tabindex="-1"></a>    ax3.plot_surface(xx, yy, logits, color<span class="op">=</span><span class="st">'lightgreen'</span>)</span>
-<span id="cb36-50"><a href="#cb36-50" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb36-51"><a href="#cb36-51" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="kw">def</span> plot_decision_boundary(model, X_train, X_val):</span>
+<span id="cb36-2"><a href="#cb36-2"></a>    x_min, x_max <span class="op">=</span> <span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span></span>
+<span id="cb36-3"><a href="#cb36-3"></a>    y_min, y_max <span class="op">=</span> <span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span></span>
+<span id="cb36-4"><a href="#cb36-4"></a>    h <span class="op">=</span> <span class="fl">.02</span></span>
+<span id="cb36-5"><a href="#cb36-5"></a>    xx, yy <span class="op">=</span> np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))</span>
+<span id="cb36-6"><a href="#cb36-6"></a></span>
+<span id="cb36-7"><a href="#cb36-7"></a>    <span class="co"># Check if model is PyTorch model</span></span>
+<span id="cb36-8"><a href="#cb36-8"></a>    <span class="cf">if</span> <span class="bu">type</span>(model) <span class="op">==</span> torch.nn.modules.container.Sequential:</span>
+<span id="cb36-9"><a href="#cb36-9"></a>        <span class="co"># get predictions</span></span>
+<span id="cb36-10"><a href="#cb36-10"></a>        logits <span class="op">=</span> model(torch.as_tensor(np.c_[xx.ravel(), yy.ravel()]).<span class="bu">float</span>())</span>
+<span id="cb36-11"><a href="#cb36-11"></a>        </span>
+<span id="cb36-12"><a href="#cb36-12"></a>        <span class="co"># check if model's last layer is Linear, then apply Sigmoid on predictions to get probabilities</span></span>
+<span id="cb36-13"><a href="#cb36-13"></a>        <span class="cf">if</span> <span class="bu">type</span>(model[<span class="op">-</span><span class="dv">1</span>]) <span class="op">==</span> torch.nn.modules.linear.Linear:</span>
+<span id="cb36-14"><a href="#cb36-14"></a>            logits_proba <span class="op">=</span> torch.sigmoid(logits).squeeze()</span>
+<span id="cb36-15"><a href="#cb36-15"></a>        <span class="cf">else</span>:</span>
+<span id="cb36-16"><a href="#cb36-16"></a>            logits_proba <span class="op">=</span> logits.clone()</span>
+<span id="cb36-17"><a href="#cb36-17"></a>        </span>
+<span id="cb36-18"><a href="#cb36-18"></a>        logits <span class="op">=</span> logits.detach().cpu().numpy().reshape(xx.shape)</span>
+<span id="cb36-19"><a href="#cb36-19"></a>        logits_proba <span class="op">=</span> logits_proba.detach().cpu().numpy().reshape(xx.shape)</span>
+<span id="cb36-20"><a href="#cb36-20"></a>    <span class="cf">else</span>: <span class="co"># Sklean model</span></span>
+<span id="cb36-21"><a href="#cb36-21"></a>        logits <span class="op">=</span> logreg.predict_proba(np.c_[xx.ravel(), yy.ravel()])</span>
+<span id="cb36-22"><a href="#cb36-22"></a>        logits <span class="op">=</span> logits[:,<span class="dv">1</span>]</span>
+<span id="cb36-23"><a href="#cb36-23"></a>        logits <span class="op">=</span> logits.reshape(xx.shape)</span>
+<span id="cb36-24"><a href="#cb36-24"></a>        logits_proba <span class="op">=</span> logits</span>
+<span id="cb36-25"><a href="#cb36-25"></a></span>
+<span id="cb36-26"><a href="#cb36-26"></a>    fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">14</span>,<span class="dv">7</span>))</span>
+<span id="cb36-27"><a href="#cb36-27"></a>    fig.suptitle(<span class="st">'Plot Model Decision Boundary'</span>)</span>
+<span id="cb36-28"><a href="#cb36-28"></a></span>
+<span id="cb36-29"><a href="#cb36-29"></a>    <span class="co"># Plot 1</span></span>
+<span id="cb36-30"><a href="#cb36-30"></a>    ax1 <span class="op">=</span> plt.subplot(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">1</span>)</span>
+<span id="cb36-31"><a href="#cb36-31"></a>    ax1.set_title(<span class="st">'In 2D Plane'</span>)</span>
+<span id="cb36-32"><a href="#cb36-32"></a>    <span class="co"># ax1.scatter(X_train[:, 0], X_train[:, 1], c=y_train)</span></span>
+<span id="cb36-33"><a href="#cb36-33"></a>    ax1.scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
+<span id="cb36-34"><a href="#cb36-34"></a>    ax1.contour(xx, yy, logits_proba, levels<span class="op">=</span>[<span class="fl">0.5</span>], cmap<span class="op">=</span><span class="st">"Greys"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb36-35"><a href="#cb36-35"></a></span>
+<span id="cb36-36"><a href="#cb36-36"></a>    <span class="co"># Plot 2</span></span>
+<span id="cb36-37"><a href="#cb36-37"></a>    ax2 <span class="op">=</span> plt.subplot(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">2</span>, projection<span class="op">=</span><span class="st">'3d'</span>)</span>
+<span id="cb36-38"><a href="#cb36-38"></a>    ax2.set_title(<span class="st">'In 3D Plane - View 1'</span>)</span>
+<span id="cb36-39"><a href="#cb36-39"></a>    <span class="co"># ax2.scatter(X_train[:, 0], X_train[:, 1], c=y_train)</span></span>
+<span id="cb36-40"><a href="#cb36-40"></a>    ax2.scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
+<span id="cb36-41"><a href="#cb36-41"></a>    ax2.plot_surface(xx, yy, logits, color<span class="op">=</span><span class="st">'lightgreen'</span>)</span>
+<span id="cb36-42"><a href="#cb36-42"></a>    ax2.view_init(<span class="dv">10</span>, <span class="dv">10</span>)</span>
+<span id="cb36-43"><a href="#cb36-43"></a></span>
+<span id="cb36-44"><a href="#cb36-44"></a>    <span class="co"># Plot 3</span></span>
+<span id="cb36-45"><a href="#cb36-45"></a>    ax3 <span class="op">=</span> plt.subplot(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">3</span>, projection<span class="op">=</span><span class="st">'3d'</span>)</span>
+<span id="cb36-46"><a href="#cb36-46"></a>    ax3.set_title(<span class="st">'3D Plane - View 2'</span>)</span>
+<span id="cb36-47"><a href="#cb36-47"></a>    <span class="co"># ax3.scatter(X_train[:, 0], X_train[:, 1], c=y_train)</span></span>
+<span id="cb36-48"><a href="#cb36-48"></a>    ax3.scatter(X_val[:, <span class="dv">0</span>], X_val[:, <span class="dv">1</span>], c<span class="op">=</span>y_val)</span>
+<span id="cb36-49"><a href="#cb36-49"></a>    ax3.plot_surface(xx, yy, logits, color<span class="op">=</span><span class="st">'lightgreen'</span>)</span>
+<span id="cb36-50"><a href="#cb36-50"></a>    </span>
+<span id="cb36-51"><a href="#cb36-51"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="decision-boundary-for-logistic-regression-model-without-sigmoid" class="level3">
 <h3 class="anchored" data-anchor-id="decision-boundary-for-logistic-regression-model-without-sigmoid">Decision boundary for logistic regression model without Sigmoid</h3>
 <p>Let’s view the decision boundary for the first model we built. That model has only a Linear layer and no Sigmoid function at the end. Notice that the decision boundary is a straight line (or a plane in 3D) that cuts the data in a way that maximizes the certainty of data for being in one class or the other.</p>
 <div class="cell" data-outputid="c24469d0-18c7-4650-f724-e29565b56ddf" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>plot_decision_boundary(model_1, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a>plot_decision_boundary(model_1, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-26-output-1.png" class="img-fluid"></p>
 </div>
@@ -879,7 +879,7 @@ matplotlib==3.2.2</code></pre>
 <p>Let’s draw the decision boundary for our classification model with Sigmoid as the last layer.</p>
 <p>Note that it is not a line this time when we view the decision boundary in 3D space. The 3D plane is more like an S-shaped curve. Because now our model output is probabilities coming out of a logistic function. Think of it as an extra step that is now added to the output of the first model (without sigmoid). The points on the extreme right side of the first model linear plane are given the lowest probabilities (almost zero). And as we move to the left, the possibilities <em>gradually</em> increase with 0.5 at the middle and highest when we reach the extreme left (almost 1).</p>
 <div class="cell" data-outputid="f90f3334-f749-47d7-f3de-59ed964cd1b4" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>plot_decision_boundary(model_2, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>plot_decision_boundary(model_2, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-27-output-1.png" class="img-fluid"></p>
 </div>
@@ -889,7 +889,7 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="decision-boundary-of-sklearn-logistic-regression-model">Decision boundary of sklearn logistic regression model</h3>
 <p>Let’s now plot the same for sklearn model. The plot is similar to the last model.</p>
 <div class="cell" data-outputid="c5df3803-6d64-4205-ae48-b2a540df899e" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>plot_decision_boundary(logreg, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a>plot_decision_boundary(logreg, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-28-output-1.png" class="img-fluid"></p>
 </div>
@@ -901,38 +901,38 @@ matplotlib==3.2.2</code></pre>
 <p>We have seen that our models’ decision boundaries are linear (a line), and on the validation set they misclassify 3 points (two purple dots below the line and one yellow dot above the line). What if we can bend our decision boundary a little? Will it be able to better capture the classes in validation data? Let’s test it.</p>
 <p>We introduce <strong>non-linearity</strong> to our decision boundary by placing a non-linear activation function between our neural net layers. Let’s create another model but this time use two hidden layers with a non-linear activation function (ReLU) in between them.</p>
 <div class="cell" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Logistic model configuration with two hidden layers and ReLU in between</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="co"># No Sigmoid layer at the end</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>model_3 <span class="op">=</span> nn.Sequential()</span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>model_3.add_module(<span class="st">'linear1'</span>, nn.Linear(<span class="dv">2</span>, <span class="dv">10</span>))</span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>model_3.add_module(<span class="st">'activation1'</span>, nn.ReLU())</span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>model_3.add_module(<span class="st">'linear2'</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">1</span>))</span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>optimizer_3 <span class="op">=</span> optim.SGD(model_3.parameters(), lr<span class="op">=</span>lr)</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Defines a BCE loss function</span></span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>loss_fn_3 <span class="op">=</span> nn.BCEWithLogitsLoss()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co">##</span></span>
+<span id="cb40-2"><a href="#cb40-2"></a><span class="co"># Logistic model configuration with two hidden layers and ReLU in between</span></span>
+<span id="cb40-3"><a href="#cb40-3"></a><span class="co"># No Sigmoid layer at the end</span></span>
+<span id="cb40-4"><a href="#cb40-4"></a>model_3 <span class="op">=</span> nn.Sequential()</span>
+<span id="cb40-5"><a href="#cb40-5"></a>model_3.add_module(<span class="st">'linear1'</span>, nn.Linear(<span class="dv">2</span>, <span class="dv">10</span>))</span>
+<span id="cb40-6"><a href="#cb40-6"></a>model_3.add_module(<span class="st">'activation1'</span>, nn.ReLU())</span>
+<span id="cb40-7"><a href="#cb40-7"></a>model_3.add_module(<span class="st">'linear2'</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">1</span>))</span>
+<span id="cb40-8"><a href="#cb40-8"></a></span>
+<span id="cb40-9"><a href="#cb40-9"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
+<span id="cb40-10"><a href="#cb40-10"></a>optimizer_3 <span class="op">=</span> optim.SGD(model_3.parameters(), lr<span class="op">=</span>lr)</span>
+<span id="cb40-11"><a href="#cb40-11"></a></span>
+<span id="cb40-12"><a href="#cb40-12"></a><span class="co"># Defines a BCE loss function</span></span>
+<span id="cb40-13"><a href="#cb40-13"></a>loss_fn_3 <span class="op">=</span> nn.BCEWithLogitsLoss()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Train the model for 100 epochs.</p>
 <div class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>n_epochs <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>dlp_3 <span class="op">=</span> DeepLearningPipeline(model_3, loss_fn_3, optimizer_3)</span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>dlp_3.set_loaders(train_loader, val_loader)</span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>dlp_3.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a>n_epochs <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb41-2"><a href="#cb41-2"></a></span>
+<span id="cb41-3"><a href="#cb41-3"></a>dlp_3 <span class="op">=</span> DeepLearningPipeline(model_3, loss_fn_3, optimizer_3)</span>
+<span id="cb41-4"><a href="#cb41-4"></a>dlp_3.set_loaders(train_loader, val_loader)</span>
+<span id="cb41-5"><a href="#cb41-5"></a>dlp_3.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s view model’s performance.</p>
 <div class="cell" data-outputid="10f95526-d47e-433a-c708-44dbc9061cd2" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> dlp_3.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>fig <span class="op">=</span> dlp_3.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-31-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 <p>Let’s print the learned model weights. They are many now.</p>
 <div class="cell" data-outputid="9b3b9bb3-8061-49a0-e6e0-15cab5a1adae" data-execution_count="31">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model_3.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="bu">print</span>(model_3.state_dict())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>OrderedDict([('linear1.weight', tensor([[-0.6459,  0.2700],
         [-1.0339, -0.3841],
@@ -950,13 +950,13 @@ matplotlib==3.2.2</code></pre>
 </div>
 <p>Let’s create a confusion matrix. Notice that our error has slightly improved, and the model misclassifies only two purple data point from the validation set.</p>
 <div class="cell" data-outputid="d97995bb-bc29-46bd-e7f6-10e5719ae72c" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>logits_val_3 <span class="op">=</span> dlp_3.predict(X_val)</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>logits_val_tensor_3 <span class="op">=</span> torch.from_numpy(logits_val_3)</span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>probabilities_val <span class="op">=</span> torch.sigmoid(logits_val_tensor_3).squeeze()</span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, (probabilities_val <span class="op">&gt;=</span> <span class="fl">0.5</span>))</span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
+<span id="cb45-2"><a href="#cb45-2"></a></span>
+<span id="cb45-3"><a href="#cb45-3"></a>logits_val_3 <span class="op">=</span> dlp_3.predict(X_val)</span>
+<span id="cb45-4"><a href="#cb45-4"></a>logits_val_tensor_3 <span class="op">=</span> torch.from_numpy(logits_val_3)</span>
+<span id="cb45-5"><a href="#cb45-5"></a>probabilities_val <span class="op">=</span> torch.sigmoid(logits_val_tensor_3).squeeze()</span>
+<span id="cb45-6"><a href="#cb45-6"></a>cm_thresh50 <span class="op">=</span> confusion_matrix(y_val, (probabilities_val <span class="op">&gt;=</span> <span class="fl">0.5</span>))</span>
+<span id="cb45-7"><a href="#cb45-7"></a>cm_thresh50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="32">
 <pre><code>array([[ 7,  2],
        [ 0, 11]])</code></pre>
@@ -964,18 +964,18 @@ matplotlib==3.2.2</code></pre>
 </div>
 <p>Let’s plot the model’s decision boundary. First, notice that it is not linear and has a bend. This effect is due to placing a non-linear activation function after a linear layer. And, it has correctly captured a yellow point and barely missed purple points.</p>
 <div class="cell" data-outputid="eb7257db-46fb-43d5-c819-9fba53a04ba7" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>plot_decision_boundary(model_3, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a>plot_decision_boundary(model_3, X_train, X_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-34-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 <div class="cell" data-outputid="5fac82cb-6924-4ff2-8f10-fc1aeee809c4" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Confusion matrix plot</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> ConfusionMatrixDisplay</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>disp <span class="op">=</span> ConfusionMatrixDisplay(confusion_matrix<span class="op">=</span>cm_thresh50, display_labels<span class="op">=</span>[<span class="dv">0</span>,<span class="dv">1</span>])</span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>disp.plot()</span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">##</span></span>
+<span id="cb48-2"><a href="#cb48-2"></a><span class="co"># Confusion matrix plot</span></span>
+<span id="cb48-3"><a href="#cb48-3"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> ConfusionMatrixDisplay</span>
+<span id="cb48-4"><a href="#cb48-4"></a>disp <span class="op">=</span> ConfusionMatrixDisplay(confusion_matrix<span class="op">=</span>cm_thresh50, display_labels<span class="op">=</span>[<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb48-5"><a href="#cb48-5"></a>disp.plot()</span>
+<span id="cb48-6"><a href="#cb48-6"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2022-10-11-pytorch-two-class-logistic-regression_files/figure-html/cell-35-output-1.png" class="img-fluid"></p>
 </div>

@@ -284,11 +284,11 @@ ga('send', {
 <section id="preparation" class="level2">
 <h2 class="anchored" data-anchor-id="preparation">Preparation</h2>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># install aws data wrangler package</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># restart kernel after installation</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># more on this package later in the notebook.</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install <span class="op">-</span>q awswrangler</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">##</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="co"># install aws data wrangler package</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="co"># restart kernel after installation</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># more on this package later in the notebook.</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="op">!</span>pip install <span class="op">-</span>q awswrangler</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
 WARNING: You are using pip version 22.0.4; however, version 22.1 is available.
@@ -296,27 +296,27 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 </div>
 </div>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">## import required libraries</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sagemaker</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>sess <span class="op">=</span> sagemaker.Session()</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>prefix <span class="op">=</span> <span class="st">'myblog/demo-customer-churn'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">## import required libraries</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="im">import</span> sagemaker</span>
+<span id="cb3-4"><a href="#cb3-4"></a></span>
+<span id="cb3-5"><a href="#cb3-5"></a>sess <span class="op">=</span> sagemaker.Session()</span>
+<span id="cb3-6"><a href="#cb3-6"></a>prefix <span class="op">=</span> <span class="st">'myblog/demo-customer-churn'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>aws s3 cp s3:<span class="op">//</span>sagemaker<span class="op">-</span>sample<span class="op">-</span>files<span class="op">/</span>datasets<span class="op">/</span>tabular<span class="op">/</span>synthetic<span class="op">/</span>churn.txt .<span class="op">/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">!</span>aws s3 cp s3:<span class="op">//</span>sagemaker<span class="op">-</span>sample<span class="op">-</span>files<span class="op">/</span>datasets<span class="op">/</span>tabular<span class="op">/</span>synthetic<span class="op">/</span>churn.txt .<span class="op">/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>download: s3://sagemaker-sample-files/datasets/tabular/synthetic/churn.txt to ./churn.txt</code></pre>
 </div>
 </div>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"./churn.txt"</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># make 'CustomerID' column from the index</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'CustomerID'</span>]<span class="op">=</span>df.index</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">"display.max_columns"</span>, <span class="dv">500</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>df.head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"./churn.txt"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co"># make 'CustomerID' column from the index</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>df[<span class="st">'CustomerID'</span>]<span class="op">=</span>df.index</span>
+<span id="cb6-5"><a href="#cb6-5"></a></span>
+<span id="cb6-6"><a href="#cb6-6"></a>pd.set_option(<span class="st">"display.max_columns"</span>, <span class="dv">500</span>)</span>
+<span id="cb6-7"><a href="#cb6-7"></a>df.head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 
 <div>
@@ -606,7 +606,7 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 </div>
 </div>
 <div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a>df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>(5000, 22)</code></pre>
 </div>
@@ -632,16 +632,16 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 <p>The last attribute, <strong>Churn?</strong>, is known as the target attribute: the attribute that we want the ML model to predict. Because the target attribute is binary, our model will be performing binary prediction, also known as binary classification.</p>
 <p>We have our dataset. Now we will split this dataset into three subsets * <code>customer</code>: customer data, and place it as a CSV file on the S3 bucket * <code>account</code>: accounts data, and place it as CSV on the same S3 bucket * <code>utility</code>: utility data, and place it as Glue tables</p>
 <div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>customer_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'State'</span>, <span class="st">'Area Code'</span>, <span class="st">'Phone'</span>]</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>account_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'Account Length'</span>, <span class="st">"Int'l Plan"</span>, <span class="st">'VMail Plan'</span>, <span class="st">'Churn?'</span>]</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>utility_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'VMail Message'</span>, <span class="st">'Day Mins'</span>, <span class="st">'Day Calls'</span>, <span class="st">'Day Charge'</span>, </span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">'Eve Mins'</span>, <span class="st">'Eve Calls'</span>, <span class="st">'Eve Charge'</span>, <span class="st">'Night Mins'</span>, <span class="st">'Night Calls'</span>, </span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                   <span class="st">'Night Charge'</span>, <span class="st">'Intl Mins'</span>, <span class="st">'Intl Calls'</span>, <span class="st">'Intl Charge'</span>, <span class="st">'CustServ Calls'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>customer_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'State'</span>, <span class="st">'Area Code'</span>, <span class="st">'Phone'</span>]</span>
+<span id="cb9-2"><a href="#cb9-2"></a>account_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'Account Length'</span>, <span class="st">"Int'l Plan"</span>, <span class="st">'VMail Plan'</span>, <span class="st">'Churn?'</span>]</span>
+<span id="cb9-3"><a href="#cb9-3"></a>utility_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'VMail Message'</span>, <span class="st">'Day Mins'</span>, <span class="st">'Day Calls'</span>, <span class="st">'Day Charge'</span>, </span>
+<span id="cb9-4"><a href="#cb9-4"></a>                   <span class="st">'Eve Mins'</span>, <span class="st">'Eve Calls'</span>, <span class="st">'Eve Charge'</span>, <span class="st">'Night Mins'</span>, <span class="st">'Night Calls'</span>, </span>
+<span id="cb9-5"><a href="#cb9-5"></a>                   <span class="st">'Night Charge'</span>, <span class="st">'Intl Mins'</span>, <span class="st">'Intl Calls'</span>, <span class="st">'Intl Charge'</span>, <span class="st">'CustServ Calls'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will use the default bucket associated with our SageMaker session. You may use any other bucket with proper access permissions.</p>
 <div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>bucket <span class="op">=</span> sess.default_bucket()</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>bucket</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>bucket <span class="op">=</span> sess.default_bucket()</span>
+<span id="cb10-2"><a href="#cb10-2"></a>bucket</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>'sagemaker-us-east-1-801598032724'</code></pre>
 </div>
@@ -656,28 +656,28 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 <p><strong>Error</strong>: <code>AccessDeniedException: An error occurred (AccessDeniedException) when calling the GetDatabase operation: User: arn:aws:sts::801598032724:assumed-role/AmazonSageMaker-ExecutionRole-20220516T161743/SageMaker is not authorized to perform: glue:GetDatabase on resource: arn:aws:glue:us-east-1:801598032724:database/telco_db because no identity-based policy allows the glue:GetDatabase action</code></p>
 <p><strong>Fix</strong>: Go to your SageMaker Execution Role and add permission <code>AWSGlueConsoleFullAccess</code></p>
 <div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># define the Glue DB name</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>db_name <span class="op">=</span> <span class="st">'telco_db'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="co"># define the Glue DB name</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>db_name <span class="op">=</span> <span class="st">'telco_db'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> awswrangler <span class="im">as</span> wr</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># get all the existing Glue db list</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>databases <span class="op">=</span> wr.catalog.databases()</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># print existing db names</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"*** existing databases ***</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(databases)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># if our db does not exist then create it</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> db_name <span class="kw">not</span> <span class="kw">in</span> databases.values:</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    wr.catalog.create_database(db_name, description <span class="op">=</span> <span class="st">'Demo DB for telco churn dataset'</span>)</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">*** existing + new databases ***</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(wr.catalog.databases())</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Database </span><span class="sc">{</span>db_name<span class="sc">}</span><span class="ss"> already exists"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">##</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="im">import</span> awswrangler <span class="im">as</span> wr</span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="co"># get all the existing Glue db list</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a>databases <span class="op">=</span> wr.catalog.databases()</span>
+<span id="cb13-6"><a href="#cb13-6"></a></span>
+<span id="cb13-7"><a href="#cb13-7"></a><span class="co"># print existing db names</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a><span class="bu">print</span>(<span class="st">"*** existing databases ***</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="bu">print</span>(databases)</span>
+<span id="cb13-10"><a href="#cb13-10"></a></span>
+<span id="cb13-11"><a href="#cb13-11"></a><span class="co"># if our db does not exist then create it</span></span>
+<span id="cb13-12"><a href="#cb13-12"></a><span class="cf">if</span> db_name <span class="kw">not</span> <span class="kw">in</span> databases.values:</span>
+<span id="cb13-13"><a href="#cb13-13"></a>    wr.catalog.create_database(db_name, description <span class="op">=</span> <span class="st">'Demo DB for telco churn dataset'</span>)</span>
+<span id="cb13-14"><a href="#cb13-14"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">*** existing + new databases ***</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb13-15"><a href="#cb13-15"></a>    <span class="bu">print</span>(wr.catalog.databases())</span>
+<span id="cb13-16"><a href="#cb13-16"></a><span class="cf">else</span>:</span>
+<span id="cb13-17"><a href="#cb13-17"></a>    <span class="bu">print</span>(<span class="ss">f"Database </span><span class="sc">{</span>db_name<span class="sc">}</span><span class="ss"> already exists"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>*** existing databases ***
 
@@ -694,9 +694,9 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 </div>
 </div>
 <div class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># in case you want to delete a database using this notebook</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># wr.catalog.delete_database(db_name)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">##</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="co"># in case you want to delete a database using this notebook</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="co"># wr.catalog.delete_database(db_name)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Similarly you can go to AWS Glue console to see that the new database has been created.</p>
 <div class="quarto-figure quarto-figure-center">
@@ -707,34 +707,34 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 </div>
 <p>Now we will place the three data subsets into their respective locations.</p>
 <div class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>suffix <span class="op">=</span> [<span class="st">'customer_info'</span>, <span class="st">'account_info'</span>, <span class="st">'utility'</span>]</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, columns <span class="kw">in</span> <span class="bu">enumerate</span>([customer_columns, account_columns, utility_columns]):</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># get the data subset</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    df_tmp <span class="op">=</span> df[columns]</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prepare filename and output path</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    fname <span class="op">=</span> <span class="st">'telco_churn_</span><span class="sc">%s</span><span class="st">'</span> <span class="op">%</span> suffix[i]</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    outputpath <span class="op">=</span> <span class="ss">f's3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>prefix<span class="sc">}</span><span class="ss">/data/</span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss">'</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">*** working on </span><span class="sc">{</span>suffix[i]<span class="sc">}</span><span class="ss">***"</span>)</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"filename: </span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"output path: </span><span class="sc">{</span>outputpath<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">&gt;</span> <span class="dv">1</span>: <span class="co"># for utility</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        wr.s3.to_csv(</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            df<span class="op">=</span>df_tmp,</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>            path<span class="op">=</span>outputpath,</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>            dataset<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>            database<span class="op">=</span>db_name,  <span class="co"># Athena/Glue database</span></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>            table<span class="op">=</span>fname,  <span class="co"># Athena/Glue table</span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>            index<span class="op">=</span><span class="va">False</span>,</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>            mode<span class="op">=</span><span class="st">'overwrite'</span>)</span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: <span class="co"># for customer and account</span></span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        wr.s3.to_csv(</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>            df<span class="op">=</span>df_tmp,</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>            path<span class="op">=</span><span class="ss">f'</span><span class="sc">{</span>outputpath<span class="sc">}</span><span class="ss">.csv'</span>,</span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>            index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>suffix <span class="op">=</span> [<span class="st">'customer_info'</span>, <span class="st">'account_info'</span>, <span class="st">'utility'</span>]</span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="cf">for</span> i, columns <span class="kw">in</span> <span class="bu">enumerate</span>([customer_columns, account_columns, utility_columns]):</span>
+<span id="cb16-3"><a href="#cb16-3"></a>    </span>
+<span id="cb16-4"><a href="#cb16-4"></a>    <span class="co"># get the data subset</span></span>
+<span id="cb16-5"><a href="#cb16-5"></a>    df_tmp <span class="op">=</span> df[columns]</span>
+<span id="cb16-6"><a href="#cb16-6"></a></span>
+<span id="cb16-7"><a href="#cb16-7"></a>    <span class="co"># prepare filename and output path</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a>    fname <span class="op">=</span> <span class="st">'telco_churn_</span><span class="sc">%s</span><span class="st">'</span> <span class="op">%</span> suffix[i]</span>
+<span id="cb16-9"><a href="#cb16-9"></a>    outputpath <span class="op">=</span> <span class="ss">f's3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>prefix<span class="sc">}</span><span class="ss">/data/</span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb16-10"><a href="#cb16-10"></a>    </span>
+<span id="cb16-11"><a href="#cb16-11"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">*** working on </span><span class="sc">{</span>suffix[i]<span class="sc">}</span><span class="ss">***"</span>)</span>
+<span id="cb16-12"><a href="#cb16-12"></a>    <span class="bu">print</span>(<span class="ss">f"filename: </span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb16-13"><a href="#cb16-13"></a>    <span class="bu">print</span>(<span class="ss">f"output path: </span><span class="sc">{</span>outputpath<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb16-14"><a href="#cb16-14"></a>    </span>
+<span id="cb16-15"><a href="#cb16-15"></a>    <span class="cf">if</span> i <span class="op">&gt;</span> <span class="dv">1</span>: <span class="co"># for utility</span></span>
+<span id="cb16-16"><a href="#cb16-16"></a>        wr.s3.to_csv(</span>
+<span id="cb16-17"><a href="#cb16-17"></a>            df<span class="op">=</span>df_tmp,</span>
+<span id="cb16-18"><a href="#cb16-18"></a>            path<span class="op">=</span>outputpath,</span>
+<span id="cb16-19"><a href="#cb16-19"></a>            dataset<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb16-20"><a href="#cb16-20"></a>            database<span class="op">=</span>db_name,  <span class="co"># Athena/Glue database</span></span>
+<span id="cb16-21"><a href="#cb16-21"></a>            table<span class="op">=</span>fname,  <span class="co"># Athena/Glue table</span></span>
+<span id="cb16-22"><a href="#cb16-22"></a>            index<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb16-23"><a href="#cb16-23"></a>            mode<span class="op">=</span><span class="st">'overwrite'</span>)</span>
+<span id="cb16-24"><a href="#cb16-24"></a>    <span class="cf">else</span>: <span class="co"># for customer and account</span></span>
+<span id="cb16-25"><a href="#cb16-25"></a>        wr.s3.to_csv(</span>
+<span id="cb16-26"><a href="#cb16-26"></a>            df<span class="op">=</span>df_tmp,</span>
+<span id="cb16-27"><a href="#cb16-27"></a>            path<span class="op">=</span><span class="ss">f'</span><span class="sc">{</span>outputpath<span class="sc">}</span><span class="ss">.csv'</span>,</span>
+<span id="cb16-28"><a href="#cb16-28"></a>            index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 *** working on customer_info***
@@ -766,9 +766,9 @@ output path: s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/da
 </div>
 <p>If you want to remain within the notebook and do the verification then that can also be done.</p>
 <div class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># list s3 objects</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>wr.s3.list_objects(<span class="st">'s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/data/'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">##</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="co"># list s3 objects</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>wr.s3.list_objects(<span class="st">'s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/data/'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>['s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/data/telco_churn_account_info.csv',
  's3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/data/telco_churn_customer_info.csv',
@@ -776,9 +776,9 @@ output path: s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/da
 </div>
 </div>
 <div class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">##</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># list glue catalog tables</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>wr.catalog.tables()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">##</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="co"># list glue catalog tables</span></span>
+<span id="cb20-3"><a href="#cb20-3"></a>wr.catalog.tables()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 
 <div>
