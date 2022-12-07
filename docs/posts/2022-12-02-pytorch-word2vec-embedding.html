@@ -333,7 +333,7 @@ datasets==2.7.1</code></pre>
 <h2 class="anchored" data-anchor-id="data-preparation">Data Preparation</h2>
 <section id="load-hugging-face-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="load-hugging-face-dataset">Load Hugging Face Dataset</h3>
-<p>For this notebook, I will use Hugging Face <a href="https://huggingface.co/datasets/tweets_hate_speech_detection">Twitter Hate Speech Dataset</a>. The data contain training data with approximately 32K tweets divided into two groups: <code>hate speech</code> and `not a hate speech. This dataset is originally designed for classification tasks, but we may use it to learn word embeddings (or contexts). This approach can also be used to identify inherent biases present in the data.</p>
+<p>For this notebook, I will use Hugging Face <a href="https://huggingface.co/datasets/tweets_hate_speech_detection">Twitter Hate Speech Dataset</a>. It contains training data with approximately 32K tweets divided into two groups: <code>hate speech</code> and <code>not a hate speech</code>. This dataset is originally for classification tasks, but we may use it to learn word embeddings (or word contexts). This approach can also be used to identify inherent biases present in the data.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:2234,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673382,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="16456549-3281-4124-aea6-451e98eeaf01" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">import</span> datasets</span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
@@ -368,7 +368,7 @@ datasets==2.7.1</code></pre>
  'tweet': Value(dtype='string', id=None)}</code></pre>
 </div>
 </div>
-<p>Let’s check what the raw data look’s like.</p>
+<p>Let’s check what the raw data looks like.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673387,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1a57b624-37ba-4873-ba11-745ce4576d7c" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># print a few labels</span></span>
 <span id="cb10-2"><a href="#cb10-2"></a><span class="bu">print</span>(<span class="st">"** labels **</span><span class="ch">\n</span><span class="st">"</span>, train_ds[<span class="st">"label"</span>][:<span class="dv">5</span>])</span>
@@ -731,7 +731,10 @@ factsguide: society now    #motivation</code></pre>
 <li>split the tweet text into proper words. Even though we can use all the words from the tweet text, experience has shown that not all are useful in learning embeddings. Words that are commonly omitted are either uncommon or rare words, or stopwords (commonly used words)</li>
 <li>Create a dictionary or vocabulary to filter words and encode them. This vocabulary helps move between encoded (integer) and character (or string) representations of words.</li>
 </ul>
-<p>For some of the preprocessing tasks, we will use <a href="https://www.nltk.org/">Natural Language Toolkit (NLTK library)</a>. &gt; NLTK is a leading platform for building Python programs to work with human language data. It provides easy-to-use interfaces to over 50 corpora and lexical resources such as WordNet, along with a suite of text processing libraries for classification, tokenization, stemming, tagging, parsing, and semantic reasoning, wrappers for industrial-strength NLP libraries.</p>
+<p>For some of these preprocessing tasks, we will use <a href="https://www.nltk.org/">Natural Language Toolkit (NLTK library)</a>.</p>
+<blockquote class="blockquote">
+<p>NLTK is a leading platform for building Python programs to work with human language data. It provides easy-to-use interfaces to over 50 corpora and lexical resources such as WordNet, along with a suite of text processing libraries for classification, tokenization, stemming, tagging, parsing, and semantic reasoning, wrappers for industrial-strength NLP libraries.</p>
+</blockquote>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:914,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674278,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b93b19a3-9300-49fe-f5d1-51df4f0d8882" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> nltk</span>
 <span id="cb15-2"><a href="#cb15-2"></a></span>
@@ -768,15 +771,13 @@ factsguide: society now    #motivation</code></pre>
 <span id="cb18-14"><a href="#cb18-14"></a>    t <span class="op">=</span> re.sub(<span class="vs">r"[^a-z 0-9]"</span>, <span class="st">""</span>, t)</span>
 <span id="cb18-15"><a href="#cb18-15"></a>    <span class="co"># step 3: split the text into words or tokens. split is made at each "space" character</span></span>
 <span id="cb18-16"><a href="#cb18-16"></a>    t <span class="op">=</span> re.split(<span class="vs">r" +"</span>, t)</span>
-<span id="cb18-17"><a href="#cb18-17"></a></span>
-<span id="cb18-18"><a href="#cb18-18"></a>    <span class="co"># step 4: remove stop words</span></span>
-<span id="cb18-19"><a href="#cb18-19"></a>    t <span class="op">=</span> [i <span class="cf">for</span> i <span class="kw">in</span> t <span class="cf">if</span> (i <span class="kw">not</span> <span class="kw">in</span> sw) <span class="kw">and</span> (i <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"user"</span>]) <span class="kw">and</span> <span class="bu">len</span>(i)]</span>
-<span id="cb18-20"><a href="#cb18-20"></a></span>
-<span id="cb18-21"><a href="#cb18-21"></a>    <span class="co"># step 5: lemmatize words</span></span>
-<span id="cb18-22"><a href="#cb18-22"></a>    t <span class="op">=</span> [wl.lemmatize(i) <span class="cf">for</span> i <span class="kw">in</span> t]</span>
-<span id="cb18-23"><a href="#cb18-23"></a></span>
-<span id="cb18-24"><a href="#cb18-24"></a>    row[<span class="st">"all_tokens"</span>] <span class="op">=</span> t</span>
-<span id="cb18-25"><a href="#cb18-25"></a>    <span class="cf">return</span> row</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-17"><a href="#cb18-17"></a>    <span class="co"># step 4: remove stop words</span></span>
+<span id="cb18-18"><a href="#cb18-18"></a>    t <span class="op">=</span> [i <span class="cf">for</span> i <span class="kw">in</span> t <span class="cf">if</span> (i <span class="kw">not</span> <span class="kw">in</span> sw) <span class="kw">and</span> (i <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"user"</span>]) <span class="kw">and</span> <span class="bu">len</span>(i)]</span>
+<span id="cb18-19"><a href="#cb18-19"></a>    <span class="co"># step 5: lemmatize words</span></span>
+<span id="cb18-20"><a href="#cb18-20"></a>    t <span class="op">=</span> [wl.lemmatize(i) <span class="cf">for</span> i <span class="kw">in</span> t]</span>
+<span id="cb18-21"><a href="#cb18-21"></a></span>
+<span id="cb18-22"><a href="#cb18-22"></a>    row[<span class="st">"all_tokens"</span>] <span class="op">=</span> t</span>
+<span id="cb18-23"><a href="#cb18-23"></a>    <span class="cf">return</span> row</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s use a sample tweet text to uncover the working of this function.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:38,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674283,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1a68394b-7cf6-479f-9730-0bd16f8a4629" data-execution_count="12">
@@ -932,9 +933,11 @@ factsguide: society now    #motivation</code></pre>
 <ul>
 <li><code>vb['love']</code> to get the id ‘0’ for token ‘love’</li>
 <li><code>vb.get_stoi()['love']</code> to get id ‘0’ for token ‘love’</li>
+<li><code>vb.lookup_token('love')</code> to get id ‘0’ for token ‘love’</li>
+<li><code>vb.lookup_tokens(['love', 'happy'])</code> to get id ‘0’ and ‘2’ for token ‘love’ and ‘happy’</li>
 <li><code>vb.get_itos()[0]</code> to get token ‘love’ from id ‘0’</li>
+<li><code>vb.lookup_indices([0, 2])</code> to get token ‘love’ and ‘happy’ from id ‘0’ and ‘2’</li>
 </ul>
-<p>vb.lookup_token(0) vb.lookup_tokens([0]) vb.lookup_indices([0])</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675929,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2e083e6d-5d6c-4e39-8e15-27b07a7570ac" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>vb[<span class="st">"love"</span>], vb.get_stoi()[<span class="st">"love"</span>], vb.get_itos()[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
@@ -1026,7 +1029,7 @@ amp ---&gt; 4
 </tr>
 </tbody>
 </table>
-<p>For creating training samples using skip-gram, we take each token as an input and a surrounding token as the label. But we also need to decide the window size, meaning how many surrounding tokens to create training samples. For example, suppose we take <code>window_size=2</code>; then the training sample for this tweet will be.</p>
+<p>For creating training samples using skip-gram, we take each token as an input and a surrounding token as the label. But we also need to decide the window size, meaning how many surrounding tokens to create training samples. Suppose we take <code>window_size=2</code>; then the training sample for this tweet will be.</p>
 <table class="table">
 <colgroup>
 <col style="width: 10%">
@@ -1310,7 +1313,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <h2 class="anchored" data-anchor-id="model-configuration">Model Configuration</h2>
 <p>Now we will configure the model to be used for training.</p>
 <p><strong>What are we trying to solve with our model?</strong></p>
-<p>We are trying to train a model that can predict the surrounding words of a given input. And this is how we have designed our training data too. Each training sample row has <code>(input, label)</code>. Where <code>input</code> is the given token, and <code>label</code> is some nearby token. It is like forcing the model to predict the context of an input word.</p>
+<p>We are trying to train a model that can predict the surrounding words of a given input. And this is how we have designed our training data too. Each training sample has <code>(input, label)</code>. Where <code>input</code> is the given token, and <code>label</code> is some nearby token. It is like forcing the model to predict the context of an input word.</p>
 <p><strong>How can such a model be helpful to us?</strong></p>
 <p>Such a model that can predict the context of a word is not helpful to us in any actual scenario. So we are not going to use it. Instead, we are only interested in the learned weights of such a model, and we call them <code>word embedding</code>. It is like faking a problem (creating a pseudo-problem), training a model, and then using the learned weights for other tasks.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:11,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327681652,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="34">
@@ -1404,7 +1407,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <p>So, let’s extract the weights.</p>
 <p><strong>We have weights in two layers: embedding and linear. Both have similar dimensions, so which should we use as embeddings?</strong> I have experimented with weights from both these layers, and here are some suggestions.</p>
 <ul>
-<li>Embeddings from the layer closer to the output layer give better results. In our case, it is the Linear layer. Our linear layer has the same dimensions as the embedding layer, so that we will use weights from this layer.</li>
+<li>Embeddings from the layer closer to the output layer give better results. In our case, it is the Linear layer. Our linear layer has the same dimensions as the embedding layer, and we will use weights from this layer.</li>
 <li>If the dimensions of the layers closer to the output layer are different than the Embedding layer, then we should stick to the embedding layer. Sometimes, people prefer to concatenate weights from multiple layers to create the final output.</li>
 </ul>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044200,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="9549b15f-6def-4198-e198-19ed217c0e78" data-execution_count="39">
@@ -1415,7 +1418,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <pre><code>(3007, 100)</code></pre>
 </div>
 </div>
-<p>Next, I have created some functions to calculate the distance between these word vectors. We are doing this to find a word’s (cosine) similarity score with other words. A smaller distance between two vectors means that these words are often used in similar contexts.</p>
+<p>Next, I have created some functions to calculate the distance between these word vectors. We are doing this to find a word similarity score with other words (cosine similarity). A smaller distance between two vectors means that these words are often used in similar contexts.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:34,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044201,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="40">
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1"></a><span class="co"># source: https://muhark.github.io/python/ml/nlp/2021/10/21/word2vec-from-scratch.html</span></span>
 <span id="cb73-2"><a href="#cb73-2"></a><span class="im">from</span> scipy.spatial <span class="im">import</span> distance</span>
@@ -1448,6 +1451,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <span id="cb76-2"><a href="#cb76-2"></a>    <span class="cf">for</span> word <span class="kw">in</span> tokens:</span>
 <span id="cb76-3"><a href="#cb76-3"></a>        <span class="bu">print</span>(word, [t[<span class="dv">1</span>] <span class="cf">for</span> t <span class="kw">in</span> get_k_similar_words(word, dmat)], <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Next, I selected some tokens and used embeddings to find words most similar to them.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:23,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044975,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b5d256af-d190-4645-b458-3ddb3bb4e32e" data-execution_count="43">
 <div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1"></a>tokens <span class="op">=</span> [<span class="st">"father"</span>, <span class="st">"mother"</span>, <span class="st">"boy"</span>, <span class="st">"girl"</span>]  <span class="co"># tokens for relations</span></span>
 <span id="cb77-2"><a href="#cb77-2"></a>tokens <span class="op">+=</span> [<span class="st">"job"</span>, <span class="st">"sad"</span>, <span class="st">"happy"</span>, <span class="st">"hate"</span>]  <span class="co"># for emotions</span></span>
@@ -1495,7 +1499,7 @@ fitness ['workout', 'gym', 'fit', 'food', 'running', 'run', 'yoga', 'health', 's
 </div>
 <section id="visualize-embeddings" class="level3">
 <h3 class="anchored" data-anchor-id="visualize-embeddings">Visualize embeddings</h3>
-<p>We can also analyze the embeddings by visualizing them on a plot. Similar word vectors should appear closer to the plot. But each word vector is dimension 300, so how can we plot them on a 2D surface? For this, we can take the help of the dimension reduction technique t-SNE to reduce the word vectors dimensions from 300 to 2. PCA can also be applied to achieve similar results.</p>
+<p>We can also analyze the embeddings by visualizing them on a plot. Similar word vectors should appear closer in the plot. But each word vector has 300 dimensions, so how can we plot them on a 2D surface? For this, we can take the help of the dimension reduction technique <code>t-SNE</code> to reduce the word vectors dimensions from 300 to 2. PCA can also be applied to achieve similar results.</p>
 <p>We need first to normalize the weights to get better results.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:19,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044976,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="cd5aa0b1-6b13-4c65-c482-564880993dde" data-execution_count="44">
 <div class="sourceCode cell-code" id="cb79"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1"></a><span class="co"># source: https://github.com/OlgaChernytska/word2vec-pytorch/blob/main/notebooks/Inference.ipynb</span></span>
@@ -1542,7 +1546,7 @@ fitness ['workout', 'gym', 'fit', 'food', 'running', 'run', 'yoga', 'health', 's
 <span id="cb83-9"><a href="#cb83-9"></a>    <span class="cf">else</span>:</span>
 <span id="cb83-10"><a href="#cb83-10"></a>        color_codes.append(<span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now create a scatter plot of these embeddings using Plotly.</p>
+<p>Now create a scatter plot of these embeddings using <a href="https://plotly.com/python-api-reference/generated/plotly.graph_objects.Scatter.html">Plotly</a>.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:28,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328074726,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="0577001b-6040-472f-c88d-6a4f364f2d70">
 <div class="sourceCode cell-code" id="cb84"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1"></a><span class="co"># source: https://github.com/OlgaChernytska/word2vec-pytorch/blob/main/notebooks/Inference.ipynb</span></span>
 <span id="cb84-2"><a href="#cb84-2"></a><span class="im">import</span> plotly.graph_objects <span class="im">as</span> go</span>
