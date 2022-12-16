@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-12-14">
+<meta name="description" content="This is a practice notebook to implement AutoEncoder in PyTorch. An autoencoder takes an image as input, stores it in a lower dimension (term encoder), and tries to reproduce the same image as output, hence the term auto. Autoencoders come in handy to identify and group similar images.">
+
+<title>Random Thoughts - Implementing AutoEncoder with PyTorch</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+<script type="text/javascript">
+
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-20316028', 'auto');
+
+ga('send', {
+  hitType: 'pageview',
+  'anonymizeIp': true,
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Implementing AutoEncoder with PyTorch">
+<meta property="og:description" content="This is a practice notebook to implement AutoEncoder in PyTorch.">
+<meta property="og:image" content="images/2022-12-14-pytorch-autoencoder.png">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Implementing AutoEncoder with PyTorch">
+<meta name="twitter:description" content="This is a practice notebook to implement AutoEncoder in PyTorch.">
+<meta name="twitter:image" content="images/2022-12-14-pytorch-autoencoder.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#credits" id="toc-credits" class="nav-link active" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#environment" id="toc-environment" class="nav-link" data-scroll-target="#environment">Environment</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">Data Preparation</a>
+  <ul class="collapse">
+  <li><a href="#load-mnist-dataset" id="toc-load-mnist-dataset" class="nav-link" data-scroll-target="#load-mnist-dataset">Load MNIST Dataset</a></li>
+  </ul></li>
+  <li><a href="#model-configuration" id="toc-model-configuration" class="nav-link" data-scroll-target="#model-configuration">Model configuration</a></li>
+  <li><a href="#autoencoder-with-latent-space-dimension2" id="toc-autoencoder-with-latent-space-dimension2" class="nav-link" data-scroll-target="#autoencoder-with-latent-space-dimension2">AutoEncoder with latent space dimension=2</a></li>
+  <li><a href="#autoencoder-with-latent-space-dimension5-10-20-50" id="toc-autoencoder-with-latent-space-dimension5-10-20-50" class="nav-link" data-scroll-target="#autoencoder-with-latent-space-dimension5-10-20-50">AutoEncoder with latent space dimension=[5, 10, 20, 50]</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Implementing AutoEncoder with PyTorch</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">pytorch</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This is a practice notebook to implement AutoEncoder in PyTorch. An autoencoder takes an image as input, stores it in a lower dimension (term encoder), and tries to reproduce the same image as output, hence the term auto. Autoencoders come in handy to identify and group similar images.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 14, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><img src="images/2022-12-14-pytorch-autoencoder.png" class="img-fluid"></p>
+<section id="credits" class="level2">
+<h2 class="anchored" data-anchor-id="credits">Credits</h2>
+<p>This notebook takes inspiration and ideas from the following sources.</p>
+<ul>
+<li><a href="https://sebastianraschka.com/blog/2021/dl-course.html">Introduction to Deep Learning</a> course by <a href="https://twitter.com/rasbt">Sebastian Raschka</a>. Sebastian is one of my favorite instructors. You can find all his lectures free on his YouTube channel, with tons of practice material he regularly shares on his blog. Lectures I find helpful on this topic include <a href="https://sebastianraschka.com/blog/2021/dl-course.html#l16-autoencoders">L16 AutoEncoder</a>. Parts of the code in this notebook are taken from his course material.
+<ul>
+<li><a href="https://www.youtube.com/watch?v=9Ujv_IoBtF4">L16.0 Introduction to Autoencoders – Lecture Overview</a></li>
+<li><a href="https://www.youtube.com/watch?v=UgOHupaIfcA">L16.1 Dimensionality Reduction</a></li>
+<li><a href="https://www.youtube.com/watch?v=8O_FDPIlj1s">L16.2 A Fully-Connected Autoencoder</a></li>
+<li><a href="https://www.youtube.com/watch?v=ilkSwsggSNM">L16.3 Convolutional Autoencoders &amp; Transposed Convolutions</a></li>
+<li><a href="https://www.youtube.com/watch?v=345wRyqKkQ0">L16.4 A Convolutional Autoencoder in PyTorch</a></li>
+<li><a href="https://www.youtube.com/watch?v=FPZeRM1p1ao">L16.5 Other Types of Autoencoders</a></li>
+<li><a href="https://github.com/rasbt/stat453-deep-learning-ss21/blob/main/L17/1_VAE_mnist_sigmoid_mse.ipynb">Notebook: 1_VAE_mnist_sigmoid_mse.ipynb</a></li>
+</ul></li>
+<li><a href="https://github.com/PacktPublishing/Modern-Computer-Vision-with-PyTorch">Modern Computer Vision with PyTorch</a> book published by Packt has tons of useful material on its GitHub repository. <a href="https://github.com/PacktPublishing/Modern-Computer-Vision-with-PyTorch/tree/master/Chapter11">Chapter 11</a> from this book is related to AutoEncoder. Parts of the code you see in this notebook are taken from the following notebooks.
+<ul>
+<li><a href="https://github.com/PacktPublishing/Modern-Computer-Vision-with-PyTorch/blob/master/Chapter11/simple_auto_encoder_with_different_latent_size.ipynb">Notebook: simple_auto_encoder_with_different_latent_size.ipynb</a></li>
+<li><a href="https://github.com/PacktPublishing/Modern-Computer-Vision-with-PyTorch/blob/master/Chapter11/conv_auto_encoder.ipynb">Notebook: conv_auto_encoder.ipynb</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="environment" class="level2">
+<h2 class="anchored" data-anchor-id="environment">Environment</h2>
+<p>This notebook is prepared with Google Colab.</p>
+<ul>
+<li><a href="http://">GitHub</a></li>
+<li><a href="https://colab.research.google.com/github/%7Buser_name%7D/%7Brepo_name%7D/blob/%7Bbranch_name%7D/path/to/notebook.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></li>
+</ul>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:5097,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116013884,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e3912be3-89c0-4765-e907-dff72f8ea36e" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> numpy, matplotlib, pandas, torch</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.8.16
+numpy==1.21.6
+torch==1.13.0+cu116
+matplotlib==3.2.2</code></pre>
+</div>
+</div>
+<p>Let’s also set the device and seed for results reproducibility.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:658,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116014526,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="121b66cc-4af8-4bd2-9d5d-cd51a604d83b" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> torch, os, random</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># https://wandb.ai/sauravmaheshkar/RSNA-MICCAI/reports/How-to-Set-Random-Seeds-in-PyTorch-and-Tensorflow--VmlldzoxMDA2MDQy</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">def</span> set_seed(seed: <span class="bu">int</span> <span class="op">=</span> <span class="dv">42</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb3-6"><a href="#cb3-6"></a>    np.random.seed(seed)</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    random.seed(seed)</span>
+<span id="cb3-8"><a href="#cb3-8"></a>    torch.manual_seed(seed)</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    torch.cuda.manual_seed(seed)</span>
+<span id="cb3-10"><a href="#cb3-10"></a>    <span class="co"># When running on the CuDNN backend, two further options must be set</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>    <span class="cf">if</span> torch.cuda.is_available():</span>
+<span id="cb3-12"><a href="#cb3-12"></a>        torch.backends.cudnn.deterministic <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>        torch.backends.cudnn.benchmark <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>    <span class="co"># Set a fixed value for the hash seed</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a></span>
+<span id="cb3-16"><a href="#cb3-16"></a>    os.environ[<span class="st">"PYTHONHASHSEED"</span>] <span class="op">=</span> <span class="bu">str</span>(seed)</span>
+<span id="cb3-17"><a href="#cb3-17"></a>    <span class="bu">print</span>(<span class="ss">f"Random seed set as </span><span class="sc">{</span>seed<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-18"><a href="#cb3-18"></a></span>
+<span id="cb3-19"><a href="#cb3-19"></a></span>
+<span id="cb3-20"><a href="#cb3-20"></a>device <span class="op">=</span> torch.device(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="bu">print</span>(<span class="st">"Device:"</span>, device)</span>
+<span id="cb3-22"><a href="#cb3-22"></a>set_seed()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Device: cuda
+Random seed set as 42</code></pre>
+</div>
+</div>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<blockquote class="blockquote">
+<p>Following is the <code>AutoEncoder</code> explanation provided by <a href="https://chat.openai.com/chat">OpenAI ChatGPT</a>. If unsatisfied, I suggest using the links provided in the “Credits” section (<a href="https://jalammar.github.io/illustrated-word2vec/">L16.0 Introduction to Autoencoders by Sebastian Raschka</a>)</p>
+</blockquote>
+<p><code>prompt &gt; introduction to autoencoder</code></p>
+<p><strong>AutoEncoder</strong></p>
+<p>An autoencoder is a type of artificial neural network that is used to learn efficient data codings in an unsupervised manner. Autoencoders are composed of two parts: an encoder and a decoder. The encoder takes in an input and converts it into a compressed representation, typically in the form of a lower-dimensional code. The decoder then takes this code and converts it back into a reconstruction of the original input.</p>
+<p>The goal of an autoencoder is to learn a representation of the input data that is more efficient than the original input. This is achieved by training the network to reconstruct the input from the lower-dimensional code, which forces the encoder to learn a compact representation of the data. Autoencoders can be used for dimensionality reduction, feature learning, and generating new data samples.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/2022-12-14-pytorch-autoencoder/autoencoder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure 1: A basic fully connected AutoEncoder</figcaption><p></p>
+</figure>
+</div>
+<p>From these descriptions, we can deduce the following points about an autoencoder working.</p>
+<ul>
+<li>An autoencoder can learn a compact representation of the data. This representation is stored in the center hidden layer of the network. We have multiple names for this center hidden layer, including <code>bottleneck</code>, <code>latent space</code>, <code>embedded space</code>, and <code>hidden units</code>.</li>
+<li>The latent space has a dimension less than the input data dimension.</li>
+<li>Autoencoder can be used for dimensionality reduction. In fact, if we don’t use any non-linearity (e.g., ReLU) then autoencoder will function similarly to PCA since PCA is a linear dimensionality reduction method.</li>
+<li>Encoder part of the autoencoder model compresses the data to a latent space. The decoder can use the latent space to reconstruct (or decode) the original image.</li>
+</ul>
+<p><strong>Summary of the steps followed in this notebook</strong></p>
+<ul>
+<li>Download <a href="https://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html">MNIST handwritten digit</a> dataset</li>
+<li>Train an autoencoder with 2-dimensional (2 pixels) latent space. Use 2 pixels to deconstruct the whole MNIST digit image. Visualize the latent space learned by the model. Use random latent space points to decode the images</li>
+<li>Create multiple autoencoders with varying latent space [2, 5, 10, 20, 50] and use them to decode the images. Compare the results to analyze the effect of latent dimension in storing information and decoded image quality.</li>
+<li>Visualize the latent space of the model with a latent space of 50 dimensions. Use random points from the latent space to decode (or construct new) images.</li>
+<li>Finally, discuss the limitations of autoencoders.</li>
+</ul>
+</section>
+<section id="data-preparation" class="level2">
+<h2 class="anchored" data-anchor-id="data-preparation">Data Preparation</h2>
+<section id="load-mnist-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="load-mnist-dataset">Load MNIST Dataset</h3>
+<p>In the next cell, I downloaded the MNIST dataset and created a DataLoader with a batch size of 256.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:1437,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015944,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="22ab80e0-d966-4080-ad6a-bdb41ddc13bd" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> torchvision <span class="im">import</span> datasets</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a>batch_size <span class="op">=</span> <span class="dv">256</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a></span>
+<span id="cb5-7"><a href="#cb5-7"></a>train_dataset <span class="op">=</span> datasets.MNIST(</span>
+<span id="cb5-8"><a href="#cb5-8"></a>    root<span class="op">=</span><span class="st">"data"</span>, train<span class="op">=</span><span class="va">True</span>, transform<span class="op">=</span>transforms.ToTensor(), download<span class="op">=</span><span class="va">True</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>)</span>
+<span id="cb5-10"><a href="#cb5-10"></a></span>
+<span id="cb5-11"><a href="#cb5-11"></a>test_dataset <span class="op">=</span> datasets.MNIST(root<span class="op">=</span><span class="st">"data"</span>, train<span class="op">=</span><span class="va">False</span>, transform<span class="op">=</span>transforms.ToTensor())</span>
+<span id="cb5-12"><a href="#cb5-12"></a></span>
+<span id="cb5-13"><a href="#cb5-13"></a>train_loader <span class="op">=</span> DataLoader(dataset<span class="op">=</span>train_dataset, batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb5-14"><a href="#cb5-14"></a></span>
+<span id="cb5-15"><a href="#cb5-15"></a>test_loader <span class="op">=</span> DataLoader(dataset<span class="op">=</span>test_dataset, batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
+Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to data/MNIST/raw/train-images-idx3-ubyte.gz</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"8ad10cd9cba54f0b9ecfe4dbf25d19a9","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Extracting data/MNIST/raw/train-images-idx3-ubyte.gz to data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
+Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to data/MNIST/raw/train-labels-idx1-ubyte.gz</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"3590778a271942febb8f0f50646a3b68","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Extracting data/MNIST/raw/train-labels-idx1-ubyte.gz to data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
+Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to data/MNIST/raw/t10k-images-idx3-ubyte.gz</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"b70cefcef47c4b7b81ed250fe7060e24","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Extracting data/MNIST/raw/t10k-images-idx3-ubyte.gz to data/MNIST/raw
+
+Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
+Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to data/MNIST/raw/t10k-labels-idx1-ubyte.gz</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"ea212f1cc8db4da0a18d36f896a988c1","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Extracting data/MNIST/raw/t10k-labels-idx1-ubyte.gz to data/MNIST/raw
+</code></pre>
+</div>
+</div>
+<p>Notice that while creating <code>Datasets,</code> I used a transformer <code>transform=transforms.ToTensor()</code>. <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html">torchvision.transforms.ToTensor.html</a></p>
+<blockquote class="blockquote">
+<p>[transforms.ToTensor] Convert a PIL Image or numpy.ndarray to tensor … Converts a PIL Image or numpy.ndarray (H x W x C) in the range [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].</p>
+</blockquote>
+<p>So it manipulates the MNSIT images in two ways</p>
+<ul>
+<li>Converts image dimensions from (H x W x C) to (C x H x W)</li>
+<li>Scales image pixel values from the range [0, 255] to range [0.0, 1.0]</li>
+</ul>
+<p>Let’s check the dimension of our dataset.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:15,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015945,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="993e5774-55d4-49b6-f823-585bb8555f24" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="cf">for</span> images, labels <span class="kw">in</span> train_loader:</span>
+<span id="cb11-2"><a href="#cb11-2"></a>    <span class="bu">print</span>(</span>
+<span id="cb11-3"><a href="#cb11-3"></a>        <span class="st">"Image batch dimensions:"</span>, images.shape</span>
+<span id="cb11-4"><a href="#cb11-4"></a>    )  <span class="co"># [batch size, channels, img height, img width]</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a>    <span class="bu">print</span>(<span class="st">"Image label dimensions:"</span>, labels.shape)  <span class="co"># [batch size]</span></span>
+<span id="cb11-6"><a href="#cb11-6"></a>    <span class="cf">break</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Image batch dimensions: torch.Size([256, 1, 28, 28])
+Image label dimensions: torch.Size([256])</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="model-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="model-configuration">Model configuration</h2>
+<p>Let’s configure a simple AutoEncoder model. It is made of two fully connected multilayer perceptrons. The first perceptron will gradually decrease the dimensions of the input data till it reaches the latent dimension size. The second perceptron will gradually increase the dimensions of data obtained from latent space till it reaches the input size. Notice that</p>
+<ul>
+<li>Latent space dimension (<code>latent_dim</code>) is kept configurable so we can use the same model class to configure autoencoder having different latent spaces</li>
+<li>I have used <code>torch.sigmoid()</code> in the forward pass. This is to squash the data into the range [0, 1]. This is done because the input image received by the model is assumed to be in this range (remember <code>transforms.ToTensor()</code> function while creating datasets). So we want the image created (or returned) by the model to be in the same distribution range.</li>
+</ul>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:9,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015947,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb13-2"><a href="#cb13-2"></a></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="kw">class</span> AutoEncoder(nn.Module):</span>
+<span id="cb13-4"><a href="#cb13-4"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, num_features, latent_dim):</span>
+<span id="cb13-5"><a href="#cb13-5"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb13-6"><a href="#cb13-6"></a>        <span class="va">self</span>.latent_dim <span class="op">=</span> latent_dim</span>
+<span id="cb13-7"><a href="#cb13-7"></a></span>
+<span id="cb13-8"><a href="#cb13-8"></a>        <span class="va">self</span>.encoder <span class="op">=</span> nn.Sequential(</span>
+<span id="cb13-9"><a href="#cb13-9"></a>            nn.Linear(num_features, <span class="dv">128</span>),</span>
+<span id="cb13-10"><a href="#cb13-10"></a>            nn.ReLU(<span class="va">True</span>),</span>
+<span id="cb13-11"><a href="#cb13-11"></a>            nn.Linear(<span class="dv">128</span>, <span class="dv">64</span>),</span>
+<span id="cb13-12"><a href="#cb13-12"></a>            nn.ReLU(<span class="va">True</span>),</span>
+<span id="cb13-13"><a href="#cb13-13"></a>            nn.Linear(<span class="dv">64</span>, latent_dim),</span>
+<span id="cb13-14"><a href="#cb13-14"></a>        )</span>
+<span id="cb13-15"><a href="#cb13-15"></a></span>
+<span id="cb13-16"><a href="#cb13-16"></a>        <span class="va">self</span>.decoder <span class="op">=</span> nn.Sequential(</span>
+<span id="cb13-17"><a href="#cb13-17"></a>            nn.Linear(latent_dim, <span class="dv">64</span>),</span>
+<span id="cb13-18"><a href="#cb13-18"></a>            nn.ReLU(<span class="va">True</span>),</span>
+<span id="cb13-19"><a href="#cb13-19"></a>            nn.Linear(<span class="dv">64</span>, <span class="dv">128</span>),</span>
+<span id="cb13-20"><a href="#cb13-20"></a>            nn.ReLU(<span class="va">True</span>),</span>
+<span id="cb13-21"><a href="#cb13-21"></a>            nn.Linear(<span class="dv">128</span>, num_features),</span>
+<span id="cb13-22"><a href="#cb13-22"></a>        )</span>
+<span id="cb13-23"><a href="#cb13-23"></a></span>
+<span id="cb13-24"><a href="#cb13-24"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb13-25"><a href="#cb13-25"></a>        x <span class="op">=</span> <span class="va">self</span>.encoder(x)</span>
+<span id="cb13-26"><a href="#cb13-26"></a>        x <span class="op">=</span> <span class="va">self</span>.decoder(x)</span>
+<span id="cb13-27"><a href="#cb13-27"></a>        x <span class="op">=</span> torch.sigmoid(x)</span>
+<span id="cb13-28"><a href="#cb13-28"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="autoencoder-with-latent-space-dimension2" class="level2">
+<h2 class="anchored" data-anchor-id="autoencoder-with-latent-space-dimension2">AutoEncoder with latent space dimension=2</h2>
+<p>Let’s create our first autoencoder with a latent space of 2 features. This means we will compress our input image of <code>28*28=784</code> features to only two in the latent space. Then we will use the information stored in these two features to reconstruct (or decode) the full image having 784 features. Why only two features for the latent space?</p>
+<ul>
+<li>We want to try an extreme case, and you will be surprised to see that even with two features in latent space, we can construct the whole image with acceptable quality.</li>
+<li>We want to visualize the 2D latent space. Visualizing (plotting) latent space with higher dimensions will not be possible.</li>
+</ul>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:4743,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116020682,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>learning_rate <span class="op">=</span> <span class="fl">0.005</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>num_features <span class="op">=</span> <span class="dv">28</span> <span class="op">*</span> <span class="dv">28</span>  <span class="co"># image height X image width = 784</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>latent_dim <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a></span>
+<span id="cb14-5"><a href="#cb14-5"></a>model <span class="op">=</span> AutoEncoder(num_features, latent_dim)</span>
+<span id="cb14-6"><a href="#cb14-6"></a>model <span class="op">=</span> model.to(device)</span>
+<span id="cb14-7"><a href="#cb14-7"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span>learning_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We have configured our model and optimizer, and we can start training our model.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:57384,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116078022,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="3308e8c0-c938-44a1-8a5f-8ab8dcfe9c69" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> time</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a>num_epochs <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a>start_time <span class="op">=</span> time.time()</span>
+<span id="cb15-6"><a href="#cb15-6"></a></span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
+<span id="cb15-8"><a href="#cb15-8"></a>    <span class="cf">for</span> batch_idx, (features, targets) <span class="kw">in</span> <span class="bu">enumerate</span>(train_loader):</span>
+<span id="cb15-9"><a href="#cb15-9"></a>        <span class="co"># don't need labels, only the images (features)</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a>        features <span class="op">=</span> features.view(<span class="op">-</span><span class="dv">1</span>, num_features).to(device)</span>
+<span id="cb15-11"><a href="#cb15-11"></a></span>
+<span id="cb15-12"><a href="#cb15-12"></a>        <span class="co">### FORWARD AND BACK PROP</span></span>
+<span id="cb15-13"><a href="#cb15-13"></a>        decoded <span class="op">=</span> model(features)</span>
+<span id="cb15-14"><a href="#cb15-14"></a>        loss <span class="op">=</span> F.mse_loss(decoded, features)</span>
+<span id="cb15-15"><a href="#cb15-15"></a>        optimizer.zero_grad()</span>
+<span id="cb15-16"><a href="#cb15-16"></a></span>
+<span id="cb15-17"><a href="#cb15-17"></a>        loss.backward()</span>
+<span id="cb15-18"><a href="#cb15-18"></a></span>
+<span id="cb15-19"><a href="#cb15-19"></a>        <span class="co">### UPDATE MODEL PARAMETERS</span></span>
+<span id="cb15-20"><a href="#cb15-20"></a>        optimizer.step()</span>
+<span id="cb15-21"><a href="#cb15-21"></a></span>
+<span id="cb15-22"><a href="#cb15-22"></a>        <span class="co">### LOGGING</span></span>
+<span id="cb15-23"><a href="#cb15-23"></a>        <span class="cf">if</span> <span class="kw">not</span> batch_idx <span class="op">%</span> <span class="dv">50</span>:</span>
+<span id="cb15-24"><a href="#cb15-24"></a>            <span class="bu">print</span>(</span>
+<span id="cb15-25"><a href="#cb15-25"></a>                <span class="st">"Epoch: </span><span class="sc">%03d</span><span class="st">/</span><span class="sc">%03d</span><span class="st"> | Batch </span><span class="sc">%03d</span><span class="st">/</span><span class="sc">%03d</span><span class="st"> | Training Loss: </span><span class="sc">%.4f</span><span class="st">"</span></span>
+<span id="cb15-26"><a href="#cb15-26"></a>                <span class="op">%</span> (epoch <span class="op">+</span> <span class="dv">1</span>, num_epochs, batch_idx, <span class="bu">len</span>(train_loader), loss)</span>
+<span id="cb15-27"><a href="#cb15-27"></a>            )</span>
+<span id="cb15-28"><a href="#cb15-28"></a></span>
+<span id="cb15-29"><a href="#cb15-29"></a><span class="bu">print</span>(<span class="st">"Total Training Time: </span><span class="sc">%.2f</span><span class="st"> min"</span> <span class="op">%</span> ((time.time() <span class="op">-</span> start_time) <span class="op">/</span> <span class="dv">60</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epoch: 001/010 | Batch 000/235 | Training Loss: 0.2315
+Epoch: 001/010 | Batch 050/235 | Training Loss: 0.0655
+Epoch: 001/010 | Batch 100/235 | Training Loss: 0.0523
+Epoch: 001/010 | Batch 150/235 | Training Loss: 0.0517
+Epoch: 001/010 | Batch 200/235 | Training Loss: 0.0511
+Epoch: 002/010 | Batch 000/235 | Training Loss: 0.0479
+Epoch: 002/010 | Batch 050/235 | Training Loss: 0.0486
+Epoch: 002/010 | Batch 100/235 | Training Loss: 0.0441
+Epoch: 002/010 | Batch 150/235 | Training Loss: 0.0456
+Epoch: 002/010 | Batch 200/235 | Training Loss: 0.0461
+Epoch: 003/010 | Batch 000/235 | Training Loss: 0.0438
+Epoch: 003/010 | Batch 050/235 | Training Loss: 0.0460
+Epoch: 003/010 | Batch 100/235 | Training Loss: 0.0423
+Epoch: 003/010 | Batch 150/235 | Training Loss: 0.0442
+Epoch: 003/010 | Batch 200/235 | Training Loss: 0.0439
+Epoch: 004/010 | Batch 000/235 | Training Loss: 0.0415
+Epoch: 004/010 | Batch 050/235 | Training Loss: 0.0447
+Epoch: 004/010 | Batch 100/235 | Training Loss: 0.0411
+Epoch: 004/010 | Batch 150/235 | Training Loss: 0.0423
+Epoch: 004/010 | Batch 200/235 | Training Loss: 0.0425
+Epoch: 005/010 | Batch 000/235 | Training Loss: 0.0406
+Epoch: 005/010 | Batch 050/235 | Training Loss: 0.0434
+Epoch: 005/010 | Batch 100/235 | Training Loss: 0.0404
+Epoch: 005/010 | Batch 150/235 | Training Loss: 0.0419
+Epoch: 005/010 | Batch 200/235 | Training Loss: 0.0415
+Epoch: 006/010 | Batch 000/235 | Training Loss: 0.0397
+Epoch: 006/010 | Batch 050/235 | Training Loss: 0.0435
+Epoch: 006/010 | Batch 100/235 | Training Loss: 0.0399
+Epoch: 006/010 | Batch 150/235 | Training Loss: 0.0412
+Epoch: 006/010 | Batch 200/235 | Training Loss: 0.0405
+Epoch: 007/010 | Batch 000/235 | Training Loss: 0.0391
+Epoch: 007/010 | Batch 050/235 | Training Loss: 0.0426
+Epoch: 007/010 | Batch 100/235 | Training Loss: 0.0394
+Epoch: 007/010 | Batch 150/235 | Training Loss: 0.0409
+Epoch: 007/010 | Batch 200/235 | Training Loss: 0.0398
+Epoch: 008/010 | Batch 000/235 | Training Loss: 0.0389
+Epoch: 008/010 | Batch 050/235 | Training Loss: 0.0423
+Epoch: 008/010 | Batch 100/235 | Training Loss: 0.0392
+Epoch: 008/010 | Batch 150/235 | Training Loss: 0.0405
+Epoch: 008/010 | Batch 200/235 | Training Loss: 0.0398
+Epoch: 009/010 | Batch 000/235 | Training Loss: 0.0377
+Epoch: 009/010 | Batch 050/235 | Training Loss: 0.0429
+Epoch: 009/010 | Batch 100/235 | Training Loss: 0.0386
+Epoch: 009/010 | Batch 150/235 | Training Loss: 0.0403
+Epoch: 009/010 | Batch 200/235 | Training Loss: 0.0392
+Epoch: 010/010 | Batch 000/235 | Training Loss: 0.0377
+Epoch: 010/010 | Batch 050/235 | Training Loss: 0.0413
+Epoch: 010/010 | Batch 100/235 | Training Loss: 0.0384
+Epoch: 010/010 | Batch 150/235 | Training Loss: 0.0404
+Epoch: 010/010 | Batch 200/235 | Training Loss: 0.0388
+Total Training Time: 0.96 min</code></pre>
+</div>
+</div>
+<p>Note that in the above training loop.</p>
+<ul>
+<li><code>features</code> = input images</li>
+<li><code>decoded</code> = decoded or reconstructed images from latent space. This is because it runs the forward pass when we predict from our model (<code>decoded = model(features)</code>). And we know that during the forward pass, we will first encode the input image, then use the output (latent representation) to reconstruct the image using the decoder.</li>
+</ul>
+<p>Let’s plot these original images and decoded ones to see how much we are successful in doing that.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:5175,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083068,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e2e775a4-7b12-4b5e-f8b2-be223c38a3de" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb17-2"><a href="#cb17-2"></a><span class="op">%</span>matplotlib inline</span>
+<span id="cb17-3"><a href="#cb17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4"></a>n_images <span class="op">=</span> <span class="dv">15</span></span>
+<span id="cb17-5"><a href="#cb17-5"></a>image_width <span class="op">=</span> <span class="dv">28</span></span>
+<span id="cb17-6"><a href="#cb17-6"></a></span>
+<span id="cb17-7"><a href="#cb17-7"></a>fig, axes <span class="op">=</span> plt.subplots(nrows<span class="op">=</span><span class="dv">2</span>, ncols<span class="op">=</span>n_images, sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>, figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="fl">2.5</span>))</span>
+<span id="cb17-8"><a href="#cb17-8"></a></span>
+<span id="cb17-9"><a href="#cb17-9"></a>orig_images <span class="op">=</span> features[:n_images]</span>
+<span id="cb17-10"><a href="#cb17-10"></a>decoded_images <span class="op">=</span> decoded[:n_images]</span>
+<span id="cb17-11"><a href="#cb17-11"></a>label_images <span class="op">=</span> targets[:n_images]</span>
+<span id="cb17-12"><a href="#cb17-12"></a></span>
+<span id="cb17-13"><a href="#cb17-13"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_images):</span>
+<span id="cb17-14"><a href="#cb17-14"></a>    <span class="cf">for</span> ax, img <span class="kw">in</span> <span class="bu">zip</span>(axes, [orig_images, decoded_images]):</span>
+<span id="cb17-15"><a href="#cb17-15"></a>        curr_img <span class="op">=</span> img[i].detach().to(torch.device(<span class="st">'cpu'</span>))</span>
+<span id="cb17-16"><a href="#cb17-16"></a>        ax[i].imshow(curr_img.view((image_width, image_width)), cmap<span class="op">=</span><span class="st">'binary'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-9-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>These results are remarkable, considering we only use information from two pixels to generate a complete image of 784 pixels. So what information is stored in those two pixels (embedding)? Let’s also print embeddings for the above generated images.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:27,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083069,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="596c5345-2cf7-4067-ecbc-43f2e172fb18" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="cf">for</span> feature, target <span class="kw">in</span> <span class="bu">zip</span>(orig_images, label_images):</span>
+<span id="cb18-2"><a href="#cb18-2"></a>    feature <span class="op">=</span> feature.view(<span class="op">-</span><span class="dv">1</span>, num_features).to(device)</span>
+<span id="cb18-3"><a href="#cb18-3"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb18-4"><a href="#cb18-4"></a>        embedding <span class="op">=</span> model.encoder(feature)</span>
+<span id="cb18-5"><a href="#cb18-5"></a></span>
+<span id="cb18-6"><a href="#cb18-6"></a>    <span class="bu">print</span>(<span class="ss">f"Label: </span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">, Embedding: </span><span class="sc">{</span>embedding<span class="sc">.</span>cpu()<span class="sc">.</span>numpy()<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Label: 3, Embedding: [[-1.6004068  -0.96022624]]
+Label: 4, Embedding: [[3.5773783 1.7578685]]
+Label: 5, Embedding: [[ 9.145074 -2.872149]]
+Label: 6, Embedding: [[ 1.7183754 -2.08906  ]]
+Label: 7, Embedding: [[10.19044   9.111174]]
+Label: 8, Embedding: [[-2.115856   1.4071143]]
+Label: 9, Embedding: [[6.411824  5.6826334]]
+Label: 0, Embedding: [[  8.0015   -13.730832]]
+Label: 1, Embedding: [[-7.0476646  6.571097 ]]
+Label: 2, Embedding: [[-5.4590693  2.0496612]]
+Label: 3, Embedding: [[-1.0255219 -0.9620053]]
+Label: 4, Embedding: [[14.75902   7.228238]]
+Label: 8, Embedding: [[14.938157   -0.26024085]]
+Label: 9, Embedding: [[8.782047 6.697904]]
+Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
+</div>
+</div>
+<p>By analyzing these values, we can say that our autoencoder has learned to use slightly different ranges for embeddings each of the digits. Next, let’s try to visualize the distribution of latent space for the complete training set. For this, I have used a helper function. This function creates scatter plots of the latent space for all the digits.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:20,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083072,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="im">import</span> matplotlib.colors <span class="im">as</span> mcolors</span>
+<span id="cb20-3"><a href="#cb20-3"></a></span>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="co"># https://github.com/rasbt/stat453-deep-learning-ss21/blob/main/L17/helper_plotting.py</span></span>
+<span id="cb20-5"><a href="#cb20-5"></a><span class="kw">def</span> plot_latent_space_with_labels(num_classes, data_loader, encoding_fn, device):</span>
+<span id="cb20-6"><a href="#cb20-6"></a>    d <span class="op">=</span> {i: [] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_classes)}</span>
+<span id="cb20-7"><a href="#cb20-7"></a></span>
+<span id="cb20-8"><a href="#cb20-8"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb20-9"><a href="#cb20-9"></a>        <span class="cf">for</span> i, (features, targets) <span class="kw">in</span> <span class="bu">enumerate</span>(data_loader):</span>
+<span id="cb20-10"><a href="#cb20-10"></a></span>
+<span id="cb20-11"><a href="#cb20-11"></a>            features <span class="op">=</span> features.view(<span class="op">-</span><span class="dv">1</span>, num_features).to(device)</span>
+<span id="cb20-12"><a href="#cb20-12"></a>            targets <span class="op">=</span> targets.to(device)</span>
+<span id="cb20-13"><a href="#cb20-13"></a></span>
+<span id="cb20-14"><a href="#cb20-14"></a>            embedding <span class="op">=</span> encoding_fn(features)</span>
+<span id="cb20-15"><a href="#cb20-15"></a></span>
+<span id="cb20-16"><a href="#cb20-16"></a>            <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_classes):</span>
+<span id="cb20-17"><a href="#cb20-17"></a>                <span class="cf">if</span> i <span class="kw">in</span> targets:</span>
+<span id="cb20-18"><a href="#cb20-18"></a>                    mask <span class="op">=</span> targets <span class="op">==</span> i</span>
+<span id="cb20-19"><a href="#cb20-19"></a>                    d[i].append(embedding[mask].to(<span class="st">"cpu"</span>).numpy())</span>
+<span id="cb20-20"><a href="#cb20-20"></a></span>
+<span id="cb20-21"><a href="#cb20-21"></a>    colors <span class="op">=</span> <span class="bu">list</span>(mcolors.TABLEAU_COLORS.items())</span>
+<span id="cb20-22"><a href="#cb20-22"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb20-23"><a href="#cb20-23"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_classes):</span>
+<span id="cb20-24"><a href="#cb20-24"></a>        d[i] <span class="op">=</span> np.concatenate(d[i])</span>
+<span id="cb20-25"><a href="#cb20-25"></a></span>
+<span id="cb20-26"><a href="#cb20-26"></a>        plt.scatter(d[i][:, <span class="dv">0</span>], d[i][:, <span class="dv">1</span>], color<span class="op">=</span>colors[i][<span class="dv">1</span>], label<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb20-27"><a href="#cb20-27"></a></span>
+<span id="cb20-28"><a href="#cb20-28"></a>    plt.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s create the plot.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:6365,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089418,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="564f8a31-47d7-4141-85a3-518c9d606f44" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>plot_latent_space_with_labels(</span>
+<span id="cb21-2"><a href="#cb21-2"></a>    num_classes<span class="op">=</span><span class="bu">len</span>(train_dataset.classes),  <span class="co"># 10</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a>    data_loader<span class="op">=</span>train_loader,</span>
+<span id="cb21-4"><a href="#cb21-4"></a>    encoding_fn<span class="op">=</span>model.encoder,</span>
+<span id="cb21-5"><a href="#cb21-5"></a>    device<span class="op">=</span>device,</span>
+<span id="cb21-6"><a href="#cb21-6"></a>)</span>
+<span id="cb21-7"><a href="#cb21-7"></a></span>
+<span id="cb21-8"><a href="#cb21-8"></a>plt.legend()</span>
+<span id="cb21-9"><a href="#cb21-9"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-12-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>This plot tells us different digits are occupying different areas in the latent space. If we want to draw a sample for a number (e.g., 0), we must take the point from its range. It is a 2D plot, so If I take a sample from it, I will get two points (x, y), and then I can use that as an embedding. I can then reconstruct an image using the <code>decoder</code> of my model from this embedding.</p>
+<p>In the next cell, I have created a helper function that can take the embeddings list and decode an image from it.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:81,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089428,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">def</span> decode_images(model, embedding_list):</span>
+<span id="cb22-2"><a href="#cb22-2"></a>    fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="bu">len</span>(embedding_list), figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="fl">2.5</span>))</span>
+<span id="cb22-3"><a href="#cb22-3"></a></span>
+<span id="cb22-4"><a href="#cb22-4"></a>    <span class="cf">for</span> i, (label, embedding) <span class="kw">in</span> <span class="bu">enumerate</span>(embedding_list):</span>
+<span id="cb22-5"><a href="#cb22-5"></a>        <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb22-6"><a href="#cb22-6"></a>            new_image <span class="op">=</span> model.decoder(torch.tensor(embedding).to(device))</span>
+<span id="cb22-7"><a href="#cb22-7"></a></span>
+<span id="cb22-8"><a href="#cb22-8"></a>        new_image <span class="op">=</span> torch.sigmoid(new_image)</span>
+<span id="cb22-9"><a href="#cb22-9"></a>        new_image <span class="op">=</span> new_image.view(<span class="dv">28</span>, <span class="dv">28</span>)</span>
+<span id="cb22-10"><a href="#cb22-10"></a>        new_image <span class="op">=</span> new_image.detach().to(torch.device(<span class="st">"cpu"</span>))</span>
+<span id="cb22-11"><a href="#cb22-11"></a></span>
+<span id="cb22-12"><a href="#cb22-12"></a>        axs[i].set_title(label)</span>
+<span id="cb22-13"><a href="#cb22-13"></a>        axs[i].imshow(new_image, cmap<span class="op">=</span><span class="st">"binary"</span>)</span>
+<span id="cb22-14"><a href="#cb22-14"></a></span>
+<span id="cb22-15"><a href="#cb22-15"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, I created some embeddings using the above plot.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:78,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089433,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>embedding_list <span class="op">=</span> [</span>
+<span id="cb23-2"><a href="#cb23-2"></a>    (<span class="st">"0"</span>, [<span class="fl">5.0</span>, <span class="op">-</span><span class="fl">10.0</span>]),</span>
+<span id="cb23-3"><a href="#cb23-3"></a>    (<span class="st">"1"</span>, [<span class="op">-</span><span class="fl">4.0</span>, <span class="fl">13.0</span>]),</span>
+<span id="cb23-4"><a href="#cb23-4"></a>    (<span class="st">"2"</span>, [<span class="op">-</span><span class="fl">5.4</span>, <span class="fl">2.0</span>]),</span>
+<span id="cb23-5"><a href="#cb23-5"></a>    (<span class="st">"2 overlap with 3"</span>, [<span class="op">-</span><span class="fl">4.0</span>, <span class="fl">0.0</span>]),</span>
+<span id="cb23-6"><a href="#cb23-6"></a>    (<span class="st">"3 ouside sample space"</span>, [<span class="op">-</span><span class="fl">5.0</span>, <span class="op">-</span><span class="fl">5.0</span>]),</span>
+<span id="cb23-7"><a href="#cb23-7"></a>    (<span class="st">"7"</span>, [<span class="fl">6.0</span>, <span class="fl">11.0</span>]),</span>
+<span id="cb23-8"><a href="#cb23-8"></a>    (<span class="st">"9 overlap with 8"</span>, [<span class="fl">0.0</span>, <span class="fl">0.0</span>]),</span>
+<span id="cb23-9"><a href="#cb23-9"></a>    (<span class="st">"5"</span>, [<span class="fl">9.0</span>, <span class="op">-</span><span class="fl">3.0</span>]),</span>
+<span id="cb23-10"><a href="#cb23-10"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s use these embeddings to generate some images. Note a few points.</p>
+<ul>
+<li>There are no clear boundaries between the digits’ latent space</li>
+<li>If you select a point that is on the edge or at the boundary of the space, then you may get a more distorted image
+<ul>
+<li>Digit 2 image that has some overlap with digit 3</li>
+<li>Digit 9 image that has some overlap with 8</li>
+</ul></li>
+<li>There is no definite range of the latent space
+<ul>
+<li>Digit 3 image generated from the embedding range not visible in the plot</li>
+</ul></li>
+</ul>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:1085,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116090443,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1c6be446-d706-47df-883c-01589b6e5ae4" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>decode_images(model, embedding_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="autoencoder-with-latent-space-dimension5-10-20-50" class="level2">
+<h2 class="anchored" data-anchor-id="autoencoder-with-latent-space-dimension5-10-20-50">AutoEncoder with latent space dimension=[5, 10, 20, 50]</h2>
+<p>We have seen the quality of decoded images from 2d latent space. Our understanding is that if we increase the dimension, it will retain more information and improve the image quality.</p>
+<p>Next, I have created a function that can take a model to train it. We will iteratively create models with increasing dimensions and use this function to train them.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:95,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116090447,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">def</span> training_loop(train_loader, model, optimizer, device, num_epochs<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb25-2"><a href="#cb25-2"></a>    start_time <span class="op">=</span> time.time()</span>
+<span id="cb25-3"><a href="#cb25-3"></a>    <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
+<span id="cb25-4"><a href="#cb25-4"></a>        <span class="cf">for</span> batch_idx, (features, targets) <span class="kw">in</span> <span class="bu">enumerate</span>(train_loader):</span>
+<span id="cb25-5"><a href="#cb25-5"></a>            <span class="co"># don't need labels, only the images (features)</span></span>
+<span id="cb25-6"><a href="#cb25-6"></a>            features <span class="op">=</span> features.view(<span class="op">-</span><span class="dv">1</span>, num_features).to(device)</span>
+<span id="cb25-7"><a href="#cb25-7"></a></span>
+<span id="cb25-8"><a href="#cb25-8"></a>            <span class="co">### FORWARD AND BACK PROP</span></span>
+<span id="cb25-9"><a href="#cb25-9"></a>            decoded <span class="op">=</span> model(features)</span>
+<span id="cb25-10"><a href="#cb25-10"></a>            loss <span class="op">=</span> F.mse_loss(decoded, features)</span>
+<span id="cb25-11"><a href="#cb25-11"></a>            optimizer.zero_grad()</span>
+<span id="cb25-12"><a href="#cb25-12"></a></span>
+<span id="cb25-13"><a href="#cb25-13"></a>            loss.backward()</span>
+<span id="cb25-14"><a href="#cb25-14"></a></span>
+<span id="cb25-15"><a href="#cb25-15"></a>            <span class="co">### UPDATE MODEL PARAMETERS</span></span>
+<span id="cb25-16"><a href="#cb25-16"></a>            optimizer.step()</span>
+<span id="cb25-17"><a href="#cb25-17"></a></span>
+<span id="cb25-18"><a href="#cb25-18"></a>        <span class="co">### LOGGING</span></span>
+<span id="cb25-19"><a href="#cb25-19"></a>        <span class="bu">print</span>(<span class="st">"Epoch: </span><span class="sc">%03d</span><span class="st"> | Training Loss: </span><span class="sc">%.4f</span><span class="st">"</span> <span class="op">%</span> (epoch <span class="op">+</span> <span class="dv">1</span>, loss))</span>
+<span id="cb25-20"><a href="#cb25-20"></a></span>
+<span id="cb25-21"><a href="#cb25-21"></a>    <span class="bu">print</span>(<span class="st">"Total Training Time: </span><span class="sc">%.2f</span><span class="st"> min"</span> <span class="op">%</span> ((time.time() <span class="op">-</span> start_time) <span class="op">/</span> <span class="dv">60</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:218792,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116309149,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="7ba1149d-ceda-4145-f3e7-3a4780272810" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a>models_list <span class="op">=</span> [model]  <span class="co"># model with latent_dim=2</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>latent_dimensions <span class="op">=</span> [<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">50</span>]</span>
+<span id="cb26-3"><a href="#cb26-3"></a></span>
+<span id="cb26-4"><a href="#cb26-4"></a><span class="cf">for</span> latent_dim <span class="kw">in</span> latent_dimensions:</span>
+<span id="cb26-5"><a href="#cb26-5"></a>    model_n <span class="op">=</span> AutoEncoder(num_features, latent_dim)</span>
+<span id="cb26-6"><a href="#cb26-6"></a>    model_n <span class="op">=</span> model_n.to(device)</span>
+<span id="cb26-7"><a href="#cb26-7"></a>    optimizer_n <span class="op">=</span> torch.optim.Adam(model_n.parameters(), lr<span class="op">=</span>learning_rate)</span>
+<span id="cb26-8"><a href="#cb26-8"></a>    models_list.append(model_n)</span>
+<span id="cb26-9"><a href="#cb26-9"></a></span>
+<span id="cb26-10"><a href="#cb26-10"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">*** Training AutoEncoder with latent_dim=</span><span class="sc">{</span>latent_dim<span class="sc">}</span><span class="ss"> ***</span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb26-11"><a href="#cb26-11"></a>    training_loop(train_loader, model_n, optimizer_n, device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+*** Training AutoEncoder with latent_dim=5 ***
+
+Epoch: 001 | Training Loss: 0.0396
+Epoch: 002 | Training Loss: 0.0315
+Epoch: 003 | Training Loss: 0.0292
+Epoch: 004 | Training Loss: 0.0278
+Epoch: 005 | Training Loss: 0.0270
+Epoch: 006 | Training Loss: 0.0262
+Epoch: 007 | Training Loss: 0.0256
+Epoch: 008 | Training Loss: 0.0251
+Epoch: 009 | Training Loss: 0.0248
+Epoch: 010 | Training Loss: 0.0247
+Total Training Time: 0.92 min
+
+*** Training AutoEncoder with latent_dim=10 ***
+
+Epoch: 001 | Training Loss: 0.0372
+Epoch: 002 | Training Loss: 0.0279
+Epoch: 003 | Training Loss: 0.0235
+Epoch: 004 | Training Loss: 0.0209
+Epoch: 005 | Training Loss: 0.0194
+Epoch: 006 | Training Loss: 0.0186
+Epoch: 007 | Training Loss: 0.0180
+Epoch: 008 | Training Loss: 0.0176
+Epoch: 009 | Training Loss: 0.0175
+Epoch: 010 | Training Loss: 0.0170
+Total Training Time: 0.90 min
+
+*** Training AutoEncoder with latent_dim=20 ***
+
+Epoch: 001 | Training Loss: 0.0392
+Epoch: 002 | Training Loss: 0.0290
+Epoch: 003 | Training Loss: 0.0244
+Epoch: 004 | Training Loss: 0.0212
+Epoch: 005 | Training Loss: 0.0193
+Epoch: 006 | Training Loss: 0.0181
+Epoch: 007 | Training Loss: 0.0168
+Epoch: 008 | Training Loss: 0.0158
+Epoch: 009 | Training Loss: 0.0150
+Epoch: 010 | Training Loss: 0.0144
+Total Training Time: 0.92 min
+
+*** Training AutoEncoder with latent_dim=50 ***
+
+Epoch: 001 | Training Loss: 0.0383
+Epoch: 002 | Training Loss: 0.0273
+Epoch: 003 | Training Loss: 0.0225
+Epoch: 004 | Training Loss: 0.0197
+Epoch: 005 | Training Loss: 0.0172
+Epoch: 006 | Training Loss: 0.0159
+Epoch: 007 | Training Loss: 0.0145
+Epoch: 008 | Training Loss: 0.0137
+Epoch: 009 | Training Loss: 0.0130
+Epoch: 010 | Training Loss: 0.0120
+Total Training Time: 0.91 min</code></pre>
+</div>
+</div>
+<p>Verify the latent space dimension of our models.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:47,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116309150,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="96d970ae-b23c-4293-eabc-db657e5371d8" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="cf">for</span> model_n <span class="kw">in</span> models_list:</span>
+<span id="cb28-2"><a href="#cb28-2"></a>    <span class="bu">print</span>(model_n.latent_dim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>2
+5
+10
+20
+50</code></pre>
+</div>
+</div>
+<p>Next, we will compare the results from these models. This time I have used the test dataset that our model has not seen. From the results, you may note that the results from the models with latent_dim 2 and 5 are blurry and make mistakes while decoding the input image. In comparison, the results from the rest are more accurate and of better quality.</p>
+<p>It also tells us that we can significantly compress the images without losing much information. For example, our <code>model_50</code> (model with latent_dim=50) can generate an original image with 16x less information. But this performance also depends on the type of images used. For example, we have black-and-white digit images with large white spaces, so we were able to compress them significantly. On the other hand, we may get different performances with images having more patterns.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:14701,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116323829,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="c77d6ff8-bbaa-4b7e-e812-65300e7ebde7" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>img_sample_count <span class="op">=</span> <span class="dv">25</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a></span>
+<span id="cb30-3"><a href="#cb30-3"></a><span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(img_sample_count):</span>
+<span id="cb30-4"><a href="#cb30-4"></a>    <span class="co"># get an image from test_dataset</span></span>
+<span id="cb30-5"><a href="#cb30-5"></a>    input_img, _ <span class="op">=</span> test_dataset[idx]</span>
+<span id="cb30-6"><a href="#cb30-6"></a>    <span class="co"># flatten the image</span></span>
+<span id="cb30-7"><a href="#cb30-7"></a>    input_img <span class="op">=</span> input_img.view(<span class="op">-</span><span class="dv">1</span>, num_features).to(device)</span>
+<span id="cb30-8"><a href="#cb30-8"></a></span>
+<span id="cb30-9"><a href="#cb30-9"></a>    fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="bu">len</span>(models_list) <span class="op">+</span> <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb30-10"><a href="#cb30-10"></a></span>
+<span id="cb30-11"><a href="#cb30-11"></a>    <span class="co"># iterate over all the models list</span></span>
+<span id="cb30-12"><a href="#cb30-12"></a>    <span class="cf">for</span> i, model_n <span class="kw">in</span> <span class="bu">enumerate</span>(models_list):</span>
+<span id="cb30-13"><a href="#cb30-13"></a>        <span class="co"># put the model in eval mode to stop accumulating gradients</span></span>
+<span id="cb30-14"><a href="#cb30-14"></a>        model_n.<span class="bu">eval</span>()</span>
+<span id="cb30-15"><a href="#cb30-15"></a>        <span class="co"># make a prediction</span></span>
+<span id="cb30-16"><a href="#cb30-16"></a>        decoded_img <span class="op">=</span> model_n(input_img)</span>
+<span id="cb30-17"><a href="#cb30-17"></a>        <span class="co"># squach the prediction between [0,1]</span></span>
+<span id="cb30-18"><a href="#cb30-18"></a>        decoded_img <span class="op">=</span> torch.sigmoid(decoded_img)</span>
+<span id="cb30-19"><a href="#cb30-19"></a>        <span class="co"># detach the prediction and convert back to 28,28 shape</span></span>
+<span id="cb30-20"><a href="#cb30-20"></a>        decoded_img <span class="op">=</span> decoded_img.detach().to(torch.device(<span class="st">"cpu"</span>))</span>
+<span id="cb30-21"><a href="#cb30-21"></a>        decoded_img <span class="op">=</span> decoded_img.view(<span class="dv">28</span>, <span class="dv">28</span>)</span>
+<span id="cb30-22"><a href="#cb30-22"></a></span>
+<span id="cb30-23"><a href="#cb30-23"></a>        ax[i <span class="op">+</span> <span class="dv">1</span>].set_title(<span class="ss">f"prediction</span><span class="ch">\n</span><span class="ss">latent-dim:</span><span class="sc">{</span>model_n<span class="sc">.</span>latent_dim<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb30-24"><a href="#cb30-24"></a>        ax[i <span class="op">+</span> <span class="dv">1</span>].imshow(decoded_img, cmap<span class="op">=</span><span class="st">"binary"</span>)</span>
+<span id="cb30-25"><a href="#cb30-25"></a></span>
+<span id="cb30-26"><a href="#cb30-26"></a>    <span class="co"># plot the input image</span></span>
+<span id="cb30-27"><a href="#cb30-27"></a>    ax[<span class="dv">0</span>].set_title(<span class="ss">f"input: </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb30-28"><a href="#cb30-28"></a>    input_img <span class="op">=</span> input_img.detach().to(torch.device(<span class="st">"cpu"</span>))</span>
+<span id="cb30-29"><a href="#cb30-29"></a>    input_img <span class="op">=</span> input_img.view(<span class="dv">28</span>, <span class="dv">28</span>)</span>
+<span id="cb30-30"><a href="#cb30-30"></a>    ax[<span class="dv">0</span>].imshow(input_img, cmap<span class="op">=</span><span class="st">"binary"</span>)</span>
+<span id="cb30-31"><a href="#cb30-31"></a></span>
+<span id="cb30-32"><a href="#cb30-32"></a>    plt.tight_layout()</span>
+<span id="cb30-33"><a href="#cb30-33"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-5.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-6.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-7.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-8.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-9.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-10.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-11.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-12.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-13.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-14.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-15.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-16.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-17.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-18.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-19.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-20.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-21.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-22.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-23.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-24.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-25.png" class="img-fluid"></p>
+</div>
+</div>
+<p>From model_50, we are getting considerably good results compared to model_2 and model_5. The last time we visualized the embeddings for model_2, we also found that the latent space of digits was overlapping. Since the output quality of model_50 has improved, the overlap in the latent space should be less. Let’s confirm this assumption.</p>
+<p>For this, we will first gather the embeddings of the test images. Remember that the output from the <code>model.encoder</code> is the embedding of an image (or compressed representation).</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:48,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116323830,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b94f4eaf-a8a4-4953-8ccf-d27022f3443e" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>latent_vectors <span class="op">=</span> []</span>
+<span id="cb31-2"><a href="#cb31-2"></a>classes <span class="op">=</span> []</span>
+<span id="cb31-3"><a href="#cb31-3"></a>model_50 <span class="op">=</span> models_list[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb31-4"><a href="#cb31-4"></a></span>
+<span id="cb31-5"><a href="#cb31-5"></a><span class="bu">print</span>(<span class="st">"model_50 latent_dim: "</span>, model_50.latent_dim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>model_50 latent_dim:  50</code></pre>
+</div>
+</div>
+<p>In the next cell, I am collecting the embeddings. Note that each fetch from the DataLoader iterator returns a batch of images (batch_size=256).</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:727,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324514,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="cf">for</span> images_batch,labels_batch <span class="kw">in</span> test_loader:</span>
+<span id="cb33-2"><a href="#cb33-2"></a>    <span class="co"># images_batch.shape = torch.Size([256, 1, 28, 28]</span></span>
+<span id="cb33-3"><a href="#cb33-3"></a>    <span class="co"># labels_batch.shape = torch.Size([256])</span></span>
+<span id="cb33-4"><a href="#cb33-4"></a>    <span class="co"># images_batch.view(-1, num_features).shape = torch.Size([256, 784])</span></span>
+<span id="cb33-5"><a href="#cb33-5"></a>    <span class="co"># encoded_batch.shape =torch.Size([256, 50])</span></span>
+<span id="cb33-6"><a href="#cb33-6"></a></span>
+<span id="cb33-7"><a href="#cb33-7"></a>    images_batch <span class="op">=</span> images_batch.view(<span class="op">-</span><span class="dv">1</span>, num_features).to(device)</span>
+<span id="cb33-8"><a href="#cb33-8"></a>    encoded_batch <span class="op">=</span> model_50.encoder(images_batch)</span>
+<span id="cb33-9"><a href="#cb33-9"></a></span>
+<span id="cb33-10"><a href="#cb33-10"></a>    latent_vectors.append(encoded_batch)</span>
+<span id="cb33-11"><a href="#cb33-11"></a>    classes.extend(labels_batch)    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s confirm the dimensions.</p>
+<ul>
+<li><code>len(latent_vectors) = 40</code>. It means we have 40 latent vectors. Each vector holds the embeddings for a batch of images</li>
+<li><code>latent_vectors[0].shape = torch.Size([256, 50]</code>. It means that each latent vector holds embeddings of size 50 for a batch of 256 images</li>
+<li><code>torch.cat(latent_vectors).shape = torch.Size([10000, 50])</code>. It means that if we concatenate the embeddings of all the images, we will have a tensor of 10,000 rows with 50 dimensions (or features/columns)</li>
+</ul>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:47,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324517,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="a421db15-39a1-4608-f6d9-580e728049ed" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="bu">len</span>(latent_vectors), latent_vectors[<span class="dv">0</span>].shape, torch.cat(latent_vectors).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<pre><code>(40, torch.Size([256, 50]), torch.Size([10000, 50]))</code></pre>
+</div>
+</div>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324520,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="73a801ca-e9f6-4d3a-883e-baba57f77f64" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co"># concatenate all test images embeddings</span></span>
+<span id="cb36-2"><a href="#cb36-2"></a>latent_vectors_cat <span class="op">=</span> torch.cat(latent_vectors).cpu().detach().numpy()</span>
+<span id="cb36-3"><a href="#cb36-3"></a>latent_vectors_cat.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="22">
+<pre><code>(10000, 50)</code></pre>
+</div>
+</div>
+<p>Now that we have all the embeddings, we can visualize them too. But how can we visualize embeddings with 50 features? We can use <a href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">sklearn.manifold.TSNE.html</a>.</p>
+<p><code>chatGPT prompt &gt; explain T-distributed Stochastic Neighbor Embedding</code></p>
+<p>T-distributed Stochastic Neighbor Embedding (t-SNE) is a machine learning algorithm that is used to reduce the dimensionality of high-dimensional data and visualize it in a lower-dimensional space. It works by measuring the similarity between the data points and representing them as points in a lower-dimensional space, such that similar data points are grouped together, and dissimilar ones are separated. This allows for better visualization and understanding of the structure of the data.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:89663,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414159,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6bad205c-bc7a-498c-b602-d408af780fad" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="im">from</span> sklearn.manifold <span class="im">import</span> TSNE</span>
+<span id="cb38-2"><a href="#cb38-2"></a></span>
+<span id="cb38-3"><a href="#cb38-3"></a>tsne <span class="op">=</span> TSNE(<span class="dv">2</span>)</span>
+<span id="cb38-4"><a href="#cb38-4"></a>clustered <span class="op">=</span> tsne.fit_transform(latent_vectors_cat)</span>
+<span id="cb38-5"><a href="#cb38-5"></a></span>
+<span id="cb38-6"><a href="#cb38-6"></a>fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">10</span>))</span>
+<span id="cb38-7"><a href="#cb38-7"></a>cmap <span class="op">=</span> plt.get_cmap(<span class="st">"Spectral"</span>, <span class="dv">10</span>)</span>
+<span id="cb38-8"><a href="#cb38-8"></a>plt.scatter(<span class="op">*</span><span class="bu">zip</span>(<span class="op">*</span>clustered), c<span class="op">=</span>classes, cmap<span class="op">=</span>cmap)</span>
+<span id="cb38-9"><a href="#cb38-9"></a>plt.colorbar(drawedges<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/usr/local/lib/python3.8/dist-packages/sklearn/manifold/_t_sne.py:780: FutureWarning: The default initialization in TSNE will change from 'random' to 'pca' in 1.2.
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/sklearn/manifold/_t_sne.py:790: FutureWarning: The default learning rate in TSNE will change from 200.0 to 'auto' in 1.2.
+  warnings.warn(</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<pre><code>&lt;matplotlib.colorbar.Colorbar at 0x7f686a71de50&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-24-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>What does this plot tell us?</p>
+<ul>
+<li>It shows that using a latent space of higher dimension, there is less overlap in digits’ latent space</li>
+<li>It also tells us that these digits’ distribution of latent space is discreet and has no boundary. Meaning that the range of values of these embeddings is not continuous
+<ul>
+<li>embedding values for 0 share a range between 0 to 20</li>
+<li>embedding values for 1 share a range between -40 to -60</li>
+<li>there can be areas in between that choosing a sample from it may result in a distorted image that is neither 1 or 0</li>
+</ul></li>
+</ul>
+<p>We can prove this by adding some noise to these embeddings and trying to regenerate images from them.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:152,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414160,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6e079dbf-c905-4247-bd75-55c3347550c1" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="co"># step 1: transpose to get 50 embeddings with 10000 features</span></span>
+<span id="cb41-2"><a href="#cb41-2"></a><span class="co"># len(latent_vectors_transpose) = 50</span></span>
+<span id="cb41-3"><a href="#cb41-3"></a></span>
+<span id="cb41-4"><a href="#cb41-4"></a>latent_vectors_transpose <span class="op">=</span> latent_vectors_cat.transpose(<span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb41-5"><a href="#cb41-5"></a>latent_vectors_cat.shape, latent_vectors_transpose.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="24">
+<pre><code>((10000, 50), (50, 10000))</code></pre>
+</div>
+</div>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:142,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414168,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="co"># step 2: add some noise.</span></span>
+<span id="cb43-2"><a href="#cb43-2"></a><span class="co"># take each row, calucate mean and std</span></span>
+<span id="cb43-3"><a href="#cb43-3"></a><span class="co"># use mean and std to generate 100 new features. each time add some noise to std</span></span>
+<span id="cb43-4"><a href="#cb43-4"></a></span>
+<span id="cb43-5"><a href="#cb43-5"></a>rand_vectors <span class="op">=</span> []  <span class="co"># randomized latent vectors</span></span>
+<span id="cb43-6"><a href="#cb43-6"></a><span class="cf">for</span> col <span class="kw">in</span> latent_vectors_transpose:</span>
+<span id="cb43-7"><a href="#cb43-7"></a>    mu, sigma <span class="op">=</span> col.mean(), col.std()</span>
+<span id="cb43-8"><a href="#cb43-8"></a>    rand_vectors.append(sigma <span class="op">*</span> torch.randn(<span class="dv">1</span>, <span class="dv">100</span>) <span class="op">+</span> mu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:141,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414172,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="f731bc59-ec5b-46d4-d46d-afd4c6efd834" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="co"># step 3: verify dimensions</span></span>
+<span id="cb44-2"><a href="#cb44-2"></a></span>
+<span id="cb44-3"><a href="#cb44-3"></a><span class="bu">len</span>(rand_vectors), rand_vectors[<span class="dv">0</span>].shape, torch.cat(rand_vectors).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="26">
+<pre><code>(50, torch.Size([1, 100]), torch.Size([50, 100]))</code></pre>
+</div>
+</div>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:135,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414175,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fa0a0d26-a16d-479f-db08-ecbbc702ec00" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="co"># step 4: concat 100 features</span></span>
+<span id="cb46-2"><a href="#cb46-2"></a></span>
+<span id="cb46-3"><a href="#cb46-3"></a>rand_vectors_cat <span class="op">=</span> torch.cat(rand_vectors)</span>
+<span id="cb46-4"><a href="#cb46-4"></a>rand_vectors_cat.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<pre><code>torch.Size([50, 100])</code></pre>
+</div>
+</div>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:125,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414177,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fc523b15-ba04-44c9-fc00-f008646686ae" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co"># step 5: transpose back to have 100 embeddings of dimension 50</span></span>
+<span id="cb48-2"><a href="#cb48-2"></a></span>
+<span id="cb48-3"><a href="#cb48-3"></a>rand_vectors_transpose <span class="op">=</span> rand_vectors_cat.transpose(<span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb48-4"><a href="#cb48-4"></a>rand_vectors_cat.shape, rand_vectors_transpose.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<pre><code>(torch.Size([50, 100]), torch.Size([100, 50]))</code></pre>
+</div>
+</div>
+<p>We have generated 100 new (random) embeddings by adding some noise to the original embeddings. We have done it in a way so that these embeddings do not represent any digit. They are like a mix of embeddings of all the numbers. So when we try to use them, they will generate distorted images. Similar to decoded images generated by taking a sample from an overlapping latent space.</p>
+<div class="cell" data-executioninfo="{&quot;elapsed&quot;:8718,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116422785,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="17074aee-d9df-4689-fff0-f04a6be40bb9" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>rand_vectors_transpose <span class="op">=</span> rand_vectors_transpose.to(device)</span>
+<span id="cb50-2"><a href="#cb50-2"></a></span>
+<span id="cb50-3"><a href="#cb50-3"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">10</span>, <span class="dv">10</span>, figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">20</span>))</span>
+<span id="cb50-4"><a href="#cb50-4"></a>ax <span class="op">=</span> <span class="bu">iter</span>(ax.flat)</span>
+<span id="cb50-5"><a href="#cb50-5"></a><span class="cf">for</span> idx, rand_latent_vector <span class="kw">in</span> <span class="bu">enumerate</span>(rand_vectors_transpose):</span>
+<span id="cb50-6"><a href="#cb50-6"></a>    decoded_img <span class="op">=</span> model_50.decoder(rand_latent_vector)</span>
+<span id="cb50-7"><a href="#cb50-7"></a>    decoded_img <span class="op">=</span> torch.sigmoid(decoded_img)</span>
+<span id="cb50-8"><a href="#cb50-8"></a>    decoded_img <span class="op">=</span> decoded_img.view(<span class="dv">28</span>, <span class="dv">28</span>)</span>
+<span id="cb50-9"><a href="#cb50-9"></a>    decoded_img <span class="op">=</span> decoded_img.detach().to(torch.device(<span class="st">"cpu"</span>))</span>
+<span id="cb50-10"><a href="#cb50-10"></a>    ax[idx].imshow(decoded_img, cmap<span class="op">=</span><span class="st">"binary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-30-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>What does this plot tell us? It shows that the latent space of the (vanilla) autoencoder is restricted to specific ranges and has discrete values. Therefore, we cannot use any value from latent space to generate an image. It can be a problem since it is difficult to know an autoencoder’s range of latent space beforehand, making them less useful for image generation.</p>
+<p>An improvement on this is <code>variational autoencoders (VAE)</code>, where the latent space is continuous and follows normal distribution making them more useful for image generation.</p>
+<p><code>chatGPT prompt &gt; compare the latent space of VAE with traditional autoencoder</code></p>
+<p>The latent space of a VAE is continuous, whereas the latent space of a traditional autoencoder is typically discrete. This means that in a VAE, the latent representation of the data can take on any value in a continuous range, whereas in a traditional autoencoder, the latent representation is restricted to a set of discrete values.</p>
+<p>This has several implications:</p>
+<ol type="1">
+<li>A continuous latent space allows a VAE to capture more fine-grained variations in the data, which can be useful for tasks such as image generation.</li>
+<li>It allows the VAE to produce more diverse outputs, which can be beneficial for tasks such as anomaly detection.</li>
+<li>It makes the VAE more flexible and easier to train, since it can capture complex distributions in the data.</li>
+</ol>
+<p>Overall, the continuous latent space of a VAE is one of its key advantages over traditional autoencoders.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="application/vnd.jupyter.widget-state+json">
+{"0879f22e34814eb0be7367b475bbbcf4":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"10f39ab08a4b4ddebee58de950652522":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"17e6fea9056c4d0c869ca020adb51385":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_44e7f603b1d442be9f330a2a2556fdb2","max":28881,"min":0,"orientation":"horizontal","style":"IPY_MODEL_aa22dcd5799b4c029b43f7fa6aa0bd6d","value":28881}},"1fa8e27e8b424049a9daa123115a2509":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_ba26b496ded94fa1bd27c0375d446f20","placeholder":"​","style":"IPY_MODEL_78693f442e0b44539eec7848daf1e881","value":" 9912422/9912422 [00:00&lt;00:00, 54855552.22it/s]"}},"255b6b1014364ed68adcfa4b5900e005":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"2b332f63d23343c5bbdd572f0334b0cf":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_8b78b87e7c224cf8834e8b60502cc581","max":9912422,"min":0,"orientation":"horizontal","style":"IPY_MODEL_10f39ab08a4b4ddebee58de950652522","value":9912422}},"2c655e9a08864307b359721cfe083fde":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"2db00f6d6b1e429f89b5da7fd1b0645e":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_f3996f2fe0104e10942e2b6d076a2e89","placeholder":"​","style":"IPY_MODEL_8a3dd83c7256479ca040d76c530b75e0","value":"100%"}},"311c9454ed784f2fa346ed73d8c91339":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"331a16abfead4d38acb849e955001823":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"3590778a271942febb8f0f50646a3b68":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_2db00f6d6b1e429f89b5da7fd1b0645e","IPY_MODEL_17e6fea9056c4d0c869ca020adb51385","IPY_MODEL_8da45ae404be44aeba54e53ca9a9754b"],"layout":"IPY_MODEL_733f545f1f254b3ca9465a42288a1564"}},"3d26edaf37b94d9fbd5685fe7c354a52":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"44e7f603b1d442be9f330a2a2556fdb2":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"4b7e3340261b4858a53ead0a3e742ba1":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_aaf342c2442c48d5856232a4cb65df02","placeholder":"​","style":"IPY_MODEL_8411eaf867a24be1b4c619c5952c5293","value":" 4542/4542 [00:00&lt;00:00, 164762.75it/s]"}},"5480e3830b604b0e9a87aa774f01f172":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"567dc89a6d0c49f1aaad72b48d53609a":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"597bbe32b951412da40eec041140a2e7":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"6351025cc4f44815ad90b21943bd1a8e":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"733f545f1f254b3ca9465a42288a1564":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"764db68947984d99968601e58e9977ef":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"78693f442e0b44539eec7848daf1e881":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"835eb82179254d678688e178d696b3d3":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_3d26edaf37b94d9fbd5685fe7c354a52","placeholder":"​","style":"IPY_MODEL_255b6b1014364ed68adcfa4b5900e005","value":"100%"}},"8411eaf867a24be1b4c619c5952c5293":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"8a3dd83c7256479ca040d76c530b75e0":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"8ad10cd9cba54f0b9ecfe4dbf25d19a9":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_d5153124f74049fca7b4ab6f58bc5e59","IPY_MODEL_2b332f63d23343c5bbdd572f0334b0cf","IPY_MODEL_1fa8e27e8b424049a9daa123115a2509"],"layout":"IPY_MODEL_8c50b7d3c7bd41a99cea765e25642a69"}},"8b78b87e7c224cf8834e8b60502cc581":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"8c50b7d3c7bd41a99cea765e25642a69":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"8da45ae404be44aeba54e53ca9a9754b":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_567dc89a6d0c49f1aaad72b48d53609a","placeholder":"​","style":"IPY_MODEL_f63e73a5ed3d41998e16bdfbadb84ce9","value":" 28881/28881 [00:00&lt;00:00, 1178248.16it/s]"}},"91503c1281234c1998e2dff2694e6212":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_af657737d41e402583f5ec7fd1a52ad3","placeholder":"​","style":"IPY_MODEL_311c9454ed784f2fa346ed73d8c91339","value":" 1648877/1648877 [00:00&lt;00:00, 48968649.92it/s]"}},"98fc62e2d071497891255192b7225794":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"aa22dcd5799b4c029b43f7fa6aa0bd6d":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"aaf342c2442c48d5856232a4cb65df02":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"af657737d41e402583f5ec7fd1a52ad3":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"b70cefcef47c4b7b81ed250fe7060e24":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_f2e1458a52944b3885b2f02eb623ba6d","IPY_MODEL_efb773337d524adab0844262b00d9ab1","IPY_MODEL_91503c1281234c1998e2dff2694e6212"],"layout":"IPY_MODEL_e0e97393733c49768f3d46767a0bba5f"}},"ba26b496ded94fa1bd27c0375d446f20":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"d5153124f74049fca7b4ab6f58bc5e59":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_0879f22e34814eb0be7367b475bbbcf4","placeholder":"​","style":"IPY_MODEL_6351025cc4f44815ad90b21943bd1a8e","value":"100%"}},"e0e97393733c49768f3d46767a0bba5f":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"ea212f1cc8db4da0a18d36f896a988c1":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_835eb82179254d678688e178d696b3d3","IPY_MODEL_f6e091686c184e869371ba88804e95d5","IPY_MODEL_4b7e3340261b4858a53ead0a3e742ba1"],"layout":"IPY_MODEL_98fc62e2d071497891255192b7225794"}},"efb773337d524adab0844262b00d9ab1":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_597bbe32b951412da40eec041140a2e7","max":1648877,"min":0,"orientation":"horizontal","style":"IPY_MODEL_f0b6c39e704e476aa970764ba3498a55","value":1648877}},"f0b6c39e704e476aa970764ba3498a55":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"f2e1458a52944b3885b2f02eb623ba6d":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_764db68947984d99968601e58e9977ef","placeholder":"​","style":"IPY_MODEL_2c655e9a08864307b359721cfe083fde","value":"100%"}},"f3996f2fe0104e10942e2b6d076a2e89":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"f63e73a5ed3d41998e16bdfbadb84ce9":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"f6e091686c184e869371ba88804e95d5":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_331a16abfead4d38acb849e955001823","max":4542,"min":0,"orientation":"horizontal","style":"IPY_MODEL_5480e3830b604b0e9a87aa774f01f172","value":4542}}}
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
