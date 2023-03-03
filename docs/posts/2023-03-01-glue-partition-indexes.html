@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-03-01">
+<meta name="description" content="Glue table partition indexes can significantly improve query execution. This post signifies the importance of partition indexes and shows a query performance comparison between tables with partition indexes and without indexes.">
+
+<title>Random Thoughts - Working with partition indexes in AWS Glue</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Working with partition indexes in AWS Glue">
+<meta property="og:description" content="Glue table partition indexes can significantly improve query execution.">
+<meta property="og:image" content="images/2023-03-01-glue-partition-indexes.png">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Working with partition indexes in AWS Glue">
+<meta name="twitter:description" content="Glue table partition indexes can significantly improve query execution.">
+<meta name="twitter:image" content="images/2023-03-01-glue-partition-indexes.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#credits" id="toc-credits" class="nav-link active" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#step-1-create-aws-access-keys-for-an-iam-user" id="toc-step-1-create-aws-access-keys-for-an-iam-user" class="nav-link" data-scroll-target="#step-1-create-aws-access-keys-for-an-iam-user">Step 1: Create AWS access keys for an IAM user</a></li>
+  <li><a href="#step-2-create-aws-cloud9-environment-and-configure-aws-cli-credentials" id="toc-step-2-create-aws-cloud9-environment-and-configure-aws-cli-credentials" class="nav-link" data-scroll-target="#step-2-create-aws-cloud9-environment-and-configure-aws-cli-credentials">Step 2: Create AWS Cloud9 environment and configure AWS CLI credentials</a></li>
+  <li><a href="#step-3-create-s3-bucket-and-clone-sample-data" id="toc-step-3-create-s3-bucket-and-clone-sample-data" class="nav-link" data-scroll-target="#step-3-create-s3-bucket-and-clone-sample-data">Step 3: Create S3 bucket and clone sample data</a></li>
+  <li><a href="#step-4-create-iam-policies-and-roles-for-glue-crawlers" id="toc-step-4-create-iam-policies-and-roles-for-glue-crawlers" class="nav-link" data-scroll-target="#step-4-create-iam-policies-and-roles-for-glue-crawlers">Step 4: Create IAM policies and roles for Glue crawlers</a></li>
+  <li><a href="#step-5-define-glue-database-and-crawlers" id="toc-step-5-define-glue-database-and-crawlers" class="nav-link" data-scroll-target="#step-5-define-glue-database-and-crawlers">Step 5: Define Glue database and crawlers</a></li>
+  <li><a href="#step-6-create-a-partition-index-on-the-table" id="toc-step-6-create-a-partition-index-on-the-table" class="nav-link" data-scroll-target="#step-6-create-a-partition-index-on-the-table">Step 6: Create a partition index on the table</a></li>
+  <li><a href="#step-7-query-performance-with-partition-index" id="toc-step-7-query-performance-with-partition-index" class="nav-link" data-scroll-target="#step-7-query-performance-with-partition-index">Step 7: Query performance with partition index</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Working with partition indexes in AWS Glue</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Glue table partition indexes can significantly improve query execution. This post signifies the importance of partition indexes and shows a query performance comparison between tables with partition indexes and without indexes.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 1, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2023-03-01-glue-partition-indexes.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">image source: krea.ai/prompt/c4ddd913-2d07-4b5e-a034-9110654019b8</figcaption><p></p>
+</figure>
+</div>
+<section id="credits" class="level2">
+<h2 class="anchored" data-anchor-id="credits">Credits</h2>
+<p>This post is adapted from <a href="https://catalog.us-east-1.prod.workshops.aws/workshops/ee59d21b-4cb8-4b3d-a629-24537cf37bb5/en-US">AWS Glue Immersions Day Workshop</a>. For a complete list of all the hands-on labs covered during the workshop, visit the official workshop page. In addition, I have shared here helpful links related to the topic.</p>
+<ul>
+<li><a href="https://catalog.us-east-1.prod.workshops.aws/workshops/ee59d21b-4cb8-4b3d-a629-24537cf37bb5/en-US">AWS Glue Immersions Day Workshop</a></li>
+<li>AWS blog post on the same topic. <a href="https://aws.amazon.com/blogs/big-data/improve-query-performance-using-aws-glue-partition-indexes/">Improve query performance using AWS Glue partition indexes</a></li>
+<li>Another AWS post focused on Athena query performance. <a href="https://aws.amazon.com/blogs/big-data/improve-amazon-athena-query-performance-using-aws-glue-data-catalog-partition-indexes/">Improve Amazon Athena query performance using AWS Glue Data Catalog partition indexes</a></li>
+<li>Athena documentation page on creating partitions and indexes on tables. <a href="https://docs.aws.amazon.com/athena/latest/ug/partitions.html">Partitioning data in Athena</a></li>
+<li>Glue documentation page on partition indexes. <a href="https://docs.aws.amazon.com/glue/latest/dg/partition-indexes.html">Working with partition indexes in AWS Glue</a></li>
+</ul>
+
+<!-- ## Introduction
+For big data needs, we create [Data Lakes](https://aws.amazon.com/solutions/implementations/data-lake-solution/), and to make objects in our data lakes organized and searchable for queries, we have to rely on [Data Catalogues](https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html). These catalogs act as extensive inventories for all the data assets stored in the data lake. Furthermore, as the size of our data keeps increasing, we rely on [partitioning techniques](https://docs.aws.amazon.com/athena/latest/ug/partitions.html) to optimize the data layout and query performance. These table partition details are stored in the catalog. When an analytical engine queries a table, a request is sent to the catalog to fetch a list of all available partitions. The query engine then uses this information to filter the relevant partitions and use them to get the data from the data lake in subsequent steps. In the case of the **Glue Data Catalog**, this API request is called [GetPartitions API](https://docs.aws.amazon.com/glue/latest/webapi/API_GetPartitions.html). 
+
+Over time, many partitions get added to large tables, and their count can be in thousands or millions. These highly partitioned tables with time can result in slow query performance. It is because the **GetPartitions API** request returns all the partitions on the table to the analytical query engine each time. The engine then filters the relevant partitions based on the query expression. As a result, the query takes more time to run as the engine requires more time to process the complete list of partitions. Here we can take the help of [AWS Glue partition indexes](https://docs.aws.amazon.com/glue/latest/dg/partition-indexes.html) to reduce the overall data transfers and increase the API concurrency due to fewer GetPartitions calls. When partition indexes are applied to the table, GetPartitions API filters the partitions and only returns a subset. The query engine does not have to do extra work; the combined effect is better performance. -->
+<p>In this post, I have explained how to create partitions and indexes on data lake tables. Then we will test the effect of partition indexes on query performance from the Glue ETL job using Apache Spark SQL.</p>
+<p><strong>Below is a summary of the steps followed in this post.</strong></p>
+<ul>
+<li>Create AWS access keys for an IAM user. We will use these keys to access AWS resources from the AWS Cloud9 environment</li>
+<li>Create AWS Cloud9 environment. We will use this environment to perform all the steps mentioned in this post</li>
+<li>Create an S3 bucket and clone some sample data</li>
+<li>Define required policies and roles for Glue crawlers</li>
+<li>Define the Glue database and crawlers, and then prepare the data catalog by running crawlers on an S3 bucket</li>
+<li>Create <strong>partition indexes</strong> on tables. This step is where we apply partition indexes to the data catalog tables. All the steps before this are pre-requisites to creating a proper environment where we can test the working and performance of partition indexes</li>
+<li>Compare query performance on tables with partition indexes and without it</li>
+</ul>
+</section>
+<section id="step-1-create-aws-access-keys-for-an-iam-user" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-create-aws-access-keys-for-an-iam-user">Step 1: Create AWS access keys for an IAM user</h2>
+<p>The first step is to create an <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html">AWS access key</a>, and we will use it in the Cloud9 environment (created in the next step) to access other AWS resources. If you already have a working key, you may use it; otherwise, you can create it by following the step provided in the AWS docs <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey">Managing access keys (console)</a></p>
+</section>
+<section id="step-2-create-aws-cloud9-environment-and-configure-aws-cli-credentials" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-create-aws-cloud9-environment-and-configure-aws-cli-credentials">Step 2: Create AWS Cloud9 environment and configure AWS CLI credentials</h2>
+<p>In this step, we will create <a href="https://aws.amazon.com/cloud9/">AWS Cloud9</a> environment. <strong>Cloud9</strong> is a cloud-based integrated development environment (IDE) that lets you write, run, and debug your code with just a browser.</p>
+<p><em>Note: I will be working in us-east-1 (US East - N. Virginia), but you may follow these steps in your region of choice.</em></p>
+<ul>
+<li>Go to <strong>cloud9 console</strong> <a href="https://console.aws.amazon.com/cloud9/">https://console.aws.amazon.com/cloud9/</a>, select your region, and click <code>create environment</code></li>
+<li>From the <strong>Create Environment</strong> settings page
+<ul>
+<li>Give a name to the environment e.g.&nbsp;<code>glue-cloud9</code></li>
+<li>Keep the rest of the setting as default and click <code>create</code></li>
+<li>By default, it uses a <code>t2-micro</code> EC2 instance for the environment, which is free tier eligible and has enough processing power to complete all the steps in this post</li>
+<li>You may take help from the AWS docs for detailed instructions on creating this environment. <a href="https://docs.aws.amazon.com/cloud9/latest/user-guide/create-environment-main.html">Create an EC2 environment with the console</a></li>
+</ul></li>
+<li>Open the <strong>Cloud9 IDE</strong> once it is ready
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/open-cloud9-environment.png" title="fig:" class="img-fluid" alt="open-cloud9-environment.png"></li>
+</ul></li>
+</ul>
+<p>Once the IDE loads, follow these steps from <strong>inside Cloud9 IDE</strong>.</p>
+<ul>
+<li>Disable the AWS managed temporary credentials
+<ul>
+<li>By default, the EC2 machine provisioned for the cloud9 environment has a role assigned that can be used to get temporary credentials to access other AWS resources. But this access is limited and can only be used to perform some of the tasks in this post. Therefore, we will disable these temporary credentials and use IAM access keys (created in the previous step) to access other AWS resources
+<ul>
+<li>Clicking the <code>Preferences</code> cog button on the top right corner</li>
+<li>Disable Preferences &gt; AWS Settings &gt; <code>AWS managed temporary credentials</code>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/cloud9-disable-temp-cred.png" title="fig:" class="img-fluid" alt="cloud9-disable-temp-cred.png"></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>Use the bash terminal to configure the AWS CLI using the command <code>aws configure</code>. For more detailed instructions on configuring AWS CLI, use the AWS docs <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html">AWS CLI Configuration basics</a>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/configure-aws-cli.png" title="fig:" class="img-fluid" alt="configure-aws-cli.png"></li>
+</ul></li>
+</ul>
+<p><em>Note: Never expose your AWS access keys, never! Even though I masked the key in the above image, as a precaution, I deleted it once I was done with it.</em></p>
+</section>
+<section id="step-3-create-s3-bucket-and-clone-sample-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-create-s3-bucket-and-clone-sample-data">Step 3: Create S3 bucket and clone sample data</h2>
+<p>In this step, we will create an <a href="https://aws.amazon.com/s3/">AWS S3 bucket</a> and then populate some data. Later we will create a table on it and use it in a query. We will first create a unique name for a bucket using aws account-id and region. For this, paste the following commands in the bash terminal.</p>
+<p><em>Note: S3 bucket names are globally unique. If I have created a bucket with the name ‘s3://amazing-bucket’, no other bucket can have that name again till I delete my bucket.</em></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="va">AWS_ACCOUNT_ID</span><span class="op">=</span><span class="kw">`</span><span class="ex">aws</span> sts get-caller-identity <span class="at">--query</span> Account <span class="at">--output</span> text<span class="kw">`</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="va">AWS_REGION</span><span class="op">=</span><span class="kw">`</span><span class="ex">aws</span> configure get region<span class="kw">`</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="va">BUCKET_NAME</span><span class="op">=</span>glueworkshop-<span class="va">${AWS_ACCOUNT_ID}</span>-<span class="va">${AWS_REGION}</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">echo</span> <span class="va">${BUCKET_NAME}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now create a bucket using <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-managing-buckets-creating">s3 make bucket (mb)</a> command.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">aws</span> s3 mb s3://<span class="va">${BUCKET_NAME}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/make-bucket-command.png" title="fig:" class="img-fluid" alt="make-bucket-command.png"></li>
+</ul>
+<p>Once our bucket is ready, we can clone sample data using the following three commands. Each command will take about a minute to complete. These commands will synchronize the contents of our bucket with another bucket (containing the sample data) using <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-managing-objects-sync">s3 sync objects</a> command.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=1/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=1/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=2/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=2/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=3/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=3/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/s3-sync-command.png" title="fig:" class="img-fluid" alt="s3-sync-command.png"></li>
+</ul>
+<p>The data is copied into the bucket under the prefix <code>/input/syncstreamingdata/</code> with partitions on</p>
+<ul>
+<li>/customer=x</li>
+<li>/visitYearMonth=xxxxxx</li>
+</ul>
+<p>You can view all the partitions (and objects under them) with the <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-listing-buckets">s3 list</a> command, and each partition has one parquet file under it.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">aws</span> s3 ls s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/ <span class="at">--recursive</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/s3-partitions.png" title="fig:" class="img-fluid" alt="s3-partitions.png"></li>
+</ul>
+<p>Note that S3 bucket data partitions are only <code>logical</code> in the sense that.</p>
+<ul>
+<li>It does not change the way the objects are stored in S3</li>
+<li>It is only a data organization scheme where we change a part of the objects’ S3 URI (or <strong>prefix</strong>) while keeping the rest the same. For example, in the following example, we have used a scheme where we are changing the s3 objects prefix after the <code>customer=</code> and <code>visitYearMonth=</code> words. When using such a prefix scheme, we call them <strong>data partitions</strong> and can be compared to folders in a hierarchical file system.</li>
+</ul>
+<pre><code>s3://bucket/input/syncstreamingdata/customer=1/visitYearMonth=199201/302125b7984f.parquet
+s3://bucket/input/syncstreamingdata/customer=1/visitYearMonth=199202/302125b7984f.parquet
+s3://bucket/input/syncstreamingdata/customer=1/visitYearMonth=199203/302125b7984f.parquet
+s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199201/302125b7984f.parquet
+s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199202/302125b7984f.parquet
+s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984f.parquet</code></pre>
+</section>
+<section id="step-4-create-iam-policies-and-roles-for-glue-crawlers" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-create-iam-policies-and-roles-for-glue-crawlers">Step 4: Create IAM policies and roles for Glue crawlers</h2>
+<p>In this step, we will create some <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html">IAM roles</a> and <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html">IAM policies</a> that Glue crawlers will use in the next step.</p>
+<ul>
+<li>Using cloud9 environment, create a file with name <code>iam-policy.json</code> with the following contents.</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="dt">"Version"</span><span class="fu">:</span> <span class="st">"2012-10-17"</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    <span class="dt">"Statement"</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>        <span class="fu">{</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>            <span class="dt">"Sid"</span><span class="fu">:</span> <span class="st">"passRoleGlue"</span><span class="fu">,</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>            <span class="dt">"Effect"</span><span class="fu">:</span> <span class="st">"Allow"</span><span class="fu">,</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>            <span class="dt">"Action"</span><span class="fu">:</span> <span class="st">"iam:PassRole"</span><span class="fu">,</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>            <span class="dt">"Resource"</span><span class="fu">:</span> <span class="st">"*"</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>        <span class="fu">}</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>    <span class="ot">]</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Using this file, we will now create an IAM policy named <code>passrole-glue-policy</code>. Later we will assign this policy to a role. This policy allows an AWS user or service to transfer its role to other services. To read more about this policy, use the AWS docs page <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_passrole.html">Granting a user permissions to pass a role to an AWS service</a>. To create the policy use command</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="ex">aws</span> iam create-policy <span class="at">--policy-name</span> passrole-glue-policy <span class="at">--policy-document</span> file://iam-policy.json</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/iam-policy.png" title="fig:" class="img-fluid" alt="iam-policy.png"></li>
+</ul>
+<p>Copy the <strong>Arn</strong> of the policy created. We will require it in the following steps.</p>
+<p>Next, we will create an IAM role and assign it some policies. For this, create a file named <code>iam-assume-policy.json</code> and put the following contents.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>    <span class="dt">"Version"</span><span class="fu">:</span> <span class="st">"2012-10-17"</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>    <span class="dt">"Statement"</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>        <span class="fu">{</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>        <span class="dt">"Effect"</span><span class="fu">:</span> <span class="st">"Allow"</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>        <span class="dt">"Principal"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>        <span class="dt">"Service"</span><span class="fu">:</span> <span class="st">"glue.amazonaws.com"</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a>        <span class="fu">},</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a>        <span class="dt">"Action"</span><span class="fu">:</span> <span class="st">"sts:AssumeRole"</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>        <span class="fu">}</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a>    <span class="ot">]</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now create the role <code>AWSGlueServiceRole-glueworkshop</code> and assign required <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html#aws-managed-policies">AWS managed policies</a> policies to it with the following commands.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="va">GLUE_ROLENAME</span><span class="op">=</span><span class="st">'AWSGlueServiceRole-glueworkshop'</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="ex">aws</span> iam create-role <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--assume-role-policy-document</span> file://iam-assume-policy.json</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::aws:policy/AmazonS3FullAccess</span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Next, we will assign the policy we created in the last step to this role.</p>
+<p><em>Note: In the below command, replace the <strong>arn</strong> with the value you saved in the last step.</em></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::801598032724:policy/passrole-glue-policy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/iam-role.png" title="fig:" class="img-fluid" alt="iam-role.png"></li>
+</ul>
+</section>
+<section id="step-5-define-glue-database-and-crawlers" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-define-glue-database-and-crawlers">Step 5: Define Glue database and crawlers</h2>
+<p>Create <a href="https://docs.aws.amazon.com/glue/latest/dg/define-database.html">AWS Glue database</a> with the name <code>partition_index_glueworkshop</code> by the command</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1"></a><span class="ex">aws</span> glue create-database <span class="at">--database-input</span> <span class="st">"{</span><span class="dt">\"</span><span class="st">Name</span><span class="dt">\"</span><span class="st">:</span><span class="dt">\"</span><span class="st">partition_index_glueworkshop</span><span class="dt">\"</span><span class="st">, </span><span class="dt">\"</span><span class="st">Description</span><span class="dt">\"</span><span class="st">:</span><span class="dt">\"</span><span class="st">This database is created using AWS CLI for partition index</span><span class="dt">\"</span><span class="st">}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can verify that the database has been created with the command.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1"></a><span class="ex">aws</span> glue get-database <span class="at">--name</span> partition_index_glueworkshop</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/glue-database.png" title="fig:" class="img-fluid" alt="glue-database.png"></li>
+</ul>
+<p>Next, we will create two crawlers. These crawlers will crawl the S3 bucket and create tables from the identified objects. Both crawlers will be same except that the tables created by one crawler will be given the prefix <code>without_index_</code> and the other given <code>with_index_</code>. To create them use the commands below.</p>
+<p><strong>Crawler 1: crawler-without-partition-index</strong></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1"></a><span class="ex">aws</span> glue create-crawler <span class="dt">\</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>--name crawler-without-partition-index <span class="dt">\</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a>--role AWSGlueServiceRole-glueworkshop <span class="dt">\</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a>--database-name partition_index_glueworkshop <span class="dt">\</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a>--table-prefix without_index_ <span class="dt">\</span></span>
+<span id="cb13-6"><a href="#cb13-6"></a>--targets <span class="st">"{</span><span class="dt">\"</span><span class="st">S3Targets</span><span class="dt">\"</span><span class="st">: [{</span><span class="dt">\"</span><span class="st">Path</span><span class="dt">\"</span><span class="st">: </span><span class="dt">\"</span><span class="st">s3://</span><span class="va">${BUCKET_NAME}</span><span class="st">/input/syncstreamingdata/</span><span class="dt">\"</span><span class="st">} ]}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Crawler 2: crawler-with-partition-index</strong></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1"></a><span class="ex">aws</span> glue create-crawler <span class="dt">\</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>--name crawler-with-partition-index <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>--role AWSGlueServiceRole-glueworkshop <span class="dt">\</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a>--database-name partition_index_glueworkshop <span class="dt">\</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a>--table-prefix with_index_ <span class="dt">\</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a>--targets <span class="st">"{</span><span class="dt">\"</span><span class="st">S3Targets</span><span class="dt">\"</span><span class="st">: [{</span><span class="dt">\"</span><span class="st">Path</span><span class="dt">\"</span><span class="st">: </span><span class="dt">\"</span><span class="st">s3://</span><span class="va">${BUCKET_NAME}</span><span class="st">/input/syncstreamingdata/</span><span class="dt">\"</span><span class="st">} ]}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/create-glue-crawlers.png" title="fig:" class="img-fluid" alt="create-glue-crawlers.png"></li>
+</ul>
+<p>We can verify that both crawlers are created and ready to start from the <a href="https://console.aws.amazon.com/glue/">AWS Glue console</a>.</p>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/crawlers-console.png" title="fig:" class="img-fluid" alt="crawlers-console.png"></li>
+</ul>
+<p>Now we will start both these crawlers.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1"></a><span class="ex">aws</span> glue start-crawler <span class="at">--name</span> crawler-without-partition-index</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="ex">aws</span> glue start-crawler <span class="at">--name</span> crawler-with-partition-index</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/glue-start-crawlers.png" title="fig:" class="img-fluid" alt="glue-start-crawlers.png"></li>
+</ul>
+<p>They will take around a minute to scan the S3 bucket and populate tables in <a href="https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html">Glue Data Catalog</a>. These tables are the same; their names are the only difference.</p>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/glue-tables.png" title="fig:" class="img-fluid" alt="glue-tables.png"></li>
+</ul>
+</section>
+<section id="step-6-create-a-partition-index-on-the-table" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-create-a-partition-index-on-the-table">Step 6: Create a partition index on the table</h2>
+<p>Finally, we have reached a point where we can define the partition index on table <code>with_index_syncstreamingdata</code>. To read more about the <code>glue create-partition-index</code> command use the AWS docs <a href="https://awscli.amazonaws.com/v2/documentation/api/latest/reference/glue/create-partition-index.html">glue/create-partition-index.html</a></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1"></a><span class="ex">aws</span> glue create-partition-index <span class="dt">\</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>--database-name partition_index_glueworkshop <span class="dt">\</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a>--table-name with_index_syncstreamingdata <span class="dt">\</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a>--partition-index Keys=customer,visityearmonth,IndexName=idxbycustvym</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/partition-index.png" title="fig:" class="img-fluid" alt="partition-index.png"></li>
+</ul>
+</section>
+<section id="step-7-query-performance-with-partition-index" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-query-performance-with-partition-index">Step 7: Query performance with partition index</h2>
+<p>Now to see if there is any benefit in query performance by defining partition indexes on a table, we will use a Spark Notebook from Glue job to query both tables (with and without index).</p>
+<ul>
+<li>Go to <a href="https://console.aws.amazon.com/gluestudio/home">AWS Glue Studio console</a> , click <strong>Jobs</strong> on the left side menu, under <strong>Create job</strong> choose <strong>Jupyter Notebook</strong> and select the option <strong>Upload</strong> and edit an existing notebook. Click the Choose file button to upload the Notebook file you downloaded.
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/glue-studio.png" title="fig:" class="img-fluid" alt="glue-studio.png"></li>
+</ul></li>
+<li>On the next <strong>Notebook setup</strong> screen provide
+<ul>
+<li>Job name = glue-notebook</li>
+<li>IAM Role = AWSGlueServiceRole-glueworkshop</li>
+<li>Kernel = Spark
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/glue-notebook.png" title="fig:" class="img-fluid" alt="glue-notebook.png"></li>
+</ul></li>
+</ul></li>
+<li>Once the notebook starts, run all the cells.
+<ul>
+<li><strong>Cell 1</strong> It creates a Spark session</li>
+<li><strong>Cell 2</strong> It will query the table <strong>without</strong> any index on it. When I ran the query, the execution time on this table was around 32 seconds
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/query-1-results.png" title="fig:" class="img-fluid" alt="query-1-results.png"></li>
+</ul></li>
+<li><strong>Cell 3</strong> It will query the table <strong>with partition index</strong> on it. When I ran the query, the execution time on this table was around 10 seconds
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/query-2-results.png" title="fig:" class="img-fluid" alt="query-2-results.png"></li>
+</ul></li>
+<li><strong>Cell 4</strong> Calculates the difference in query execution time between the two tables. In my case query on table <strong>with partition indexes</strong> was 22 seconds faster.
+<ul>
+<li><img src="images/2023-03-01-glue-partition-indexes/queries-diff.png" title="fig:" class="img-fluid" alt="queries-diff.png"></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>By defining partition indexes on large highly partitioned tables can give significant boost in query performance. Partition indexes are available for queries in Amazon EMR, Amazon Redshift Spectrum, and AWS Glue extract, transform, and load (ETL) jobs (Spark DataFrame and Glue DynamicFrame). When partition indexes are enabled on the heavily partitioned AWS Glue Data Catalog tables, all these query engines are accelerated.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
