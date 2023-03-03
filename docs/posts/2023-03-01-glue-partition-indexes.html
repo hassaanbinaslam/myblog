@@ -289,7 +289,22 @@ Over time, many partitions get added to large tables, and their count can be in 
 <section id="step-2-create-aws-cloud9-environment-and-configure-aws-cli-credentials" class="level2">
 <h2 class="anchored" data-anchor-id="step-2-create-aws-cloud9-environment-and-configure-aws-cli-credentials">Step 2: Create AWS Cloud9 environment and configure AWS CLI credentials</h2>
 <p>In this step, we will create <a href="https://aws.amazon.com/cloud9/">AWS Cloud9</a> environment. <strong>Cloud9</strong> is a cloud-based integrated development environment (IDE) that lets you write, run, and debug your code with just a browser.</p>
-<p><em>Note: I will be working in us-east-1 (US East - N. Virginia), but you may follow these steps in your region of choice.</em></p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>I will be working in us-east-1 (US East - N. Virginia), but you may follow these steps in your region of choice.</p>
+</div>
+</div>
+</div>
 <ul>
 <li>Go to <strong>cloud9 console</strong> <a href="https://console.aws.amazon.com/cloud9/">https://console.aws.amazon.com/cloud9/</a>, select your region, and click <code>create environment</code></li>
 <li>From the <strong>Create Environment</strong> settings page
@@ -322,12 +337,42 @@ Over time, many partitions get added to large tables, and their count can be in 
 <li><img src="images/2023-03-01-glue-partition-indexes/configure-aws-cli.png" title="fig:" class="img-fluid" alt="configure-aws-cli.png"></li>
 </ul></li>
 </ul>
-<p><em>Note: Never expose your AWS access keys, never! Even though I masked the key in the above image, as a precaution, I deleted it once I was done with it.</em></p>
+<div class="callout-caution callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Danger
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Never expose your AWS access keys, never! Even though I masked the key in the above image, as a precaution, I deleted it once I was done with it.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="step-3-create-s3-bucket-and-clone-sample-data" class="level2">
 <h2 class="anchored" data-anchor-id="step-3-create-s3-bucket-and-clone-sample-data">Step 3: Create S3 bucket and clone sample data</h2>
 <p>In this step, we will create an <a href="https://aws.amazon.com/s3/">AWS S3 bucket</a> and then populate some data. Later we will create a table on it and use it in a query. We will first create a unique name for a bucket using aws account-id and region. For this, paste the following commands in the bash terminal.</p>
-<p><em>Note: S3 bucket names are globally unique. If I have created a bucket with the name ‘s3://amazing-bucket’, no other bucket can have that name again till I delete my bucket.</em></p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>S3 bucket names are globally unique. If I have created a bucket with the name ‘s3://amazing-bucket’, no other bucket can have that name again till I delete my bucket.*</p>
+</div>
+</div>
+</div>
 <div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="va">AWS_ACCOUNT_ID</span><span class="op">=</span><span class="kw">`</span><span class="ex">aws</span> sts get-caller-identity <span class="at">--query</span> Account <span class="at">--output</span> text<span class="kw">`</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="va">AWS_REGION</span><span class="op">=</span><span class="kw">`</span><span class="ex">aws</span> configure get region<span class="kw">`</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="va">BUCKET_NAME</span><span class="op">=</span>glueworkshop-<span class="va">${AWS_ACCOUNT_ID}</span>-<span class="va">${AWS_REGION}</span></span>
@@ -354,6 +399,18 @@ Over time, many partitions get added to large tables, and their count can be in 
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/s3-partitions.png" title="fig:" class="img-fluid" alt="s3-partitions.png"></li>
 </ul>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
 <p>Note that S3 bucket data partitions are only <code>logical</code> in the sense that.</p>
 <ul>
 <li>It does not change the way the objects are stored in S3</li>
@@ -365,6 +422,9 @@ s3://bucket/input/syncstreamingdata/customer=1/visitYearMonth=199203/302125b7984
 s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199201/302125b7984f.parquet
 s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199202/302125b7984f.parquet
 s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984f.parquet</code></pre>
+</div>
+</div>
+</div>
 </section>
 <section id="step-4-create-iam-policies-and-roles-for-glue-crawlers" class="level2">
 <h2 class="anchored" data-anchor-id="step-4-create-iam-policies-and-roles-for-glue-crawlers">Step 4: Create IAM policies and roles for Glue crawlers</h2>
@@ -408,7 +468,22 @@ s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984
 <span id="cb9-3"><a href="#cb9-3"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::aws:policy/AmazonS3FullAccess</span>
 <span id="cb9-4"><a href="#cb9-4"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Next, we will assign the policy we created in the last step to this role.</p>
-<p><em>Note: In the below command, replace the <strong>arn</strong> with the value you saved in the last step.</em></p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>In the below command, replace the <strong>arn</strong> with the value you saved in the last step.</p>
+</div>
+</div>
+</div>
 <div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::801598032724:policy/passrole-glue-policy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/iam-role.png" title="fig:" class="img-fluid" alt="iam-role.png"></li>
