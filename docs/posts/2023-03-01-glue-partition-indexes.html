@@ -545,9 +545,10 @@ Note
 <section id="step-7-query-performance-with-partition-index" class="level2">
 <h2 class="anchored" data-anchor-id="step-7-query-performance-with-partition-index">Step 7: Query performance with partition index</h2>
 <p>Now to see if there is any benefit in query performance by defining partition indexes on a table, we will use a <strong>Spark Notebook</strong> from <a href="https://docs.aws.amazon.com/glue/latest/ug/notebook-getting-started.html">AWS Glue ETL job</a> to query both tables (with and without index).</p>
-<p>[download glue notebook]</p>
+<p>You can use the sample notebook provided here. It already includes the queries on the tables. Download it from the provided link. <a href="https://github.com/hassaanbinaslam/myblog_assets/blob/b9cc6a7583ae438addb86e49ea5279ef8ba0be22/2023-03-01-glue-partition-indexes/glue-spark-notebook.ipynb" target="_blank">download_link</a></p>
+<p>Now follow the below steps to use the provided notebook for the Glue ETL job.</p>
 <ul>
-<li>Go to <a href="https://console.aws.amazon.com/gluestudio/home">AWS Glue Studio console</a> , click <strong>Jobs</strong> on the left side menu, under <strong>Create job</strong> choose <strong>Jupyter Notebook</strong> and select the option <strong>Upload</strong> and edit an existing notebook. Click the <code>Choose file</code> button to upload the Notebook file you have downloaded.
+<li>Go to <a href="https://console.aws.amazon.com/gluestudio/home">AWS Glue Studio console</a> , click <strong>Jobs</strong> on the left side menu, under <strong>Create job</strong> choose <strong>Jupyter Notebook</strong> and select the option <strong>Upload and edit an existing notebook</strong>. Click the <code>Choose file</code> button to upload the downloaded notebook file.
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/glue-studio.png" title="fig:" class="img-fluid" alt="glue-studio.png"></li>
 </ul></li>
@@ -560,10 +561,10 @@ Note
 <li><img src="images/2023-03-01-glue-partition-indexes/glue-notebook.png" title="fig:" class="img-fluid" alt="glue-notebook.png"></li>
 </ul></li>
 </ul></li>
-<li>Once the notebook starts, run all the cells.
+<li>Once the notebook starts, run all the cells. I have given the details of each cell here.
 <ul>
 <li><strong>Cell 1</strong> : It creates a Spark session</li>
-<li><strong>Cell 2</strong> : It will query the table <strong>without</strong> any index on it. When I ran the query, the execution time on this table was around <code>32 seconds</code>
+<li><strong>Cell 2</strong> : It will query the table <strong>without any index</strong> on it. When I ran the query, the execution time on this table was around <code>32 seconds</code>
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/query-1-results.png" title="fig:" class="img-fluid" alt="query-1-results.png"></li>
 </ul></li>
