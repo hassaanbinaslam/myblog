@@ -469,33 +469,34 @@ s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984
 </section>
 <section id="step-7-query-performance-with-partition-index" class="level2">
 <h2 class="anchored" data-anchor-id="step-7-query-performance-with-partition-index">Step 7: Query performance with partition index</h2>
-<p>Now to see if there is any benefit in query performance by defining partition indexes on a table, we will use a Spark Notebook from Glue job to query both tables (with and without index).</p>
+<p>Now to see if there is any benefit in query performance by defining partition indexes on a table, we will use a <strong>Spark Notebook</strong> from <a href="https://docs.aws.amazon.com/glue/latest/ug/notebook-getting-started.html">AWS Glue ETL job</a> to query both tables (with and without index).</p>
+<p>[download glue notebook]</p>
 <ul>
-<li>Go to <a href="https://console.aws.amazon.com/gluestudio/home">AWS Glue Studio console</a> , click <strong>Jobs</strong> on the left side menu, under <strong>Create job</strong> choose <strong>Jupyter Notebook</strong> and select the option <strong>Upload</strong> and edit an existing notebook. Click the Choose file button to upload the Notebook file you downloaded.
+<li>Go to <a href="https://console.aws.amazon.com/gluestudio/home">AWS Glue Studio console</a> , click <strong>Jobs</strong> on the left side menu, under <strong>Create job</strong> choose <strong>Jupyter Notebook</strong> and select the option <strong>Upload</strong> and edit an existing notebook. Click the <code>Choose file</code> button to upload the Notebook file you have downloaded.
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/glue-studio.png" title="fig:" class="img-fluid" alt="glue-studio.png"></li>
 </ul></li>
 <li>On the next <strong>Notebook setup</strong> screen provide
 <ul>
-<li>Job name = glue-notebook</li>
-<li>IAM Role = AWSGlueServiceRole-glueworkshop</li>
-<li>Kernel = Spark
+<li>Job name = <code>glue-notebook</code></li>
+<li>IAM Role = <code>AWSGlueServiceRole-glueworkshop</code></li>
+<li>Kernel = <code>Spark</code>
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/glue-notebook.png" title="fig:" class="img-fluid" alt="glue-notebook.png"></li>
 </ul></li>
 </ul></li>
 <li>Once the notebook starts, run all the cells.
 <ul>
-<li><strong>Cell 1</strong> It creates a Spark session</li>
-<li><strong>Cell 2</strong> It will query the table <strong>without</strong> any index on it. When I ran the query, the execution time on this table was around 32 seconds
+<li><strong>Cell 1</strong> : It creates a Spark session</li>
+<li><strong>Cell 2</strong> : It will query the table <strong>without</strong> any index on it. When I ran the query, the execution time on this table was around <code>32 seconds</code>
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/query-1-results.png" title="fig:" class="img-fluid" alt="query-1-results.png"></li>
 </ul></li>
-<li><strong>Cell 3</strong> It will query the table <strong>with partition index</strong> on it. When I ran the query, the execution time on this table was around 10 seconds
+<li><strong>Cell 3</strong> : It will query the table <strong>with partition index</strong> on it. When I ran the query, the execution time on this table was around <code>10 seconds</code>
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/query-2-results.png" title="fig:" class="img-fluid" alt="query-2-results.png"></li>
 </ul></li>
-<li><strong>Cell 4</strong> Calculates the difference in query execution time between the two tables. In my case query on table <strong>with partition indexes</strong> was 22 seconds faster.
+<li><strong>Cell 4</strong> : Calculates the difference in query execution time between the two tables. In my case query on <strong>table with partition indexes was faster</strong> by 22 seconds .
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/queries-diff.png" title="fig:" class="img-fluid" alt="queries-diff.png"></li>
 </ul></li>
