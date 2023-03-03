@@ -369,7 +369,7 @@ Note
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>S3 bucket names are globally unique. If I have created a bucket with the name ‘s3://amazing-bucket’, no other bucket can have that name again till I delete my bucket.*</p>
+<p>S3 bucket names are globally unique. If I have created a bucket with the name ‘s3://amazing-bucket’, no other bucket can have that name again till I delete my bucket.</p>
 </div>
 </div>
 </div>
@@ -382,7 +382,7 @@ Note
 <ul>
 <li><img src="images/2023-03-01-glue-partition-indexes/make-bucket-command.png" title="fig:" class="img-fluid" alt="make-bucket-command.png"></li>
 </ul>
-<p>Once our bucket is ready, we can clone sample data using the following three commands. Each command will take about a minute to complete. These commands will synchronize the contents of our bucket with another bucket (containing the sample data) using <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-managing-objects-sync">s3 sync objects</a> command.</p>
+<p>Once our bucket is ready, we can clone sample data using the following three commands. Each command will take about a minute to complete. These commands will synchronize the contents of our bucket with another bucket (containing the sample data). To read more about <code>s3 sync</code> command use the AWS docs <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-managing-objects-sync">s3 sync objects</a></p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=1/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=1/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=2/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=2/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=3/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=3/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -533,7 +533,7 @@ Note
 </section>
 <section id="step-6-create-a-partition-index-on-the-table" class="level2">
 <h2 class="anchored" data-anchor-id="step-6-create-a-partition-index-on-the-table">Step 6: Create a partition index on the table</h2>
-<p>Finally, we have reached a point where we can define the partition index on table <code>with_index_syncstreamingdata</code>. To read more about the <code>glue create-partition-index</code> command use the AWS docs <a href="https://awscli.amazonaws.com/v2/documentation/api/latest/reference/glue/create-partition-index.html">glue/create-partition-index.html</a></p>
+<p>Finally, we have reached a point where we can define the partition index on table <code>with_index_syncstreamingdata</code>. Adding an index does not affect the availability of a table, as the table continues to be available while indexes are being created. To read more about the <code>glue create-partition-index</code> command use the AWS docs <a href="https://awscli.amazonaws.com/v2/documentation/api/latest/reference/glue/create-partition-index.html">glue/create-partition-index.html</a></p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1"></a><span class="ex">aws</span> glue create-partition-index <span class="dt">\</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a>--database-name partition_index_glueworkshop <span class="dt">\</span></span>
 <span id="cb16-3"><a href="#cb16-3"></a>--table-name with_index_syncstreamingdata <span class="dt">\</span></span>
