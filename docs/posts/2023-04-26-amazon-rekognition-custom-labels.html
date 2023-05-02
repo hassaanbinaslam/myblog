@@ -218,6 +218,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#step-7-train-model" id="toc-step-7-train-model" class="nav-link" data-scroll-target="#step-7-train-model">Step 7: Train model</a></li>
   <li><a href="#step-8-evaluating-the-model" id="toc-step-8-evaluating-the-model" class="nav-link" data-scroll-target="#step-8-evaluating-the-model">Step 8: Evaluating the model</a></li>
   <li><a href="#step-9-getting-inference-from-the-model" id="toc-step-9-getting-inference-from-the-model" class="nav-link" data-scroll-target="#step-9-getting-inference-from-the-model">Step 9: Getting inference from the model</a></li>
+  <li><a href="#step-10-stop-the-model" id="toc-step-10-stop-the-model" class="nav-link" data-scroll-target="#step-10-stop-the-model">Step 10: Stop the model</a></li>
   </ul>
 </nav>
     </div>
@@ -658,6 +659,105 @@ s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code><
 <h2 class="anchored" data-anchor-id="step-9-getting-inference-from-the-model">Step 9: Getting inference from the model</h2>
 <p>All right, we have trained a model and we are satisfied with the model performance. We may now proceed to deploy this model and put it to some actual use. Amazon Rekognition makes the model deployment part a breeze, and can be done by the click of a button <strong>Start</strong>. When you start your model, you specify the number of compute resources, known as an <strong>inference unit</strong>, that the model uses. To read more about the model deplyment, compute resources and cost, refer to the documentation page <a href="https://docs.aws.amazon.com/rekognition/latest/customlabels-dg/running-model.html">Running a trained Amazon Rekognition Custom Labels model</a></p>
 <p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-deploy.png" class="img-fluid"></p>
+<p>The following cell defines two functions:</p>
+<ol type="1">
+<li><p><strong>display_image</strong> This function reads an image from the S3 bucket, and draws a bounding box around the Raspberry Pi logo based on the coordinates receiced from the model API.</p></li>
+<li><p><strong>show_custom_labels</strong> This function uses Boto3 library to initiate Amazon Rekognition service client, and invoke its APIs. For custom labels detection it uses the interface <code>detect_custom_labels</code>. To read more about this API and the available features, refer to the documentation page <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rekognition/client/detect_custom_labels.html">Rekognition.Client.detect_custom_labels</a></p></li>
+</ol>
+<div class="cell" data-tags="[]" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="im">import</span> boto3</span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="im">import</span> io</span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image, ImageDraw, ExifTags, ImageColor, ImageFont</span>
+<span id="cb23-4"><a href="#cb23-4"></a></span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="kw">def</span> display_image(bucket,photo,response):</span>
+<span id="cb23-6"><a href="#cb23-6"></a>    <span class="co"># Load image from S3 bucket</span></span>
+<span id="cb23-7"><a href="#cb23-7"></a>    s3_connection <span class="op">=</span> boto3.resource(<span class="st">'s3'</span>)</span>
+<span id="cb23-8"><a href="#cb23-8"></a></span>
+<span id="cb23-9"><a href="#cb23-9"></a>    s3_object <span class="op">=</span> s3_connection.Object(bucket,photo)</span>
+<span id="cb23-10"><a href="#cb23-10"></a>    s3_response <span class="op">=</span> s3_object.get()</span>
+<span id="cb23-11"><a href="#cb23-11"></a></span>
+<span id="cb23-12"><a href="#cb23-12"></a>    stream <span class="op">=</span> io.BytesIO(s3_response[<span class="st">'Body'</span>].read())</span>
+<span id="cb23-13"><a href="#cb23-13"></a>    image<span class="op">=</span>Image.<span class="bu">open</span>(stream)</span>
+<span id="cb23-14"><a href="#cb23-14"></a></span>
+<span id="cb23-15"><a href="#cb23-15"></a>    <span class="co"># Ready image to draw bounding boxes on it.</span></span>
+<span id="cb23-16"><a href="#cb23-16"></a>    imgWidth, imgHeight <span class="op">=</span> image.size</span>
+<span id="cb23-17"><a href="#cb23-17"></a>    draw <span class="op">=</span> ImageDraw.Draw(image)</span>
+<span id="cb23-18"><a href="#cb23-18"></a></span>
+<span id="cb23-19"><a href="#cb23-19"></a>    <span class="co"># calculate and display bounding boxes for each detected custom label</span></span>
+<span id="cb23-20"><a href="#cb23-20"></a>    <span class="bu">print</span>(<span class="st">'Detected custom labels for '</span> <span class="op">+</span> photo)</span>
+<span id="cb23-21"><a href="#cb23-21"></a>    <span class="cf">for</span> customLabel <span class="kw">in</span> response[<span class="st">'CustomLabels'</span>]:</span>
+<span id="cb23-22"><a href="#cb23-22"></a>        <span class="bu">print</span>(<span class="st">'Label '</span> <span class="op">+</span> <span class="bu">str</span>(customLabel[<span class="st">'Name'</span>]))</span>
+<span id="cb23-23"><a href="#cb23-23"></a>        <span class="bu">print</span>(<span class="st">'Confidence '</span> <span class="op">+</span> <span class="bu">str</span>(customLabel[<span class="st">'Confidence'</span>]))</span>
+<span id="cb23-24"><a href="#cb23-24"></a>        <span class="cf">if</span> <span class="st">'Geometry'</span> <span class="kw">in</span> customLabel:</span>
+<span id="cb23-25"><a href="#cb23-25"></a>            box <span class="op">=</span> customLabel[<span class="st">'Geometry'</span>][<span class="st">'BoundingBox'</span>]</span>
+<span id="cb23-26"><a href="#cb23-26"></a>            left <span class="op">=</span> imgWidth <span class="op">*</span> box[<span class="st">'Left'</span>]</span>
+<span id="cb23-27"><a href="#cb23-27"></a>            top <span class="op">=</span> imgHeight <span class="op">*</span> box[<span class="st">'Top'</span>]</span>
+<span id="cb23-28"><a href="#cb23-28"></a>            width <span class="op">=</span> imgWidth <span class="op">*</span> box[<span class="st">'Width'</span>]</span>
+<span id="cb23-29"><a href="#cb23-29"></a>            height <span class="op">=</span> imgHeight <span class="op">*</span> box[<span class="st">'Height'</span>]</span>
+<span id="cb23-30"><a href="#cb23-30"></a></span>
+<span id="cb23-31"><a href="#cb23-31"></a>            draw.text((left,top), customLabel[<span class="st">'Name'</span>], fill<span class="op">=</span><span class="st">'#00d400'</span>)</span>
+<span id="cb23-32"><a href="#cb23-32"></a></span>
+<span id="cb23-33"><a href="#cb23-33"></a>            <span class="bu">print</span>(<span class="st">'Left: '</span> <span class="op">+</span> <span class="st">'</span><span class="sc">{0:.0f}</span><span class="st">'</span>.<span class="bu">format</span>(left))</span>
+<span id="cb23-34"><a href="#cb23-34"></a>            <span class="bu">print</span>(<span class="st">'Top: '</span> <span class="op">+</span> <span class="st">'</span><span class="sc">{0:.0f}</span><span class="st">'</span>.<span class="bu">format</span>(top))</span>
+<span id="cb23-35"><a href="#cb23-35"></a>            <span class="bu">print</span>(<span class="st">'Label Width: '</span> <span class="op">+</span> <span class="st">"</span><span class="sc">{0:.0f}</span><span class="st">"</span>.<span class="bu">format</span>(width))</span>
+<span id="cb23-36"><a href="#cb23-36"></a>            <span class="bu">print</span>(<span class="st">'Label Height: '</span> <span class="op">+</span> <span class="st">"</span><span class="sc">{0:.0f}</span><span class="st">"</span>.<span class="bu">format</span>(height))</span>
+<span id="cb23-37"><a href="#cb23-37"></a></span>
+<span id="cb23-38"><a href="#cb23-38"></a>            points <span class="op">=</span> (</span>
+<span id="cb23-39"><a href="#cb23-39"></a>                (left,top),</span>
+<span id="cb23-40"><a href="#cb23-40"></a>                (left <span class="op">+</span> width, top),</span>
+<span id="cb23-41"><a href="#cb23-41"></a>                (left <span class="op">+</span> width, top <span class="op">+</span> height),</span>
+<span id="cb23-42"><a href="#cb23-42"></a>                (left , top <span class="op">+</span> height),</span>
+<span id="cb23-43"><a href="#cb23-43"></a>                (left, top))</span>
+<span id="cb23-44"><a href="#cb23-44"></a>            draw.line(points, fill<span class="op">=</span><span class="st">'#00d400'</span>, width<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb23-45"><a href="#cb23-45"></a>    </span>
+<span id="cb23-46"><a href="#cb23-46"></a>    <span class="cf">return</span> image</span>
+<span id="cb23-47"><a href="#cb23-47"></a></span>
+<span id="cb23-48"><a href="#cb23-48"></a><span class="kw">def</span> show_custom_labels(model,bucket,photo, min_confidence):</span>
+<span id="cb23-49"><a href="#cb23-49"></a>    client<span class="op">=</span>boto3.client(<span class="st">'rekognition'</span>)</span>
+<span id="cb23-50"><a href="#cb23-50"></a></span>
+<span id="cb23-51"><a href="#cb23-51"></a>    <span class="co">#Call DetectCustomLabels</span></span>
+<span id="cb23-52"><a href="#cb23-52"></a>    response <span class="op">=</span> client.detect_custom_labels(Image<span class="op">=</span>{<span class="st">'S3Object'</span>: {<span class="st">'Bucket'</span>: bucket, <span class="st">'Name'</span>: photo}},</span>
+<span id="cb23-53"><a href="#cb23-53"></a>        MinConfidence<span class="op">=</span>min_confidence,</span>
+<span id="cb23-54"><a href="#cb23-54"></a>        ProjectVersionArn<span class="op">=</span>model)</span>
+<span id="cb23-55"><a href="#cb23-55"></a></span>
+<span id="cb23-56"><a href="#cb23-56"></a>    <span class="bu">print</span>(<span class="st">"Response from the API: </span><span class="ch">\n</span><span class="st">"</span>, response, <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb23-57"><a href="#cb23-57"></a>    <span class="co"># For object detection use case, uncomment below code to display image.</span></span>
+<span id="cb23-58"><a href="#cb23-58"></a>    image_with_labels <span class="op">=</span> display_image(bucket,photo,response)</span>
+<span id="cb23-59"><a href="#cb23-59"></a></span>
+<span id="cb23-60"><a href="#cb23-60"></a>    <span class="cf">return</span> image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>bucket<span class="op">=</span><span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a>photo<span class="op">=</span><span class="st">'images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg'</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a>model<span class="op">=</span><span class="st">'arn:aws:rekognition:us-east-2:801598032724:project/raspberry-pi-logos/version/raspberry-pi-logos.2023-05-01T18.56.34/1682949462653'</span></span>
+<span id="cb24-4"><a href="#cb24-4"></a>min_confidence<span class="op">=</span><span class="dv">20</span></span>
+<span id="cb24-5"><a href="#cb24-5"></a></span>
+<span id="cb24-6"><a href="#cb24-6"></a>image_with_labels<span class="op">=</span>show_custom_labels(model,bucket,photo, min_confidence)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Response from the API: 
+ {'CustomLabels': [{'Name': 'raspberry-pi-logo', 'Confidence': 21.43899917602539, 'Geometry': {'BoundingBox': {'Width': 0.08699999749660492, 'Height': 0.0675399973988533, 'Left': 0.34002000093460083, 'Top': 0.30324000120162964}}}], 'ResponseMetadata': {'RequestId': '45c1b1cd-162f-4ebf-8603-957648440d41', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amzn-requestid': '45c1b1cd-162f-4ebf-8603-957648440d41', 'content-type': 'application/x-amz-json-1.1', 'content-length': '216', 'date': 'Tue, 02 May 2023 14:30:22 GMT'}, 'RetryAttempts': 0}} 
+
+Detected custom labels for images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg
+Label raspberry-pi-logo
+Confidence 21.43899917602539
+Left: 272
+Top: 182
+Label Width: 70
+Label Height: 41</code></pre>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># Let's display the image with labels</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="35">
+<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="step-10-stop-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-10-stop-the-model">Step 10: Stop the model</h2>
+<p>Rekognition Custom Labels service will charge us as long as the model is in <code>Running</code> state. We should stop is once it in no more being used. To do that simply click the <strong>Stop</strong> button on the model.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/mode-stop.png" class="img-fluid"></p>
 
 
 </section>
