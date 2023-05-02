@@ -214,6 +214,10 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#step-3-create-a-project" id="toc-step-3-create-a-project" class="nav-link" data-scroll-target="#step-3-create-a-project">Step 3: Create a Project</a></li>
   <li><a href="#step-4-creating-a-dataset" id="toc-step-4-creating-a-dataset" class="nav-link" data-scroll-target="#step-4-creating-a-dataset">Step 4: Creating a Dataset</a></li>
   <li><a href="#step-5-add-labels" id="toc-step-5-add-labels" class="nav-link" data-scroll-target="#step-5-add-labels">Step 5: Add Labels</a></li>
+  <li><a href="#step-6-draw-bounding-boxes" id="toc-step-6-draw-bounding-boxes" class="nav-link" data-scroll-target="#step-6-draw-bounding-boxes">Step 6: Draw Bounding Boxes</a></li>
+  <li><a href="#step-7-train-model" id="toc-step-7-train-model" class="nav-link" data-scroll-target="#step-7-train-model">Step 7: Train model</a></li>
+  <li><a href="#step-8-evaluating-the-model" id="toc-step-8-evaluating-the-model" class="nav-link" data-scroll-target="#step-8-evaluating-the-model">Step 8: Evaluating the model</a></li>
+  <li><a href="#step-9-getting-inference-from-the-model" id="toc-step-9-getting-inference-from-the-model" class="nav-link" data-scroll-target="#step-9-getting-inference-from-the-model">Step 9: Getting inference from the model</a></li>
   </ul>
 </nav>
     </div>
@@ -618,6 +622,42 @@ s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code><
 <p><img src="images/2023-04-26-amazon-rekognition-custom-labels/start-labelling.png" class="img-fluid"></p>
 <p>In our case it is easy to do the labelling as we only have a single label: Raspberry Pi Logo. Let’s add that label by clicking on <code>Labels &gt; Add Labels</code>. On the <strong>Manage Labels</strong> pane select “Add Labels” and add the name of a single label <code>raspberry-pi-logo</code>, and click <em>Save</em>.</p>
 <p><img src="images/2023-04-26-amazon-rekognition-custom-labels/raspberry-pi-logo-label.png" class="img-fluid"></p>
+</section>
+<section id="step-6-draw-bounding-boxes" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-draw-bounding-boxes">Step 6: Draw Bounding Boxes</h2>
+<p>The next step is to draw <code>Bounding Boxes</code> around the <em>Raspberry Pi logos</em> in all the images. This is again a manual step and has to be done very patiently. To start the activity, select ‘unlabelled images’ and click <code>Draw bounding boxes</code>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/draw-bounding-box.png" class="img-fluid"></p>
+<p>From the next pane, use the <strong>cursor</strong> to draw bounding boxes around the Raspberry Pi logo as shown below.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/draw-bounding-box-2.png" class="img-fluid"></p>
+<p>Once completed, click <code>Done</code> and <code>Save changes</code>.</p>
+</section>
+<section id="step-7-train-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-train-model">Step 7: Train model</h2>
+<p>The next step in our process is to train a model. To start the training click <code>Train model</code>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/train-model.png" class="img-fluid"></p>
+<p>This will open a <em>Train model</em> configuration page. Keep all the defaults on this page, and click <strong>Train model</strong>. This will bring a popup saying</p>
+<ul>
+<li>Our single dataset will be split into training dataset (80%) and test dataset (20%)</li>
+<li>And training may take about 30 minutes to complete</li>
+</ul>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/train-model-2.png" class="img-fluid"></p>
+<p>Start the training by clicking <strong>Train model</strong>.</p>
+<p>Once the training has started, a model entry will appear under <code>Custom Labels &gt; Projects &gt; raspberry-pi-logos</code> with status <strong>TRAINING_IN_PROGRESS</strong>. We have to wait till the status changes to <strong>TRAINING_COMPLETED</strong>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/train-model-3.png" class="img-fluid"></p>
+</section>
+<section id="step-8-evaluating-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-8-evaluating-the-model">Step 8: Evaluating the model</h2>
+<p>Once the training is complete, we can evaluate the performance of the model by clicking on the model name.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-eval-1.png" class="img-fluid"></p>
+<p>The <code>Evaluation</code> tab shows the testing results for our trained model. This helps to understand the overall performance of our model.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-eval-2.png" class="img-fluid"></p>
+<p>We may dig deeper into the performance of the model on the test set by clicking on the <code>View test results</code>. In our case, the trained model gave wrong predictions (False Negatives) for two of the test images. When looked closely it showed that even though the model was able to pick the presence of Raspberry Pi logo, it was not confident enough to asccurately draw the bounding box around it.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-eval-3.png" class="img-fluid"></p>
+</section>
+<section id="step-9-getting-inference-from-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-9-getting-inference-from-the-model">Step 9: Getting inference from the model</h2>
+<p>All right, we have trained a model and we are satisfied with the model performance. We may now proceed to deploy this model and put it to some actual use. Amazon Rekognition makes the model deployment part a breeze, and can be done by the click of a button <strong>Start</strong>. When you start your model, you specify the number of compute resources, known as an <strong>inference unit</strong>, that the model uses. To read more about the model deplyment, compute resources and cost, refer to the documentation page <a href="https://docs.aws.amazon.com/rekognition/latest/customlabels-dg/running-model.html">Running a trained Amazon Rekognition Custom Labels model</a></p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-deploy.png" class="img-fluid"></p>
 
 
 </section>
