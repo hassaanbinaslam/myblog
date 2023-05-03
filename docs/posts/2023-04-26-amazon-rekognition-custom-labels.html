@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-04-26">
+<meta name="description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their specific use case. In this post, we will use this service to train a custom model with a small set of labeled images and use it to analyze new images via an API. This service uses AutoML to train models to find objects, scenes, concepts, object locations, and brand locations in images.">
+
+<title>Random Thoughts - Creating an Object Detection Model using Amazon Rekognition Custom Labels</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - Creating an Object Detection Model using Amazon Rekognition Custom Labels">
+<meta property="og:description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their…">
+<meta property="og:image" content="images/2023-04-26-amazon-rekognition-custom-labels.jpg">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - Creating an Object Detection Model using Amazon Rekognition Custom Labels">
+<meta name="twitter:description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their…">
+<meta name="twitter:image" content="images/2023-04-26-amazon-rekognition-custom-labels.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#credits" id="toc-credits" class="nav-link active" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#environment" id="toc-environment" class="nav-link" data-scroll-target="#environment">Environment</a></li>
+  <li><a href="#step-1-download-and-clean-raspberry-pi-images" id="toc-step-1-download-and-clean-raspberry-pi-images" class="nav-link" data-scroll-target="#step-1-download-and-clean-raspberry-pi-images">Step 1: Download and clean Raspberry Pi images</a></li>
+  <li><a href="#step-2-upload-images-to-s3-bucket" id="toc-step-2-upload-images-to-s3-bucket" class="nav-link" data-scroll-target="#step-2-upload-images-to-s3-bucket">Step 2: Upload images to S3 bucket</a></li>
+  <li><a href="#step-3-create-a-project" id="toc-step-3-create-a-project" class="nav-link" data-scroll-target="#step-3-create-a-project">Step 3: Create a Project</a></li>
+  <li><a href="#step-4-creating-a-dataset" id="toc-step-4-creating-a-dataset" class="nav-link" data-scroll-target="#step-4-creating-a-dataset">Step 4: Creating a Dataset</a></li>
+  <li><a href="#step-5-add-labels" id="toc-step-5-add-labels" class="nav-link" data-scroll-target="#step-5-add-labels">Step 5: Add Labels</a></li>
+  <li><a href="#step-6-draw-bounding-boxes" id="toc-step-6-draw-bounding-boxes" class="nav-link" data-scroll-target="#step-6-draw-bounding-boxes">Step 6: Draw Bounding Boxes</a></li>
+  <li><a href="#step-7-train-model" id="toc-step-7-train-model" class="nav-link" data-scroll-target="#step-7-train-model">Step 7: Train model</a></li>
+  <li><a href="#step-8-evaluating-the-model" id="toc-step-8-evaluating-the-model" class="nav-link" data-scroll-target="#step-8-evaluating-the-model">Step 8: Evaluating the model</a></li>
+  <li><a href="#step-9-getting-inference-from-the-model" id="toc-step-9-getting-inference-from-the-model" class="nav-link" data-scroll-target="#step-9-getting-inference-from-the-model">Step 9: Getting inference from the model</a></li>
+  <li><a href="#step-10-stop-the-model" id="toc-step-10-stop-the-model" class="nav-link" data-scroll-target="#step-10-stop-the-model">Step 10: Stop the model</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Creating an Object Detection Model using Amazon Rekognition Custom Labels</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+    <div class="quarto-category">ml</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their specific use case. In this post, we will use this service to train a custom model with a small set of labeled images and use it to analyze new images via an API. This service uses AutoML to train models to find objects, scenes, concepts, object locations, and brand locations in images.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 26, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels.jpg" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">image source: https://openart.ai/discovery/md-438e164b-250d-4dca-8989-cda9e5dda6ec</figcaption><p></p>
+</figure>
+</div>
+<section id="credits" class="level2">
+<h2 class="anchored" data-anchor-id="credits">Credits</h2>
+<p>This post takes inspiration from the book <a href="https://github.com/PacktPublishing/Computer-Vision-on-AWS">Computer Vision on AWS</a>. Chapter 3 of the book dives into Amazon Rekognition and covers many more details than this post. The book used <a href="https://github.com/PacktPublishing/Computer-Vision-on-AWS/tree/main/03_RekognitionCustomLabels">Packt logos</a> as an example for Rekognition Custom Labels. However, I have used the <code>Raspberry Pi</code> logo instead to make it more interesting. To download the Raspberry Pi images from the internet, I have relied on <a href="https://www.kaggle.com/code/jhoward/is-it-a-bird-creating-a-model-from-your-own-data">FastAI</a> and <a href="https://pypi.org/project/duckduckgo-search/">Duckduckgo_search</a> libraries.</p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p><a href="https://aws.amazon.com/rekognition/custom-labels-features/">Amazon Rekognition Custom Labels</a> is a fully managed computer vision service that allows developers to build custom models to classify and identify objects in images that are specific and unique to your business. <code>Rekognition Custom Labels doesn’t require you to have any prior computer vision expertise</code>. For example, you can find your logo in social media posts, identify your products on store shelves, classify machine parts in an assembly line, distinguish healthy and infected plants, or detect animated characters in videos.</p>
+<p>Developing a custom model to analyze images is a significant undertaking that requires time, expertise, and resources, often taking months to complete. Additionally, it often requires thousands or tens of thousands of hand-labeled images to provide the model with enough data to accurately make decisions. Generating this data can take months to gather and requires large teams of labelers to prepare it for use in machine learning (ML).</p>
+<p><code>Rekognition Custom Labels</code> builds off of the existing capabilities of <a href="https://aws.amazon.com/rekognition/">Amazon Rekognition</a>, which are already trained on tens of millions of images across many categories. Instead of thousands of images, you simply need to upload a small set of training images (typically a few hundred images or less) that are specific to your use case using the Amazon Rekognition console. If the images are already labeled, you can begin training a model in just a few clicks. If not, you can label them directly on the Rekognition Custom Labels console, or use Amazon SageMaker Ground Truth to label them. <code>Rekognition Custom Labels uses transfer learning and AutoML to automatically inspect the training data, select the right model framework and algorithm, optimize the hyperparameters, and train the model</code>. When you’re satisfied with the model accuracy, you can start hosting the trained model with just one click.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This introduction is adapted from <strong>AWS Machine Learning Blog</strong> post <a href="https://aws.amazon.com/blogs/machine-learning/announcing-the-launch-of-the-model-copy-feature-for-amazon-rekognition-custom-labels/">Announcing the launch of the model copy feature for Amazon Rekognition Custom Labels</a></p>
+</div>
+</div>
+<p>In this post, I have explained how to <code>create a custom object detection model</code> using the <code>Reckognition custom labels</code> service. Our goal will be to create a model that can analyze images and locate the <a href="https://www.raspberrypi.org/">Raspberry Pi</a> logo on its boards.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/COLOUR-Raspberry-Pi-Symbol-Registered.png" class="img-fluid"></p>
+</section>
+<section id="environment" class="level2">
+<h2 class="anchored" data-anchor-id="environment">Environment</h2>
+<p>This notebook is created with <code>Amazon SageMaker Studio</code> envionment. Details of the environment are given below</p>
+<ul>
+<li><strong>GitHub</strong>: <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2023-04-26-amazon-rekognition-custom-labels.ipynb">2022-10-10-pytorch-linear-regression.ipynb</a></li>
+<li><strong>Open In Colab</strong>: <a href="https://colab.research.google.com/github/hassaanbinaslam/myblog/blob/main/posts/2023-04-26-amazon-rekognition-custom-labels.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></li>
+</ul>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/notebook-env.png" class="img-fluid"></p>
+</section>
+<section id="step-1-download-and-clean-raspberry-pi-images" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-download-and-clean-raspberry-pi-images">Step 1: Download and clean Raspberry Pi images</h2>
+<p>We need to collect relevant images to successfully train a model that can detect Raspberry Pi logos on computer boards. We can use the <code>Google Images</code> search to find such images. But downloading many pictures from Google search can take much work to automate. So instead, we can use a different search engine, <a href="https://duckduckgo.com/">DuckDuckGo.com</a>, that provides a more straightforward interface <a href="https://pypi.org/project/duckduckgo-search/">duckduckgo_search</a> for search. For downloading and resizing images, we will use additional libraries from the <code>FastAI</code> ecosystem <a href="https://github.com/fastai/fastai">fastai</a> and <a href="https://github.com/fastai/fastdownload/tree/master/">fastdownload</a>.</p>
+<div class="cell" data-tags="[]" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>writefile requirements.txt</span>
+<span id="cb1-2"><a href="#cb1-2"></a>duckduckgo<span class="op">-</span>search<span class="op">==</span><span class="fl">2.8.6</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>fastai<span class="op">==</span><span class="fl">2.7.12</span> </span>
+<span id="cb1-4"><a href="#cb1-4"></a>fastdownload<span class="op">==</span><span class="fl">0.0.7</span> </span>
+<span id="cb1-5"><a href="#cb1-5"></a>fastcore<span class="op">==</span><span class="fl">1.5.29</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Overwriting requirements.txt</code></pre>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%%</span>capture</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="op">!</span>pip install <span class="op">-</span>r requirements.txt </span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Install required libraries</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co"># 1. `duckduckgo_search` to search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine.</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co"># 2. `fastdownload` to easily download, verify, and extract archives</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co"># 3. `fastai` to open, visualize, and transform images</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co"># 4. `fastcore` extends Python list functionality</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> duckduckgo_search <span class="im">import</span> ddg_images</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="im">from</span> fastcore.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="co"># Define a function to search for images using DuckDuckGo.com search engine for the provided term. It returns the URL of the searched image.</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># By default, it will try to find 200 images matching the searched word.</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="kw">def</span> search_images(term, max_images<span class="op">=</span><span class="dv">200</span>):</span>
+<span id="cb4-7"><a href="#cb4-7"></a>    <span class="bu">print</span>(<span class="ss">f"Searching for '</span><span class="sc">{</span>term<span class="sc">}</span><span class="ss">'"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8"></a>    <span class="cf">return</span> L(ddg_images(term, max_results<span class="op">=</span>max_images)).itemgot(<span class="st">"image"</span>)</span>
+<span id="cb4-9"><a href="#cb4-9"></a></span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="co"># Define search term. In our case it is "raspberry pi board"</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a>searches <span class="op">=</span> {</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    <span class="st">"pi"</span>: <span class="st">"raspberry pi board"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14"></a>}</span>
+<span id="cb4-15"><a href="#cb4-15"></a></span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="co"># Test the search function and display URLs returned</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a>urls <span class="op">=</span> search_images(searches[<span class="st">"pi"</span>], max_images<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-18"><a href="#cb4-18"></a>urls[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Searching for 'raspberry pi board'</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>'https://www.watelectronics.com/wp-content/uploads/2019/07/Model-A-Raspberry-Pi-Board.jpg'</code></pre>
+</div>
+</div>
+<p>Above, we have defined a function that can be used to search images and return their URLs. Next, we can use these URLs to download and save images to a local directory.</p>
+<div class="cell" data-tags="[]" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co"># Define a local path to store downloaded images</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>local_dir <span class="op">=</span> <span class="st">"./assets/2023-04-26-amazon-rekognition-custom-labels/"</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="co"># Create the directory if it does not exist</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>local_path <span class="op">=</span> Path(local_dir)</span>
+<span id="cb7-8"><a href="#cb7-8"></a>local_path.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="im">from</span> fastdownload <span class="im">import</span> download_url</span>
+<span id="cb8-3"><a href="#cb8-3"></a></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co"># `local_path_raw` is the local directory to store raw downloaded images</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>local_path_raw <span class="op">=</span> Path(<span class="ss">f"</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">/raw/"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6"></a>dest <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>local_path_raw<span class="sc">}</span><span class="ss">/sample-image.jpg"</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="co"># Download a sample Raspberry Pi board image</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a>download_url(urls[<span class="dv">0</span>], dest, show_progress<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-10"><a href="#cb8-10"></a></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="co"># Display the downloaded image</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(dest)</span>
+<span id="cb8-13"><a href="#cb8-13"></a>im.to_thumb(<span class="dv">512</span>, <span class="dv">512</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="524288" class="" max="518218" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      101.17% [524288/518218 00:00&lt;00:00]
+    </div>
+    
+</div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-6-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>In the above image, you can see the <code>Raspberry Pi logo</code> in the center of the board. That is our target and we want our model to locate it automatically. This sample image shows that our search string is correct, and we can proceed to download similar images.</p>
+<div class="cell" data-tags="[]" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># Use each search string to search and download images</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>max_images <span class="op">=</span> <span class="dv">200</span>  <span class="co"># total number of images to search for</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="cf">for</span> key, value <span class="kw">in</span> searches.items():</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="co"># create a separate folder for each searched term</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>    dest <span class="op">=</span> local_path_raw <span class="op">/</span> key</span>
+<span id="cb9-7"><a href="#cb9-7"></a>    dest.mkdir(exist_ok<span class="op">=</span><span class="va">True</span>, parents<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-8"><a href="#cb9-8"></a></span>
+<span id="cb9-9"><a href="#cb9-9"></a>    <span class="co"># download and store the images for provided searched term</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a>    download_images(dest, urls<span class="op">=</span>search_images(value, max_images<span class="op">=</span>max_images))</span>
+<span id="cb9-11"><a href="#cb9-11"></a>    resize_images(local_path_raw <span class="op">/</span> key, max_size<span class="op">=</span><span class="dv">800</span>, dest<span class="op">=</span>local_path_raw <span class="op">/</span> key)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Searching for 'raspberry pi board'</code></pre>
+</div>
+</div>
+<p>At this point, the search and download step is complete. Next, let’s count the number of images successfully downloaded to our local directory.</p>
+<div class="cell" data-tags="[]" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># Check the count of downloaded images</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>(local_path_raw <span class="op">/</span> <span class="st">"pi"</span>).ls()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>(#156) [Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/e3a144d9-5730-4def-9581-c2cc6f26140a.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/195d40ea-0a1c-4875-a7eb-6f06fc0855cd.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/5d10c219-ae38-4cfe-b432-96f951e0bb3f.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/2d0e1737-a72d-4513-bd74-432fae126891.png'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/338f84b5-e583-4925-b3bb-aebc4bc18bd1.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/c114204b-b97a-455b-bdcc-0e3ee835ad11.png'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/f3a698c6-25b7-4c5f-b17b-95ade57afee0.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/2c950136-cb8e-4809-ae0b-f115a00e2f2d.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/5a574d21-5bbb-4214-b9c2-513e014bf348.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/c3d979de-648c-4e98-8fe4-3e617e12ec32.jpg')...]</code></pre>
+</div>
+</div>
+<p>We have downloaded the required images (#156 in total), but there is no guarantee that all our photos contain a Raspberry Pi logo. An image without a proper logo is useless for training. So we need to manually verify all the pictures and remove any that does not meet our requirements. This is a manual step and has to be performed <em>very patiently</em>. After cleaning all the images, I uploaded them under the <code>/clean</code> directory.</p>
+<div class="cell" data-tags="[]" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># After downloading the images, next step is to manually clean all the images</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="co"># After cleaning, check the count of images</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a>local_path_clean <span class="op">=</span> local_path <span class="op">/</span> <span class="st">"clean"</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a>local_path_clean.ls()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<pre><code>(#112) [Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/d14e3413-0c2f-4a8d-9361-e842633a7fb6.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/1a623864-2b33-4bce-98e9-5cbc2551afae.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/228d560d-ab50-4bf5-8a3b-510dcdf89e9a.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/babf3bb6-fa72-4a53-989d-a34326422e19.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/95660e55-1566-47cb-912c-2c683b790dcd.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/9ee061b2-c492-4691-9557-4b848cd16f10.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/5e0490d6-646d-470e-8257-f3c6742c3a48.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/a3f1aaa0-3188-414a-b6b6-0e5ce308daf9.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/3ae6fd96-22fa-404c-a867-48ca3a181f05.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/51be4baa-f930-4816-9383-119e89bd0270.png')...]</code></pre>
+</div>
+</div>
+<p>Let’s display a sample of the cleaned images.</p>
+<div class="cell" data-tags="[]" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># Define a function to display the extention of the image.</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="co"># Note that only JPG and PNG images can be used for training in Rekognition custom labels</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="kw">def</span> label_func(f):</span>
+<span id="cb15-4"><a href="#cb15-4"></a>    <span class="cf">return</span> f[<span class="op">-</span><span class="dv">3</span>:].upper()</span>
+<span id="cb15-5"><a href="#cb15-5"></a></span>
+<span id="cb15-6"><a href="#cb15-6"></a></span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="co"># Load images from the folder. This function act as a filter to omit files that are not images.</span></span>
+<span id="cb15-8"><a href="#cb15-8"></a><span class="co"># It does not read images at this point and only return their paths.</span></span>
+<span id="cb15-9"><a href="#cb15-9"></a>files <span class="op">=</span> get_image_files(local_path_clean)</span>
+<span id="cb15-10"><a href="#cb15-10"></a></span>
+<span id="cb15-11"><a href="#cb15-11"></a><span class="co"># Use FastAI DataLoader class to read images from the provided paths</span></span>
+<span id="cb15-12"><a href="#cb15-12"></a>dls <span class="op">=</span> ImageDataLoaders.from_name_func(</span>
+<span id="cb15-13"><a href="#cb15-13"></a>    local_path_clean, files, label_func, item_tfms<span class="op">=</span>Resize(<span class="dv">224</span>)</span>
+<span id="cb15-14"><a href="#cb15-14"></a>)</span>
+<span id="cb15-15"><a href="#cb15-15"></a></span>
+<span id="cb15-16"><a href="#cb15-16"></a><span class="co"># Display a subset of images</span></span>
+<span id="cb15-17"><a href="#cb15-17"></a>dls.show_batch(max_n<span class="op">=</span><span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-10-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="step-2-upload-images-to-s3-bucket" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-upload-images-to-s3-bucket">Step 2: Upload images to S3 bucket</h2>
+<p>The next step is to upload our finalized training images to AWS S3 bucket. I have created a bucket with the name <code>2023-04-26-amazon-rekognition-custom-labels</code>. You may use a unique name of your own choice to create an S3 bucket.</p>
+<div class="cell" data-tags="[]" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># Define S3 bucket name, bucket URL and images S3 path</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a></span>
+<span id="cb16-3"><a href="#cb16-3"></a>s3_bucket_name <span class="op">=</span> <span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a>s3_bucket_url <span class="op">=</span> <span class="ss">f's3://</span><span class="sc">{</span>s3_bucket_name<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb16-5"><a href="#cb16-5"></a>s3_images_path <span class="op">=</span> <span class="ss">f'</span><span class="sc">{</span>s3_bucket_url<span class="sc">}</span><span class="ss">/images'</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a>region <span class="op">=</span> <span class="st">'us-east-2'</span></span>
+<span id="cb16-7"><a href="#cb16-7"></a></span>
+<span id="cb16-8"><a href="#cb16-8"></a><span class="bu">print</span>(</span>
+<span id="cb16-9"><a href="#cb16-9"></a><span class="st">'s3_bucket_url: '</span>, s3_buket_url, <span class="st">'</span><span class="ch">\n</span><span class="st">'</span></span>
+<span id="cb16-10"><a href="#cb16-10"></a><span class="st">'s3_images_path: '</span>, s3_images_path</span>
+<span id="cb16-11"><a href="#cb16-11"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>s3_bucket_url:  s3://2023-04-26-amazon-rekognition-custom-labels 
+s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code></pre>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## Create an S3 bucket using AWS CLI MakeBucket (mb) command. </span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="co"># https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3/mb.html</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a><span class="op">!</span>aws s3 mb $s3_bucket_url <span class="op">--</span>region $region</span>
+<span id="cb18-4"><a href="#cb18-4"></a></span>
+<span id="cb18-5"><a href="#cb18-5"></a><span class="co"># !aws s3 mb s3://2023-04-26-amazon-rekognition-custom-labels --region us-east-2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>make_bucket failed: s3://2023-04-26-amazon-rekognition-custom-labels An error occurred (BucketAlreadyOwnedByYou) when calling the CreateBucket operation: Your previous request to create the named bucket succeeded and you already own it.</code></pre>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># Upload images to s3 bucket</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="op">!</span>aws s3 sync .<span class="op">/</span>$local_path_clean $s3_images_path <span class="op">--</span>region $region</span>
+<span id="cb20-3"><a href="#cb20-3"></a></span>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="co"># !aws s3 sync ./assets/2023-04-26-amazon-rekognition-custom-labels/clean s3://2023-04-26-amazon-rekognition-custom-labels/images --region us-east-2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># Display the list of images from S3</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="op">!</span>aws s3 ls $s3_images_path <span class="op">--</span>recursive</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>2023-05-01 09:11:23      39999 images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg
+2023-05-01 09:11:23     527439 images/034cb4ef-b7b1-48ab-8839-515878aefe72.png
+2023-05-01 09:11:23     506785 images/050e16bf-ef67-4791-8b44-da1b7f903972.png
+2023-05-01 09:11:23      50558 images/075d8ea9-ccd2-4cd7-b9b5-f499ff7d0f09.jpg
+2023-05-01 09:11:23      73841 images/07b07c52-69ce-4eef-9887-d2b795913b33.jpeg
+2023-05-01 09:11:23      66759 images/09caf2a1-3958-47f0-b2b8-61905a6337ef.jpg
+2023-05-01 09:11:23     104966 images/09f566df-128b-428d-b514-a7cfe47bccca.jpg
+2023-05-01 09:11:23      68640 images/0a3b17b6-a4d5-4252-9628-5b857fe9ce25.jpg
+2023-05-01 09:11:23      64107 images/0dc491c7-f1c0-4d54-bf60-bf986ff4340a.jpg
+2023-05-01 09:11:23      61480 images/0f1fcd8d-dbb1-4926-9d2a-55e18deed3ec.jpg
+2023-05-01 09:11:23      91267 images/172ed24a-c58b-4186-bb66-c5bf48c125f8.png
+2023-05-01 09:11:23      45327 images/1a623864-2b33-4bce-98e9-5cbc2551afae.jpg
+2023-05-01 09:11:23      62962 images/1b8b90a9-b8cb-4c85-a3fb-cd9a865baa5d.jpg
+2023-05-01 09:11:23     108271 images/20f1ec83-13c3-4517-b9e7-3d7cb8f1d4dd.jpg
+2023-05-01 09:11:23      71131 images/21b40f53-63a7-47f7-984b-d413ad254781.jpg
+2023-05-01 09:11:23      75492 images/21e48d81-57d7-4da5-9d95-a038d0c285c1.jpg
+2023-05-01 09:11:23      52485 images/228d560d-ab50-4bf5-8a3b-510dcdf89e9a.jpg
+2023-05-01 09:11:23      52315 images/23e65a8d-e3e2-4d8c-9aab-9f03c0f62868.jpg
+2023-05-01 09:11:23      47489 images/267bd98b-4001-4610-8af8-ca60595029c0.jpg
+2023-05-01 09:11:23      38170 images/2bbd80f8-9a0e-45a2-8f76-1f5f3f5f4095.jpg
+2023-05-01 09:11:23      39310 images/2c96018d-5501-4226-ae2b-a4ed84a75243.jpg
+2023-05-01 09:11:23      39218 images/3260abbe-f3f4-4acc-8a26-244a9bfe60da.jpeg
+2023-05-01 09:11:23      48423 images/3714d169-4839-44fc-8664-04cefbfd5376.jpg
+2023-05-01 09:11:23     323750 images/38092e95-5aa3-4a1e-80c8-b8bb39d269cd.png
+2023-05-01 09:11:23      12804 images/38395e14-56ea-4bb0-980f-fc33a98221ce.jpg
+2023-05-01 09:11:24      66244 images/39e4317c-0ee7-4d0e-95d7-cec439f4c7e5.jpg
+2023-05-01 09:11:24      76993 images/3ae6fd96-22fa-404c-a867-48ca3a181f05.jpg
+2023-05-01 09:11:24      68135 images/3fdf6f5a-bbe2-43bd-a0ff-b60c263cb360.jpg
+2023-05-01 09:11:24     112907 images/41f7b9f1-f12f-47a1-9c0a-20566fb141f4.jpg
+2023-05-01 09:11:24      56593 images/42a1cc88-09f0-449e-80f5-014c141c0bd7.jpg
+2023-05-01 09:11:24     147903 images/46fd265c-45ba-4d0f-9a1e-3d7c1211f6ee.jpg
+2023-05-01 09:11:24      72134 images/499518b6-37b9-4fe0-b3e9-86e5330ad45b.jpg
+2023-05-01 09:11:24      53768 images/4b3221ee-4e26-4cf9-965a-0eadc0fa6228.jpg
+2023-05-01 09:11:24     113101 images/4ca55c47-a818-4186-b730-eda0e866b81f.jpg
+2023-05-01 09:11:24      81604 images/4fa1edaf-9194-4d60-8552-8c120e73e440.png
+2023-05-01 09:11:24     327371 images/51be4baa-f930-4816-9383-119e89bd0270.png
+2023-05-01 09:11:24      60700 images/575ed94f-7228-4b2b-8e22-6c1aa63ede18.jpg
+2023-05-01 09:11:24      64617 images/5e0490d6-646d-470e-8257-f3c6742c3a48.jpg
+2023-05-01 09:11:24      76236 images/5fbfce6f-1c46-4ee4-bba7-159558992d2f.jpg
+2023-05-01 09:11:24      55074 images/618177b5-2ed9-4bd6-9580-8dcfd025865b.jpg
+2023-05-01 09:11:24      39436 images/633d8365-40c3-4374-a216-6a7778d43f03.jpg
+2023-05-01 09:11:24      49081 images/64119679-dab3-47c2-b7f5-4001a58700ec.jpg
+2023-05-01 09:11:24      77339 images/65418732-0c4e-4f24-8d50-ec3151fa5d6a.jpg
+2023-05-01 09:11:24      75945 images/672afbf2-de03-4bf5-aa57-d40b7d31d541.jpeg
+2023-05-01 09:11:24      59209 images/68966e2e-bd6b-4d23-bf49-679713065f95.jpg
+2023-05-01 09:11:24      48855 images/6da5aaae-1be1-4316-ae14-8de75789414a.jpg
+2023-05-01 09:11:24     623433 images/7339b3ae-86d8-4181-8055-866fe5f22b0c.png
+2023-05-01 09:11:24     366856 images/749fb305-cf38-4576-b749-1296408b6712.png
+2023-05-01 09:11:24     226675 images/75f95913-8fe0-4c4a-80d1-44a73c29ae2d.jpg
+2023-05-01 09:11:24      42959 images/78d8228e-e49b-47e1-a167-6cd559ab9a73.jpg
+2023-05-01 09:11:24      72061 images/79d1f3fe-9470-41d1-b0b0-1e295f7d562b.jpg
+2023-05-01 09:11:24      52261 images/7ac4b88d-d078-4772-b436-6fcb93f4055f.jpg
+2023-05-01 09:11:24      96002 images/7e182025-7977-4f71-b1e8-f07788758598.jpg
+2023-05-01 09:11:24     105369 images/825a4024-df99-42ac-9496-ea04d1b1c7bd.jpg
+2023-05-01 09:11:24      93159 images/83204d18-cdf0-466f-ba71-a62be9244b8a.jpg
+2023-05-01 09:11:24      93044 images/8627d03b-1dfa-436b-9178-d427d181fb7a.jpg
+2023-05-01 09:11:24     133550 images/8630cdac-946f-4153-838b-56e687922e6c.png
+2023-05-01 09:11:24     251448 images/8738fe36-29b7-4eb7-919c-d9c6afdf75a5.png
+2023-05-01 09:11:24      20703 images/8880357a-d253-4048-9cdb-f096f233e00a.jpg
+2023-05-01 09:11:24     394736 images/897f9b22-dbfe-46ad-adef-abc89f81e637.PNG
+2023-05-01 09:11:24      45704 images/8a445c99-8f7b-4dcd-973c-173d7207a9eb.jpg
+2023-05-01 09:11:24      65416 images/8fdad490-0d0e-4878-bf16-9804dec79874.jpg
+2023-05-01 09:11:24      34553 images/8fee7840-b28d-41b3-83df-92273f550203.jpg
+2023-05-01 09:11:24      52397 images/92c4d6d7-4927-4fd2-91bf-9b2aa2ef2882.jpg
+2023-05-01 09:11:24      76263 images/95660e55-1566-47cb-912c-2c683b790dcd.jpg
+2023-05-01 09:11:24      41339 images/958f88c2-49fa-4fc4-8cc0-1f7801494a5b.jpg
+2023-05-01 09:11:24      96875 images/971c86ee-4956-470a-9464-40298017a4a0.jpg
+2023-05-01 09:11:24      82668 images/990c3934-9530-4eef-98ea-06a09c2b6855.jpg
+2023-05-01 09:11:24      74400 images/9968f3b0-c79e-4796-bf39-14ff13f2f7ad.jpg
+2023-05-01 09:11:24      90824 images/9ca1913e-545b-4404-92ce-49da444a63c4.jpg
+2023-05-01 09:11:24      76967 images/9ccd7dd1-0ca4-444f-bc1a-af9db96a51e5.jpg
+2023-05-01 09:11:24      68486 images/9d3851ae-2f6c-453e-a023-a7bf513438c7.jpg
+2023-05-01 09:11:24      67379 images/9ee061b2-c492-4691-9557-4b848cd16f10.jpg
+2023-05-01 09:11:24      97003 images/9f77c47f-52af-4be9-acd2-28aeb8ec53e9.jpg
+2023-05-01 09:11:24      69616 images/9fb73562-02a1-4c1e-9c02-a6189674db9e.jpg
+2023-05-01 09:11:24      35460 images/a0105005-96b7-41d5-8e3f-28bb45129fbe.jpg
+2023-05-01 09:11:24      65774 images/a3f1aaa0-3188-414a-b6b6-0e5ce308daf9.jpg
+2023-05-01 09:11:24     569945 images/a85aeaa4-244f-45fc-826b-5fb9b26235bf.png
+2023-05-01 09:11:24      72757 images/a9588d35-98ed-417d-a620-01800e4ff831.jpg
+2023-05-01 09:11:24      73227 images/af307494-b8ce-422f-9011-f3eeb0e15879.jpg
+2023-05-01 09:11:24      36802 images/b3312eec-43a5-475c-b5b4-4722e1aa8fec.jpg
+2023-05-01 09:11:24      47581 images/b620148b-86c5-4f18-abcd-548ec88fefe8.jpg
+2023-05-01 09:11:24      36604 images/b6b220b5-bfe7-4647-acca-c0d8fa98e02d.png
+2023-05-01 09:11:24      57179 images/b8af0031-fa79-4aa7-9405-cd9825624db3.jpg
+2023-05-01 09:11:24      41915 images/ba4a4c20-a35f-4627-8d7a-6e4204cfe3e8.jpg
+2023-05-01 09:11:24      44096 images/babf3bb6-fa72-4a53-989d-a34326422e19.jpg
+2023-05-01 09:11:24      85721 images/be5c7e07-735b-46e6-a4d1-10b94d8b5092.jpg
+2023-05-01 09:11:24     225141 images/bea1c670-4f1b-46be-939b-be1b6d0d79bc.jpg
+2023-05-01 09:11:24      28111 images/c1ab05ea-9ec7-4d70-ba48-e59c899a54cd.jpg
+2023-05-01 09:11:24      53330 images/c2615222-51f3-4799-a8f7-e1797c7ed1a5.jpg
+2023-05-01 09:11:24      72484 images/c4b37d79-82f0-4455-a61c-d6d36b85efb3.jpg
+2023-05-01 09:11:24     131996 images/c7c95ad8-407d-4fa1-85d4-d642c3f2f154.jpg
+2023-05-01 09:11:24      82042 images/c959d9f2-392b-4e8d-bffe-60f1c73df2d4.jpg
+2023-05-01 09:11:24      54427 images/c9f005fe-601d-436d-86de-3378a3f97d61.JPG
+2023-05-01 09:11:24      70177 images/cc7111c1-cc40-4ad7-9e88-b8d3c8dbbbc2.jpg
+2023-05-01 09:11:24     166650 images/cc8db196-e8a0-431d-9da8-8dabaa22ea24.png
+2023-05-01 09:11:24      63822 images/d14e3413-0c2f-4a8d-9361-e842633a7fb6.jpg
+2023-05-01 09:11:24     487367 images/d2c711fa-f922-413f-aadc-ae0e9e10af2f.png
+2023-05-01 09:11:24      70247 images/d3f80782-ea64-40a6-89c0-0590cc16528e.jpg
+2023-05-01 09:11:24      64264 images/e1091468-29c6-4d32-b0c9-2f08ec2bfa3c.jpg
+2023-05-01 09:11:24      49633 images/e3e17e8e-3c59-4ebe-8516-1dd2aa79f38e.jpg
+2023-05-01 09:11:24      98993 images/e4965e99-67b5-4681-8477-fce7cec39608.jpg
+2023-05-01 09:11:24     176557 images/e50a84c0-0c05-4d00-a80d-f8727e682955.png
+2023-05-01 09:11:24      46807 images/e52c99cf-6db7-44c8-9402-8ba0e1690e68.jpg
+2023-05-01 09:11:24      51590 images/e71c9747-6dab-4c15-a7a5-b0667d14994c.jpg
+2023-05-01 09:11:24      74435 images/e964abee-0aa3-4d74-95ef-7c4650be6e68.jpg
+2023-05-01 09:11:24      68261 images/ed2da15b-bbf0-4d8d-8543-cffb293a6321.jpg
+2023-05-01 09:11:24     103909 images/edeaf6bf-59ea-4132-a6f7-ce6011c2cba6.jpg
+2023-05-01 09:11:24      48948 images/f4552f5f-3d4f-4e27-9430-52a4c0d82b6c.jpg
+2023-05-01 09:11:24      67209 images/fa5d6d7d-156e-4971-87d2-eb0f3ea2baa2.jpg
+2023-05-01 09:11:24      70342 images/fb5b1519-2f9e-4e65-a2f7-2d66a0f5cd61.jpg</code></pre>
+</div>
+</div>
+</section>
+<section id="step-3-create-a-project" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-create-a-project">Step 3: Create a Project</h2>
+<p>To work with <em>Rekognition Custom Labels</em>, we first have to create a project. A <code>Project</code> is like a logical workspace where you place and organize your project assets like datasets and models.</p>
+<p>To create a <strong>Project</strong> go to <code>Amazon Rekognition Custom Labels &gt; Projects &gt; Create Project</code></p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/create-project.png" class="img-fluid"></p>
+<p>Under <strong>Project details</strong> give it’s <strong>Project name</strong> as <code>raspberry-pi-logos</code>, and click <strong>Create project</strong>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/project-details.png" class="img-fluid"></p>
+</section>
+<section id="step-4-creating-a-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-creating-a-dataset">Step 4: Creating a Dataset</h2>
+<p>Next we will create a dataset under the project. This dataset will hold our training and test images. For this go to <code>Custom Labels &gt; Projects &gt; raspberry-pi-logos &gt; Create dataset</code>.</p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Dataset
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A dataset is a collection of images, and image labels, that you use to train or test a model.</p>
+</div>
+</div>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/create-dataset.png" class="img-fluid"></p>
+<p>On the next pane, provide the details of the dataset. Under <strong>Starting configuration</strong>, select <code>Start with a single dataset</code> for <em>Configuation options</em>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/configuration-options.png" class="img-fluid"></p>
+<p>Under <strong>Training dataset details</strong>, select <code>Import images from S3 bucket</code> for <em>Import images</em></p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/training-dataset-details.png" class="img-fluid"></p>
+<p>Next, we will provide the S3 bucket URI <code>s3://2023-04-26-amazon-rekognition-custom-labels/images/</code> from where it will import the images. Keep the <em>Automatic Labelling</em> checkbox unchecked.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/dataset-s3uri.png" class="img-fluid"></p>
+<p>Once <strong>S3 URI</strong> is given, it will provide some permissions we need to configure on the S3 bucket containing our images. The <em>Custom Labels service</em> cannot import the images from the bucket without these permissions. So let’s configure them.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/s3bucket-required-permissions.png" class="img-fluid"></p>
+<p>Copy the provided permissions, go to the S3 bucket, edit the bucket policy and paste the permissions there and save it.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/edit-bucket-policy.png" class="img-fluid"></p>
+<p>Once all done, go back to the <strong>Create Dataset</strong> page and click <strong>Create Dataset</strong>.</p>
+</section>
+<section id="step-5-add-labels" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-add-labels">Step 5: Add Labels</h2>
+<p>Next step is to add labels. For this go to <code>Custom Labels &gt; Projects &gt; raspberry-pi-logos &gt; Add labels</code></p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Labels
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Labels identify objects, scenes, or concepts on an entire image, or they identify object locations on an image.</p>
+</div>
+</div>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/add-labels.png" class="img-fluid"></p>
+<p>Click the <strong>Start Labeling</strong> button on the next page to start the labeling activity.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/start-labelling.png" class="img-fluid"></p>
+<p>It is easy to label in our case as we only have a single label: <em>Raspberry Pi Logo</em>. Let’s add that label by clicking on <code>Labels &gt; Add Labels</code>. On the <strong>Manage labels</strong> pane select “Add Labels” and add the name of a single label <code>raspberry-pi-logo</code>, and click <strong>Save</strong>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/raspberry-pi-logo-label.png" class="img-fluid"></p>
+</section>
+<section id="step-6-draw-bounding-boxes" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-draw-bounding-boxes">Step 6: Draw Bounding Boxes</h2>
+<p>The next step is to draw <code>Bounding Boxes</code> around the <em>Raspberry Pi logos</em> in all the images. This is again a manual step and has to be done very patiently. To start this activity, select <code>unlabelled images</code> and click <strong>Draw bounding boxes</strong>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/draw-bounding-box.png" class="img-fluid"></p>
+<p>From the next pane, use the <strong>cursor</strong> to draw bounding boxes around the <em>Raspberry Pi logos</em>, as shown below.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/draw-bounding-box-2.png" class="img-fluid"></p>
+<p>Once completed, click <strong>Done</strong> and <strong>Save changes</strong>.</p>
+</section>
+<section id="step-7-train-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-train-model">Step 7: Train model</h2>
+<p>The next step in our process is to train a model. Click <strong>Train model</strong> to start the model training.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/train-model.png" class="img-fluid"></p>
+<p>This will open a <em>Train model</em> configuration page. Keep all the defaults on this page, and click <strong>Train model</strong>. This will bring a popup saying</p>
+<ul>
+<li>Our single dataset will be split into training dataset (80%) and test dataset (20%)</li>
+<li>And training may take about 30 minutes to complete</li>
+</ul>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/train-model-2.png" class="img-fluid"></p>
+<p>Start the training by clicking <strong>Train model</strong>.</p>
+<p>Once the training starts, a model entry will appear under <code>Custom Labels &gt; Projects &gt; raspberry-pi-logos</code> with the status <strong>TRAINING_IN_PROGRESS</strong>. After that, we have to wait till the status changes to <strong>TRAINING_COMPLETED</strong>.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/train-model-3.png" class="img-fluid"></p>
+</section>
+<section id="step-8-evaluating-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-8-evaluating-the-model">Step 8: Evaluating the model</h2>
+<p>Once the training is complete, we can evaluate the model’s performance by clicking the model name.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-eval-1.png" class="img-fluid"></p>
+<p>The <code>Evaluation</code> tab shows the testing results for our trained model. This helps to understand the overall performance of our model.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-eval-2.png" class="img-fluid"></p>
+<p>We may dig deeper into the model’s performance on the test set by clicking on the <code>View test results</code>. In our case, the trained model gave wrong predictions (False Negatives) for two test images. When looked closely, it showed that even though the model could pick the presence of the Raspberry Pi logo, it was not confident enough to accurately draw the bounding box around it.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-eval-3.png" class="img-fluid"></p>
+</section>
+<section id="step-9-getting-inference-from-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-9-getting-inference-from-the-model">Step 9: Getting inference from the model</h2>
+<p>All right, we have trained a model, and we are satisfied with the model’s performance. We may now deploy this model and put it to some actual use. Amazon Rekognition makes the model deployment part a breeze and can be done by clicking the button <strong>Start</strong>. When you start your model, specify the number of compute resources, known as an <strong>inference unit</strong>, that the model uses. To read more about the model deployment, compute resources and cost, refer to the documentation page <a href="https://docs.aws.amazon.com/rekognition/latest/customlabels-dg/running-model.html">Running a trained Amazon Rekognition Custom Labels model</a></p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/model-deploy.png" class="img-fluid"></p>
+<p>The following cell defines two functions:</p>
+<ol type="1">
+<li><p><strong>display_image</strong> This function reads an image from the S3 bucket, and draws a bounding box around the Raspberry Pi logo based on the coordinates received from the model API.</p></li>
+<li><p><strong>show_custom_labels</strong> This function uses the Boto3 library to initiate Amazon Rekognition service client, and invoke its APIs. For custom label detection, it uses the interface <code>detect_custom_labels</code>. To read more about this API and the available features, refer to the documentation page <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rekognition/client/detect_custom_labels.html">Rekognition.Client.detect_custom_labels</a></p></li>
+</ol>
+<div class="cell" data-tags="[]" data-execution_count="33">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="im">import</span> boto3</span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="im">import</span> io</span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image, ImageDraw, ExifTags, ImageColor, ImageFont</span>
+<span id="cb23-4"><a href="#cb23-4"></a></span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="kw">def</span> display_image(bucket,photo,response):</span>
+<span id="cb23-6"><a href="#cb23-6"></a>    <span class="co"># Load image from S3 bucket</span></span>
+<span id="cb23-7"><a href="#cb23-7"></a>    s3_connection <span class="op">=</span> boto3.resource(<span class="st">'s3'</span>)</span>
+<span id="cb23-8"><a href="#cb23-8"></a></span>
+<span id="cb23-9"><a href="#cb23-9"></a>    s3_object <span class="op">=</span> s3_connection.Object(bucket,photo)</span>
+<span id="cb23-10"><a href="#cb23-10"></a>    s3_response <span class="op">=</span> s3_object.get()</span>
+<span id="cb23-11"><a href="#cb23-11"></a></span>
+<span id="cb23-12"><a href="#cb23-12"></a>    stream <span class="op">=</span> io.BytesIO(s3_response[<span class="st">'Body'</span>].read())</span>
+<span id="cb23-13"><a href="#cb23-13"></a>    image<span class="op">=</span>Image.<span class="bu">open</span>(stream)</span>
+<span id="cb23-14"><a href="#cb23-14"></a></span>
+<span id="cb23-15"><a href="#cb23-15"></a>    <span class="co"># Ready image to draw bounding boxes on it.</span></span>
+<span id="cb23-16"><a href="#cb23-16"></a>    imgWidth, imgHeight <span class="op">=</span> image.size</span>
+<span id="cb23-17"><a href="#cb23-17"></a>    draw <span class="op">=</span> ImageDraw.Draw(image)</span>
+<span id="cb23-18"><a href="#cb23-18"></a></span>
+<span id="cb23-19"><a href="#cb23-19"></a>    <span class="co"># calculate and display bounding boxes for each detected custom label</span></span>
+<span id="cb23-20"><a href="#cb23-20"></a>    <span class="bu">print</span>(<span class="st">'Detected custom labels for '</span> <span class="op">+</span> photo)</span>
+<span id="cb23-21"><a href="#cb23-21"></a>    <span class="cf">for</span> customLabel <span class="kw">in</span> response[<span class="st">'CustomLabels'</span>]:</span>
+<span id="cb23-22"><a href="#cb23-22"></a>        <span class="bu">print</span>(<span class="st">'Label '</span> <span class="op">+</span> <span class="bu">str</span>(customLabel[<span class="st">'Name'</span>]))</span>
+<span id="cb23-23"><a href="#cb23-23"></a>        <span class="bu">print</span>(<span class="st">'Confidence '</span> <span class="op">+</span> <span class="bu">str</span>(customLabel[<span class="st">'Confidence'</span>]))</span>
+<span id="cb23-24"><a href="#cb23-24"></a>        <span class="cf">if</span> <span class="st">'Geometry'</span> <span class="kw">in</span> customLabel:</span>
+<span id="cb23-25"><a href="#cb23-25"></a>            box <span class="op">=</span> customLabel[<span class="st">'Geometry'</span>][<span class="st">'BoundingBox'</span>]</span>
+<span id="cb23-26"><a href="#cb23-26"></a>            left <span class="op">=</span> imgWidth <span class="op">*</span> box[<span class="st">'Left'</span>]</span>
+<span id="cb23-27"><a href="#cb23-27"></a>            top <span class="op">=</span> imgHeight <span class="op">*</span> box[<span class="st">'Top'</span>]</span>
+<span id="cb23-28"><a href="#cb23-28"></a>            width <span class="op">=</span> imgWidth <span class="op">*</span> box[<span class="st">'Width'</span>]</span>
+<span id="cb23-29"><a href="#cb23-29"></a>            height <span class="op">=</span> imgHeight <span class="op">*</span> box[<span class="st">'Height'</span>]</span>
+<span id="cb23-30"><a href="#cb23-30"></a></span>
+<span id="cb23-31"><a href="#cb23-31"></a>            draw.text((left,top), customLabel[<span class="st">'Name'</span>], fill<span class="op">=</span><span class="st">'#00d400'</span>)</span>
+<span id="cb23-32"><a href="#cb23-32"></a></span>
+<span id="cb23-33"><a href="#cb23-33"></a>            <span class="bu">print</span>(<span class="st">'Left: '</span> <span class="op">+</span> <span class="st">'</span><span class="sc">{0:.0f}</span><span class="st">'</span>.<span class="bu">format</span>(left))</span>
+<span id="cb23-34"><a href="#cb23-34"></a>            <span class="bu">print</span>(<span class="st">'Top: '</span> <span class="op">+</span> <span class="st">'</span><span class="sc">{0:.0f}</span><span class="st">'</span>.<span class="bu">format</span>(top))</span>
+<span id="cb23-35"><a href="#cb23-35"></a>            <span class="bu">print</span>(<span class="st">'Label Width: '</span> <span class="op">+</span> <span class="st">"</span><span class="sc">{0:.0f}</span><span class="st">"</span>.<span class="bu">format</span>(width))</span>
+<span id="cb23-36"><a href="#cb23-36"></a>            <span class="bu">print</span>(<span class="st">'Label Height: '</span> <span class="op">+</span> <span class="st">"</span><span class="sc">{0:.0f}</span><span class="st">"</span>.<span class="bu">format</span>(height))</span>
+<span id="cb23-37"><a href="#cb23-37"></a></span>
+<span id="cb23-38"><a href="#cb23-38"></a>            points <span class="op">=</span> (</span>
+<span id="cb23-39"><a href="#cb23-39"></a>                (left,top),</span>
+<span id="cb23-40"><a href="#cb23-40"></a>                (left <span class="op">+</span> width, top),</span>
+<span id="cb23-41"><a href="#cb23-41"></a>                (left <span class="op">+</span> width, top <span class="op">+</span> height),</span>
+<span id="cb23-42"><a href="#cb23-42"></a>                (left , top <span class="op">+</span> height),</span>
+<span id="cb23-43"><a href="#cb23-43"></a>                (left, top))</span>
+<span id="cb23-44"><a href="#cb23-44"></a>            draw.line(points, fill<span class="op">=</span><span class="st">'#00d400'</span>, width<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb23-45"><a href="#cb23-45"></a>    </span>
+<span id="cb23-46"><a href="#cb23-46"></a>    <span class="cf">return</span> image</span>
+<span id="cb23-47"><a href="#cb23-47"></a></span>
+<span id="cb23-48"><a href="#cb23-48"></a><span class="kw">def</span> show_custom_labels(model,bucket,photo, min_confidence):</span>
+<span id="cb23-49"><a href="#cb23-49"></a>    client<span class="op">=</span>boto3.client(<span class="st">'rekognition'</span>)</span>
+<span id="cb23-50"><a href="#cb23-50"></a></span>
+<span id="cb23-51"><a href="#cb23-51"></a>    <span class="co">#Call DetectCustomLabels</span></span>
+<span id="cb23-52"><a href="#cb23-52"></a>    response <span class="op">=</span> client.detect_custom_labels(Image<span class="op">=</span>{<span class="st">'S3Object'</span>: {<span class="st">'Bucket'</span>: bucket, <span class="st">'Name'</span>: photo}},</span>
+<span id="cb23-53"><a href="#cb23-53"></a>        MinConfidence<span class="op">=</span>min_confidence,</span>
+<span id="cb23-54"><a href="#cb23-54"></a>        ProjectVersionArn<span class="op">=</span>model)</span>
+<span id="cb23-55"><a href="#cb23-55"></a></span>
+<span id="cb23-56"><a href="#cb23-56"></a>    <span class="bu">print</span>(<span class="st">"Response from the API: </span><span class="ch">\n</span><span class="st">"</span>, response, <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb23-57"><a href="#cb23-57"></a>    <span class="co"># For object detection use case, uncomment below code to display image.</span></span>
+<span id="cb23-58"><a href="#cb23-58"></a>    image_with_labels <span class="op">=</span> display_image(bucket,photo,response)</span>
+<span id="cb23-59"><a href="#cb23-59"></a></span>
+<span id="cb23-60"><a href="#cb23-60"></a>    <span class="cf">return</span> image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>bucket<span class="op">=</span><span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a>photo<span class="op">=</span><span class="st">'images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg'</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a>model<span class="op">=</span><span class="st">'arn:aws:rekognition:us-east-2:801598032724:project/raspberry-pi-logos/version/raspberry-pi-logos.2023-05-01T18.56.34/1682949462653'</span></span>
+<span id="cb24-4"><a href="#cb24-4"></a>min_confidence<span class="op">=</span><span class="dv">20</span></span>
+<span id="cb24-5"><a href="#cb24-5"></a></span>
+<span id="cb24-6"><a href="#cb24-6"></a>image_with_labels<span class="op">=</span>show_custom_labels(model,bucket,photo, min_confidence)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Response from the API: 
+ {'CustomLabels': [{'Name': 'raspberry-pi-logo', 'Confidence': 21.43899917602539, 'Geometry': {'BoundingBox': {'Width': 0.08699999749660492, 'Height': 0.0675399973988533, 'Left': 0.34002000093460083, 'Top': 0.30324000120162964}}}], 'ResponseMetadata': {'RequestId': '45c1b1cd-162f-4ebf-8603-957648440d41', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amzn-requestid': '45c1b1cd-162f-4ebf-8603-957648440d41', 'content-type': 'application/x-amz-json-1.1', 'content-length': '216', 'date': 'Tue, 02 May 2023 14:30:22 GMT'}, 'RetryAttempts': 0}} 
+
+Detected custom labels for images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg
+Label raspberry-pi-logo
+Confidence 21.43899917602539
+Left: 272
+Top: 182
+Label Width: 70
+Label Height: 41</code></pre>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># Let's display the image with labels</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="35">
+<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="step-10-stop-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-10-stop-the-model">Step 10: Stop the model</h2>
+<p>Rekognition Custom Labels service will charge us as long as the model is in the <code>Running</code> state. Therefore, we should stop it once it in no more being used. To do that, click the <strong>Stop</strong> button on the model.</p>
+<p><img src="images/2023-04-26-amazon-rekognition-custom-labels/mode-stop.png" class="img-fluid"></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
