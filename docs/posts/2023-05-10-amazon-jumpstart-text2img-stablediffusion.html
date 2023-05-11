@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2023-05-10">
-<meta name="description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart API to generate images from text using state-of-the-art Stable Diffusion models.">
+<meta name="description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart to generate images from text using state-of-the-art Stable Diffusion models.">
 
-<title>Random Thoughts - Building your own Generative AI Art Studio with Amazon SageMaker JumpStart</title>
+<title>Random Thoughts - Build your own Generative AI Art Studio with Amazon SageMaker JumpStart</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,6 +22,69 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -75,12 +138,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Building your own Generative AI Art Studio with Amazon SageMaker JumpStart">
-<meta property="og:description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart API to generate images from text using state-of-the-art Stable Diffusion models.">
+<meta property="og:title" content="Random Thoughts - Build your own Generative AI Art Studio with Amazon SageMaker JumpStart">
+<meta property="og:description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart to generate images from text using state-of-the-art Stable Diffusion models.">
 <meta property="og:image" content="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion.jpg">
 <meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Building your own Generative AI Art Studio with Amazon SageMaker JumpStart">
-<meta name="twitter:description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart API to generate images from text using state-of-the-art Stable Diffusion models.">
+<meta name="twitter:title" content="Random Thoughts - Build your own Generative AI Art Studio with Amazon SageMaker JumpStart">
+<meta name="twitter:description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart to generate images from text using state-of-the-art Stable Diffusion models.">
 <meta name="twitter:image" content="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion.jpg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -141,8 +204,28 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
    
   <ul>
   <li><a href="#credits" id="toc-credits" class="nav-link active" data-scroll-target="#credits">Credits</a></li>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#what-is-amazon-sagemaker" id="toc-what-is-amazon-sagemaker" class="nav-link" data-scroll-target="#what-is-amazon-sagemaker">What Is Amazon SageMaker?</a></li>
+  <li><a href="#what-is-sagemaker-jumpstart" id="toc-what-is-sagemaker-jumpstart" class="nav-link" data-scroll-target="#what-is-sagemaker-jumpstart">What is SageMaker JumpStart?</a></li>
+  <li><a href="#what-is-stable-diffusion" id="toc-what-is-stable-diffusion" class="nav-link" data-scroll-target="#what-is-stable-diffusion">What is Stable Diffusion?</a></li>
+  </ul></li>
   <li><a href="#environment" id="toc-environment" class="nav-link" data-scroll-target="#environment">Environment</a></li>
+  <li><a href="#set-up-the-environment" id="toc-set-up-the-environment" class="nav-link" data-scroll-target="#set-up-the-environment">Set up the environment</a></li>
+  <li><a href="#define-functions-to-deploy-models-and-get-inference-endpoints" id="toc-define-functions-to-deploy-models-and-get-inference-endpoints" class="nav-link" data-scroll-target="#define-functions-to-deploy-models-and-get-inference-endpoints">Define functions to deploy models and get inference endpoints</a></li>
+  <li><a href="#define-functions-to-query-endpoints-and-display-results" id="toc-define-functions-to-query-endpoints-and-display-results" class="nav-link" data-scroll-target="#define-functions-to-query-endpoints-and-display-results">Define functions to query endpoints and display results</a>
+  <ul class="collapse">
+  <li><a href="#supported-inference-parameters" id="toc-supported-inference-parameters" class="nav-link" data-scroll-target="#supported-inference-parameters">Supported Inference parameters</a></li>
+  </ul></li>
+  <li><a href="#selecting-sagemaker-pre-trained-diffusion-model-and-prompt-engineering" id="toc-selecting-sagemaker-pre-trained-diffusion-model-and-prompt-engineering" class="nav-link" data-scroll-target="#selecting-sagemaker-pre-trained-diffusion-model-and-prompt-engineering">Selecting SageMaker pre-trained Diffusion model and Prompt Engineering</a>
+  <ul class="collapse">
+  <li><a href="#model-selection" id="toc-model-selection" class="nav-link" data-scroll-target="#model-selection">Model selection</a></li>
+  <li><a href="#prompt-engineering" id="toc-prompt-engineering" class="nav-link" data-scroll-target="#prompt-engineering">Prompt engineering</a></li>
+  </ul></li>
+  <li><a href="#stable-diffusion-v2-1" id="toc-stable-diffusion-v2-1" class="nav-link" data-scroll-target="#stable-diffusion-v2-1">Stable Diffusion v2-1</a>
+  <ul class="collapse">
+  <li><a href="#realistic-people" id="toc-realistic-people" class="nav-link" data-scroll-target="#realistic-people">Realistic people</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -151,7 +234,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Building your own Generative AI Art Studio with Amazon SageMaker JumpStart</h1>
+<h1 class="title">Build your own Generative AI Art Studio with Amazon SageMaker JumpStart</h1>
   <div class="quarto-categories">
     <div class="quarto-category">aws</div>
     <div class="quarto-category">ml</div>
@@ -160,7 +243,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div>
   <div class="description">
-    In this notebook, I demonstrate how to use the SageMaker Jumpstart API to generate images from text using state-of-the-art Stable Diffusion models.
+    In this notebook, I demonstrate how to use the SageMaker Jumpstart to generate images from text using state-of-the-art Stable Diffusion models.
   </div>
 </div>
 
@@ -189,11 +272,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <section id="credits" class="level2">
 <h2 class="anchored" data-anchor-id="credits">Credits</h2>
-<p>This notebook takes inpiration from the <a href="https://aws.amazon.com/blogs/machine-learning/">AWS Machine Learning Blog</a> post when they announced the availability of <a href="https://stability.ai/blog/stable-diffusion-announcement">Stable Diffusion V1</a> and <a href="https://stability.ai/blog/stable-diffusion-v2-release">Stable Diffusion V2</a> models on <a href="https://aws.amazon.com/sagemaker/jumpstart/">SageMaker JumpStart</a>. You may find the original post here <a href="https://aws.amazon.com/blogs/machine-learning/generate-images-from-text-with-the-stable-diffusion-model-on-amazon-sagemaker-jumpstart/">Generate images from text with the stable diffusion model on Amazon SageMaker JumpStart</a>.</p>
+<p>This notebook took inspiration from the <a href="https://aws.amazon.com/blogs/machine-learning/">AWS Machine Learning Blog</a> post when they announced the availability of <a href="https://stability.ai/blog/stable-diffusion-announcement">Stable Diffusion V1</a> and <a href="https://stability.ai/blog/stable-diffusion-v2-release">Stable Diffusion V2</a> models on <a href="https://aws.amazon.com/sagemaker/jumpstart/">SageMaker JumpStart</a>. You may find the original post here <a href="https://aws.amazon.com/blogs/machine-learning/generate-images-from-text-with-the-stable-diffusion-model-on-amazon-sagemaker-jumpstart/">Generate images from text with the stable diffusion model on Amazon SageMaker JumpStart</a>.</p>
 </section>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p><strong>What Is Amazon SageMaker?</strong></p>
+<section id="what-is-amazon-sagemaker" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-amazon-sagemaker">What Is Amazon SageMaker?</h3>
 <p><em>Amazon SageMaker is a fully managed machine learning service</em>. With SageMaker, data scientists and developers can quickly and easily build and train machine learning models, and then directly deploy them into a production-ready hosted environment. It provides an integrated Jupyter authoring notebook instance for easy access to your data sources for exploration and analysis, so you don’t have to manage servers. It also provides common machine learning algorithms that are optimized to run efficiently against extremely large data in a distributed environment. With native support for bring-your-own-algorithms and frameworks, SageMaker offers flexible distributed training options that adjust to your specific workflows. You can deploy a model into a secure and scalable environment by launching it with a few clicks from SageMaker Studio or the SageMaker console.</p>
 <div class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
@@ -208,7 +292,9 @@ Note
 <p><strong>Amazon SageMaker</strong> introduction is taken from <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html">SageMaker Developer Guide</a>. You may use <em>Developer Guide</em> for more details including <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/gs.html">Get Started with Amazon SageMaker</a>.</p>
 </div>
 </div>
-<p><strong>What is SageMaker JumpStart?</strong></p>
+</section>
+<section id="what-is-sagemaker-jumpstart" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-sagemaker-jumpstart">What is SageMaker JumpStart?</h3>
 <p><em>SageMaker JumpStart is the machine learning (ML) hub of SageMaker that provides hundreds of built-in algorithms, pre-trained models, and end-to-end solution templates to help you quickly get started with ML</em>. JumpStart also provides solution templates that set up infrastructure for common use cases, and executable example notebooks for machine learning with SageMaker.</p>
 <div class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
@@ -223,10 +309,13 @@ Note
 <p><strong>SageMaker JumpStart</strong> introduction is taken from <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jumpstart.html">SageMaker JumpStart Developer Guide</a>. You may use <em>Developer Guide</em> for more details including <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jumpstart.html">Get Started</a> and one-click, end-to-end <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/jumpstart-solutions.html">Solution Templates</a> for many common machine learning use cases.</p>
 </div>
 </div>
-<p><strong>What is Stable Diffusion?</strong></p>
+</section>
+<section id="what-is-stable-diffusion" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-stable-diffusion">What is Stable Diffusion?</h3>
 <p><em>Stable Diffusion is a text-to-image model that enables you to create photorealistic images from just a text prompt.</em> A diffusion model trains by learning to remove noise that was added to a real image. This de-noising process generates a realistic image. These models can also generate images from text alone by conditioning the generation process on the text. For instance, Stable Diffusion is a latent diffusion where the model learns to recognize shapes in a pure noise image and gradually brings these shapes into focus if the shapes match the words in the input text.</p>
-<p><strong>How JumpStart simplify it?</strong></p>
-<p>Training and deploying large models and running inference on models such as Stable Diffusion is often challenging and include issues such as cuda out of memory, payload size limit exceeded and so on. <em>JumpStart</em> simplifies this process by providing ready-to-use scripts that have been robustly tested. Furthermore, it provides guidance on each step of the process including the recommended instance types, how to select parameters to guide image generation process, prompt engineering etc. Moreover, you can deploy and run inference on any of the 80+ Diffusion models from JumpStart without having to write any piece of your own code.</p>
+<section id="how-jumpstart-simplify-it" class="level4">
+<h4 class="anchored" data-anchor-id="how-jumpstart-simplify-it">How JumpStart simplify it?</h4>
+<p>Training and deploying large models and running inference on models such as Stable Diffusion is often challenging and include issues such as CUDA out of memory, payload size limit exceeded and so on. <em>JumpStart</em> simplifies this process by providing ready-to-use scripts that have been robustly tested. Furthermore, it provides guidance on each step of the process including the recommended instance types, how to select parameters to guide image generation process, prompt engineering etc. Moreover, you can deploy and run inference on any of the 80+ Diffusion models from JumpStart without having to write any piece of your own code.</p>
 <div class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -237,9 +326,11 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Stable Diffusion introduction is taken from <a href="https://github.com/aws/amazon-sagemaker-examples/blob/main/introduction_to_amazon_algorithms/jumpstart_text_to_image/Amazon_JumpStart_Text_To_Image.ipynb">Amazon JumpStart Text To Image</a> notebook. For more indepth intro on this topic, I suggest reading <em>Jay Alammar</em> <a href="https://jalammar.github.io/illustrated-stable-diffusion/">The Illustrated Stable Diffusion</a> guide.</p>
+<p>Stable Diffusion introduction is taken from <a href="https://github.com/aws/amazon-sagemaker-examples/blob/main/introduction_to_amazon_algorithms/jumpstart_text_to_image/Amazon_JumpStart_Text_To_Image.ipynb">Amazon JumpStart Text To Image</a> notebook. For more in depth discussion on this topic, I suggest reading <em>Jay Alammar</em> <a href="https://jalammar.github.io/illustrated-stable-diffusion/">The Illustrated Stable Diffusion</a> guide.</p>
 </div>
 </div>
+</section>
+</section>
 </section>
 <section id="environment" class="level2">
 <h2 class="anchored" data-anchor-id="environment">Environment</h2>
@@ -248,35 +339,392 @@ Note
 <li><strong>GitHub</strong>: <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2023-05-10-amazon-jumpstart-text2img-stablediffusion.ipynb">2023-05-10-amazon-jumpstart-text2img-stablediffusion.ipynb</a></li>
 </ul>
 <p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/notebook-env.png" class="img-fluid"></p>
-<p>For deploying models and doing inference, I recommend using the <code>ml.p3.2xlarge</code> or <code>ml.g4dn.2xlarge</code>. For this notebook, I have relied on <code>ml.p3.2xlarge</code> instance. For generating multiple images per prompt <code>ml.g4dn.2xlarge</code> can be slow and you will get timeout errors as higlighted below.</p>
-<p>(image of timeout)</p>
-<p><strong>Important Note</strong></p>
-<p>By default both <code>ml.p3.2xlarge</code> and <code>ml.g4dn.2xlarge</code> may not be available in your AWS account. To get access you need to generate a <code>Request quota increase</code> ticket from <em>Service Quotas &gt; AWS services &gt; Amazon SageMaker &gt; ml.p3.2xlarge for endpoint usage</em>. It may take upto 24 hours for a service request to get approved.</p>
-<div class="callout-tip callout callout-style-default callout-captioned">
+<p>For model deployment and inference, I recommend using the <code>ml.p3.2xlarge</code> or <code>ml.g4dn.2xlarge</code> instance. I have relied on the <code>ml.p3.2xlarge</code> instance for this notebook. For generating multiple images per prompt, <code>ml.g4dn.2xlarge</code> can be slow, and you will get timeout errors highlighted below.</p>
+<div class="callout-important callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>By default, both <code>ml.p3.2xlarge</code> and <code>ml.g4dn.2xlarge</code> may not be available in your AWS account. To get access, you need to generate a <code>Request quota increase</code> ticket from <em>Service Quotas &gt; AWS services &gt; Amazon SageMaker &gt; ml.p3.2xlarge for endpoint usage</em>. A service request may take up to 24 hours to get approved.</p>
+</div>
+</div>
+<p>(image of timeout)</p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-caption-container flex-fill">
 Tip
 </div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p><strong>Why this timeout exception?</strong></p>
-<p>When you deploy a model into production using Amazon SageMaker hosting services you get an API endpoint. Your client applications use this API to get inferences from the model hosted at the specified endpoint. There is a 60 seconds hard limit on these API endpoints.</p>
+<p>You get an API endpoint when you deploy a model into production using Amazon SageMaker hosting services. Your client applications use this API to get inferences from the model hosted at the specified endpoint. There is a 60 seconds hard limit on these API endpoints.</p>
 <p><em>A customer’s model containers must respond to requests within 60 seconds. The model itself can have a maximum processing time of 60 seconds before responding to invocations. If your model is going to take 50-60 seconds of processing time, the SDK socket timeout should be set to be 70 seconds.</em></p>
-<p>To read more about it refer to the documentation <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-runtime/client/invoke_endpoint.html">SageMakerRuntime.Client.invoke_endpoint</a></p>
-<p><strong>What to do when our model requires more than 60 seconds for inference?</strong></p>
-<p>For such cases AWS recommends using <em>Amazon SageMaker Asynchronous Inference</em>. This option is ideal for inferences with large payload sizes (up to 1GB) and/or long processing times (up to 15 minutes). To read more about it use the following references.</p>
+<p>To read more about it, refer to the documentation <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-runtime/client/invoke_endpoint.html">SageMakerRuntime.Client.invoke_endpoint</a></p>
+<p><strong>What to do when your model requires more than 60 seconds for inference?</strong></p>
+<p>For such cases, AWS recommends using <em>Amazon SageMaker Asynchronous Inference</em>. This option is ideal for inferences with large payload sizes (up to 1GB) or long processing times (up to 15 minutes). To read more about it, use the following references.</p>
 <ul>
 <li><a href="https://aws.amazon.com/about-aws/whats-new/2021/08/amazon-sagemaker-asynchronous-new-inference-option/">Amazon SageMaker Asynchronous Inference announcement</a></li>
-<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/async-inference.html">How Asynchronous inference works?</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/async-inference.html">How does Asynchronous inference work?</a></li>
 <li><a href="https://github.com/aws/sagemaker-python-sdk/issues/1119#issuecomment-904414810">GitHub Issue: Increasing the timeout for SageMaker InvokeEndpoint</a></li>
 </ul>
 </div>
 </div>
+</div>
+</section>
+<section id="set-up-the-environment" class="level2">
+<h2 class="anchored" data-anchor-id="set-up-the-environment">Set up the environment</h2>
+<p>There are some initial steps required to execute this notebook. They mainly involve installing the needed packages and initializing the SageMaker session.</p>
+<div class="cell" data-tags="[]" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span>pip install <span class="op">--</span>upgrade sagemaker</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="op">!</span>pip install matplotlib</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="op">!</span>pip install watermark</span>
+<span id="cb1-5"><a href="#cb1-5"></a></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="co"># 1. Get the latest version of SageMaker Python SDK. https://github.com/aws/sagemaker-python-sdk</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="co"># 2. Install matplotlib. https://github.com/matplotlib/matplotlib</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># 3. Install watermark. An IPython magic extension for printing date and time stamps, version numbers, and hardware information. https://github.com/rasbt/watermark</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://github.com/rasbt/watermark">watermark</a> extension is a great utility to expose packages, kernel, and hardware information. Though this is optional, and you may skip this step, it is a great way to report execution environment information and make it more transparent.</p>
+<div class="cell" data-tags="[]" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="co"># To load the watermark magic, execute the following line in your IPython notebook or current IPython shell</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># to learn more about the usage: https://github.com/rasbt/watermark/blob/master/docs/watermark.ipynb</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>The watermark extension is already loaded. To reload it, use:
+  %reload_ext watermark</code></pre>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p numpy,matplotlib,boto3,json,sagemaker</span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># watermark the notebook environment</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="co"># watermark step is optional. This is done to make the environment details more transpaent</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Python implementation: CPython
+Python version       : 3.8.12
+IPython version      : 8.12.0
+
+numpy     : 1.24.3
+matplotlib: 3.7.1
+boto3     : 1.26.111
+json      : 2.0.9
+sagemaker : 2.153.0
+
+Compiler    : GCC 10.2.1 20210110
+OS          : Linux
+Release     : 4.14.311-233.529.amzn2.x86_64
+Machine     : x86_64
+Processor   : 
+CPU cores   : 2
+Architecture: 64bit
+</code></pre>
+</div>
+</div>
+<p>Next, we will initialize the SageMaker session. This session manages interactions with the Amazon SageMaker APIs and any other AWS services needed. It provides convenient methods for manipulating entities and resources that Amazon SageMaker uses, such as training jobs, endpoints, and input datasets in S3. AWS service calls are delegated to an underlying Boto3 session, which is initialized using the AWS configuration chain by default. When you make an Amazon SageMaker API call that accesses an S3 bucket location, and one is not specified, the Session creates a default bucket based on a naming convention that includes the current AWS account ID.</p>
+<p>To read more about <em>SageMaker Session</em> refer to the documentation <a href="https://sagemaker.readthedocs.io/en/stable/api/utility/session.html#sagemaker.session.Session">sagemaker.session.Session</a></p>
+<div class="cell" data-tags="[]" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="im">import</span> sagemaker, boto3</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="im">from</span> sagemaker <span class="im">import</span> get_execution_role</span>
+<span id="cb6-3"><a href="#cb6-3"></a></span>
+<span id="cb6-4"><a href="#cb6-4"></a>aws_role <span class="op">=</span> get_execution_role()</span>
+<span id="cb6-5"><a href="#cb6-5"></a>aws_region <span class="op">=</span> boto3.Session().region_name</span>
+<span id="cb6-6"><a href="#cb6-6"></a>sagemaker_session <span class="op">=</span> sagemaker.Session()</span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a>aws_region</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
+<pre><code>'us-east-1'</code></pre>
+</div>
+</div>
+</section>
+<section id="define-functions-to-deploy-models-and-get-inference-endpoints" class="level2">
+<h2 class="anchored" data-anchor-id="define-functions-to-deploy-models-and-get-inference-endpoints">Define functions to deploy models and get inference endpoints</h2>
+<p>In this section, we will define some functions that will make it easy for us to deploy JumpStart pre-trained models and get inference endpoints against them.</p>
+<div class="cell" data-tags="[]" data-execution_count="26">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris, model_uris</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="im">from</span> sagemaker.model <span class="im">import</span> Model</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="im">from</span> sagemaker.predictor <span class="im">import</span> Predictor</span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="im">from</span> sagemaker.utils <span class="im">import</span> name_from_base</span>
+<span id="cb8-5"><a href="#cb8-5"></a></span>
+<span id="cb8-6"><a href="#cb8-6"></a></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="kw">def</span> get_model_endpoint(model_id, sagemaker_session, instance_type<span class="op">=</span><span class="st">"ml.p3.2xlarge"</span>):</span>
+<span id="cb8-8"><a href="#cb8-8"></a>    <span class="co">"""Deploy the model on the provided instance type are return the inference endpoint"""</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a>    <span class="co"># Get the endpoint name from the provided 'model_id'</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a>    endpoint_name <span class="op">=</span> name_from_base(<span class="ss">f"jumpstart-example-</span><span class="sc">{</span>model_id<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-12"><a href="#cb8-12"></a></span>
+<span id="cb8-13"><a href="#cb8-13"></a>    <span class="co"># recommended `inference_instance_type` are</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>    <span class="co"># "ml.g4dn.2xlarge"</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a>    <span class="co"># "ml.g5.2xlarge"</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>    <span class="co"># "ml.p3.2xlarge"</span></span>
+<span id="cb8-17"><a href="#cb8-17"></a>    inference_instance_type <span class="op">=</span> instance_type</span>
+<span id="cb8-18"><a href="#cb8-18"></a></span>
+<span id="cb8-19"><a href="#cb8-19"></a>    <span class="co"># Retrieve the inference docker container uri.</span></span>
+<span id="cb8-20"><a href="#cb8-20"></a>    <span class="co"># This is the base HuggingFace container image for the default model above.</span></span>
+<span id="cb8-21"><a href="#cb8-21"></a>    deploy_image_uri <span class="op">=</span> image_uris.retrieve(</span>
+<span id="cb8-22"><a href="#cb8-22"></a>        region<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb8-23"><a href="#cb8-23"></a>        framework<span class="op">=</span><span class="va">None</span>,  <span class="co"># automatically inferred from model_id</span></span>
+<span id="cb8-24"><a href="#cb8-24"></a>        image_scope<span class="op">=</span><span class="st">"inference"</span>,</span>
+<span id="cb8-25"><a href="#cb8-25"></a>        model_id<span class="op">=</span>model_id,</span>
+<span id="cb8-26"><a href="#cb8-26"></a>        model_version<span class="op">=</span><span class="st">"*"</span>,  <span class="co"># '*' means get the latest version</span></span>
+<span id="cb8-27"><a href="#cb8-27"></a>        instance_type<span class="op">=</span>inference_instance_type,</span>
+<span id="cb8-28"><a href="#cb8-28"></a>    )</span>
+<span id="cb8-29"><a href="#cb8-29"></a></span>
+<span id="cb8-30"><a href="#cb8-30"></a>    <span class="co"># Retrieve the model uri. This includes the pre-trained model and parameters as well as the inference scripts.</span></span>
+<span id="cb8-31"><a href="#cb8-31"></a>    <span class="co"># This includes all dependencies and scripts for model loading, inference handling etc..</span></span>
+<span id="cb8-32"><a href="#cb8-32"></a>    model_uri <span class="op">=</span> model_uris.retrieve(</span>
+<span id="cb8-33"><a href="#cb8-33"></a>        model_id<span class="op">=</span>model_id, model_version<span class="op">=</span>model_version, model_scope<span class="op">=</span><span class="st">"inference"</span></span>
+<span id="cb8-34"><a href="#cb8-34"></a>    )</span>
+<span id="cb8-35"><a href="#cb8-35"></a></span>
+<span id="cb8-36"><a href="#cb8-36"></a>    <span class="co"># To increase the maximum response size from the endpoint.</span></span>
+<span id="cb8-37"><a href="#cb8-37"></a>    <span class="co"># Response in our case will be generated images</span></span>
+<span id="cb8-38"><a href="#cb8-38"></a>    env <span class="op">=</span> {</span>
+<span id="cb8-39"><a href="#cb8-39"></a>        <span class="st">"MMS_MAX_RESPONSE_SIZE"</span>: <span class="st">"20000000"</span>,</span>
+<span id="cb8-40"><a href="#cb8-40"></a>    }</span>
+<span id="cb8-41"><a href="#cb8-41"></a></span>
+<span id="cb8-42"><a href="#cb8-42"></a>    <span class="co"># Create the SageMaker model instance</span></span>
+<span id="cb8-43"><a href="#cb8-43"></a>    model <span class="op">=</span> Model(</span>
+<span id="cb8-44"><a href="#cb8-44"></a>        image_uri<span class="op">=</span>deploy_image_uri,</span>
+<span id="cb8-45"><a href="#cb8-45"></a>        model_data<span class="op">=</span>model_uri,</span>
+<span id="cb8-46"><a href="#cb8-46"></a>        role<span class="op">=</span>aws_role,</span>
+<span id="cb8-47"><a href="#cb8-47"></a>        predictor_cls<span class="op">=</span>Predictor,</span>
+<span id="cb8-48"><a href="#cb8-48"></a>        name<span class="op">=</span>endpoint_name,</span>
+<span id="cb8-49"><a href="#cb8-49"></a>        env<span class="op">=</span>env,</span>
+<span id="cb8-50"><a href="#cb8-50"></a>    )</span>
+<span id="cb8-51"><a href="#cb8-51"></a></span>
+<span id="cb8-52"><a href="#cb8-52"></a>    <span class="co"># Deploy the Model and return Inference endpoint. Note that we need to pass Predictor class when we deploy model through Model class,</span></span>
+<span id="cb8-53"><a href="#cb8-53"></a>    <span class="co"># for being able to run inference through the sagemaker API.</span></span>
+<span id="cb8-54"><a href="#cb8-54"></a>    <span class="cf">return</span> model.deploy(</span>
+<span id="cb8-55"><a href="#cb8-55"></a>        initial_instance_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb8-56"><a href="#cb8-56"></a>        instance_type<span class="op">=</span>inference_instance_type,</span>
+<span id="cb8-57"><a href="#cb8-57"></a>        predictor_cls<span class="op">=</span>Predictor,</span>
+<span id="cb8-58"><a href="#cb8-58"></a>        endpoint_name<span class="op">=</span>endpoint_name,</span>
+<span id="cb8-59"><a href="#cb8-59"></a>        sagemaker_session<span class="op">=</span>sagemaker_session,</span>
+<span id="cb8-60"><a href="#cb8-60"></a>    )</span>
+<span id="cb8-61"><a href="#cb8-61"></a></span>
+<span id="cb8-62"><a href="#cb8-62"></a></span>
+<span id="cb8-63"><a href="#cb8-63"></a><span class="kw">def</span> remove_model_endpoint(model_predictor):</span>
+<span id="cb8-64"><a href="#cb8-64"></a>    <span class="co">"""Remove the model and deployed inference endpoint"""</span></span>
+<span id="cb8-65"><a href="#cb8-65"></a>    model_predictor.delete_model()</span>
+<span id="cb8-66"><a href="#cb8-66"></a>    model_predictor.delete_endpoint()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="define-functions-to-query-endpoints-and-display-results" class="level2">
+<h2 class="anchored" data-anchor-id="define-functions-to-query-endpoints-and-display-results">Define functions to query endpoints and display results</h2>
+<p>In the next section, we will define some functions that we will use to query the inference endpoint and display the results.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="im">from</span> io <span class="im">import</span> BytesIO</span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="im">import</span> base64</span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="im">import</span> json</span>
+<span id="cb9-7"><a href="#cb9-7"></a></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="co"># Define a path to save the generated images</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a>image_path <span class="op">=</span> <span class="st">"./images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/generated/"</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="kw">def</span> display_and_save_img(image, filename):</span>
+<span id="cb9-13"><a href="#cb9-13"></a>    <span class="co">"""Display and save the hallucinated image."""</span></span>
+<span id="cb9-14"><a href="#cb9-14"></a></span>
+<span id="cb9-15"><a href="#cb9-15"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">7</span>), frameon<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb9-16"><a href="#cb9-16"></a>    plt.imshow(np.array(image))</span>
+<span id="cb9-17"><a href="#cb9-17"></a>    plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb9-18"><a href="#cb9-18"></a>    plt.savefig(</span>
+<span id="cb9-19"><a href="#cb9-19"></a>        image_path <span class="op">+</span> filename, bbox_inches<span class="op">=</span><span class="st">"tight"</span></span>
+<span id="cb9-20"><a href="#cb9-20"></a>    )  <span class="co"># comment it to NOT save generated images</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a>    plt.show()</span>
+<span id="cb9-22"><a href="#cb9-22"></a></span>
+<span id="cb9-23"><a href="#cb9-23"></a></span>
+<span id="cb9-24"><a href="#cb9-24"></a><span class="kw">def</span> query_endpoint_with_json_payload(model_predictor, payload, content_type, accept):</span>
+<span id="cb9-25"><a href="#cb9-25"></a>    <span class="co">"""Query the model predictor with json payload."""</span></span>
+<span id="cb9-26"><a href="#cb9-26"></a></span>
+<span id="cb9-27"><a href="#cb9-27"></a>    encoded_payload <span class="op">=</span> json.dumps(payload).encode(<span class="st">"utf-8"</span>)</span>
+<span id="cb9-28"><a href="#cb9-28"></a></span>
+<span id="cb9-29"><a href="#cb9-29"></a>    query_response <span class="op">=</span> model_predictor.predict(</span>
+<span id="cb9-30"><a href="#cb9-30"></a>        encoded_payload, {<span class="st">"ContentType"</span>: content_type, <span class="st">"Accept"</span>: accept,},</span>
+<span id="cb9-31"><a href="#cb9-31"></a>    )</span>
+<span id="cb9-32"><a href="#cb9-32"></a>    <span class="cf">return</span> query_response</span>
+<span id="cb9-33"><a href="#cb9-33"></a></span>
+<span id="cb9-34"><a href="#cb9-34"></a></span>
+<span id="cb9-35"><a href="#cb9-35"></a><span class="kw">def</span> display_encoded_images(generated_images, prompt):</span>
+<span id="cb9-36"><a href="#cb9-36"></a>    <span class="co">"""Decode the images and convert to RGB format and display</span></span>
+<span id="cb9-37"><a href="#cb9-37"></a></span>
+<span id="cb9-38"><a href="#cb9-38"></a><span class="co">    Args:</span></span>
+<span id="cb9-39"><a href="#cb9-39"></a><span class="co">    generated_images: are a list of jpeg images as bytes with b64 encoding.</span></span>
+<span id="cb9-40"><a href="#cb9-40"></a><span class="co">    prompt: text string used to generate the images</span></span>
+<span id="cb9-41"><a href="#cb9-41"></a><span class="co">    """</span></span>
+<span id="cb9-42"><a href="#cb9-42"></a></span>
+<span id="cb9-43"><a href="#cb9-43"></a>    <span class="cf">for</span> count, generated_image <span class="kw">in</span> <span class="bu">enumerate</span>(generated_images):</span>
+<span id="cb9-44"><a href="#cb9-44"></a>        generated_image_decoded <span class="op">=</span> BytesIO(base64.b64decode(generated_image.encode()))</span>
+<span id="cb9-45"><a href="#cb9-45"></a>        generated_image_rgb <span class="op">=</span> Image.<span class="bu">open</span>(generated_image_decoded).convert(<span class="st">"RGB"</span>)</span>
+<span id="cb9-46"><a href="#cb9-46"></a></span>
+<span id="cb9-47"><a href="#cb9-47"></a>        <span class="co"># prepare filename to store the image from the prompt </span></span>
+<span id="cb9-48"><a href="#cb9-48"></a>        temp <span class="op">=</span> re.sub(</span>
+<span id="cb9-49"><a href="#cb9-49"></a>            <span class="vs">r"[^a-zA-Z0-9\s]+"</span>, <span class="st">""</span>, prompt</span>
+<span id="cb9-50"><a href="#cb9-50"></a>        )  <span class="co"># remove special chars from prompt</span></span>
+<span id="cb9-51"><a href="#cb9-51"></a></span>
+<span id="cb9-52"><a href="#cb9-52"></a>        temp <span class="op">=</span> temp.replace(<span class="st">" "</span>, <span class="st">"-"</span>)  <span class="co"># turn spaces to '-'</span></span>
+<span id="cb9-53"><a href="#cb9-53"></a>        temp <span class="op">=</span> temp[:<span class="dv">50</span>]  <span class="co"># limit the lenght of string upto 100 chars</span></span>
+<span id="cb9-54"><a href="#cb9-54"></a>        </span>
+<span id="cb9-55"><a href="#cb9-55"></a>        filename <span class="op">=</span> (</span>
+<span id="cb9-56"><a href="#cb9-56"></a>            temp <span class="op">+</span> <span class="bu">str</span>(count) <span class="op">+</span> <span class="st">".jpg"</span></span>
+<span id="cb9-57"><a href="#cb9-57"></a>        )  <span class="co"># add count and extension to the image name</span></span>
+<span id="cb9-58"><a href="#cb9-58"></a></span>
+<span id="cb9-59"><a href="#cb9-59"></a>        <span class="co"># display the generated image</span></span>
+<span id="cb9-60"><a href="#cb9-60"></a>        display_and_save_img(generated_image_rgb, filename)</span>
+<span id="cb9-61"><a href="#cb9-61"></a></span>
+<span id="cb9-62"><a href="#cb9-62"></a></span>
+<span id="cb9-63"><a href="#cb9-63"></a><span class="kw">def</span> parse_response_multiple_images(query_response):</span>
+<span id="cb9-64"><a href="#cb9-64"></a>    <span class="co">"""Parse response and return generated image and the prompt"""</span></span>
+<span id="cb9-65"><a href="#cb9-65"></a></span>
+<span id="cb9-66"><a href="#cb9-66"></a>    response_dict <span class="op">=</span> json.loads(query_response)</span>
+<span id="cb9-67"><a href="#cb9-67"></a>    <span class="cf">return</span> response_dict[<span class="st">"generated_images"</span>], response_dict[<span class="st">"prompt"</span>]</span>
+<span id="cb9-68"><a href="#cb9-68"></a></span>
+<span id="cb9-69"><a href="#cb9-69"></a></span>
+<span id="cb9-70"><a href="#cb9-70"></a><span class="kw">def</span> query_model_and_display(payload, model_predictor):</span>
+<span id="cb9-71"><a href="#cb9-71"></a>    query_response <span class="op">=</span> query_endpoint_with_json_payload(</span>
+<span id="cb9-72"><a href="#cb9-72"></a>        model_predictor, payload, <span class="st">"application/json"</span>, <span class="st">"application/json;jpeg"</span></span>
+<span id="cb9-73"><a href="#cb9-73"></a>    )</span>
+<span id="cb9-74"><a href="#cb9-74"></a>    generated_images, prompt <span class="op">=</span> parse_response_multiple_images(query_response)</span>
+<span id="cb9-75"><a href="#cb9-75"></a></span>
+<span id="cb9-76"><a href="#cb9-76"></a>    display_encoded_images(generated_images, prompt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="supported-inference-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="supported-inference-parameters">Supported Inference parameters</h3>
+<p>To get inference from the model API, we have to pass along some advanced parameters in the request. These include</p>
+<ul>
+<li><code>prompt</code>: prompt to guide the image generation. It must be specified and can be a string or a list of strings.</li>
+<li><code>width</code>: width of the hallucinated image. If specified, it must be a positive integer divisible by 8.</li>
+<li><code>height</code>: height of the hallucinated image. If specified, it must be a positive integer divisible by 8.</li>
+<li><code>num_inference_steps</code>: Number of denoising steps during image generation. More steps lead to a higher-quality image. If specified, it must be a positive integer.</li>
+<li><code>guidance_scale</code>: Higher guidance scale results in an image closely related to the prompt at the expense of image quality. If specified, it must be a float. guidance_scale&lt;=1 is ignored.</li>
+<li><code>negative_prompt</code>: guide image generation against this prompt. If specified, it must be a string or a list of strings used with guidance_scale. If guidance_scale is disabled, this is also disabled. Moreover, if a prompt is a list of strings, then negative_prompt must also be a list of strings.</li>
+<li><code>num_images_per_prompt</code>: number of images returned per prompt. If specified, it must be a positive integer.</li>
+<li><code>seed</code>: Fix the randomized state for reproducibility. If specified, it must be an integer.</li>
+</ul>
+<p>An example request payload is provided below. The effect of these parameters will become apparent when we eventually generate images using them.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>payload <span class="op">=</span> {</span>
+<span id="cb10-2"><a href="#cb10-2"></a>    <span class="st">"prompt"</span>: <span class="st">"a portrait of a man"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3"></a>    <span class="st">"negative_prompt"</span>: <span class="st">"beard"</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb10-5"><a href="#cb10-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb10-6"><a href="#cb10-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">1</span>,</span>
+<span id="cb10-7"><a href="#cb10-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb10-8"><a href="#cb10-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb10-9"><a href="#cb10-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb10-10"><a href="#cb10-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<ul>
+<li><code>prompt and negative_prompt</code>: Stable Diffusion models are not good at understanding negative words ‘without’, ‘except’, ‘exclude’, ‘not’ etc in the prompt statement. For example, the prompt “a portrait of a man without a beard” may still generate an image of a man with a beard. However, including “negative_promt” with the word “beard” has much more influence on the model.</li>
+<li><code>height and width</code>: The model often performs best when the generated image has dimensions similar to the training data dimension used for model training. It is recommended to read about the model to get the correct dimensions.</li>
+<li><code>num_images_per_prompt</code>: If you try to generate many images from the real-time inference endpoint. From experience, a number between 1 and 5 works best.</li>
+<li><code>num_inference_steps</code>: When experimenting with prompts, I tend to keep the “inference_steps” under 50. At 20, you will get a black-and-white image but get an idea of the output. If I find an output with fine patterns, I try higher <em>inference_steps</em> between 100 and 150 to improve the quality further.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="selecting-sagemaker-pre-trained-diffusion-model-and-prompt-engineering" class="level2">
+<h2 class="anchored" data-anchor-id="selecting-sagemaker-pre-trained-diffusion-model-and-prompt-engineering">Selecting SageMaker pre-trained Diffusion model and Prompt Engineering</h2>
+<section id="model-selection" class="level3">
+<h3 class="anchored" data-anchor-id="model-selection">Model selection</h3>
+<p>SageMaker JumpStart provides many pre-trained models. Use the following link to search and select the correct <em>Model ID</em>. <a href="https://sagemaker.readthedocs.io/en/stable/doc_utils/pretrainedmodels.html">Built-in Algorithms with pre-trained Model Table</a>. We are only interested in <em>text-to-image</em> models, and we can filter them using <code>txt2img</code> string in the search bar.</p>
+<p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/pretrained-model-table.png" class="img-fluid"></p>
+<p>At the time of writing this notebook, 86 <code>txt2img</code> models are available on JumpStart. We may use any of them to generate the images. I have selected a few from them that are the more well-known. However, you are welcome to experiment with anyone of them. Following in the list of the models that we will use in the later part of this notebook.</p>
+<ul>
+<li><a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">model-txt2img-stabilityai-stable-diffusion-v2-1</a></li>
+<li><a href="https://huggingface.co/prompthero/openjourney">huggingface-txt2img-prompthero-openjourney</a></li>
+<li><a href="https://huggingface.co/andite/anything-v4.0">huggingface-txt2img-andite-anything-v4-0</a></li>
+<li><a href="https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0">huggingface-txt2img-dreamlike-art-dreamlike-diffusion-1-0</a></li>
+<li><a href="https://huggingface.co/nitrosocke/mo-di-diffusion">huggingface-txt2img-nitrosocke-mo-di-diffusion</a></li>
+<li><a href="https://huggingface.co/Envvi/Inkpunk-Diffusion">huggingface-txt2img-envvi-inkpunk-diffusion</a></li>
+</ul>
+</section>
+<section id="prompt-engineering" class="level3">
+<h3 class="anchored" data-anchor-id="prompt-engineering">Prompt engineering</h3>
+<p>Writing a good prompt can be an art. Predicting whether a particular prompt will yield a satisfactory image with a given model is often difficult. However, specific templates have been observed to work. Broadly, a prompt can be roughly broken down into three pieces:</p>
+<ol type="1">
+<li>Type of image (photograph/sketch/painting, etc.)</li>
+<li>Description (subject/object/environment/scene, etc.)</li>
+<li>The style of the image (realistic/artistic/type of art, etc.)</li>
+</ol>
+<p>You can change each of the three parts individually to generate variations of an image. <em>Adjectives</em> have been known to play a significant role in the image-generation process. Also, adding more details about the scene helps in the generation process. Here are some suggestions that you may follow to generate good prompts.</p>
+<ul>
+<li>To generate a realistic image, you can use phrases such as “a photo of,” “a photograph of,” “realistic,” or “hyper-realistic.”</li>
+<li>To generate images by artists, you can use phrases like “by Pablo Picasso,” “oil painting by Rembrandt,” “landscape art by Frederic Edwin Church,” or “pencil drawing by Albrecht Dürer.”</li>
+<li>You can combine different artists as well. For example, to generate artistic images by category, you can add the art category in the prompt such as “lion on a beach, abstract.”</li>
+<li>Some other types include “oil painting,” “pencil drawing, “pop art,” “digital art,” “anime,” “cartoon,” “futurism,” “watercolor,” “manga,” etc.</li>
+<li>You can also include details such as lighting or camera lenses such as 35mm wide lens or 85mm wide lens, and information on the framing (portrait/landscape/close up, etc.).</li>
+</ul>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>The above concise prompt engineering outline is taken from <a href="https://aws.amazon.com/blogs/machine-learning/generate-images-from-text-with-the-stable-diffusion-model-on-amazon-sagemaker-jumpstart/">AWS Blog Post</a>. For a more in-depth discussion and techniques to write good prompts, you may consult below resources.</p>
+<ul>
+<li><a href="https://stable-diffusion-art.com/prompt-guide/">Stable Diffusion Art: a definitive prompt guide</a>. An excellent beginner-level guide.</li>
+<li><a href="https://thenaturehero.com/stable-diffusion-negative-prompt-list/">Best Stable Diffusion Negative Prompt List To Use</a>. It highlights techniques to improve results by using negative prompts.</li>
+<li><a href="https://openart.ai/promptbook">OpenArt.ai Prompt Book</a>. A very detailed guide covering many techniques and areas.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="stable-diffusion-v2-1" class="level2">
+<h2 class="anchored" data-anchor-id="stable-diffusion-v2-1">Stable Diffusion v2-1</h2>
+<p>Let’s get our first model up and running <a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">stable-diffusion-2-1</a>. This base model is trained from scratch and can be applied to various use cases. However, to use this model, it is also important to understand some of the limitations.</p>
+<ul>
+<li>The model does not achieve perfect photorealism</li>
+<li>The model cannot render legible text</li>
+<li>The model does not perform well on more difficult tasks which involve compositionality, such as rendering an image corresponding to “A red cube on top of a blue sphere”</li>
+<li>Faces and people in general may not be generated properly.</li>
+<li>The model was trained mainly with English captions and will not work as well in other languages.</li>
+</ul>
+<section id="realistic-people" class="level3">
+<h3 class="anchored" data-anchor-id="realistic-people">Realistic people</h3>
+<p>Let’s see how good is this model to generate real people images.</p>
+<p>’’’ positive ’’’</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
