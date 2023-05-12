@@ -225,7 +225,23 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#stable-diffusion-v2-1" id="toc-stable-diffusion-v2-1" class="nav-link" data-scroll-target="#stable-diffusion-v2-1">Stable Diffusion v2-1</a>
   <ul class="collapse">
   <li><a href="#realistic-people" id="toc-realistic-people" class="nav-link" data-scroll-target="#realistic-people">Realistic people</a></li>
+  <li><a href="#architecture" id="toc-architecture" class="nav-link" data-scroll-target="#architecture">Architecture</a></li>
+  <li><a href="#abstract-art-and-styles" id="toc-abstract-art-and-styles" class="nav-link" data-scroll-target="#abstract-art-and-styles">Abstract art and styles</a></li>
+  <li><a href="#landscapes" id="toc-landscapes" class="nav-link" data-scroll-target="#landscapes">Landscapes</a></li>
+  <li><a href="#portraits-and-paintings" id="toc-portraits-and-paintings" class="nav-link" data-scroll-target="#portraits-and-paintings">Portraits and paintings</a></li>
   </ul></li>
+  <li><a href="#prompthero-openjourney" id="toc-prompthero-openjourney" class="nav-link" data-scroll-target="#prompthero-openjourney">PromptHero Openjourney</a>
+  <ul class="collapse">
+  <li><a href="#realistic-people-and-portraits" id="toc-realistic-people-and-portraits" class="nav-link" data-scroll-target="#realistic-people-and-portraits">Realistic people and portraits</a></li>
+  <li><a href="#fairy-landscapes" id="toc-fairy-landscapes" class="nav-link" data-scroll-target="#fairy-landscapes">Fairy Landscapes</a></li>
+  <li><a href="#other-digital-art-prompts" id="toc-other-digital-art-prompts" class="nav-link" data-scroll-target="#other-digital-art-prompts">Other digital art prompts</a></li>
+  </ul></li>
+  <li><a href="#fantasyai-anything-v4.0" id="toc-fantasyai-anything-v4.0" class="nav-link" data-scroll-target="#fantasyai-anything-v4.0">FantasyAI Anything V4.0</a>
+  <ul class="collapse">
+  <li><a href="#realistic-people-1" id="toc-realistic-people-1" class="nav-link" data-scroll-target="#realistic-people-1">Realistic people</a></li>
+  </ul></li>
+  <li><a href="#mo-di-diffusion" id="toc-mo-di-diffusion" class="nav-link" data-scroll-target="#mo-di-diffusion">Mo Di Diffusion</a></li>
+  <li><a href="#inkpunk-diffusion" id="toc-inkpunk-diffusion" class="nav-link" data-scroll-target="#inkpunk-diffusion">Inkpunk Diffusion</a></li>
   </ul>
 </nav>
     </div>
@@ -339,7 +355,7 @@ Note
 <li><strong>GitHub</strong>: <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2023-05-10-amazon-jumpstart-text2img-stablediffusion.ipynb">2023-05-10-amazon-jumpstart-text2img-stablediffusion.ipynb</a></li>
 </ul>
 <p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/notebook-env.png" class="img-fluid"></p>
-<p>For model deployment and inference, I recommend using the <code>ml.p3.2xlarge</code> or <code>ml.g4dn.2xlarge</code> instance. I have relied on the <code>ml.p3.2xlarge</code> instance for this notebook. For generating multiple images per prompt, <code>ml.g4dn.2xlarge</code> can be slow, and you will get timeout errors highlighted below.</p>
+<p>For model deployment and inference, I recommend using the <code>ml.p3.2xlarge</code> or <code>ml.g4dn.2xlarge</code> instance. I have relied on the <code>ml.p3.2xlarge</code> instance for this notebook. For generating multiple images per prompt, <code>ml.g4dn.2xlarge</code> can be slow, and you will get timeout errors as highlighted below.</p>
 <div class="callout-important callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -353,7 +369,7 @@ Important
 <p>By default, both <code>ml.p3.2xlarge</code> and <code>ml.g4dn.2xlarge</code> may not be available in your AWS account. To get access, you need to generate a <code>Request quota increase</code> ticket from <em>Service Quotas &gt; AWS services &gt; Amazon SageMaker &gt; ml.p3.2xlarge for endpoint usage</em>. A service request may take up to 24 hours to get approved.</p>
 </div>
 </div>
-<p>(image of timeout)</p>
+<p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/invoke-endpoint-timeout.png" class="img-fluid"></p>
 <div class="callout-tip callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -384,7 +400,7 @@ Tip
 <section id="set-up-the-environment" class="level2">
 <h2 class="anchored" data-anchor-id="set-up-the-environment">Set up the environment</h2>
 <p>There are some initial steps required to execute this notebook. They mainly involve installing the needed packages and initializing the SageMaker session.</p>
-<div class="cell" data-tags="[]" data-execution_count="3">
+<div class="cell" data-tags="[]" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span>pip install <span class="op">--</span>upgrade sagemaker</span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="op">!</span>pip install matplotlib</span>
@@ -395,21 +411,17 @@ Tip
 <span id="cb1-8"><a href="#cb1-8"></a><span class="co"># 3. Install watermark. An IPython magic extension for printing date and time stamps, version numbers, and hardware information. https://github.com/rasbt/watermark</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><a href="https://github.com/rasbt/watermark">watermark</a> extension is a great utility to expose packages, kernel, and hardware information. Though this is optional, and you may skip this step, it is a great way to report execution environment information and make it more transparent.</p>
-<div class="cell" data-tags="[]" data-execution_count="8">
+<div class="cell" data-tags="[]" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="co"># To load the watermark magic, execute the following line in your IPython notebook or current IPython shell</span></span>
 <span id="cb2-4"><a href="#cb2-4"></a><span class="co"># to learn more about the usage: https://github.com/rasbt/watermark/blob/master/docs/watermark.ipynb</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>The watermark extension is already loaded. To reload it, use:
-  %reload_ext watermark</code></pre>
 </div>
-</div>
-<div class="cell" data-tags="[]" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p numpy,matplotlib,boto3,json,sagemaker</span>
-<span id="cb4-2"><a href="#cb4-2"></a></span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># watermark the notebook environment</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a><span class="co"># watermark step is optional. This is done to make the environment details more transpaent</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-tags="[]" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p numpy,matplotlib,boto3,json,sagemaker</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co"># watermark the notebook environment</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># watermark step is optional. This is done to make the environment details more transpaent</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Python implementation: CPython
 Python version       : 3.8.12
@@ -433,16 +445,16 @@ Architecture: 64bit
 </div>
 <p>Next, we will initialize the SageMaker session. This session manages interactions with the Amazon SageMaker APIs and any other AWS services needed. It provides convenient methods for manipulating entities and resources that Amazon SageMaker uses, such as training jobs, endpoints, and input datasets in S3. AWS service calls are delegated to an underlying Boto3 session, which is initialized using the AWS configuration chain by default. When you make an Amazon SageMaker API call that accesses an S3 bucket location, and one is not specified, the Session creates a default bucket based on a naming convention that includes the current AWS account ID.</p>
 <p>To read more about <em>SageMaker Session</em> refer to the documentation <a href="https://sagemaker.readthedocs.io/en/stable/api/utility/session.html#sagemaker.session.Session">sagemaker.session.Session</a></p>
-<div class="cell" data-tags="[]" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="im">import</span> sagemaker, boto3</span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="im">from</span> sagemaker <span class="im">import</span> get_execution_role</span>
-<span id="cb6-3"><a href="#cb6-3"></a></span>
-<span id="cb6-4"><a href="#cb6-4"></a>aws_role <span class="op">=</span> get_execution_role()</span>
-<span id="cb6-5"><a href="#cb6-5"></a>aws_region <span class="op">=</span> boto3.Session().region_name</span>
-<span id="cb6-6"><a href="#cb6-6"></a>sagemaker_session <span class="op">=</span> sagemaker.Session()</span>
-<span id="cb6-7"><a href="#cb6-7"></a></span>
-<span id="cb6-8"><a href="#cb6-8"></a>aws_region</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="20">
+<div class="cell" data-tags="[]" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> sagemaker, boto3</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="im">from</span> sagemaker <span class="im">import</span> get_execution_role</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a>aws_role <span class="op">=</span> get_execution_role()</span>
+<span id="cb5-5"><a href="#cb5-5"></a>aws_region <span class="op">=</span> boto3.Session().region_name</span>
+<span id="cb5-6"><a href="#cb5-6"></a>sagemaker_session <span class="op">=</span> sagemaker.Session()</span>
+<span id="cb5-7"><a href="#cb5-7"></a></span>
+<span id="cb5-8"><a href="#cb5-8"></a>aws_region</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>'us-east-1'</code></pre>
 </div>
 </div>
@@ -450,160 +462,163 @@ Architecture: 64bit
 <section id="define-functions-to-deploy-models-and-get-inference-endpoints" class="level2">
 <h2 class="anchored" data-anchor-id="define-functions-to-deploy-models-and-get-inference-endpoints">Define functions to deploy models and get inference endpoints</h2>
 <p>In this section, we will define some functions that will make it easy for us to deploy JumpStart pre-trained models and get inference endpoints against them.</p>
-<div class="cell" data-tags="[]" data-execution_count="26">
+<div class="cell" data-tags="[]" data-execution_count="10">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris, model_uris</span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="im">from</span> sagemaker.model <span class="im">import</span> Model</span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="im">from</span> sagemaker.predictor <span class="im">import</span> Predictor</span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="im">from</span> sagemaker.utils <span class="im">import</span> name_from_base</span>
-<span id="cb8-5"><a href="#cb8-5"></a></span>
-<span id="cb8-6"><a href="#cb8-6"></a></span>
-<span id="cb8-7"><a href="#cb8-7"></a><span class="kw">def</span> get_model_endpoint(model_id, sagemaker_session, instance_type<span class="op">=</span><span class="st">"ml.p3.2xlarge"</span>):</span>
-<span id="cb8-8"><a href="#cb8-8"></a>    <span class="co">"""Deploy the model on the provided instance type are return the inference endpoint"""</span></span>
-<span id="cb8-9"><a href="#cb8-9"></a></span>
-<span id="cb8-10"><a href="#cb8-10"></a>    <span class="co"># Get the endpoint name from the provided 'model_id'</span></span>
-<span id="cb8-11"><a href="#cb8-11"></a>    endpoint_name <span class="op">=</span> name_from_base(<span class="ss">f"jumpstart-example-</span><span class="sc">{</span>model_id<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb8-12"><a href="#cb8-12"></a></span>
-<span id="cb8-13"><a href="#cb8-13"></a>    <span class="co"># recommended `inference_instance_type` are</span></span>
-<span id="cb8-14"><a href="#cb8-14"></a>    <span class="co"># "ml.g4dn.2xlarge"</span></span>
-<span id="cb8-15"><a href="#cb8-15"></a>    <span class="co"># "ml.g5.2xlarge"</span></span>
-<span id="cb8-16"><a href="#cb8-16"></a>    <span class="co"># "ml.p3.2xlarge"</span></span>
-<span id="cb8-17"><a href="#cb8-17"></a>    inference_instance_type <span class="op">=</span> instance_type</span>
-<span id="cb8-18"><a href="#cb8-18"></a></span>
-<span id="cb8-19"><a href="#cb8-19"></a>    <span class="co"># Retrieve the inference docker container uri.</span></span>
-<span id="cb8-20"><a href="#cb8-20"></a>    <span class="co"># This is the base HuggingFace container image for the default model above.</span></span>
-<span id="cb8-21"><a href="#cb8-21"></a>    deploy_image_uri <span class="op">=</span> image_uris.retrieve(</span>
-<span id="cb8-22"><a href="#cb8-22"></a>        region<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb8-23"><a href="#cb8-23"></a>        framework<span class="op">=</span><span class="va">None</span>,  <span class="co"># automatically inferred from model_id</span></span>
-<span id="cb8-24"><a href="#cb8-24"></a>        image_scope<span class="op">=</span><span class="st">"inference"</span>,</span>
-<span id="cb8-25"><a href="#cb8-25"></a>        model_id<span class="op">=</span>model_id,</span>
-<span id="cb8-26"><a href="#cb8-26"></a>        model_version<span class="op">=</span><span class="st">"*"</span>,  <span class="co"># '*' means get the latest version</span></span>
-<span id="cb8-27"><a href="#cb8-27"></a>        instance_type<span class="op">=</span>inference_instance_type,</span>
-<span id="cb8-28"><a href="#cb8-28"></a>    )</span>
-<span id="cb8-29"><a href="#cb8-29"></a></span>
-<span id="cb8-30"><a href="#cb8-30"></a>    <span class="co"># Retrieve the model uri. This includes the pre-trained model and parameters as well as the inference scripts.</span></span>
-<span id="cb8-31"><a href="#cb8-31"></a>    <span class="co"># This includes all dependencies and scripts for model loading, inference handling etc..</span></span>
-<span id="cb8-32"><a href="#cb8-32"></a>    model_uri <span class="op">=</span> model_uris.retrieve(</span>
-<span id="cb8-33"><a href="#cb8-33"></a>        model_id<span class="op">=</span>model_id, model_version<span class="op">=</span>model_version, model_scope<span class="op">=</span><span class="st">"inference"</span></span>
-<span id="cb8-34"><a href="#cb8-34"></a>    )</span>
-<span id="cb8-35"><a href="#cb8-35"></a></span>
-<span id="cb8-36"><a href="#cb8-36"></a>    <span class="co"># To increase the maximum response size from the endpoint.</span></span>
-<span id="cb8-37"><a href="#cb8-37"></a>    <span class="co"># Response in our case will be generated images</span></span>
-<span id="cb8-38"><a href="#cb8-38"></a>    env <span class="op">=</span> {</span>
-<span id="cb8-39"><a href="#cb8-39"></a>        <span class="st">"MMS_MAX_RESPONSE_SIZE"</span>: <span class="st">"20000000"</span>,</span>
-<span id="cb8-40"><a href="#cb8-40"></a>    }</span>
-<span id="cb8-41"><a href="#cb8-41"></a></span>
-<span id="cb8-42"><a href="#cb8-42"></a>    <span class="co"># Create the SageMaker model instance</span></span>
-<span id="cb8-43"><a href="#cb8-43"></a>    model <span class="op">=</span> Model(</span>
-<span id="cb8-44"><a href="#cb8-44"></a>        image_uri<span class="op">=</span>deploy_image_uri,</span>
-<span id="cb8-45"><a href="#cb8-45"></a>        model_data<span class="op">=</span>model_uri,</span>
-<span id="cb8-46"><a href="#cb8-46"></a>        role<span class="op">=</span>aws_role,</span>
-<span id="cb8-47"><a href="#cb8-47"></a>        predictor_cls<span class="op">=</span>Predictor,</span>
-<span id="cb8-48"><a href="#cb8-48"></a>        name<span class="op">=</span>endpoint_name,</span>
-<span id="cb8-49"><a href="#cb8-49"></a>        env<span class="op">=</span>env,</span>
-<span id="cb8-50"><a href="#cb8-50"></a>    )</span>
-<span id="cb8-51"><a href="#cb8-51"></a></span>
-<span id="cb8-52"><a href="#cb8-52"></a>    <span class="co"># Deploy the Model and return Inference endpoint. Note that we need to pass Predictor class when we deploy model through Model class,</span></span>
-<span id="cb8-53"><a href="#cb8-53"></a>    <span class="co"># for being able to run inference through the sagemaker API.</span></span>
-<span id="cb8-54"><a href="#cb8-54"></a>    <span class="cf">return</span> model.deploy(</span>
-<span id="cb8-55"><a href="#cb8-55"></a>        initial_instance_count<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb8-56"><a href="#cb8-56"></a>        instance_type<span class="op">=</span>inference_instance_type,</span>
-<span id="cb8-57"><a href="#cb8-57"></a>        predictor_cls<span class="op">=</span>Predictor,</span>
-<span id="cb8-58"><a href="#cb8-58"></a>        endpoint_name<span class="op">=</span>endpoint_name,</span>
-<span id="cb8-59"><a href="#cb8-59"></a>        sagemaker_session<span class="op">=</span>sagemaker_session,</span>
-<span id="cb8-60"><a href="#cb8-60"></a>    )</span>
-<span id="cb8-61"><a href="#cb8-61"></a></span>
-<span id="cb8-62"><a href="#cb8-62"></a></span>
-<span id="cb8-63"><a href="#cb8-63"></a><span class="kw">def</span> remove_model_endpoint(model_predictor):</span>
-<span id="cb8-64"><a href="#cb8-64"></a>    <span class="co">"""Remove the model and deployed inference endpoint"""</span></span>
-<span id="cb8-65"><a href="#cb8-65"></a>    model_predictor.delete_model()</span>
-<span id="cb8-66"><a href="#cb8-66"></a>    model_predictor.delete_endpoint()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris, model_uris</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="im">from</span> sagemaker.model <span class="im">import</span> Model</span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="im">from</span> sagemaker.predictor <span class="im">import</span> Predictor</span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="im">from</span> sagemaker.utils <span class="im">import</span> name_from_base</span>
+<span id="cb7-5"><a href="#cb7-5"></a></span>
+<span id="cb7-6"><a href="#cb7-6"></a></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="kw">def</span> get_model_endpoint(model_id, sagemaker_session, instance_type<span class="op">=</span><span class="st">"ml.p3.2xlarge"</span>):</span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="co">"""Deploy the model on the provided instance type are return the inference endpoint"""</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a>    <span class="co"># Get the endpoint name from the provided 'model_id'</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>    endpoint_name <span class="op">=</span> name_from_base(<span class="ss">f"jumpstart-example-</span><span class="sc">{</span>model_id<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-12"><a href="#cb7-12"></a></span>
+<span id="cb7-13"><a href="#cb7-13"></a>    <span class="co"># recommended `inference_instance_type` are</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a>    <span class="co"># "ml.g4dn.2xlarge"</span></span>
+<span id="cb7-15"><a href="#cb7-15"></a>    <span class="co"># "ml.g5.2xlarge"</span></span>
+<span id="cb7-16"><a href="#cb7-16"></a>    <span class="co"># "ml.p3.2xlarge"</span></span>
+<span id="cb7-17"><a href="#cb7-17"></a>    inference_instance_type <span class="op">=</span> instance_type</span>
+<span id="cb7-18"><a href="#cb7-18"></a></span>
+<span id="cb7-19"><a href="#cb7-19"></a>    <span class="co"># Retrieve the inference docker container uri.</span></span>
+<span id="cb7-20"><a href="#cb7-20"></a>    <span class="co"># This is the base HuggingFace container image for the default model above.</span></span>
+<span id="cb7-21"><a href="#cb7-21"></a>    deploy_image_uri <span class="op">=</span> image_uris.retrieve(</span>
+<span id="cb7-22"><a href="#cb7-22"></a>        region<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb7-23"><a href="#cb7-23"></a>        framework<span class="op">=</span><span class="va">None</span>,  <span class="co"># automatically inferred from model_id</span></span>
+<span id="cb7-24"><a href="#cb7-24"></a>        image_scope<span class="op">=</span><span class="st">"inference"</span>,</span>
+<span id="cb7-25"><a href="#cb7-25"></a>        model_id<span class="op">=</span>model_id,</span>
+<span id="cb7-26"><a href="#cb7-26"></a>        model_version<span class="op">=</span><span class="st">"*"</span>,  <span class="co"># '*' means get the latest version</span></span>
+<span id="cb7-27"><a href="#cb7-27"></a>        instance_type<span class="op">=</span>inference_instance_type,</span>
+<span id="cb7-28"><a href="#cb7-28"></a>    )</span>
+<span id="cb7-29"><a href="#cb7-29"></a></span>
+<span id="cb7-30"><a href="#cb7-30"></a>    <span class="co"># Retrieve the model uri. This includes the pre-trained model and parameters as well as the inference scripts.</span></span>
+<span id="cb7-31"><a href="#cb7-31"></a>    <span class="co"># This includes all dependencies and scripts for model loading, inference handling etc..</span></span>
+<span id="cb7-32"><a href="#cb7-32"></a>    model_uri <span class="op">=</span> model_uris.retrieve(</span>
+<span id="cb7-33"><a href="#cb7-33"></a>        model_id<span class="op">=</span>model_id, model_version<span class="op">=</span><span class="st">"*"</span>, model_scope<span class="op">=</span><span class="st">"inference"</span></span>
+<span id="cb7-34"><a href="#cb7-34"></a>    )</span>
+<span id="cb7-35"><a href="#cb7-35"></a></span>
+<span id="cb7-36"><a href="#cb7-36"></a>    <span class="co"># To increase the maximum response size from the endpoint.</span></span>
+<span id="cb7-37"><a href="#cb7-37"></a>    <span class="co"># Response in our case will be generated images</span></span>
+<span id="cb7-38"><a href="#cb7-38"></a>    env <span class="op">=</span> {</span>
+<span id="cb7-39"><a href="#cb7-39"></a>        <span class="st">"MMS_MAX_RESPONSE_SIZE"</span>: <span class="st">"20000000"</span>,</span>
+<span id="cb7-40"><a href="#cb7-40"></a>    }</span>
+<span id="cb7-41"><a href="#cb7-41"></a></span>
+<span id="cb7-42"><a href="#cb7-42"></a>    <span class="co"># Create the SageMaker model instance</span></span>
+<span id="cb7-43"><a href="#cb7-43"></a>    model <span class="op">=</span> Model(</span>
+<span id="cb7-44"><a href="#cb7-44"></a>        image_uri<span class="op">=</span>deploy_image_uri,</span>
+<span id="cb7-45"><a href="#cb7-45"></a>        model_data<span class="op">=</span>model_uri,</span>
+<span id="cb7-46"><a href="#cb7-46"></a>        role<span class="op">=</span>aws_role,</span>
+<span id="cb7-47"><a href="#cb7-47"></a>        predictor_cls<span class="op">=</span>Predictor,</span>
+<span id="cb7-48"><a href="#cb7-48"></a>        name<span class="op">=</span>endpoint_name,</span>
+<span id="cb7-49"><a href="#cb7-49"></a>        env<span class="op">=</span>env,</span>
+<span id="cb7-50"><a href="#cb7-50"></a>    )</span>
+<span id="cb7-51"><a href="#cb7-51"></a></span>
+<span id="cb7-52"><a href="#cb7-52"></a>    <span class="co"># Deploy the Model and return Inference endpoint. Note that we need to pass Predictor class when we deploy model through Model class,</span></span>
+<span id="cb7-53"><a href="#cb7-53"></a>    <span class="co"># for being able to run inference through the sagemaker API.</span></span>
+<span id="cb7-54"><a href="#cb7-54"></a>    <span class="cf">return</span> model.deploy(</span>
+<span id="cb7-55"><a href="#cb7-55"></a>        initial_instance_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb7-56"><a href="#cb7-56"></a>        instance_type<span class="op">=</span>inference_instance_type,</span>
+<span id="cb7-57"><a href="#cb7-57"></a>        predictor_cls<span class="op">=</span>Predictor,</span>
+<span id="cb7-58"><a href="#cb7-58"></a>        endpoint_name<span class="op">=</span>endpoint_name,</span>
+<span id="cb7-59"><a href="#cb7-59"></a>        sagemaker_session<span class="op">=</span>sagemaker_session,</span>
+<span id="cb7-60"><a href="#cb7-60"></a>    )</span>
+<span id="cb7-61"><a href="#cb7-61"></a></span>
+<span id="cb7-62"><a href="#cb7-62"></a></span>
+<span id="cb7-63"><a href="#cb7-63"></a><span class="kw">def</span> remove_model_endpoint(model_predictor):</span>
+<span id="cb7-64"><a href="#cb7-64"></a>    <span class="co">"""Remove the model and deployed inference endpoint"""</span></span>
+<span id="cb7-65"><a href="#cb7-65"></a>    model_predictor.delete_model()</span>
+<span id="cb7-66"><a href="#cb7-66"></a>    model_predictor.delete_endpoint()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
 <section id="define-functions-to-query-endpoints-and-display-results" class="level2">
 <h2 class="anchored" data-anchor-id="define-functions-to-query-endpoints-and-display-results">Define functions to query endpoints and display results</h2>
 <p>In the next section, we will define some functions that we will use to query the inference endpoint and display the results.</p>
-<div class="cell">
+<div class="cell" data-tags="[]" data-execution_count="23">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb9-2"><a href="#cb9-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb9-3"><a href="#cb9-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="im">from</span> io <span class="im">import</span> BytesIO</span>
-<span id="cb9-5"><a href="#cb9-5"></a><span class="im">import</span> base64</span>
-<span id="cb9-6"><a href="#cb9-6"></a><span class="im">import</span> json</span>
-<span id="cb9-7"><a href="#cb9-7"></a></span>
-<span id="cb9-8"><a href="#cb9-8"></a><span class="co"># Define a path to save the generated images</span></span>
-<span id="cb9-9"><a href="#cb9-9"></a>image_path <span class="op">=</span> <span class="st">"./images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/generated/"</span></span>
-<span id="cb9-10"><a href="#cb9-10"></a></span>
-<span id="cb9-11"><a href="#cb9-11"></a></span>
-<span id="cb9-12"><a href="#cb9-12"></a><span class="kw">def</span> display_and_save_img(image, filename):</span>
-<span id="cb9-13"><a href="#cb9-13"></a>    <span class="co">"""Display and save the hallucinated image."""</span></span>
-<span id="cb9-14"><a href="#cb9-14"></a></span>
-<span id="cb9-15"><a href="#cb9-15"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">7</span>), frameon<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb9-16"><a href="#cb9-16"></a>    plt.imshow(np.array(image))</span>
-<span id="cb9-17"><a href="#cb9-17"></a>    plt.axis(<span class="st">"off"</span>)</span>
-<span id="cb9-18"><a href="#cb9-18"></a>    plt.savefig(</span>
-<span id="cb9-19"><a href="#cb9-19"></a>        image_path <span class="op">+</span> filename, bbox_inches<span class="op">=</span><span class="st">"tight"</span></span>
-<span id="cb9-20"><a href="#cb9-20"></a>    )  <span class="co"># comment it to NOT save generated images</span></span>
-<span id="cb9-21"><a href="#cb9-21"></a>    plt.show()</span>
-<span id="cb9-22"><a href="#cb9-22"></a></span>
-<span id="cb9-23"><a href="#cb9-23"></a></span>
-<span id="cb9-24"><a href="#cb9-24"></a><span class="kw">def</span> query_endpoint_with_json_payload(model_predictor, payload, content_type, accept):</span>
-<span id="cb9-25"><a href="#cb9-25"></a>    <span class="co">"""Query the model predictor with json payload."""</span></span>
-<span id="cb9-26"><a href="#cb9-26"></a></span>
-<span id="cb9-27"><a href="#cb9-27"></a>    encoded_payload <span class="op">=</span> json.dumps(payload).encode(<span class="st">"utf-8"</span>)</span>
-<span id="cb9-28"><a href="#cb9-28"></a></span>
-<span id="cb9-29"><a href="#cb9-29"></a>    query_response <span class="op">=</span> model_predictor.predict(</span>
-<span id="cb9-30"><a href="#cb9-30"></a>        encoded_payload, {<span class="st">"ContentType"</span>: content_type, <span class="st">"Accept"</span>: accept,},</span>
-<span id="cb9-31"><a href="#cb9-31"></a>    )</span>
-<span id="cb9-32"><a href="#cb9-32"></a>    <span class="cf">return</span> query_response</span>
-<span id="cb9-33"><a href="#cb9-33"></a></span>
-<span id="cb9-34"><a href="#cb9-34"></a></span>
-<span id="cb9-35"><a href="#cb9-35"></a><span class="kw">def</span> display_encoded_images(generated_images, prompt):</span>
-<span id="cb9-36"><a href="#cb9-36"></a>    <span class="co">"""Decode the images and convert to RGB format and display</span></span>
-<span id="cb9-37"><a href="#cb9-37"></a></span>
-<span id="cb9-38"><a href="#cb9-38"></a><span class="co">    Args:</span></span>
-<span id="cb9-39"><a href="#cb9-39"></a><span class="co">    generated_images: are a list of jpeg images as bytes with b64 encoding.</span></span>
-<span id="cb9-40"><a href="#cb9-40"></a><span class="co">    prompt: text string used to generate the images</span></span>
-<span id="cb9-41"><a href="#cb9-41"></a><span class="co">    """</span></span>
-<span id="cb9-42"><a href="#cb9-42"></a></span>
-<span id="cb9-43"><a href="#cb9-43"></a>    <span class="cf">for</span> count, generated_image <span class="kw">in</span> <span class="bu">enumerate</span>(generated_images):</span>
-<span id="cb9-44"><a href="#cb9-44"></a>        generated_image_decoded <span class="op">=</span> BytesIO(base64.b64decode(generated_image.encode()))</span>
-<span id="cb9-45"><a href="#cb9-45"></a>        generated_image_rgb <span class="op">=</span> Image.<span class="bu">open</span>(generated_image_decoded).convert(<span class="st">"RGB"</span>)</span>
-<span id="cb9-46"><a href="#cb9-46"></a></span>
-<span id="cb9-47"><a href="#cb9-47"></a>        <span class="co"># prepare filename to store the image from the prompt </span></span>
-<span id="cb9-48"><a href="#cb9-48"></a>        temp <span class="op">=</span> re.sub(</span>
-<span id="cb9-49"><a href="#cb9-49"></a>            <span class="vs">r"[^a-zA-Z0-9\s]+"</span>, <span class="st">""</span>, prompt</span>
-<span id="cb9-50"><a href="#cb9-50"></a>        )  <span class="co"># remove special chars from prompt</span></span>
-<span id="cb9-51"><a href="#cb9-51"></a></span>
-<span id="cb9-52"><a href="#cb9-52"></a>        temp <span class="op">=</span> temp.replace(<span class="st">" "</span>, <span class="st">"-"</span>)  <span class="co"># turn spaces to '-'</span></span>
-<span id="cb9-53"><a href="#cb9-53"></a>        temp <span class="op">=</span> temp[:<span class="dv">50</span>]  <span class="co"># limit the lenght of string upto 100 chars</span></span>
-<span id="cb9-54"><a href="#cb9-54"></a>        </span>
-<span id="cb9-55"><a href="#cb9-55"></a>        filename <span class="op">=</span> (</span>
-<span id="cb9-56"><a href="#cb9-56"></a>            temp <span class="op">+</span> <span class="bu">str</span>(count) <span class="op">+</span> <span class="st">".jpg"</span></span>
-<span id="cb9-57"><a href="#cb9-57"></a>        )  <span class="co"># add count and extension to the image name</span></span>
-<span id="cb9-58"><a href="#cb9-58"></a></span>
-<span id="cb9-59"><a href="#cb9-59"></a>        <span class="co"># display the generated image</span></span>
-<span id="cb9-60"><a href="#cb9-60"></a>        display_and_save_img(generated_image_rgb, filename)</span>
-<span id="cb9-61"><a href="#cb9-61"></a></span>
-<span id="cb9-62"><a href="#cb9-62"></a></span>
-<span id="cb9-63"><a href="#cb9-63"></a><span class="kw">def</span> parse_response_multiple_images(query_response):</span>
-<span id="cb9-64"><a href="#cb9-64"></a>    <span class="co">"""Parse response and return generated image and the prompt"""</span></span>
-<span id="cb9-65"><a href="#cb9-65"></a></span>
-<span id="cb9-66"><a href="#cb9-66"></a>    response_dict <span class="op">=</span> json.loads(query_response)</span>
-<span id="cb9-67"><a href="#cb9-67"></a>    <span class="cf">return</span> response_dict[<span class="st">"generated_images"</span>], response_dict[<span class="st">"prompt"</span>]</span>
-<span id="cb9-68"><a href="#cb9-68"></a></span>
-<span id="cb9-69"><a href="#cb9-69"></a></span>
-<span id="cb9-70"><a href="#cb9-70"></a><span class="kw">def</span> query_model_and_display(payload, model_predictor):</span>
-<span id="cb9-71"><a href="#cb9-71"></a>    query_response <span class="op">=</span> query_endpoint_with_json_payload(</span>
-<span id="cb9-72"><a href="#cb9-72"></a>        model_predictor, payload, <span class="st">"application/json"</span>, <span class="st">"application/json;jpeg"</span></span>
-<span id="cb9-73"><a href="#cb9-73"></a>    )</span>
-<span id="cb9-74"><a href="#cb9-74"></a>    generated_images, prompt <span class="op">=</span> parse_response_multiple_images(query_response)</span>
-<span id="cb9-75"><a href="#cb9-75"></a></span>
-<span id="cb9-76"><a href="#cb9-76"></a>    display_encoded_images(generated_images, prompt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="im">from</span> io <span class="im">import</span> BytesIO</span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="im">import</span> base64</span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="im">import</span> json</span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="im">import</span> re</span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="im">import</span> os</span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co"># Define a path to save the generated images</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a>image_path <span class="op">=</span> <span class="st">"./images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/generated/"</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>os.makedirs(image_path, exist_ok<span class="op">=</span><span class="va">True</span>) <span class="co"># create folder if not present</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a></span>
+<span id="cb8-14"><a href="#cb8-14"></a></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="kw">def</span> display_and_save_img(image, filename):</span>
+<span id="cb8-16"><a href="#cb8-16"></a>    <span class="co">"""Display and save the hallucinated image."""</span></span>
+<span id="cb8-17"><a href="#cb8-17"></a></span>
+<span id="cb8-18"><a href="#cb8-18"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">7</span>), frameon<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb8-19"><a href="#cb8-19"></a>    plt.imshow(np.array(image))</span>
+<span id="cb8-20"><a href="#cb8-20"></a>    plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb8-21"><a href="#cb8-21"></a>    plt.savefig(</span>
+<span id="cb8-22"><a href="#cb8-22"></a>        image_path <span class="op">+</span> filename, bbox_inches<span class="op">=</span><span class="st">"tight"</span>, transparent<span class="op">=</span><span class="va">True</span>, pad_inches<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb8-23"><a href="#cb8-23"></a>    )  <span class="co"># comment it to NOT save generated images</span></span>
+<span id="cb8-24"><a href="#cb8-24"></a>    plt.show()</span>
+<span id="cb8-25"><a href="#cb8-25"></a></span>
+<span id="cb8-26"><a href="#cb8-26"></a></span>
+<span id="cb8-27"><a href="#cb8-27"></a><span class="kw">def</span> query_endpoint_with_json_payload(model_predictor, payload, content_type, accept):</span>
+<span id="cb8-28"><a href="#cb8-28"></a>    <span class="co">"""Query the model predictor with json payload."""</span></span>
+<span id="cb8-29"><a href="#cb8-29"></a></span>
+<span id="cb8-30"><a href="#cb8-30"></a>    encoded_payload <span class="op">=</span> json.dumps(payload).encode(<span class="st">"utf-8"</span>)</span>
+<span id="cb8-31"><a href="#cb8-31"></a></span>
+<span id="cb8-32"><a href="#cb8-32"></a>    query_response <span class="op">=</span> model_predictor.predict(</span>
+<span id="cb8-33"><a href="#cb8-33"></a>        encoded_payload, {<span class="st">"ContentType"</span>: content_type, <span class="st">"Accept"</span>: accept,},</span>
+<span id="cb8-34"><a href="#cb8-34"></a>    )</span>
+<span id="cb8-35"><a href="#cb8-35"></a>    <span class="cf">return</span> query_response</span>
+<span id="cb8-36"><a href="#cb8-36"></a></span>
+<span id="cb8-37"><a href="#cb8-37"></a></span>
+<span id="cb8-38"><a href="#cb8-38"></a><span class="kw">def</span> display_encoded_images(generated_images, prompt):</span>
+<span id="cb8-39"><a href="#cb8-39"></a>    <span class="co">"""Decode the images and convert to RGB format and display</span></span>
+<span id="cb8-40"><a href="#cb8-40"></a></span>
+<span id="cb8-41"><a href="#cb8-41"></a><span class="co">    Args:</span></span>
+<span id="cb8-42"><a href="#cb8-42"></a><span class="co">    generated_images: are a list of jpeg images as bytes with b64 encoding.</span></span>
+<span id="cb8-43"><a href="#cb8-43"></a><span class="co">    prompt: text string used to generate the images</span></span>
+<span id="cb8-44"><a href="#cb8-44"></a><span class="co">    """</span></span>
+<span id="cb8-45"><a href="#cb8-45"></a></span>
+<span id="cb8-46"><a href="#cb8-46"></a>    <span class="cf">for</span> count, generated_image <span class="kw">in</span> <span class="bu">enumerate</span>(generated_images):</span>
+<span id="cb8-47"><a href="#cb8-47"></a>        generated_image_decoded <span class="op">=</span> BytesIO(base64.b64decode(generated_image.encode()))</span>
+<span id="cb8-48"><a href="#cb8-48"></a>        generated_image_rgb <span class="op">=</span> Image.<span class="bu">open</span>(generated_image_decoded).convert(<span class="st">"RGB"</span>)</span>
+<span id="cb8-49"><a href="#cb8-49"></a></span>
+<span id="cb8-50"><a href="#cb8-50"></a>        <span class="co"># prepare filename to store the image from the prompt </span></span>
+<span id="cb8-51"><a href="#cb8-51"></a>        temp <span class="op">=</span> re.sub(</span>
+<span id="cb8-52"><a href="#cb8-52"></a>            <span class="vs">r"[^a-zA-Z0-9\s]+"</span>, <span class="st">""</span>, prompt</span>
+<span id="cb8-53"><a href="#cb8-53"></a>        )  <span class="co"># remove special chars from prompt</span></span>
+<span id="cb8-54"><a href="#cb8-54"></a></span>
+<span id="cb8-55"><a href="#cb8-55"></a>        temp <span class="op">=</span> temp.replace(<span class="st">" "</span>, <span class="st">"-"</span>)  <span class="co"># turn spaces to '-'</span></span>
+<span id="cb8-56"><a href="#cb8-56"></a>        temp <span class="op">=</span> temp[:<span class="dv">50</span>]  <span class="co"># limit the lenght of string upto 100 chars</span></span>
+<span id="cb8-57"><a href="#cb8-57"></a>        </span>
+<span id="cb8-58"><a href="#cb8-58"></a>        filename <span class="op">=</span> (</span>
+<span id="cb8-59"><a href="#cb8-59"></a>            temp <span class="op">+</span> <span class="bu">str</span>(count) <span class="op">+</span> <span class="st">".jpg"</span></span>
+<span id="cb8-60"><a href="#cb8-60"></a>        )  <span class="co"># add count and extension to the image name</span></span>
+<span id="cb8-61"><a href="#cb8-61"></a></span>
+<span id="cb8-62"><a href="#cb8-62"></a>        <span class="co"># display the generated image</span></span>
+<span id="cb8-63"><a href="#cb8-63"></a>        display_and_save_img(generated_image_rgb, filename)</span>
+<span id="cb8-64"><a href="#cb8-64"></a></span>
+<span id="cb8-65"><a href="#cb8-65"></a></span>
+<span id="cb8-66"><a href="#cb8-66"></a><span class="kw">def</span> parse_response_multiple_images(query_response):</span>
+<span id="cb8-67"><a href="#cb8-67"></a>    <span class="co">"""Parse response and return generated image and the prompt"""</span></span>
+<span id="cb8-68"><a href="#cb8-68"></a></span>
+<span id="cb8-69"><a href="#cb8-69"></a>    response_dict <span class="op">=</span> json.loads(query_response)</span>
+<span id="cb8-70"><a href="#cb8-70"></a>    <span class="cf">return</span> response_dict[<span class="st">"generated_images"</span>], response_dict[<span class="st">"prompt"</span>]</span>
+<span id="cb8-71"><a href="#cb8-71"></a></span>
+<span id="cb8-72"><a href="#cb8-72"></a></span>
+<span id="cb8-73"><a href="#cb8-73"></a><span class="kw">def</span> query_model_and_display(payload, model_predictor):</span>
+<span id="cb8-74"><a href="#cb8-74"></a>    query_response <span class="op">=</span> query_endpoint_with_json_payload(</span>
+<span id="cb8-75"><a href="#cb8-75"></a>        model_predictor, payload, <span class="st">"application/json"</span>, <span class="st">"application/json;jpeg"</span></span>
+<span id="cb8-76"><a href="#cb8-76"></a>    )</span>
+<span id="cb8-77"><a href="#cb8-77"></a>    generated_images, prompt <span class="op">=</span> parse_response_multiple_images(query_response)</span>
+<span id="cb8-78"><a href="#cb8-78"></a></span>
+<span id="cb8-79"><a href="#cb8-79"></a>    display_encoded_images(generated_images, prompt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="supported-inference-parameters" class="level3">
@@ -620,16 +635,16 @@ Architecture: 64bit
 <li><code>seed</code>: Fix the randomized state for reproducibility. If specified, it must be an integer.</li>
 </ul>
 <p>An example request payload is provided below. The effect of these parameters will become apparent when we eventually generate images using them.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>payload <span class="op">=</span> {</span>
-<span id="cb10-2"><a href="#cb10-2"></a>    <span class="st">"prompt"</span>: <span class="st">"a portrait of a man"</span>,</span>
-<span id="cb10-3"><a href="#cb10-3"></a>    <span class="st">"negative_prompt"</span>: <span class="st">"beard"</span></span>
-<span id="cb10-4"><a href="#cb10-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb10-5"><a href="#cb10-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb10-6"><a href="#cb10-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">1</span>,</span>
-<span id="cb10-7"><a href="#cb10-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
-<span id="cb10-8"><a href="#cb10-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb10-9"><a href="#cb10-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb10-10"><a href="#cb10-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>payload <span class="op">=</span> {</span>
+<span id="cb9-2"><a href="#cb9-2"></a>    <span class="st">"prompt"</span>: <span class="st">"a portrait of a man"</span>,</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    <span class="st">"negative_prompt"</span>: <span class="st">"beard"</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">1</span>,</span>
+<span id="cb9-7"><a href="#cb9-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb9-8"><a href="#cb9-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb9-9"><a href="#cb9-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb9-10"><a href="#cb9-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout-tip callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -661,7 +676,7 @@ Tip
 <p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/pretrained-model-table.png" class="img-fluid"></p>
 <p>At the time of writing this notebook, 86 <code>txt2img</code> models are available on JumpStart. We may use any of them to generate the images. I have selected a few from them that are the more well-known. However, you are welcome to experiment with anyone of them. Following in the list of the models that we will use in the later part of this notebook.</p>
 <ul>
-<li><a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">model-txt2img-stabilityai-stable-diffusion-v2-1</a></li>
+<li><a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">model-txt2img-stabilityai-stable-diffusion-v2-1-base</a></li>
 <li><a href="https://huggingface.co/prompthero/openjourney">huggingface-txt2img-prompthero-openjourney</a></li>
 <li><a href="https://huggingface.co/andite/anything-v4.0">huggingface-txt2img-andite-anything-v4-0</a></li>
 <li><a href="https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0">huggingface-txt2img-dreamlike-art-dreamlike-diffusion-1-0</a></li>
@@ -710,7 +725,15 @@ Tip
 </section>
 <section id="stable-diffusion-v2-1" class="level2">
 <h2 class="anchored" data-anchor-id="stable-diffusion-v2-1">Stable Diffusion v2-1</h2>
-<p>Let’s get our first model up and running <a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">stable-diffusion-2-1</a>. This base model is trained from scratch and can be applied to various use cases. However, to use this model, it is also important to understand some of the limitations.</p>
+<p>Let’s get our first model up and running <a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">stable-diffusion-2-1</a>.</p>
+<div class="cell" data-tags="[]" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>model_id <span class="op">=</span> <span class="st">"model-txt2img-stabilityai-stable-diffusion-v2-1-base"</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---------!</code></pre>
+</div>
+</div>
+<p>This base model is trained from scratch and can be applied to various use cases. However, to use this model, it is also important to understand some of the limitations.</p>
 <ul>
 <li>The model does not achieve perfect photorealism</li>
 <li>The model cannot render legible text</li>
@@ -721,10 +744,1299 @@ Tip
 <section id="realistic-people" class="level3">
 <h3 class="anchored" data-anchor-id="realistic-people">Realistic people</h3>
 <p>Let’s see how good is this model to generate real people images.</p>
-<p>’’’ positive ’’’</p>
-
-
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores</p>
+<p>Negative = disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="27">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w"</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a></span>
+<span id="cb12-4"><a href="#cb12-4"></a>payload <span class="op">=</span> {</span>
+<span id="cb12-5"><a href="#cb12-5"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb12-6"><a href="#cb12-6"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb12-7"><a href="#cb12-7"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb12-8"><a href="#cb12-8"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb12-9"><a href="#cb12-9"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">5</span>,</span>
+<span id="cb12-10"><a href="#cb12-10"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb12-11"><a href="#cb12-11"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb12-12"><a href="#cb12-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb12-13"><a href="#cb12-13"></a>}</span>
+<span id="cb12-14"><a href="#cb12-14"></a></span>
+<span id="cb12-15"><a href="#cb12-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-5.png" class="img-fluid"></p>
+</div>
+</div>
+<p>The model can generate images of people’s faces with good symmetry but still struggles with hands and fingers. This is visible in images 3 and 5, where the fingers are distorted. Otherwise, it was able to capture the instructions from the prompt.</p>
+<ul>
+<li>photo of a young woman</li>
+<li>highlight hair</li>
+<li>sitting outside the restaurant</li>
+<li>wearing dress</li>
+</ul>
+<p>Let’s try another prompt; this time, we will focus more on the body shape, parts, and aesthetics.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = sitting on green grass, bodybuilder posing, bodycam footage, man esthete with disgust face, overlooking a dark street, black and white photograph, sitting on a bench, dirty concrete wall, very sexy outfit, perfect face mode, sport photography, black business suit</p>
+<p>Negative = disfigured, ugly, bad</p>
+</div>
+</div>
+<p>The results could be better, again highlighting that the Stable Diffusion v2.1 model still needs to improve at generating proper people faces and shapes.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>prompt <span class="op">=</span> <span class="st">"sitting on green grass, bodybuilder posing, bodycam footage, man esthete with disgust face, overlooking a dark street, black and white photograph, sitting on a bench, dirty concrete wall, very sexy outfit, perfect face mode, sport photography, black business suit"</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad"</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a>payload <span class="op">=</span> {</span>
+<span id="cb13-5"><a href="#cb13-5"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb13-6"><a href="#cb13-6"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb13-7"><a href="#cb13-7"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb13-8"><a href="#cb13-8"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb13-9"><a href="#cb13-9"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">5</span>,</span>
+<span id="cb13-10"><a href="#cb13-10"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb13-11"><a href="#cb13-11"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb13-12"><a href="#cb13-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb13-13"><a href="#cb13-13"></a>}</span>
+<span id="cb13-14"><a href="#cb13-14"></a></span>
+<span id="cb13-15"><a href="#cb13-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-5.png" class="img-fluid"></p>
+</div>
+</div>
 </section>
+<section id="architecture" class="level3">
+<h3 class="anchored" data-anchor-id="architecture">Architecture</h3>
+<p>Okay, we have seen that model struggles with depicting accurate body shapes. So let’s try something more complex and see how well the model understands building shapes and architectures.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="28">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>prompt <span class="op">=</span> <span class="st">"A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a></span>
+<span id="cb14-3"><a href="#cb14-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb14-4"><a href="#cb14-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb14-5"><a href="#cb14-5"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb14-6"><a href="#cb14-6"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb14-7"><a href="#cb14-7"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">5</span>,</span>
+<span id="cb14-8"><a href="#cb14-8"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb14-9"><a href="#cb14-9"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb14-10"><a href="#cb14-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb14-11"><a href="#cb14-11"></a>}</span>
+<span id="cb14-12"><a href="#cb14-12"></a></span>
+<span id="cb14-13"><a href="#cb14-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-5.png" class="img-fluid"></p>
+</div>
+</div>
+<p>These are very impressive results. The model is adept at understanding how the modern building should look like. It can intelligently place windows, balconies, chairs, trees, shadows and reflection at appropriate locations. The design is also modern, meaning it follows the instructions well.</p>
+<p>Let’s try another difficult prompt focusing on the city’s complex geometry and formations.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A beautiful digital illustration of BARCELONA, 4k, crystal clear, ultra HD, high definition, detailed, trending in artstation, fantasy</p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful digital illustration of BARCELONA, 4k, crystal clear, ultra HD, high definition, detailed, trending in artstation, fantasy"</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a></span>
+<span id="cb15-3"><a href="#cb15-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb15-4"><a href="#cb15-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb15-5"><a href="#cb15-5"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb15-6"><a href="#cb15-6"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb15-7"><a href="#cb15-7"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb15-8"><a href="#cb15-8"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb15-9"><a href="#cb15-9"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb15-10"><a href="#cb15-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb15-11"><a href="#cb15-11"></a>}</span>
+<span id="cb15-12"><a href="#cb15-12"></a></span>
+<span id="cb15-13"><a href="#cb15-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>The results are pretty good. The model can understand that structures at the front are significant, and those at the far back slowly decreases in size. It understands that in a typical city layout, roads run through and divide it. The last image is compelling, containing a road at the center with a green belt having trees. After that, there is a road busy with vehicles. And then, at the peripheries, there are building with intricate layouts.</p>
+</section>
+<section id="abstract-art-and-styles" class="level3">
+<h3 class="anchored" data-anchor-id="abstract-art-and-styles">Abstract art and styles</h3>
+<p>Let’s move to abstract art, styles, and artists and see how well the model portrays them.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A surreal 3D render of a cityscape with twisted buildings, upside-down structures, and floating objects, creating a dreamlike and disorienting atmosphere, by Simon Stålenhag</p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>prompt <span class="op">=</span> <span class="st">"A surreal 3D render of a cityscape with twisted buildings, upside-down structures, and floating objects, creating a dreamlike and disorienting atmosphere, by Simon Stålenhag"</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a></span>
+<span id="cb16-3"><a href="#cb16-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb16-4"><a href="#cb16-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb16-5"><a href="#cb16-5"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb16-6"><a href="#cb16-6"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb16-7"><a href="#cb16-7"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">5</span>,</span>
+<span id="cb16-8"><a href="#cb16-8"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb16-9"><a href="#cb16-9"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb16-10"><a href="#cb16-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb16-11"><a href="#cb16-11"></a>}</span>
+<span id="cb16-12"><a href="#cb16-12"></a></span>
+<span id="cb16-13"><a href="#cb16-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-4.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-5.png" class="img-fluid"></p>
+</div>
+</div>
+<p>“Twisted upside-down buildings and floating objects” is very unusual and hard to imagine what a world would look like. But it is not difficult for the model to reproduce it. So let’s try some more prompts.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A futuristic space station orbiting a distant planet, with a sleek design and advanced technology visible through the windows, Nuremberg Chronicle, 1493, Liber Chronicarum, Michael Wolgemut, detailed architecture</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="46">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>prompt <span class="op">=</span> <span class="st">"A futuristic space station orbiting a distant planet, with sleek design and advanced technology visible through the windows, Nuremberg Chronicle, 1493, Liber Chronicarum, Michael Wolgemut, detailed archtitecture"</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>negative_prompt <span class="op">=</span> <span class="st">"writings, ugly, bad, immature, anime, b&amp;w, lines, latin"</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4"></a>payload <span class="op">=</span> {</span>
+<span id="cb17-5"><a href="#cb17-5"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb17-6"><a href="#cb17-6"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb17-7"><a href="#cb17-7"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb17-8"><a href="#cb17-8"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb17-9"><a href="#cb17-9"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb17-10"><a href="#cb17-10"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb17-11"><a href="#cb17-11"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb17-12"><a href="#cb17-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb17-13"><a href="#cb17-13"></a>}</span>
+<span id="cb17-14"><a href="#cb17-14"></a></span>
+<span id="cb17-15"><a href="#cb17-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Realistic 3D render of an isometric hospital in a low poly art style, medical workers, doctors, nurses, patients, beds and equipment.</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="45">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a>prompt <span class="op">=</span> <span class="st">"Realistic 3D render of an isometric hospital in a low poly art style, medical workers, doctors, nurses, patients, beds and equipment."</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a></span>
+<span id="cb18-3"><a href="#cb18-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb18-4"><a href="#cb18-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb18-5"><a href="#cb18-5"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb18-6"><a href="#cb18-6"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb18-7"><a href="#cb18-7"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb18-8"><a href="#cb18-8"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb18-9"><a href="#cb18-9"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb18-10"><a href="#cb18-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb18-11"><a href="#cb18-11"></a>}</span>
+<span id="cb18-12"><a href="#cb18-12"></a></span>
+<span id="cb18-13"><a href="#cb18-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="landscapes" class="level3">
+<h3 class="anchored" data-anchor-id="landscapes">Landscapes</h3>
+<p>Let’s move to a more natural setting. The model generates visually pleasing scenes involving meadows, wildlands, mountains, rivers, etc. The depth and details in the results are absolutely impressive. Some prompts that I tried are provided here.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The green idyllic Arcadian prairie with sheep by Thomas Cole, Breath-taking digital painting with placid colors, amazing art, artstation 3, cottagecore.</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="41">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a>prompt <span class="op">=</span> <span class="st">"The green idyllic Arcadian prairie with sheep by Thomas Cole, Breath-taking digital painting with placid colors, amazing art, artstation 3, cottagecore."</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a></span>
+<span id="cb19-3"><a href="#cb19-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb19-4"><a href="#cb19-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb19-5"><a href="#cb19-5"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb19-6"><a href="#cb19-6"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb19-7"><a href="#cb19-7"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb19-8"><a href="#cb19-8"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb19-9"><a href="#cb19-9"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb19-10"><a href="#cb19-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb19-11"><a href="#cb19-11"></a>}</span>
+<span id="cb19-12"><a href="#cb19-12"></a></span>
+<span id="cb19-13"><a href="#cb19-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="prompt-8" class="level4">
+<h4 class="anchored" data-anchor-id="prompt-8">Prompt</h4>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ, full view</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="42">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ, full view"</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a></span>
+<span id="cb20-3"><a href="#cb20-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb20-4"><a href="#cb20-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb20-5"><a href="#cb20-5"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb20-6"><a href="#cb20-6"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb20-7"><a href="#cb20-7"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb20-8"><a href="#cb20-8"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb20-9"><a href="#cb20-9"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb20-10"><a href="#cb20-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb20-11"><a href="#cb20-11"></a>}</span>
+<span id="cb20-12"><a href="#cb20-12"></a></span>
+<span id="cb20-13"><a href="#cb20-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="portraits-and-paintings" class="level3">
+<h3 class="anchored" data-anchor-id="portraits-and-paintings">Portraits and paintings</h3>
+<p>I also tried generating portraits and paintings of imaginative situations. Stable Diffusion is sound. But similar to its limitations in creating accurate human body shapes, it struggles with them in paintings.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = A painting of a pirate ship in the ocean, a digital painting, renaissance, color study, portrait, castle, three masts, davinci, whole page illustration, small boat</p>
+<p>Negative = logos, icons, writings, description</p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>prompt <span class="op">=</span> <span class="st">"A painting of a pirate ship in the ocean, a digital painting, renaissance, color study, portrait, castle, three masts, davinci, whole page illustration, small boat"</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a>negative_prompt <span class="op">=</span> <span class="st">"logos, icons, writings, description"</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a></span>
+<span id="cb21-4"><a href="#cb21-4"></a>payload <span class="op">=</span> {</span>
+<span id="cb21-5"><a href="#cb21-5"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb21-6"><a href="#cb21-6"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb21-7"><a href="#cb21-7"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb21-8"><a href="#cb21-8"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb21-9"><a href="#cb21-9"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb21-10"><a href="#cb21-10"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb21-11"><a href="#cb21-11"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb21-12"><a href="#cb21-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb21-13"><a href="#cb21-13"></a>}</span>
+<span id="cb21-14"><a href="#cb21-14"></a></span>
+<span id="cb21-15"><a href="#cb21-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Complex detailed medieval painting of a fantasy medieval cleric woman walking through a field of flowers, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="48">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a>prompt <span class="op">=</span> <span class="st">"Complex detailed medieval painting of a fantasy medieval cleric woman walking through a field of flowers, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting"</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a></span>
+<span id="cb22-3"><a href="#cb22-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb22-4"><a href="#cb22-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb22-5"><a href="#cb22-5"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb22-6"><a href="#cb22-6"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb22-7"><a href="#cb22-7"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb22-8"><a href="#cb22-8"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb22-9"><a href="#cb22-9"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb22-10"><a href="#cb22-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb22-11"><a href="#cb22-11"></a>}</span>
+<span id="cb22-12"><a href="#cb22-12"></a></span>
+<span id="cb22-13"><a href="#cb22-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Ensure you delete the model endpoint once it is no longer required to avoid unforeseen costs.</p>
+<div class="cell" data-tags="[]" data-execution_count="49">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="prompthero-openjourney" class="level2">
+<h2 class="anchored" data-anchor-id="prompthero-openjourney">PromptHero Openjourney</h2>
+<p>Besides the Stable Diffusion base model, many other open-source models have distinctive styles and tastes. One such model is <a href="https://huggingface.co/prompthero/openjourney">OpenJourney</a>. Openjourney is based on <a href="https://huggingface.co/runwayml/stable-diffusion-v1-5">Stable Diffusion v1.5</a> base model but fine-tuned with many <a href="https://en.wikipedia.org/wiki/Midjourney">Midjourney</a> images. The result is a model capable of generating very detailed and colorful photos but compared to MidJourney prompt instructions have to be very detailed. We must append the prompt with the text <code>modern-v4 style</code> to invoke its unique style.</p>
+<p>Let’s get this model us and running.</p>
+<div class="cell" data-tags="[]" data-execution_count="50">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-prompthero-openjourney"</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---------!</code></pre>
+</div>
+</div>
+<section id="realistic-people-and-portraits" class="level3">
+<h3 class="anchored" data-anchor-id="realistic-people-and-portraits">Realistic people and portraits</h3>
+<p>Remember that this OpenJourney model is based on an older version of stable diffusion, but I found it equally good at generating people’s faces and body shapes with acceptable symmetry.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = mdjrny-v4 style old, female robot, metal, rust, wisible wires, destroyed, sad, dark, dirty, looking at viewer, portrait, photography, detailed skin, realistic, photo-realistic, 8k, highly detailed, full length frame, High detail RAW color art, piercing, diffused soft lighting, shallow depth of field, sharp focus, hyperrealism, cinematic lighting</p>
+<p>Negative = logo, CGI, 3d, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="52">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style old, female robot, metal, rust, wisible wires, destroyed, sad, dark, dirty, looking at viewer, portrait, photography, detailed skin, realistic, photo-realistic, 8k, highly detailed, full length frame, High detail RAW color art, piercing, diffused soft lighting, shallow depth of field, sharp focus, hyperrealism, cinematic lighting"</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>negative_prompt <span class="op">=</span> <span class="st">"logo, CGI, 3d, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature"</span></span>
+<span id="cb26-3"><a href="#cb26-3"></a></span>
+<span id="cb26-4"><a href="#cb26-4"></a>payload <span class="op">=</span> {</span>
+<span id="cb26-5"><a href="#cb26-5"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb26-6"><a href="#cb26-6"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb26-7"><a href="#cb26-7"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb26-8"><a href="#cb26-8"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb26-9"><a href="#cb26-9"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb26-10"><a href="#cb26-10"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb26-11"><a href="#cb26-11"></a>    <span class="st">"guidance_scale"</span>: <span class="dv">14</span>,</span>
+<span id="cb26-12"><a href="#cb26-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb26-13"><a href="#cb26-13"></a>}</span>
+<span id="cb26-14"><a href="#cb26-14"></a></span>
+<span id="cb26-15"><a href="#cb26-15"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb26-16"><a href="#cb26-16"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = mdjrny-v4 style portrait photograph of Madison Beer as Pocahontas, young beautiful native american woman, perfect symmetrical face, feather jewelry, traditional handmade dress, armed female hunter warrior, wild west environment, Utah landscape, ultra realistic, concept art, elegant, intricate, highly detailed, depth of field, professionally color graded, 8k, art by artgerm and greg rutkowski and alphonse mucha</p>
+<p>Negative = backlight, dark face, white fur, gold fabric, cropped head, out of frame, deformed, cripple, ugly, additional arms, additional legs, additional head, two heads, multiple people, group of people</p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style portrait photograph of Madison Beer as Pocahontas, young beautiful native american woman, perfect symmetrical face, feather jewelry, traditional handmade dress, armed female hunter warrior, wild west environment, Utah landscape, ultra realistic, concept art, elegant, intricate, highly detailed, depth of field, professionally color graded, 8k, art by artgerm and greg rutkowski and alphonse mucha"</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a>negative_prompt <span class="op">=</span> <span class="st">"backlight, dark face, white fur, gold fabric, cropped head, out of frame, deformed, cripple, ugly, additional arms, additional legs, additional head, two heads, multiple people, group of people"</span></span>
+<span id="cb27-3"><a href="#cb27-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb27-4"><a href="#cb27-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb27-5"><a href="#cb27-5"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb27-6"><a href="#cb27-6"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb27-7"><a href="#cb27-7"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb27-8"><a href="#cb27-8"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb27-9"><a href="#cb27-9"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb27-10"><a href="#cb27-10"></a>    <span class="st">"guidance_scale"</span>: <span class="dv">14</span>,</span>
+<span id="cb27-11"><a href="#cb27-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb27-12"><a href="#cb27-12"></a>}</span>
+<span id="cb27-13"><a href="#cb27-13"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb27-14"><a href="#cb27-14"></a><span class="co"># https://prompthero.com/prompt/d4f36f0dcdf</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = mdjrny-v4 style Incredibly detailed technical diagram of the profile of a woman with the top and back of her head split into complex geometric shapes and flowers growing from the shapes, Chiaroscuro lighting, fine intricate details</p>
+<p>Negative = long neck, skinny</p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style Incredibly detailed technical diagram of the profile of a woman with the top and back of her head split into complex geometric shapes and flowers growing from the shapes, Chiaroscuro lighting, fine intricate details"</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a>negative_prompt <span class="op">=</span> <span class="st">"long neck, skinny"</span></span>
+<span id="cb28-3"><a href="#cb28-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb28-4"><a href="#cb28-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb28-5"><a href="#cb28-5"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb28-6"><a href="#cb28-6"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb28-7"><a href="#cb28-7"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb28-8"><a href="#cb28-8"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb28-9"><a href="#cb28-9"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb28-10"><a href="#cb28-10"></a>    <span class="st">"guidance_scale"</span>: <span class="dv">14</span>,</span>
+<span id="cb28-11"><a href="#cb28-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb28-12"><a href="#cb28-12"></a>}</span>
+<span id="cb28-13"><a href="#cb28-13"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb28-14"><a href="#cb28-14"></a><span class="co"># https://prompthero.com/prompt/0c8536f3b23</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="fairy-landscapes" class="level3">
+<h3 class="anchored" data-anchor-id="fairy-landscapes">Fairy Landscapes</h3>
+<p>You can also create very detailed and super impressive photos of landscapes.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>mdjrny-v4 style painting of a fairy forest, dream light, full of colors, mushroom tree, dim light, super detailed, unreal engine 5, hdr, 12k, by Vincent Van Goth</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="53">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style painting of a fairy forest, dream light, full of colors, mushroom tree, dim light, super detailed, unreal engine 5, hdr, 12k, by Vincent Van Goth"</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb29-3"><a href="#cb29-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb29-4"><a href="#cb29-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb29-5"><a href="#cb29-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb29-6"><a href="#cb29-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb29-7"><a href="#cb29-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb29-8"><a href="#cb29-8"></a>    <span class="st">"guidance_scale"</span>: <span class="dv">14</span>,</span>
+<span id="cb29-9"><a href="#cb29-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb29-10"><a href="#cb29-10"></a>}</span>
+<span id="cb29-11"><a href="#cb29-11"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb29-12"><a href="#cb29-12"></a><span class="co"># https://prompthero.com/prompt/19c0ad9cac1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="other-digital-art-prompts" class="level3">
+<h3 class="anchored" data-anchor-id="other-digital-art-prompts">Other digital art prompts</h3>
+<p>Some other prompt examples where the results are very impressive.</p>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>mdjrny-v4 style little dragon staring at magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="54">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style little dragon staring at magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb30-3"><a href="#cb30-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb30-4"><a href="#cb30-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb30-5"><a href="#cb30-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb30-6"><a href="#cb30-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb30-7"><a href="#cb30-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb30-8"><a href="#cb30-8"></a>    <span class="st">"guidance_scale"</span>: <span class="dv">14</span>,</span>
+<span id="cb30-9"><a href="#cb30-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb30-10"><a href="#cb30-10"></a>}</span>
+<span id="cb30-11"><a href="#cb30-11"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb30-12"><a href="#cb30-12"></a><span class="co"># https://prompthero.com/prompt/63c7ed7865f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>mdjrny-v4 style, magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="55">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style, magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb31-3"><a href="#cb31-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb31-4"><a href="#cb31-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb31-5"><a href="#cb31-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb31-6"><a href="#cb31-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb31-7"><a href="#cb31-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb31-8"><a href="#cb31-8"></a>    <span class="st">"guidance_scale"</span>: <span class="dv">14</span>,</span>
+<span id="cb31-9"><a href="#cb31-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb31-10"><a href="#cb31-10"></a>}</span>
+<span id="cb31-11"><a href="#cb31-11"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb31-12"><a href="#cb31-12"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="58">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="fantasyai-anything-v4.0" class="level2">
+<h2 class="anchored" data-anchor-id="fantasyai-anything-v4.0">FantasyAI Anything V4.0</h2>
+<p><a href="https://huggingface.co/andite/anything-v4.0">anything-v4.0</a> is another model with a distinct style. It is also based on Stable Diffusion and is good at producing high-quality, highly detailed anime styles with just a few prompts.</p>
+<p>Let’s get this model up and running.</p>
+<div class="cell" data-tags="[]" data-execution_count="59">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-andite-anything-v4-0"</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---------!</code></pre>
+</div>
+</div>
+<section id="realistic-people-1" class="level3">
+<h3 class="anchored" data-anchor-id="realistic-people-1">Realistic people</h3>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="60">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a>prompt <span class="op">=</span> <span class="st">"1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb35-3"><a href="#cb35-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb35-4"><a href="#cb35-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb35-5"><a href="#cb35-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb35-6"><a href="#cb35-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb35-7"><a href="#cb35-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb35-8"><a href="#cb35-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb35-9"><a href="#cb35-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb35-10"><a href="#cb35-10"></a>}</span>
+<span id="cb35-11"><a href="#cb35-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores</p>
+<p>Negative = disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="61">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
+<span id="cb36-2"><a href="#cb36-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w"</span></span>
+<span id="cb36-3"><a href="#cb36-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb36-4"><a href="#cb36-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb36-5"><a href="#cb36-5"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb36-6"><a href="#cb36-6"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb36-7"><a href="#cb36-7"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb36-8"><a href="#cb36-8"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb36-9"><a href="#cb36-9"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb36-10"><a href="#cb36-10"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb36-11"><a href="#cb36-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb36-12"><a href="#cb36-12"></a>}</span>
+<span id="cb36-13"><a href="#cb36-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="62">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
+<span id="cb37-2"><a href="#cb37-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb37-3"><a href="#cb37-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb37-4"><a href="#cb37-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb37-5"><a href="#cb37-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb37-6"><a href="#cb37-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb37-7"><a href="#cb37-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb37-8"><a href="#cb37-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb37-9"><a href="#cb37-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb37-10"><a href="#cb37-10"></a>}</span>
+<span id="cb37-11"><a href="#cb37-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="66">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="mo-di-diffusion" class="level2">
+<h2 class="anchored" data-anchor-id="mo-di-diffusion">Mo Di Diffusion</h2>
+<div class="cell" data-tags="[]" data-execution_count="67">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-nitrosocke-mo-di-diffusion"</span></span>
+<span id="cb39-2"><a href="#cb39-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>----------!</code></pre>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="69">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
+<span id="cb41-2"><a href="#cb41-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb41-3"><a href="#cb41-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb41-4"><a href="#cb41-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb41-5"><a href="#cb41-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb41-6"><a href="#cb41-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb41-7"><a href="#cb41-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb41-8"><a href="#cb41-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb41-9"><a href="#cb41-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb41-10"><a href="#cb41-10"></a>}</span>
+<span id="cb41-11"><a href="#cb41-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prompt = modern disney style photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores</p>
+<p>Negative = disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="70">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
+<span id="cb42-2"><a href="#cb42-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, crowd, people"</span></span>
+<span id="cb42-3"><a href="#cb42-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb42-4"><a href="#cb42-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb42-5"><a href="#cb42-5"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb42-6"><a href="#cb42-6"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb42-7"><a href="#cb42-7"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb42-8"><a href="#cb42-8"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb42-9"><a href="#cb42-9"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb42-10"><a href="#cb42-10"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb42-11"><a href="#cb42-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb42-12"><a href="#cb42-12"></a>}</span>
+<span id="cb42-13"><a href="#cb42-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>“modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="71">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
+<span id="cb43-2"><a href="#cb43-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb43-3"><a href="#cb43-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb43-4"><a href="#cb43-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb43-5"><a href="#cb43-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb43-6"><a href="#cb43-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb43-7"><a href="#cb43-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb43-8"><a href="#cb43-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb43-9"><a href="#cb43-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb43-10"><a href="#cb43-10"></a>}</span>
+<span id="cb43-11"><a href="#cb43-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="72">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<span id="cb44-2"><a href="#cb44-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb44-3"><a href="#cb44-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb44-4"><a href="#cb44-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb44-5"><a href="#cb44-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb44-6"><a href="#cb44-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb44-7"><a href="#cb44-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb44-8"><a href="#cb44-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb44-9"><a href="#cb44-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb44-10"><a href="#cb44-10"></a>}</span>
+<span id="cb44-11"><a href="#cb44-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="73">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="inkpunk-diffusion" class="level2">
+<h2 class="anchored" data-anchor-id="inkpunk-diffusion">Inkpunk Diffusion</h2>
+<div class="cell" data-tags="[]" data-execution_count="74">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-envvi-inkpunk-diffusion"</span></span>
+<span id="cb46-2"><a href="#cb46-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>----------!</code></pre>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting.</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="75">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting."</span></span>
+<span id="cb48-2"><a href="#cb48-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb48-3"><a href="#cb48-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb48-4"><a href="#cb48-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb48-5"><a href="#cb48-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb48-6"><a href="#cb48-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb48-7"><a href="#cb48-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb48-8"><a href="#cb48-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb48-9"><a href="#cb48-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb48-10"><a href="#cb48-10"></a>}</span>
+<span id="cb48-11"><a href="#cb48-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="76">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<span id="cb49-2"><a href="#cb49-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb49-3"><a href="#cb49-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb49-4"><a href="#cb49-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb49-5"><a href="#cb49-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb49-6"><a href="#cb49-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb49-7"><a href="#cb49-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb49-8"><a href="#cb49-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb49-9"><a href="#cb49-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb49-10"><a href="#cb49-10"></a>}</span>
+<span id="cb49-11"><a href="#cb49-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="77">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot"</span></span>
+<span id="cb50-2"><a href="#cb50-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb50-3"><a href="#cb50-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb50-4"><a href="#cb50-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb50-5"><a href="#cb50-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb50-6"><a href="#cb50-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb50-7"><a href="#cb50-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb50-8"><a href="#cb50-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb50-9"><a href="#cb50-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb50-10"><a href="#cb50-10"></a>}</span>
+<span id="cb50-11"><a href="#cb50-11"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb50-12"><a href="#cb50-12"></a><span class="co"># https://prompthero.com/prompt/67bc77c123f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="78">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines"</span></span>
+<span id="cb51-2"><a href="#cb51-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb51-3"><a href="#cb51-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb51-4"><a href="#cb51-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb51-5"><a href="#cb51-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb51-6"><a href="#cb51-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb51-7"><a href="#cb51-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb51-8"><a href="#cb51-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb51-9"><a href="#cb51-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb51-10"><a href="#cb51-10"></a>}</span>
+<span id="cb51-11"><a href="#cb51-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Prompt
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>nvinkpunk steampunk style blimp, Jules Verne, mechanical</p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="79">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk steampunk style blimp, Jules Verne, mechanical"</span></span>
+<span id="cb52-2"><a href="#cb52-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb52-3"><a href="#cb52-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb52-4"><a href="#cb52-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb52-5"><a href="#cb52-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb52-6"><a href="#cb52-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb52-7"><a href="#cb52-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb52-8"><a href="#cb52-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb52-9"><a href="#cb52-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb52-10"><a href="#cb52-10"></a>}</span>
+<span id="cb52-11"><a href="#cb52-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-tags="[]" data-execution_count="81">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
 </section>
 
 </main> <!-- /main -->
