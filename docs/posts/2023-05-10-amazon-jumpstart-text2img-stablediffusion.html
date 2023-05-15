@@ -953,7 +953,7 @@ Prompt
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-3.png" class="img-fluid"></p>
 </div>
 </div>
-<p>The results are pretty good. The model can understand that structures at the front are expansive, and those at the far back slowly decreases in size. It also understands that roads run through and divides a typical city layout. The last image is impressive, containing a road at the center with a green belt having trees. After that, there is a road busy with vehicles. And then, at the peripheries, there are building with intricate layouts.</p>
+<p>The results are pretty good. The model can understand that structures at the front are expansive, and those at the far back slowly decreases in size. It also understands that roads run through and divides a typical city layout. The last image is impressive, containing a green belt having trees in the center. After that, there is a road busy with vehicles. And then, at the peripheries, there are building with intricate layouts.</p>
 </section>
 <section id="abstract-art-and-styles" class="level3">
 <h3 class="anchored" data-anchor-id="abstract-art-and-styles">Abstract art and styles</h3>
@@ -1004,7 +1004,7 @@ Prompt
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-5.png" class="img-fluid"></p>
 </div>
 </div>
-<p>“Twisted upside-down buildings and floating objects” is very unusual, and hard to imagine what such a world would look like. But it is not difficult for the model to reproduce it. So let’s try some more prompts.</p>
+<p>“Twisted upside-down buildings and floating objects” is very unusual, and hard to imagine what such a world would look like. But it is not difficult for the model to produce it. So let’s try some more prompts.</p>
 <div class="callout-note callout callout-style-default no-icon callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1177,7 +1177,7 @@ Note
 </section>
 <section id="portraits-and-paintings" class="level3">
 <h3 class="anchored" data-anchor-id="portraits-and-paintings">Portraits and paintings</h3>
-<p>I also tried generating portraits and paintings of imaginative situations. Stable Diffusion is again very good at it. But similar to its limitations in creating accurate human body shapes, it struggles with them in paintings.</p>
+<p>I also tried generating portraits and paintings of imaginative scenarios. Stable Diffusion is again very good at it. But similar to its limitations in creating accurate human body shapes, it struggles with them in paintings.</p>
 <div class="callout-note callout callout-style-default no-icon callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1711,10 +1711,10 @@ Prompt
 </section>
 <section id="mo-di-diffusion" class="level2">
 <h2 class="anchored" data-anchor-id="mo-di-diffusion">Mo Di Diffusion</h2>
-<pre><code>[mo-di-diffusion](https://huggingface.co/nitrosocke/mo-di-diffusion) is another model good at expressing Disney animation studio style. It is based on Stable Diffusion 1.5 and fine-tuned on screenshots from Disney animation studio. However, users must use the tokens `modern disney style` in the prompts to get the desired effect.</code></pre>
+<p><a href="https://huggingface.co/nitrosocke/mo-di-diffusion">mo-di-diffusion</a> is another model good at expressing Disney animation studio style. It is based on Stable Diffusion 1.5 and fine-tuned on screenshots from Disney animation studio. However, users must use the tokens <code>modern disney style</code> in the prompts to get the desired effect.</p>
 <div class="cell" data-tags="[]" data-execution_count="67">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-nitrosocke-mo-di-diffusion"</span></span>
-<span id="cb40-2"><a href="#cb40-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-nitrosocke-mo-di-diffusion"</span></span>
+<span id="cb39-2"><a href="#cb39-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>----------!</code></pre>
 </div>
@@ -1738,17 +1738,17 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="69">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
-<span id="cb42-2"><a href="#cb42-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb42-3"><a href="#cb42-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb42-4"><a href="#cb42-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb42-5"><a href="#cb42-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb42-6"><a href="#cb42-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb42-7"><a href="#cb42-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb42-8"><a href="#cb42-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb42-9"><a href="#cb42-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb42-10"><a href="#cb42-10"></a>}</span>
-<span id="cb42-11"><a href="#cb42-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
+<span id="cb41-2"><a href="#cb41-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb41-3"><a href="#cb41-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb41-4"><a href="#cb41-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb41-5"><a href="#cb41-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb41-6"><a href="#cb41-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb41-7"><a href="#cb41-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb41-8"><a href="#cb41-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb41-9"><a href="#cb41-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb41-10"><a href="#cb41-10"></a>}</span>
+<span id="cb41-11"><a href="#cb41-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-1.png" class="img-fluid"></p>
@@ -1760,7 +1760,7 @@ Prompt
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-3.png" class="img-fluid"></p>
 </div>
 </div>
-<p>The same is the case with a photo of young women. Again, they remind me of <a href="https://en.wikipedia.org/wiki/Moana_(character)">Princess Moana</a>. But, unfortunately, the last image is distorted because MoDi is based on Stable Diffusion, which has these inherent limitations.</p>
+<p>The same is the case with a photo of young women. They remind me of <a href="https://en.wikipedia.org/wiki/Moana_(character)">Princess Moana</a> from Disney World. But, unfortunately, the last image is distorted because MoDi is based on Stable Diffusion, which has these inherent limitations.</p>
 <div class="callout-note callout callout-style-default no-icon callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1778,19 +1778,19 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="70">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
-<span id="cb43-2"><a href="#cb43-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, crowd, people"</span></span>
-<span id="cb43-3"><a href="#cb43-3"></a>payload <span class="op">=</span> {</span>
-<span id="cb43-4"><a href="#cb43-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb43-5"><a href="#cb43-5"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
-<span id="cb43-6"><a href="#cb43-6"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb43-7"><a href="#cb43-7"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb43-8"><a href="#cb43-8"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb43-9"><a href="#cb43-9"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb43-10"><a href="#cb43-10"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb43-11"><a href="#cb43-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb43-12"><a href="#cb43-12"></a>}</span>
-<span id="cb43-13"><a href="#cb43-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
+<span id="cb42-2"><a href="#cb42-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, crowd, people"</span></span>
+<span id="cb42-3"><a href="#cb42-3"></a>payload <span class="op">=</span> {</span>
+<span id="cb42-4"><a href="#cb42-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb42-5"><a href="#cb42-5"></a>    <span class="st">"negative_prompt"</span>: negative_prompt,</span>
+<span id="cb42-6"><a href="#cb42-6"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb42-7"><a href="#cb42-7"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb42-8"><a href="#cb42-8"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb42-9"><a href="#cb42-9"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb42-10"><a href="#cb42-10"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb42-11"><a href="#cb42-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb42-12"><a href="#cb42-12"></a>}</span>
+<span id="cb42-13"><a href="#cb42-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-1.png" class="img-fluid"></p>
@@ -1802,6 +1802,10 @@ Prompt
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-3.png" class="img-fluid"></p>
 </div>
 </div>
+</section>
+<section id="landscapes-and-architectures" class="level3">
+<h3 class="anchored" data-anchor-id="landscapes-and-architectures">Landscapes and architectures</h3>
+<p>I have also tried generating landscapes and building architectures. Both cases have a heavy touch of Disney World animation style.</p>
 <div class="callout-note callout callout-style-default no-icon callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1815,24 +1819,20 @@ Prompt
 <p>“modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ</p>
 </div>
 </div>
-</section>
-<section id="landscapes-and-architectures" class="level3">
-<h3 class="anchored" data-anchor-id="landscapes-and-architectures">Landscapes and architectures</h3>
-<p>I have also tried generating landscapes and building architectures. Both cases have a heavy touch of Disney World animation style.</p>
 <div class="cell" data-tags="[]" data-execution_count="71">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
-<span id="cb44-2"><a href="#cb44-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb44-3"><a href="#cb44-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb44-4"><a href="#cb44-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb44-5"><a href="#cb44-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb44-6"><a href="#cb44-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb44-7"><a href="#cb44-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb44-8"><a href="#cb44-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb44-9"><a href="#cb44-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb44-10"><a href="#cb44-10"></a>}</span>
-<span id="cb44-11"><a href="#cb44-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
+<span id="cb43-2"><a href="#cb43-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb43-3"><a href="#cb43-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb43-4"><a href="#cb43-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb43-5"><a href="#cb43-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb43-6"><a href="#cb43-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb43-7"><a href="#cb43-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb43-8"><a href="#cb43-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb43-9"><a href="#cb43-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb43-10"><a href="#cb43-10"></a>}</span>
+<span id="cb43-11"><a href="#cb43-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-1.png" class="img-fluid"></p>
@@ -1860,17 +1860,17 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="72">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
-<span id="cb45-2"><a href="#cb45-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb45-3"><a href="#cb45-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb45-4"><a href="#cb45-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb45-5"><a href="#cb45-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb45-6"><a href="#cb45-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb45-7"><a href="#cb45-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb45-8"><a href="#cb45-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb45-9"><a href="#cb45-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb45-10"><a href="#cb45-10"></a>}</span>
-<span id="cb45-11"><a href="#cb45-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<span id="cb44-2"><a href="#cb44-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb44-3"><a href="#cb44-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb44-4"><a href="#cb44-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb44-5"><a href="#cb44-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb44-6"><a href="#cb44-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb44-7"><a href="#cb44-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb44-8"><a href="#cb44-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb44-9"><a href="#cb44-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb44-10"><a href="#cb44-10"></a>}</span>
+<span id="cb44-11"><a href="#cb44-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-1.png" class="img-fluid"></p>
@@ -1883,24 +1883,24 @@ Prompt
 </div>
 </div>
 <div class="cell" data-tags="[]" data-execution_count="73">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="inkpunk-diffusion" class="level2">
 <h2 class="anchored" data-anchor-id="inkpunk-diffusion">Inkpunk Diffusion</h2>
-<p>Our last model to try is <a href="https://huggingface.co/Envvi/Inkpunk-Diffusion">Inkpunk-Diffusion</a>. It is also based on Stable Diffusion and fine-tuned for “Inky” and “Punky” styles. We have to use <code>nvinkpunk</code> in our prompts to summon this style. If you find that the <em>InkPunk style</em> is very dominating in the outcomes, then you may try experimenting without this token to get a lighter version of this style.</p>
+<p>Our last model to try is <a href="https://huggingface.co/Envvi/Inkpunk-Diffusion">Inkpunk-Diffusion</a>. It is also based on Stable Diffusion and fine-tuned for “Inky” and “Punky” styles. We have to use <code>nvinkpunk</code> in our prompts to summon this style. If you find that the <em>InkPunk style</em> is very dominating in the outcomes, then try experimenting without this token to get a lighter version of this style.</p>
 <p>Let’s get this model up and running.</p>
 <div class="cell" data-tags="[]" data-execution_count="74">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-envvi-inkpunk-diffusion"</span></span>
-<span id="cb47-2"><a href="#cb47-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-envvi-inkpunk-diffusion"</span></span>
+<span id="cb46-2"><a href="#cb46-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>----------!</code></pre>
 </div>
 </div>
 <section id="realistic-people-and-portraits-1" class="level3">
 <h3 class="anchored" data-anchor-id="realistic-people-and-portraits-1">Realistic people and portraits</h3>
-<p>I asked for a “medieval cleric woman”. In the InkPunk world, the lady turned out to be a super-rocky astro-woman from the century 2100. But the style is fantastic.</p>
+<p>I asked for a “medieval cleric woman”. In the <em>InkPunk world</em>, the lady turned out to be a super-rocky astro-woman from the century 2100. But the style is fantastic.</p>
 <div class="callout-note callout callout-style-default no-icon callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1917,17 +1917,17 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="75">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting."</span></span>
-<span id="cb49-2"><a href="#cb49-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb49-3"><a href="#cb49-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb49-4"><a href="#cb49-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb49-5"><a href="#cb49-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb49-6"><a href="#cb49-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb49-7"><a href="#cb49-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb49-8"><a href="#cb49-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb49-9"><a href="#cb49-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb49-10"><a href="#cb49-10"></a>}</span>
-<span id="cb49-11"><a href="#cb49-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting."</span></span>
+<span id="cb48-2"><a href="#cb48-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb48-3"><a href="#cb48-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb48-4"><a href="#cb48-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb48-5"><a href="#cb48-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb48-6"><a href="#cb48-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb48-7"><a href="#cb48-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb48-8"><a href="#cb48-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb48-9"><a href="#cb48-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb48-10"><a href="#cb48-10"></a>}</span>
+<span id="cb48-11"><a href="#cb48-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-1.png" class="img-fluid"></p>
@@ -1958,17 +1958,17 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="76">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
-<span id="cb50-2"><a href="#cb50-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb50-3"><a href="#cb50-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb50-4"><a href="#cb50-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb50-5"><a href="#cb50-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb50-6"><a href="#cb50-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb50-7"><a href="#cb50-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb50-8"><a href="#cb50-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb50-9"><a href="#cb50-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb50-10"><a href="#cb50-10"></a>}</span>
-<span id="cb50-11"><a href="#cb50-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<span id="cb49-2"><a href="#cb49-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb49-3"><a href="#cb49-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb49-4"><a href="#cb49-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb49-5"><a href="#cb49-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb49-6"><a href="#cb49-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb49-7"><a href="#cb49-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb49-8"><a href="#cb49-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb49-9"><a href="#cb49-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb49-10"><a href="#cb49-10"></a>}</span>
+<span id="cb49-11"><a href="#cb49-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-1.png" class="img-fluid"></p>
@@ -1999,18 +1999,18 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="77">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot"</span></span>
-<span id="cb51-2"><a href="#cb51-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb51-3"><a href="#cb51-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb51-4"><a href="#cb51-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb51-5"><a href="#cb51-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb51-6"><a href="#cb51-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb51-7"><a href="#cb51-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb51-8"><a href="#cb51-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb51-9"><a href="#cb51-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb51-10"><a href="#cb51-10"></a>}</span>
-<span id="cb51-11"><a href="#cb51-11"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb51-12"><a href="#cb51-12"></a><span class="co"># https://prompthero.com/prompt/67bc77c123f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot"</span></span>
+<span id="cb50-2"><a href="#cb50-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb50-3"><a href="#cb50-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb50-4"><a href="#cb50-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb50-5"><a href="#cb50-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb50-6"><a href="#cb50-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb50-7"><a href="#cb50-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb50-8"><a href="#cb50-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb50-9"><a href="#cb50-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb50-10"><a href="#cb50-10"></a>}</span>
+<span id="cb50-11"><a href="#cb50-11"></a>query_model_and_display(payload, model_predictor)</span>
+<span id="cb50-12"><a href="#cb50-12"></a><span class="co"># https://prompthero.com/prompt/67bc77c123f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-1.png" class="img-fluid"></p>
@@ -2038,17 +2038,17 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="78">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines"</span></span>
-<span id="cb52-2"><a href="#cb52-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb52-3"><a href="#cb52-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb52-4"><a href="#cb52-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb52-5"><a href="#cb52-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb52-6"><a href="#cb52-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb52-7"><a href="#cb52-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb52-8"><a href="#cb52-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb52-9"><a href="#cb52-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb52-10"><a href="#cb52-10"></a>}</span>
-<span id="cb52-11"><a href="#cb52-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines"</span></span>
+<span id="cb51-2"><a href="#cb51-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb51-3"><a href="#cb51-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb51-4"><a href="#cb51-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb51-5"><a href="#cb51-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb51-6"><a href="#cb51-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb51-7"><a href="#cb51-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb51-8"><a href="#cb51-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb51-9"><a href="#cb51-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb51-10"><a href="#cb51-10"></a>}</span>
+<span id="cb51-11"><a href="#cb51-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-1.png" class="img-fluid"></p>
@@ -2076,17 +2076,17 @@ Prompt
 <div class="cell" data-tags="[]" data-execution_count="79">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk steampunk style blimp, Jules Verne, mechanical"</span></span>
-<span id="cb53-2"><a href="#cb53-2"></a>payload <span class="op">=</span> {</span>
-<span id="cb53-3"><a href="#cb53-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
-<span id="cb53-4"><a href="#cb53-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
-<span id="cb53-5"><a href="#cb53-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
-<span id="cb53-6"><a href="#cb53-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
-<span id="cb53-7"><a href="#cb53-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
-<span id="cb53-8"><a href="#cb53-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
-<span id="cb53-9"><a href="#cb53-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb53-10"><a href="#cb53-10"></a>}</span>
-<span id="cb53-11"><a href="#cb53-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk steampunk style blimp, Jules Verne, mechanical"</span></span>
+<span id="cb52-2"><a href="#cb52-2"></a>payload <span class="op">=</span> {</span>
+<span id="cb52-3"><a href="#cb52-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
+<span id="cb52-4"><a href="#cb52-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
+<span id="cb52-5"><a href="#cb52-5"></a>    <span class="st">"height"</span>: <span class="dv">512</span>,</span>
+<span id="cb52-6"><a href="#cb52-6"></a>    <span class="st">"num_images_per_prompt"</span>: <span class="dv">3</span>,</span>
+<span id="cb52-7"><a href="#cb52-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">120</span>,</span>
+<span id="cb52-8"><a href="#cb52-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
+<span id="cb52-9"><a href="#cb52-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
+<span id="cb52-10"><a href="#cb52-10"></a>}</span>
+<span id="cb52-11"><a href="#cb52-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-1.png" class="img-fluid"></p>
@@ -2099,7 +2099,7 @@ Prompt
 </div>
 </div>
 <div class="cell" data-tags="[]" data-execution_count="81">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
