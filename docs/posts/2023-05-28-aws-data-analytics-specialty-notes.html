@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-05-28">
+<meta name="description" content="I am sharing the notes I used to prepare for the exam.">
+
+<title>Random Thoughts - AWS Certified Data Analytics Specialty DAS-C01 Notes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Random Thoughts - AWS Certified Data Analytics Specialty DAS-C01 Notes">
+<meta property="og:description" content="I am sharing the notes I used to prepare for the exam.">
+<meta property="og:image" content="images/aws-certified-data-analytics-specialty.png">
+<meta property="og:site-name" content="Random Thoughts">
+<meta name="twitter:title" content="Random Thoughts - AWS Certified Data Analytics Specialty DAS-C01 Notes">
+<meta name="twitter:description" content="I am sharing the notes I used to prepare for the exam.">
+<meta name="twitter:image" content="images/aws-certified-data-analytics-specialty.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#credits" id="toc-credits" class="nav-link" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a>
+  <ul class="collapse">
+  <li><a href="#kinesis-data-streams" id="toc-kinesis-data-streams" class="nav-link" data-scroll-target="#kinesis-data-streams"><strong>Kinesis Data Streams</strong></a></li>
+  <li><a href="#amazon-kinesis-data-analytics" id="toc-amazon-kinesis-data-analytics" class="nav-link" data-scroll-target="#amazon-kinesis-data-analytics"><strong>Amazon Kinesis Data Analytics</strong></a></li>
+  <li><a href="#aws-kinesis-data-firehose" id="toc-aws-kinesis-data-firehose" class="nav-link" data-scroll-target="#aws-kinesis-data-firehose"><strong>AWS Kinesis Data Firehose</strong></a></li>
+  <li><a href="#kinesis-producer-library" id="toc-kinesis-producer-library" class="nav-link" data-scroll-target="#kinesis-producer-library"><strong>Kinesis Producer Library</strong></a></li>
+  <li><a href="#kinesis-consumer-library" id="toc-kinesis-consumer-library" class="nav-link" data-scroll-target="#kinesis-consumer-library"><strong>Kinesis Consumer Library</strong></a></li>
+  <li><a href="#amazon-redshift" id="toc-amazon-redshift" class="nav-link" data-scroll-target="#amazon-redshift"><strong>Amazon Redshift</strong></a></li>
+  <li><a href="#aws-glue" id="toc-aws-glue" class="nav-link" data-scroll-target="#aws-glue"><strong>AWS Glue</strong></a></li>
+  <li><a href="#aws-iam" id="toc-aws-iam" class="nav-link" data-scroll-target="#aws-iam"><strong>AWS IAM</strong></a></li>
+  <li><a href="#aws-athena" id="toc-aws-athena" class="nav-link" data-scroll-target="#aws-athena"><strong>AWS Athena</strong></a></li>
+  <li><a href="#aws-emr" id="toc-aws-emr" class="nav-link" data-scroll-target="#aws-emr"><strong>AWS EMR</strong></a></li>
+  <li><a href="#aws-elasticsearch-opensearch" id="toc-aws-elasticsearch-opensearch" class="nav-link" data-scroll-target="#aws-elasticsearch-opensearch"><strong>AWS ElasticSearch (OpenSearch)</strong></a></li>
+  <li><a href="#aws-quicksight" id="toc-aws-quicksight" class="nav-link" data-scroll-target="#aws-quicksight"><strong>AWS QuickSight</strong></a></li>
+  <li><a href="#aws-s3" id="toc-aws-s3" class="nav-link" data-scroll-target="#aws-s3"><strong>AWS S3</strong></a></li>
+  <li><a href="#aws-lambda" id="toc-aws-lambda" class="nav-link" data-scroll-target="#aws-lambda"><strong>AWS Lambda</strong></a></li>
+  <li><a href="#aws-iot" id="toc-aws-iot" class="nav-link" data-scroll-target="#aws-iot"><strong>AWS IoT</strong></a></li>
+  <li><a href="#aws-cloudwatch" id="toc-aws-cloudwatch" class="nav-link" data-scroll-target="#aws-cloudwatch"><strong>AWS CloudWatch</strong></a></li>
+  <li><a href="#amazon-msk" id="toc-amazon-msk" class="nav-link" data-scroll-target="#amazon-msk"><strong>Amazon MSK</strong></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AWS Certified Data Analytics Specialty DAS-C01 Notes</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">aws</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    I am sharing the notes I used to prepare for the exam.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 28, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>On May 27, 2023, I passed the AWS certification exam for the <a href="https://aws.amazon.com/certification/certified-data-analytics-specialty/">Data Analytics Specialty DAS-C01</a>. I am sharing the notes I used to prepare for this exam.</p>
+<p><img src="images/aws-certified-data-analytics-specialty.png" class="img-fluid"></p>
+</section>
+<section id="credits" class="level1">
+<h1>Credits</h1>
+<p>Following are the resources that I used to prepare for the exam.</p>
+<ul>
+<li>AWS Skill Builder course <em>Exam Readiness: AWS Certified Data Analytics – Specialty</em>.
+<ul>
+<li>Course ID: E-J0EK80</li>
+</ul></li>
+<li>AWS Skill Builder course <em>AWS Certified Data Analytics - Specialty Official Practice Question Set</em>
+<ul>
+<li>Course ID: E-VX9ZK0</li>
+</ul></li>
+<li>AWS official exam guide <a href="https://d1.awsstatic.com/training-and-certification/docs-data-analytics-specialty/AWS-Certified-Data-Analytics-Specialty_Exam-Guide.pdf">AWS Certified Data Analytics - Specialty Exam Guide</a></li>
+<li>AWS official exam sample questions <a href="https://d1.awsstatic.com/training-and-certification/docs-data-analytics-specialty/AWS-Certified-Data-Analytics-Specialty_Sample-Questions.pdf">AWS Certified Data Analytics - Specialty Sample Questions</a></li>
+<li>Tutorials Dojo practice questions <a href="https://www.udemy.com/course/aws-certified-data-analytics-specialty-practice-exams-amazon/">AWS Certified Data Analytics Specialty Practice Exams</a></li>
+</ul>
+</section>
+<section id="notes" class="level1">
+<h1>Notes</h1>
+<section id="kinesis-data-streams" class="level2">
+<h2 class="anchored" data-anchor-id="kinesis-data-streams"><strong>Kinesis Data Streams</strong></h2>
+<ul>
+<li>Kinesis Data Streams synchronously replicate data across three Availability Zones in an AWS Region. Kinesis Data Streams is unsuited for data persistence or long-term storage. However, data will be retained for 24 hours, and you can extend the retention period by up to 7 days.</li>
+<li>Windowed queries types
+<ul>
+<li><strong>Stagger</strong> window: Stagger window is a windowing method suited for analyzing groups of data that arrive at <strong>inconsistent</strong> times.</li>
+<li><strong>Tumbling</strong> window: When a windowed query processes each window in a <strong>non-overlapping</strong> manner, the window is referred to as a tumbling window.</li>
+<li><strong>Sliding window</strong> : time-based window</li>
+</ul></li>
+<li>Kinesis shards don’t scale automatically and have to be done manually</li>
+<li>Kinesis data streams can’t write to S3 or Redshift directly, use Kinesis firehose instead</li>
+<li>Sharding a parent into child shards</li>
+<li><img src="images/2023-05-28-aws-data-analytics-specialty-notes/kinesis-1.png" class="img-fluid">
+<ul>
+<li>After the reshard has occurred and the stream is again in an ACTIVE state, you could immediately begin to read data from the child shards. However, the parent shards that remain after the reshard could still contain data that you haven’t read yet that was added to the stream before the reshard. If you read data from the child shards before reading all data from the parent shards, you could read data for a particular hash key out of order given by the data records’ sequence numbers. Therefore, assuming that the data order is essential, you should, after a reshard, always continue to read data from the parent shards until it is exhausted. Only then should you begin reading data from the child shards.</li>
+</ul></li>
+<li>Enhanced fan-out is an Amazon Kinesis Data Streams feature that enables consumers to receive records from a data stream with a dedicated throughput of up to 2 MB of data per second per shard. Without the Fanout feature, 2MB read throughput is shared between all consumers of a shard.</li>
+<li>You can integrate your Kinesis data streams with the AWS Glue schema registry. The AWS Glue schema registry allows you to centrally discover, control, and evolve schemas while ensuring data produced is continuously validated by a registered schema. A schema defines the structure and format of a data record. A schema is a versioned specification for reliable data publication, consumption, or storage.
+<ul>
+<li>Currently, Kinesis Data Streams and AWS Glue schema registry integration is only supported for the Kinesis data streams that use KPL producers implemented in Java. Multi-language support is not provided.</li>
+</ul></li>
+<li>To manually update the shard count, use ’ <strong>UpdateShardCount</strong>’ API</li>
+</ul>
+</section>
+<section id="amazon-kinesis-data-analytics" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-kinesis-data-analytics"><strong>Amazon Kinesis Data Analytics</strong></h2>
+<ul>
+<li>Amazon Kinesis Data Analytics is the easiest way to transform and analyze streaming data in real-time with Apache Flink. Apache Flink is an open-source framework and engine for processing data streams. Kinesis Data Analytics reduces the complexity of building, managing, and integrating Apache Flink applications with other AWS services
+<ul>
+<li>Kinesis Data Analytics takes care of everything required to run streaming applications continuously and scales automatically to match the volume and throughput of your incoming data. With Kinesis Data Analytics, there are no servers to manage, no minimum fee or setup cost, and you only pay for the resources your streaming applications consume.</li>
+</ul></li>
+<li>An Amazon Kinesis Data Analytics application can receive input from a single streaming source (e.g., Kinesis Data Streams) and, optionally, use one reference data source to enrich the data coming in from streaming sources. You must store reference data as an object in your Amazon S3 bucket. When the application starts, Amazon Kinesis Data Analytics reads the Amazon S3 object and creates an in-application reference table. Your application code can then join it with an in-application stream.
+<ul>
+<li>Kinesis Data Analytics creates an in-application reference table and then loads the reference data immediately. Suppose that you want to refresh the data after Kinesis Data Analytics creates the in-application reference table, you can explicitly call the ‘UpdateApplication’ API.</li>
+</ul></li>
+</ul>
+</section>
+<section id="aws-kinesis-data-firehose" class="level2">
+<h2 class="anchored" data-anchor-id="aws-kinesis-data-firehose"><strong>AWS Kinesis Data Firehose</strong></h2>
+<ul>
+<li>Amazon Kinesis Data Firehose captures, transforms, and loads streaming data from sources such as a Kinesis data stream, the Kinesis Agent, or Amazon CloudWatch Logs into downstream services such as Kinesis Data Analytics or Amazon S3. You can write Lambda functions to request additional, customized processing of the data before it is sent downstream. AWS Lambda can perform data enrichment like looking up data from a DynamoDB table, and then produce the enriched data onto another stream. Lambda is commonly used for preprocessing the analytics app to handle more complicated data formats.</li>
+<li>Firehose automatically takes care of shards resizing</li>
+<li>Firehose is not real time. It is near real time. It buffers messages for a minute before sending them to destination. This service cannot be used for systems that has a real time processing requirement</li>
+</ul>
+</section>
+<section id="kinesis-producer-library" class="level2">
+<h2 class="anchored" data-anchor-id="kinesis-producer-library"><strong>Kinesis Producer Library</strong></h2>
+<ul>
+<li>The KPL PutRecords operation often sends multiple records to the stream per request. If a single record fails, it is automatically added to the KPL buffer and retried. The failure of one record does not impact the processing of other records in the request.</li>
+<li>Ways to develop Kinesis producers
+<ul>
+<li>KPL</li>
+<li>Kinesis agent</li>
+<li>Kinesis streams API</li>
+</ul></li>
+</ul>
+</section>
+<section id="kinesis-consumer-library" class="level2">
+<h2 class="anchored" data-anchor-id="kinesis-consumer-library"><strong>Kinesis Consumer Library</strong></h2>
+<ul>
+<li>The KCL consumes and processes the data from a Kinesis data stream. The KCL also offers <strong>checkpointing</strong>, which means it stores a cursor in DynamoDB to track the records that have been read from a shard in a Kinesis stream. If a KCL worker fails while reading data from the stream, KCL can use that cursor and pick up from where the failed application left off.
+<ul>
+<li>Two essential things to remember:</li>
+</ul></li>
+</ul>
+<ol type="1">
+<li>Since KCL creates DynamoDB tables on your behalf, it’s essential to use unique application names in KCL for each application.</li>
+<li>You may run into provisioned throughput exception errors with DynamoDB if your stream has too many shards or if the application does frequent checkpointing.</li>
+</ol>
+<p><img src="images/2023-05-28-aws-data-analytics-specialty-notes/kcl-1.png" class="img-fluid"></p>
+<ul>
+<li>Each shard can support up to 5 transactions per second for reads, up to a maximum total data read rate of 2 MB per second, and up to 1,000 records per second for writes, up to a maximum total data write rate of 1 MB per second (including partition keys). The total capacity of the stream is the sum of the capacities of its shards.</li>
+</ul>
+<p><img src="images/2023-05-28-aws-data-analytics-specialty-notes/kcl-2.png" class="img-fluid"></p>
+<p><img src="images/2023-05-28-aws-data-analytics-specialty-notes/kcl-3.png" class="img-fluid"></p>
+</section>
+<section id="amazon-redshift" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-redshift"><strong>Amazon Redshift</strong></h2>
+<ul>
+<li>Use the UNLOAD command to move data from Redshift to S3. This command can also be used to move Redshift query results to S3</li>
+<li>Use the COPY command to move data from S3 to Redshift</li>
+<li>Amazon Redshift can automatically sort and perform a VACUUM DELETE operation on tables in the background.
+<ul>
+<li>To clean up tables after a load or a series of incremental updates, you can also run the VACUUM command, either against the entire database or against individual tables.</li>
+<li>Amazon Redshift automatically sorts data in the background to maintain table data in the order of its sort key. Amazon Redshift keeps track of your scan queries to determine which sections of the table will benefit from sorting.</li>
+<li>By default, VACUUM skips the sort phase for any table where more than 95 percent of the table’s rows are already sorted. Skipping the sort phase can significantly improve VACUUM performance.</li>
+</ul></li>
+<li>Related to incremental data loading into Redshift: There can be a scenario when data loaded into Redshift using a Glue job results in duplicate rows. To avoid this, first use the Glue job to create a staging table. Load all the data in the staging table. Now make a join between the staging table and Redshift table and perform the UPSERT operation.</li>
+<li><strong>DISTSTYLE Distribution Key</strong>
+<ul>
+<li>DISTSTYLE defines the data distribution style for the whole table. Amazon Redshift distributes the rows of a table to the compute nodes according to the distribution style specified for the table. The distribution style you select for tables affects the overall performance of your database.</li>
+<li><strong>ALL</strong>
+<ul>
+<li>Full replication on all nodes.</li>
+<li>Not suitable for small tables</li>
+<li>Good for slow-changing tables (less frequently updated)</li>
+</ul></li>
+<li><strong>EVEN</strong>
+<ul>
+<li>Data (rows) evenly distributed on all nodes. Each node has a small portion</li>
+<li>Good for tables NOT used in joins</li>
+<li>Use when not sure about KEY and ALL</li>
+</ul></li>
+<li><strong>KEY</strong>
+<ul>
+<li>Data (rows) distributed but similar data (based on a specified column) kept together on nodes</li>
+<li>Good for tables used in joins</li>
+</ul></li>
+</ul></li>
+<li>If the workload require high I/O performance then use dense computer nodes (DC2)</li>
+<li>Amazon Redshift workload management (WLM) queues enable users to flexibly manage priorities within workloads so that short, fast-running queries won’t get stuck in queues behind long-running queries. You can use workload management (WLM) to define multiple query queues and to route queries to the appropriate queues at runtime.</li>
+<li>To encrypt data on Redshift storage nodes you can use AWS KMS or HMS (hardware security module). Redshift can automatically connect with AWS KMS but not with HMS. For HMS we must use client and server certification to establish a trusted connection between them. We cannot enable encryption by modifying an existing cluster. For this we have to create a new cluster and migrate data to it.</li>
+<li>To create an external table in Redshift (i.e.&nbsp;a table with data on S3) use command “CREATE EXTERNAL TABLE”</li>
+<li>To increase the COPY command data transfer processing power, make sure that the files are <strong>multiple of the number of slices in the redshift cluster</strong>. Optimal file size is between 100MB and 1GB</li>
+<li>if your data has a fixed retention period, you can organize your data as a sequence of <strong>time-series tables</strong>. In such a sequence, each table is identical but contains data for different time ranges. You can easily remove old data simply by running a DROP TABLE command on the corresponding tables. This approach is much faster than running a large-scale DELETE process and saves you from having to run a subsequent VACUUM process to reclaim space. Time series tables are best for IoT devices data in Redshift. This is very much similar to the MySql table with partitions applied on the datetime column.</li>
+<li>Amazon Redshift is more cost-effective than Amazon Athena for frequently accessed reports i.e.&nbsp;the reports that are frequently accessed throughout the day</li>
+<li>You can take automatic snapshots of Redshift cluster BUT it takes a snapshot every 8 hours. For more frequent, use manul snapshots.</li>
+</ul>
+</section>
+<section id="aws-glue" class="level2">
+<h2 class="anchored" data-anchor-id="aws-glue"><strong>AWS Glue</strong></h2>
+<ul>
+<li>Glue uses DPU (Data Processing Unit) as a relative measure of processing power</li>
+<li>To improve performance, you can enable job metrics to estimate the number of DPUs to scale out Glue job</li>
+<li>Glue bookmarks from maintaining their state and prevent Glue from reprocessing old data. They are helpful in incremental data processing. <strong>Job bookmarks</strong> help AWS Glue maintain state information and prevent the reprocessing of old data. With job bookmarks, you can process new data when rerunning on a scheduled interval. The job bookmark implementation for the Amazon S3 source saves information so that when the job runs again, it can filter only the new objects using the saved information and recompute the state for the next job run. A timestamp is used to filter the new files.</li>
+<li>Glue also supports PySpark Scala dialect to write ETL scripts</li>
+<li>AWS Glue can be used to crawl and catalog data stored in S3 in different regions. Once cataloged, Athena can query the data from S3 in different regions</li>
+<li><em>AWS Glue does not directly support Apache Hive</em></li>
+<li>A classifier (used by Glue Crawler) reads the data in a data store. If it recognizes the format of the data, it generates a schema. The classifier also returns a certainty number to indicate how certain the format recognition was.
+<ul>
+<li>AWS Glue provides a set of built-in classifiers, but you can also create custom classifiers. AWS Glue invokes custom classifiers first, in the order that you specify in your crawler definition. Depending on the results that are returned from custom classifiers, AWS Glue might also invoke built-in classifiers. If a classifier returns certainty=1.0 during processing, it indicates that it’s 100 percent certain that it can create the correct schema. AWS Glue then uses the output of that classifier.</li>
+<li><strong>If no classifier returns certainty=1.0, AWS Glue uses the output of the classifier that has the highest certainty. If no classifier returns a certainty greater than 0.0, AWS Glue returns the default classification string of UNKNOWN.</strong></li>
+</ul></li>
+<li>Glue PySpark transformation Relationize: Flattens a nested schema in a DynamicFrame and pivots out array columns from the flattened frame.</li>
+<li>Some of your organization’s complex extract, transform, and load (ETL) processes might best be implemented by using multiple, dependent AWS Glue jobs and crawlers. Using <strong>AWS Glue workflows</strong> , you can design a complex multi-job, multi-crawler ETL process that AWS Glue can run and track as a single entity. After you create a workflow and specify the jobs, crawlers, and triggers in the workflow, you can run the workflow on demand or on a schedule.</li>
+</ul>
+</section>
+<section id="aws-iam" class="level2">
+<h2 class="anchored" data-anchor-id="aws-iam"><strong>AWS IAM</strong></h2>
+<ul>
+<li>A resource policy is a policy that is attached to a resource rather than to an IAM identity. For example, in Amazon Simple Storage Service (Amazon S3), a resource policy is attached to an Amazon S3 bucket. AWS Glue supports using resource policies to control access to Data Catalog resources. These resources include databases, tables, connections, and user-defined functions, along with the Data Catalog APIs that interact with these resources.</li>
+</ul>
+</section>
+<section id="aws-athena" class="level2">
+<h2 class="anchored" data-anchor-id="aws-athena"><strong>AWS Athena</strong></h2>
+<ul>
+<li>Important AWS Blog Post: <a href="https://aws.amazon.com/blogs/big-data/top-10-performance-tuning-tips-for-amazon-athena/">Top 10 Performance Tuning Tips for Amazon Athena</a></li>
+<li>We can connect to Amazon Athena using ODBC and JDBC drivers. This allows you to report and visualize all of your data in S3 with the tools of your choice.</li>
+<li><strong>Athena cannot update the data</strong>. It can only perform “insert” and “select” operations. Athena writes files to source data locations in Amazon S3 as a result of the INSERT command. Each INSERT operation creates a new file, rather than appending to an existing file.</li>
+<li>Amazon Athena allows you to set two types of cost controls:
+<ul>
+<li>per-query limit</li>
+<li>per-workgroup limit (a.k.a workgroup-wide data usage control limit)
+<ul>
+<li>Workgroups allow you to set data usage control limits per query or per workgroup, set up alarms when those limits are exceeded, and publish query metrics to CloudWatch. The per-query control limit specifies the total amount of data scanned per query. If any query that runs in the workgroup exceeds the limit, it is canceled.</li>
+</ul></li>
+</ul></li>
+<li><em>Athena can only query the latest version of data on a versioned Amazon S3 bucket and cannot query previous versions of the data</em>.</li>
+<li><em>Athena supports querying objects that are stored with multiple storage classes in the same bucket specified by the LOCATION clause. For example, you can query data in objects that are stored in different Storage classes (Standard, Standard-IA and Intelligent-Tiering) in Amazon S3. Athena does not support querying the data in the S3 Glacier.</em></li>
+<li>Suppose I have an Athena table with data on S3. I can query the table and it returns the results. Suppose that I partition the data on S3, then if I query the table again it will not return any data. This is because partitions information is not updated in Glue catalog. To load the information use query ‘MSCK REPAIR TABLE’</li>
+</ul>
+</section>
+<section id="aws-emr" class="level2">
+<h2 class="anchored" data-anchor-id="aws-emr"><strong>AWS EMR</strong></h2>
+<ul>
+<li>EMR File System (EMRFS) extends Hadoop to directly access data stored in S3 as if it is a file system</li>
+<li>Amazon EMR supports multiple master nodes to enable high availability for EMR applications. Launch an EMR cluster with three master nodes and support high availability. EMR clusters with multiple master nodes are not tolerant of Availability Zone failures. In the case of an Availability Zone outage, you lose access to the EMR cluster. Using the Amazon EMR version 5.7.0 or later, you can set up a read-replica cluster in a different availability zone, which allows you to maintain read-only copies of data in Amazon S3. If the primary cluster becomes unavailable, you can access the data from the read-replica cluster to perform read operations</li>
+<li>EMR cluster scaling is done in two ways:
+<ul>
+<li>For older versions: Use “automatic scaling” with a custom policy
+<ul>
+<li>Two commonly used metrics for “automatic scaling”:
+<ul>
+<li><strong>YarnMemoryAvailablePercentage</strong> : This is the percentage of remaining memory available for YARN.</li>
+<li><strong>ContainerPendingRatio</strong></li>
+</ul></li>
+</ul></li>
+<li>For the latest versions: Use “Amazon EMR-managed scaling”. Or, use automatic scaling with a custom policy</li>
+<li>The difference between the two options is that in automatic scaling you have to choose the metric for scaling control, whereas in managed scaling, this is done automatically</li>
+</ul></li>
+<li>Resize of the cluster is done in two ways
+<ul>
+<li><strong>Elastic resize</strong> : this is the fastest method and does not create a new cluster. While resizing, the cluster is put into read-only mode. Resizing takes around 10-15 mins</li>
+<li><strong>Classic resize</strong> : this creates a new cluster. The old cluster is put into read-only mode till the new cluster is ready, and all the data is transferred to it. It can take hours to resize.</li>
+</ul></li>
+<li>EMR cluster can be created using <strong>RunJobFlow</strong> API call (e.g.&nbsp;from a Lambda function)</li>
+<li>Audit logs for an EMR cluster are enabled by default, and are stored on the master node. EMR also has the option to store these logs in an S3 bucket. To encrypt the logs use AWS KMS. EMR can automatically transfer logs to S3. This is a builtin functionality, and we don’t need Lambda or some other service to transfer logs from EMS master nodes to S3</li>
+<li>By default, all security configurations are disabled. You must re-create the cluster and enable them.</li>
+<li>EMR on Spot Instances can significantly reduce the computing costs for time-flexible, interruption-tolerant tasks. Always use on-demand instances for core nodes and spot instances for task nodes. In case of SLAs compliance, use “Provisioned Timeout” for spot instances.
+<ul>
+<li>For each fleet, you can define a provisioning timeout. The timeout applies when the cluster is provisioning capacity and does not have enough Spot Instances to fulfill the target capacity according to the provided specifications. With the provisioning timeout, you can specify the timeout period and choose to switch to On-Demand capacity to fulfill the remaining Spot capacity and comply with the SLA.</li>
+</ul></li>
+<li>Users often forget to terminate the clusters after their work is done. This leads to the idle running of the clusters and in turn, adds up to unnecessary costs. To avoid this overhead, you must track the idleness of the EMR cluster and terminate it if it is running idle for long hours. There is the Amazon EMR native <strong>IsIdle</strong> Amazon CloudWatch metric, which determines the idleness of the cluster by checking whether there’s a YARN job running.</li>
+<li><strong>Block Public Access configuration</strong> is an account-level configuration that helps you centrally manage public network access to EMR clusters in a region. You can enable this configuration in a region and block your account users from launching EMR clusters that allow unrestricted inbound traffic from the public IP address (source set to 0.0.0.0/0 for IPv4 and ::/0 for IPv6) through its ports.
+<ul>
+<li>If your applications require specific ports to be open to the Internet, you can configure these ports (or port ranges) in the “block public access” configuration as exceptions to allow public access before you launch the clusters. Port 22 is an exception by default. You can configure exceptions to allow public access on a port or range of ports. In addition, you can enable or disable block public access. It is recommended that you enable it.</li>
+</ul></li>
+<li><img src="images/2023-05-28-aws-data-analytics-specialty-notes/emr-1.png" class="img-fluid"></li>
+<li>A transient EMR cluster is designed to terminate as soon as the job is complete or if any error occurs. A transient cluster provides cost savings because it runs only during the computation time, and it provides scalability and flexibility in a cloud environment</li>
+<li>Node Type – Each node has a role within the cluster, referred to as the node type. The node types are:
+<ul>
+<li><strong>Master node</strong> : A node that manages the cluster by running software components to coordinate the distribution of data and tasks among other nodes for processing. The master node tracks the status of tasks and monitors the health of the cluster. Every cluster has a master node, and it’s possible to create a single-node cluster with only the master node. Does not support automatic failover.</li>
+<li><strong>Core node</strong> : A node with software components that run tasks and store data in the Hadoop Distributed File System (HDFS) on your cluster. Multi-node clusters have at least one core node. EMR is fault tolerant for slave failures and continues job execution if a slave node goes down.</li>
+<li><strong>Task node</strong> : A node with software components that only runs tasks and does not store data in HDFS. Task nodes are optional.</li>
+</ul></li>
+</ul>
+</section>
+<section id="aws-elasticsearch-opensearch" class="level2">
+<h2 class="anchored" data-anchor-id="aws-elasticsearch-opensearch"><strong>AWS ElasticSearch (OpenSearch)</strong></h2>
+<ul>
+<li>Amazon OpenSearch lets you search, analyze, and visualize your data in <strong>real-time</strong>.</li>
+<li>Before you can search for data, you must index it. Indexing is the method by which search engines organize data for fast retrieval.</li>
+<li>In Elasticsearch, the basic unit of data is a JSON document.</li>
+</ul>
+</section>
+<section id="aws-quicksight" class="level2">
+<h2 class="anchored" data-anchor-id="aws-quicksight"><strong>AWS QuickSight</strong></h2>
+<ul>
+<li>For Quicksight to access Redshift, you need to add inbound rules for the security group of Redshift cluster nodes.</li>
+<li>To successfully connect Amazon QuickSight to the Amazon S3 buckets used by Athena, make sure that you authorized Amazon QuickSight to access the S3 account.</li>
+<li><strong>Data encryption at rest is only available in the enterprise edition. It sports only AWS KMS. Active Directory connector (AD connector) is only available in the enterprise edition.</strong></li>
+<li><em>Quicksight can’t visualize data in real-time or near real-time. Use OpenSearch and Kibana to achieve this.</em></li>
+<li>When you create a dataset using Amazon S3, the file data is automatically imported into SPICE. Data in SPICE can be updated at scheduled intervals</li>
+</ul>
+</section>
+<section id="aws-s3" class="level2">
+<h2 class="anchored" data-anchor-id="aws-s3"><strong>AWS S3</strong></h2>
+<ul>
+<li>S3 bucket throughput (# of read-write requests) is controlled at the prefix level (or folder). To increase the read throughput of data from S3, put the data under multiple prefixes</li>
+<li>Both Data Migration Service (DMS) and DataSync can be used to migrate data from on-prem to S3. DMS is suitable when migrating data from a database system, and datasync is suitable when migrating data from a file system</li>
+<li>” <strong>S3Distcp</strong>” Apache DistCp is an open-source tool you can use to copy large amounts of data. S3DistCp is similar to DistCp, but optimized to work with AWS, notably Amazon S3.
+<ul>
+<li>Using S3DistCp, copy data between different S3 buckets</li>
+<li>Copy data from HDFS to S3 and vice versa</li>
+<li>It cannot be used to move data to Redshift. For this, use COPY command</li>
+</ul></li>
+<li>_Athena can’t query S3 Glacier; you need to use Glacier select. <del>S3 Glacier select cannot select compressed files</del></li>
+<li>Important file types</li>
+<li><img src="images/2023-05-28-aws-data-analytics-specialty-notes/s3-1.png" class="img-fluid"></li>
+</ul>
+</section>
+<section id="aws-lambda" class="level2">
+<h2 class="anchored" data-anchor-id="aws-lambda"><strong>AWS Lambda</strong></h2>
+<ul>
+<li>AWS Lambda now supports Parallelization Factor, a feature that allows you to process one shard of a Kinesis or DynamoDB data stream with more than one Lambda invocation simultaneously. This new feature allows you to build more agile stream processing applications on volatile data traffic.</li>
+</ul>
+<p>By default, Lambda invokes a function with one batch of data records from one shard at a time. <strong>For a single event source mapping, the maximum number of concurrent Lambda invocations equals the number of Kinesis or DynamoDB shards.</strong></p>
+<p>Now you can specify the number of concurrent batches that Lambda polls from a shard via a Parallelization Factor from 1 (default) to 10. For example, when Parallelization Factor is set to 2, you can have 200 concurrent Lambda invocations at maximum to process 100 Kinesis data shards. This helps scale up the processing throughput when the data volume is volatile and the IteratorAge is high.</p>
+</section>
+<section id="aws-iot" class="level2">
+<h2 class="anchored" data-anchor-id="aws-iot"><strong>AWS IoT</strong></h2>
+<ul>
+<li>AWS IoT provides cloud services that connect your IoT devices to other devices and AWS cloud services. AWS IoT provides device software that can help you integrate your IoT devices into AWS IoT-based solutions. If your devices can connect to AWS IoT, AWS IoT can join them in the AWS cloud services.
+<ul>
+<li>AWS IoT Analytics automates the steps required to analyze data from IoT devices. AWS IoT Analytics filters, transforms, and enriches IoT data before storing it in a time-series data store for analysis. You can set up the service to collect only the data you need from your devices, apply mathematical transforms to process the data, and enrich it with device-specific metadata such as device type and location before storing it. You can then analyze your data by running queries using the built-in SQL query engine or perform more complex analytics and machine learning inference.</li>
+</ul></li>
+</ul>
+</section>
+<section id="aws-cloudwatch" class="level2">
+<h2 class="anchored" data-anchor-id="aws-cloudwatch"><strong>AWS CloudWatch</strong></h2>
+<ul>
+<li><em>EC2 detailed monitoring is not real-time. This is because detailed monitoring can at most send logs to CloudWatch in 1-minute intervals. For real-time logs collection, use KPL. Also note the CloudWatch filter subscription only works on data that is already available in CloudWatch.</em></li>
+<li><strong>OpenSearch JVMMemoryPressure</strong>
+<ul>
+<li>JVMMemoryPressure is a metric that indicates how much memory is being used by the Java Virtual Machine (JVM) in OpenSearch. A high JVMMemoryPressure value can indicate that the JVM is running out of memory, which can lead to performance problems and even outages.</li>
+<li>There are a number of reasons why JVMMemoryPressure can increase, including:
+<ul>
+<li>Too many shards: If there are too many shards in your OpenSearch cluster, the JVM will need to allocate more memory to store the data.</li>
+<li>Large documents: If your documents are large, they will require more memory to store.</li>
+<li>Complex queries: Complex queries can require more memory to execute.</li>
+<li>Too many concurrent requests: If there are too many concurrent requests to your OpenSearch cluster, the JVM will need to allocate more memory to handle the load.</li>
+</ul></li>
+</ul></li>
+<li><strong>Kinesis ProvisionedThroughputExceededException</strong>
+<ul>
+<li>This error occurs when GetRecords calls are throttled by Kinesis Data Streams over a duration of time. This can happen if you are trying to read data from a stream faster than the provisioned throughput allows.</li>
+<li>There are a few things you can do to troubleshoot this error:
+<ul>
+<li>Check your provisioned throughput. Make sure that you have enough provisioned throughput for the amount of data you are trying to read. You can increase the provisioned throughput for a stream by using the <em>UpdateShardCount</em> API.</li>
+<li>Use a smaller batch size. The GetRecords API allows you to specify a batch size, which is the number of records that will be returned in each call. If you are getting this error, try using a smaller batch size.</li>
+<li>Reduce the frequency of your requests. If you are getting this error, try reducing the frequency of your requests. You can do this by increasing the idle time between reads.</li>
+</ul></li>
+</ul></li>
+<li><strong>Kinesis Data Analytics MillisBehindLatest</strong>
+<ul>
+<li>The MillisBehindLatest metric indicates how far behind an application is reading from the streaming source. A value of 0 indicates that record processing is caught up, and there are no new records to process at this moment.</li>
+<li>There are a few reasons why the MillisBehindLatest metric might increase:
+<ul>
+<li>Increased input data rate: If the input data rate increases, the application might not be able to keep up with the rate of data ingestion. This can cause the MillisBehindLatest metric to increase.</li>
+<li>Increased application latency: If the application latency increases, it can take longer for the application to process records. This can also cause the MillisBehindLatest metric to increase.</li>
+<li>Application errors: If the application encounters errors, it might not be able to process records. This can also cause the MillisBehindLatest metric to increase.</li>
+</ul></li>
+</ul></li>
+<li><strong>EMR YarnMemoryAvailablePercentage</strong>
+<ul>
+<li>The EMR YarnMemoryAvailablePercentage metric indicates the percentage of available memory on the cluster. A value of 100% indicates that all of the memory on the cluster is available. A value of less than 100% indicates that some of the memory on the cluster is being used.</li>
+<li>There are a few reasons why the EMR YarnMemoryAvailablePercentage metric might decrease:
+<ul>
+<li>Increased memory usage: If the memory usage on the cluster increases, the YarnMemoryAvailablePercentage metric will decrease. This can happen if there are more applications running on the cluster or if the applications are using more memory.</li>
+<li>Reduced cluster size: If the cluster size is reduced, the YarnMemoryAvailablePercentage metric will decrease. This can happen if you terminate nodes from the cluster or if you create a new cluster with fewer nodes.</li>
+<li>Memory leaks: If there are memory leaks in the applications running on the cluster, the YarnMemoryAvailablePercentage metric will decrease. This can happen if the applications are not properly releasing memory that they are no longer using.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="amazon-msk" class="level2">
+<h2 class="anchored" data-anchor-id="amazon-msk"><strong>Amazon MSK</strong></h2>
+<p>Here is a table that summarizes the key differences between Amazon Kinesis and Amazon MSK:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th><strong>Feature</strong></th>
+<th><strong>Amazon Kinesis</strong></th>
+<th><strong>Amazon MSK</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Managed service</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Open source</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Flexibility</td>
+<td>Less</td>
+<td>More</td>
+</tr>
+<tr class="even">
+<td>Scalability</td>
+<td>Less</td>
+<td>More</td>
+</tr>
+<tr class="odd">
+<td>Community</td>
+<td>Smaller</td>
+<td>Larger</td>
+</tr>
+<tr class="even">
+<td>Cost</td>
+<td>Lower</td>
+<td>Higher</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Maximum size of a payload in Kinesis is 1MB. For streaming objects having a size greater than 1MB consider using MSK</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
