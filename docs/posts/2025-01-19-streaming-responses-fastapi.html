@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-01-19">
+<meta name="description" content="In this blog post, I explore how to stream responses in FastAPI using Server-Sent Events, StreamingResponse, and WebSockets. Through simple examples that simulate LLM outputs, I demonstrate how you can efficiently stream real-time data in your applications.">
+
+<title>Streaming Responses in FastAPI – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-9f447091f8b1454dcd9b1558d5056ce7.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-8aa8884591a9136173b71f6048871fae.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Streaming Responses in FastAPI – Random Thoughts">
+<meta property="og:description" content="In this blog post, I explore how to stream responses in FastAPI using Server-Sent Events, StreamingResponse, and WebSockets. Through simple examples that simulate LLM outputs, I demonstrate how you can efficiently stream real-time data in your applications.">
+<meta property="og:image" content="images/2025-01-19-streaming-responses-fastapi.jpeg">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Streaming Responses in FastAPI – Random Thoughts">
+<meta name="twitter:description" content="In this blog post, I explore how to stream responses in FastAPI using Server-Sent Events, StreamingResponse, and WebSockets. Through simple examples that simulate LLM outputs, I demonstrate how you can efficiently stream real-time data in your applications.">
+<meta name="twitter:image" content="images/2025-01-19-streaming-responses-fastapi.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  <li><a href="#simulating-llm-streaming-output" id="toc-simulating-llm-streaming-output" class="nav-link" data-scroll-target="#simulating-llm-streaming-output">Simulating LLM Streaming Output</a></li>
+  </ul></li>
+  <li><a href="#method-1-streaming-with-streamingresponse" id="toc-method-1-streaming-with-streamingresponse" class="nav-link" data-scroll-target="#method-1-streaming-with-streamingresponse">Method 1: Streaming with StreamingResponse</a>
+  <ul class="collapse">
+  <li><a href="#server-side-implementation-fastapi" id="toc-server-side-implementation-fastapi" class="nav-link" data-scroll-target="#server-side-implementation-fastapi">Server-Side Implementation (FastAPI)</a></li>
+  <li><a href="#client-side-implementation-javascript" id="toc-client-side-implementation-javascript" class="nav-link" data-scroll-target="#client-side-implementation-javascript">Client-Side Implementation (JavaScript)</a></li>
+  <li><a href="#a-visual-network-inspection" id="toc-a-visual-network-inspection" class="nav-link" data-scroll-target="#a-visual-network-inspection">A Visual Network Inspection</a></li>
+  </ul></li>
+  <li><a href="#method-2-streaming-with-server-sent-events-sse" id="toc-method-2-streaming-with-server-sent-events-sse" class="nav-link" data-scroll-target="#method-2-streaming-with-server-sent-events-sse">Method 2: Streaming with Server-Sent Events (SSE)</a>
+  <ul class="collapse">
+  <li><a href="#server-side-implementation-fastapi-1" id="toc-server-side-implementation-fastapi-1" class="nav-link" data-scroll-target="#server-side-implementation-fastapi-1">Server-Side Implementation (FastAPI)</a></li>
+  <li><a href="#client-side-implementation-javascript-1" id="toc-client-side-implementation-javascript-1" class="nav-link" data-scroll-target="#client-side-implementation-javascript-1">Client-Side Implementation (JavaScript)</a></li>
+  <li><a href="#diving-deeper-sse-specification-and-message-fields" id="toc-diving-deeper-sse-specification-and-message-fields" class="nav-link" data-scroll-target="#diving-deeper-sse-specification-and-message-fields">Diving Deeper: SSE Specification and Message Fields</a></li>
+  <li><a href="#a-visual-network-inspection-1" id="toc-a-visual-network-inspection-1" class="nav-link" data-scroll-target="#a-visual-network-inspection-1">A Visual Network Inspection</a></li>
+  </ul></li>
+  <li><a href="#method-3-bidirectional-communication-with-websockets" id="toc-method-3-bidirectional-communication-with-websockets" class="nav-link" data-scroll-target="#method-3-bidirectional-communication-with-websockets">Method 3: Bidirectional Communication with WebSockets</a>
+  <ul class="collapse">
+  <li><a href="#server-side-implementation-fastapi-2" id="toc-server-side-implementation-fastapi-2" class="nav-link" data-scroll-target="#server-side-implementation-fastapi-2">Server-Side Implementation (FastAPI)</a></li>
+  <li><a href="#client-side-implementation-javascript-2" id="toc-client-side-implementation-javascript-2" class="nav-link" data-scroll-target="#client-side-implementation-javascript-2">Client-Side Implementation (JavaScript)</a></li>
+  <li><a href="#comparison-with-sse-and-streamingresponse" id="toc-comparison-with-sse-and-streamingresponse" class="nav-link" data-scroll-target="#comparison-with-sse-and-streamingresponse">Comparison with SSE and StreamingResponse</a></li>
+  <li><a href="#further-learning-websocket-api-reference" id="toc-further-learning-websocket-api-reference" class="nav-link" data-scroll-target="#further-learning-websocket-api-reference">Further Learning: WebSocket API Reference</a></li>
+  <li><a href="#a-visual-network-inspection-2" id="toc-a-visual-network-inspection-2" class="nav-link" data-scroll-target="#a-visual-network-inspection-2">A Visual Network Inspection</a></li>
+  </ul></li>
+  <li><a href="#conclusion-and-thanks" id="toc-conclusion-and-thanks" class="nav-link" data-scroll-target="#conclusion-and-thanks">Conclusion and Thanks</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Streaming Responses in FastAPI</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">python</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this blog post, I explore how to stream responses in FastAPI using Server-Sent Events, StreamingResponse, and WebSockets. Through simple examples that simulate LLM outputs, I demonstrate how you can efficiently stream real-time data in your applications.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 19, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-01-19-streaming-responses-fastapi.jpg" class="img-fluid figure-img"></p>
+<figcaption>image source: https://www.artbreeder.com/image/e406ca612ec7c0bbd45ba4fbf4e4</figcaption>
+</figure>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>When working with LLMs, you quickly realize that getting a response all at once doesn’t always cut it. For a better user experience, especially with long outputs, streaming the response is the way to go. But standard REST APIs aren’t built for this – they hold the client hostage until the entire response is ready. I’ve been exploring how to overcome this with FastAPI, and in this post, I’ll walk you through creating streaming APIs using StreamingResponse, Server-Sent Events (SSE), and WebSockets. I’ll use a simple dummy LLM to illustrate the concepts, and you can find all the code examples in the linked GitHub repository.</p>
+<section id="environment-details" class="level3">
+<h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<div id="cell-4" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> fastapi</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="im">import</span> sse_starlette</span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="bu">print</span>(<span class="st">"fastapi=="</span> <span class="op">+</span> fastapi.__version__)</span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"sse_starlette=="</span> <span class="op">+</span> sse_starlette.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.12.8
+fastapi==0.115.6
+sse_starlette==2.2.1</code></pre>
+</div>
+</div>
+</section>
+<section id="simulating-llm-streaming-output" class="level3">
+<h3 class="anchored" data-anchor-id="simulating-llm-streaming-output">Simulating LLM Streaming Output</h3>
+<p>As we dive into implementing streaming APIs, it’s crucial to have a way to mimic how an LLM would generate text. Rather than connecting to a real model for every example, we’ll use a simple, controlled simulation. This allows us to focus on the streaming mechanisms without getting bogged down in the complexities of LLM inference.</p>
+<p>Our simulation is based on a straightforward asynchronous generator function called <code>event_generator</code>. Here’s the Python code:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Test messages</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>MESSAGES <span class="op">=</span> [</span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="st">"This is"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="st">" a large"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5"></a>    <span class="st">" response"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6"></a>    <span class="st">" being"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="st">" streamed"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="st">" through FastAPI."</span>,</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    <span class="st">" Here's the final"</span>,</span>
+<span id="cb3-10"><a href="#cb3-10"></a>    <span class="st">" chunk!"</span>,</span>
+<span id="cb3-11"><a href="#cb3-11"></a>]</span>
+<span id="cb3-12"><a href="#cb3-12"></a></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="cf">async</span> <span class="kw">def</span> event_generator():</span>
+<span id="cb3-14"><a href="#cb3-14"></a>    <span class="cf">for</span> message <span class="kw">in</span> MESSAGES:</span>
+<span id="cb3-15"><a href="#cb3-15"></a>        <span class="cf">yield</span> message</span>
+<span id="cb3-16"><a href="#cb3-16"></a>        <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)  <span class="co"># Simulate an async delay</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>As you can see, the <code>event_generator</code> iterates through a list of predefined messages. With each iteration, it yields a dictionary containing the data and then pauses for 1 second using <code>asyncio.sleep(1)</code>. This pause mimics the time it might take for an LLM to generate the next portion of a response. This approach makes the simulation both easy to understand and also representative of the asynchronous nature of LLM output. We’ll use this <code>event_generator</code> function across all the streaming examples in this post.</p>
+</section>
+</section>
+<section id="method-1-streaming-with-streamingresponse" class="level2">
+<h2 class="anchored" data-anchor-id="method-1-streaming-with-streamingresponse">Method 1: Streaming with StreamingResponse</h2>
+<p>FastAPI’s<code>StreamingResponse</code> is a powerful tool for handling situations where you need to send large or continuous data to a client. Unlike traditional REST API responses, which require the server to generate the entire response before sending, <code>StreamingResponse</code> allows the server to transmit data in chunks. This is especially useful for use cases such as streaming audio/video, large file downloads, or, as in our case, delivering output from an LLM model.</p>
+<section id="key-differences-from-rest-api-responses" class="level4">
+<h4 class="anchored" data-anchor-id="key-differences-from-rest-api-responses">Key Differences from REST API Responses</h4>
+<ul>
+<li><p><strong>REST API</strong>: In a typical REST scenario, the entire response body is generated on the server and then sent to the client as a single unit. This works fine for smaller datasets, but it can be inefficient when dealing with large amounts of data. The client has to wait until the whole response is built before it can begin processing.</p></li>
+<li><p><strong>StreamingResponse</strong>: With <code>StreamingResponse</code>, data is transmitted in a series of chunks over a single HTTP connection. As soon as the first chunk is ready, it’s sent to the client. This allows the client to begin processing data while the server is still generating the rest of the response. This incremental delivery significantly enhances the user experience, particularly when dealing with long processing tasks like those often found in LLM interactions.</p></li>
+</ul>
+</section>
+<section id="http-protocol-differences" class="level4">
+<h4 class="anchored" data-anchor-id="http-protocol-differences">HTTP Protocol Differences</h4>
+<ul>
+<li><p><strong>Content-Length</strong>: In a traditional REST API response, the <code>Content-Length</code> header specifies the total size of the response in bytes. However, with <code>StreamingResponse</code>, the total size of the data is not always known upfront. As such the <code>Content-Length</code> header might be absent, or more commonly the header <code>Transfer-Encoding: chunked</code> will be used instead.</p></li>
+<li><p><strong>Transfer-Encoding: chunked</strong>: This HTTP header indicates that the response body is being sent in chunks. Each chunk is prefaced by its size, allowing the client to process data as it arrives without knowing the total size of the response beforehand.</p></li>
+</ul>
+</section>
+<section id="how-clients-recognize-incoming-data-is-streamed" class="level4">
+<h4 class="anchored" data-anchor-id="how-clients-recognize-incoming-data-is-streamed">How Clients Recognize Incoming Data is Streamed?</h4>
+<p>The client recognizes that it is receiving a streamed response when it encounters the <code>Transfer-Encoding: chunked</code> header. Each chunk is prefaced by its size, and the client waits for the next chunk. This process continues until the stream is closed, indicating that there’s no more data to receive.</p>
+<p>The server signals the end of the stream in one of the following ways:</p>
+<ul>
+<li><p><strong>Empty Chunk</strong>: The server sends a final chunk that has a size of 0. This indicates that there is no more data to send.</p></li>
+<li><p><strong>Connection Closure</strong>: If the stream ends naturally (for example, because the generator function has exhausted), FastAPI will automatically close the connection. In essence, the server sends a TCP “FIN” packet to the client signaling the end of transmission.</p></li>
+</ul>
+<p>In the following example, we’ll see how we can use FastAPI’s <code>StreamingResponse</code> along with our simulated LLM to demonstrate how to construct a streaming API.</p>
+</section>
+<section id="server-side-implementation-fastapi" class="level3">
+<h3 class="anchored" data-anchor-id="server-side-implementation-fastapi">Server-Side Implementation (FastAPI)</h3>
+<p>Now, let’s solidify our understanding with a concrete example using FastAPI’s StreamingResponse. On the server side, our endpoint will use the <code>event_generator</code> we defined earlier to stream data:</p>
+<div id="cell-8" class="cell" data-execution_count="3">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>app_stream_response.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="im">from</span> fastapi.responses <span class="im">import</span> StreamingResponse</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="im">import</span> asyncio</span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># Test messages (same as before)</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>MESSAGES <span class="op">=</span> [</span>
+<span id="cb4-7"><a href="#cb4-7"></a>    <span class="st">"This is"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8"></a>    <span class="st">" a large"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9"></a>    <span class="st">" response"</span>,</span>
+<span id="cb4-10"><a href="#cb4-10"></a>    <span class="st">" being"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11"></a>    <span class="st">" streamed"</span>,</span>
+<span id="cb4-12"><a href="#cb4-12"></a>    <span class="st">" through FastAPI."</span>,</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    <span class="st">" Here's the final"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14"></a>    <span class="st">" chunk!"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15"></a>]</span>
+<span id="cb4-16"><a href="#cb4-16"></a></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="cf">async</span> <span class="kw">def</span> event_generator():</span>
+<span id="cb4-18"><a href="#cb4-18"></a>    <span class="cf">for</span> message <span class="kw">in</span> MESSAGES:</span>
+<span id="cb4-19"><a href="#cb4-19"></a>        <span class="cf">yield</span> message</span>
+<span id="cb4-20"><a href="#cb4-20"></a>        <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)  <span class="co"># Simulate an async delay</span></span>
+<span id="cb4-21"><a href="#cb4-21"></a></span>
+<span id="cb4-22"><a href="#cb4-22"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb4-23"><a href="#cb4-23"></a></span>
+<span id="cb4-24"><a href="#cb4-24"></a><span class="at">@app.get</span>(<span class="st">"/stream"</span>)</span>
+<span id="cb4-25"><a href="#cb4-25"></a><span class="cf">async</span> <span class="kw">def</span> stream_response():</span>
+<span id="cb4-26"><a href="#cb4-26"></a>    <span class="cf">return</span> StreamingResponse(</span>
+<span id="cb4-27"><a href="#cb4-27"></a>        event_generator(),</span>
+<span id="cb4-28"><a href="#cb4-28"></a>        media_type<span class="op">=</span><span class="st">"text/plain"</span>,)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<p>In this code, the <code>/stream</code> endpoint utilizes <code>StreamingResponse</code>. We’re passing in the output of the <code>event_generator</code> after extracting the data field, which will be streamed as <code>text/plain</code>. The key here is that the data isn’t collected into a single string first; instead, it is yielded piece-by-piece, and <code>StreamingResponse</code> handles the chunking and transmission.</p>
+</section>
+<section id="client-side-implementation-javascript" class="level3">
+<h3 class="anchored" data-anchor-id="client-side-implementation-javascript">Client-Side Implementation (JavaScript)</h3>
+<p>On the client side, fetching this stream requires a slightly different approach than traditional REST calls. Instead of waiting for a single, complete JSON response, we read from the stream as it becomes available. Here is the JavaScript code:</p>
+<div id="cell-10" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>stream.html</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="cf">async</span> function streamResponse() {</span>
+<span id="cb5-2"><a href="#cb5-2"></a>   <span class="cf">try</span> {</span>
+<span id="cb5-3"><a href="#cb5-3"></a>      const response <span class="op">=</span> <span class="cf">await</span> fetch(<span class="st">'/stream'</span>)<span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>      const reader <span class="op">=</span> response.body.getReader()<span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>      const decoder <span class="op">=</span> new TextDecoder()<span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a></span>
+<span id="cb5-7"><a href="#cb5-7"></a>      <span class="cf">while</span> (true) {</span>
+<span id="cb5-8"><a href="#cb5-8"></a>         const { value, done } <span class="op">=</span> <span class="cf">await</span> reader.read()<span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>         <span class="cf">if</span> (done) <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a></span>
+<span id="cb5-11"><a href="#cb5-11"></a>          const text <span class="op">=</span> decoder.decode(value)<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a>          const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a>          container.innerText <span class="op">+=</span> text<span class="op">;</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a>      }</span>
+<span id="cb5-15"><a href="#cb5-15"></a>  } catch (error) {</span>
+<span id="cb5-16"><a href="#cb5-16"></a>      console.error(<span class="st">'Streaming error:'</span>, error)<span class="op">;</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a>  }</span>
+<span id="cb5-18"><a href="#cb5-18"></a>}</span>
+<span id="cb5-19"><a href="#cb5-19"></a></span>
+<span id="cb5-20"><a href="#cb5-20"></a><span class="op">//</span> Start streaming when page loads</span>
+<span id="cb5-21"><a href="#cb5-21"></a>streamResponse()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<section id="explanation-of-the-client-side-code" class="level4">
+<h4 class="anchored" data-anchor-id="explanation-of-the-client-side-code">Explanation of the Client-Side Code</h4>
+<ul>
+<li><strong>response.body.getReader()</strong>: This line retrieves a <code>ReadableStreamReader</code> from the response body. The <code>ReadableStream</code> allows us to process incoming data in chunks as they are received, rather than having to wait for the entire response to be downloaded.</li>
+<li><strong>const { value, done } = await reader.read()</strong>: This is the heart of the stream processing. It asynchronously reads the next chunk of data from the stream. The return value is an object that contains two properties:</li>
+<li><strong>value</strong>: This is a <code>Uint8Array</code> (binary data) containing the latest chunk of data.</li>
+<li><strong>done</strong>: A boolean that signals if the stream has completed. If done is true, it indicates that there is no more data to process, and the loop should terminate.</li>
+<li><strong>const text = decoder.decode(value)</strong>: The binary chunk (value) is converted to a string using <code>TextDecoder</code>, making it usable for display or further processing.</li>
+<li><strong>container.innerText += text</strong>: The decoded string is appended to an HTML element with the ID response-container. This provides visible feedback on the incoming data.</li>
+</ul>
+</section>
+<section id="comparison-to-rest-api-calls" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-to-rest-api-calls">Comparison to REST API calls</h4>
+<p>In contrast to this streaming approach, a typical REST API call looks like this:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource javascript number-lines code-with-copy"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="fu">fetch</span>(<span class="st">'/api/data'</span>)<span class="op">;</span>  <span class="co">// Make the REST API request</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">const</span> data <span class="op">=</span> <span class="cf">await</span> response<span class="op">.</span><span class="fu">json</span>()<span class="op">;</span> <span class="co">// Parse the JSON response body</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The difference is stark. In a REST API call, we wait for the entire response before processing, while with <code>StreamingResponse</code> (and the client-side code), we handle each chunk of data as it becomes available. This allows us to display output to the user almost instantly rather than after a long wait.</p>
+</section>
+</section>
+<section id="a-visual-network-inspection" class="level3">
+<h3 class="anchored" data-anchor-id="a-visual-network-inspection">A Visual Network Inspection</h3>
+<p>To truly understand what’s happening under the hood with <code>StreamingResponse</code>, let’s take a look at the actual HTTP requests and responses using network inspection tools. We’ll use Chrome DevTools and Wireshark to examine the data being transmitted between the client and the server.</p>
+<section id="chrome-devtools-examining-http-headers" class="level4">
+<h4 class="anchored" data-anchor-id="chrome-devtools-examining-http-headers">1. Chrome DevTools: Examining HTTP Headers</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/stream/stream-html-chrome-dev-tools.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-01-19-streaming-responses-fastapi/stream/stream-html-chrome-dev-tools.PNG" class="img-fluid"></a></p>
+<p>The first screenshot is from Chrome’s DevTools, specifically the “Network” tab. We can see the request made to the <code>/stream</code> endpoint. The key thing to notice in the response headers is the <code>Transfer-Encoding: chunked</code> header, highlighted in yellow. This confirms that the server is sending a chunked response, which is essential for streaming. The <code>Content-Type</code> is also set to <code>text/plain</code>, as specified in our server-side code.</p>
+</section>
+<section id="wireshark-diving-into-the-data-packets" class="level4">
+<h4 class="anchored" data-anchor-id="wireshark-diving-into-the-data-packets">2. Wireshark: Diving into the Data Packets</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks.PNG" class="img-fluid"></a></p>
+<p>The second screenshot comes from Wireshark, a powerful network protocol analyzer. This tool allows us to inspect the raw packets being transmitted over the network. Here, we can see that multiple HTTP “chunked” responses are being sent from the server to the client as part of a single HTTP connection. This provides a visual confirmation that the server is indeed streaming data in chunks.</p>
+</section>
+<section id="wireshark-analyzing-individual-data-chunks" class="level4">
+<h4 class="anchored" data-anchor-id="wireshark-analyzing-individual-data-chunks">3. Wireshark: Analyzing Individual Data Chunks</h4>
+<p><strong>Sixth Data Chunk:</strong></p>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-01.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-01.PNG" class="img-fluid"></a></p>
+<p>We’ve opened the sixth data chunk in Wireshark, where we see the chunk has a size of 35 octets. This chunk corresponds to the text ” through FastAPI StreamingResponse.”.</p>
+<p><strong>Seventh Data Chunk:</strong></p>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-02.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-02.PNG" class="img-fluid"></a></p>
+<p>Here we have the seventh data chunk, indicated by a size of 17 octets. This maps to the message ” Here’s the final”.</p>
+<p><strong>Eighth Data Chunk:</strong></p>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-03.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-03.PNG" class="img-fluid"></a></p>
+<p>In this screenshot we opened the eighth data chunk. Here the chunk size is 7 octets and it corresponds to the message ” chunk!“.</p>
+<p><strong>Last Data Chunk:</strong></p>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-04.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-04.PNG" class="img-fluid"></a></p>
+<p>Finally, we can see the last chunk being sent. It has a size of 0 octets. This zero-size chunk tells the client that the server has finished sending the stream, and it can close the connection.</p>
+</section>
+</section>
+</section>
+<section id="method-2-streaming-with-server-sent-events-sse" class="level2">
+<h2 class="anchored" data-anchor-id="method-2-streaming-with-server-sent-events-sse">Method 2: Streaming with Server-Sent Events (SSE)</h2>
+<p>Server-Sent Events (SSE) are another powerful mechanism for pushing data from the server to the client in a stream. While similar in purpose to StreamingResponse, SSE operates at a higher level, utilizing a structured, event-based approach. This method is particularly well-suited for scenarios where the server needs to continuously send updates to the client, such as live notifications or updates to a real-time dashboard.</p>
+<section id="key-features-of-sse" class="level4">
+<h4 class="anchored" data-anchor-id="key-features-of-sse">Key Features of SSE</h4>
+<ul>
+<li><strong>Unidirectional</strong>: SSE is a one-way communication channel. The server pushes data to the client, but the client cannot send data back to the server over the same connection. (For bidirectional communication, we would need to use WebSockets, which we’ll discuss later).</li>
+<li><strong>Text-Based</strong>: SSE is a text-based protocol. Data is formatted as simple text events, which are easy to parse on the client side.</li>
+<li><strong>Automatic Reconnection</strong>: If the connection between the server and client is interrupted, the client will automatically try to reconnect to the server after a short delay. This is a key benefit of using SSE because it makes sure your connection is always live.</li>
+</ul>
+</section>
+<section id="server-side-implementation-fastapi-1" class="level3">
+<h3 class="anchored" data-anchor-id="server-side-implementation-fastapi-1">Server-Side Implementation (FastAPI)</h3>
+<p>Here’s how we can implement SSE with FastAPI, using our existing <code>event_generator</code>:</p>
+<div id="cell-14" class="cell">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>app_ess.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="im">from</span> sse_starlette.sse <span class="im">import</span> EventSourceResponse</span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="im">import</span> asyncio</span>
+<span id="cb7-4"><a href="#cb7-4"></a></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="co"># Test messages (same as before)</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>MESSAGES <span class="op">=</span> [</span>
+<span id="cb7-7"><a href="#cb7-7"></a>    <span class="st">"This is"</span>,</span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="st">" a large"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="st">" response"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10"></a>    <span class="st">" being"</span>,</span>
+<span id="cb7-11"><a href="#cb7-11"></a>    <span class="st">" streamed"</span>,</span>
+<span id="cb7-12"><a href="#cb7-12"></a>    <span class="st">" through FastAPI SSE."</span>,</span>
+<span id="cb7-13"><a href="#cb7-13"></a>    <span class="st">" Here's the final"</span>,</span>
+<span id="cb7-14"><a href="#cb7-14"></a>    <span class="st">" chunk!"</span>,</span>
+<span id="cb7-15"><a href="#cb7-15"></a>]</span>
+<span id="cb7-16"><a href="#cb7-16"></a></span>
+<span id="cb7-17"><a href="#cb7-17"></a><span class="cf">async</span> <span class="kw">def</span> event_generator():</span>
+<span id="cb7-18"><a href="#cb7-18"></a>    <span class="cf">for</span> message <span class="kw">in</span> MESSAGES:</span>
+<span id="cb7-19"><a href="#cb7-19"></a>        <span class="cf">yield</span> {<span class="st">"data"</span>: message}</span>
+<span id="cb7-20"><a href="#cb7-20"></a>        <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)  <span class="co"># Simulate an async delay</span></span>
+<span id="cb7-21"><a href="#cb7-21"></a></span>
+<span id="cb7-22"><a href="#cb7-22"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb7-23"><a href="#cb7-23"></a></span>
+<span id="cb7-24"><a href="#cb7-24"></a><span class="at">@app.get</span>(<span class="st">"/stream"</span>)</span>
+<span id="cb7-25"><a href="#cb7-25"></a><span class="cf">async</span> <span class="kw">def</span> stream_response():</span>
+<span id="cb7-26"><a href="#cb7-26"></a>    <span class="cf">return</span> EventSourceResponse(event_generator())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<p>As you can see, it’s incredibly straightforward. Instead of <code>StreamingResponse</code>, we use <code>EventSourceResponse</code> from the <code>sse-starlette</code> package (which you’ll need to install). <code>EventSourceResponse</code> takes the asynchronous generator (which produces a dictionary) and formats it as SSE messages that can be consumed by the browser. Note that in order to send raw text we have to format the yield as <code>{"data": "your_text"}</code></p>
+</section>
+<section id="client-side-implementation-javascript-1" class="level3">
+<h3 class="anchored" data-anchor-id="client-side-implementation-javascript-1">Client-Side Implementation (JavaScript)</h3>
+<p>On the client side, connecting to an SSE stream is also remarkably simple:</p>
+<div id="cell-16" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>ess.html</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>const eventSource <span class="op">=</span> new EventSource(<span class="st">'/stream'</span>)<span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a></span>
+<span id="cb8-3"><a href="#cb8-3"></a>eventSource.onmessage <span class="op">=</span> function (event) {</span>
+<span id="cb8-4"><a href="#cb8-4"></a>  const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>  container.innerText <span class="op">+=</span> event.data<span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>}<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<section id="explanation-of-the-client-side-code-1" class="level4">
+<h4 class="anchored" data-anchor-id="explanation-of-the-client-side-code-1">Explanation of the Client-Side Code</h4>
+<ul>
+<li><strong>const eventSource = new EventSource(‘/stream’)</strong>: This line establishes the connection to the SSE endpoint. When the connection is successful, the client begins to receive server-sent events.</li>
+<li><strong>eventSource.onmessage = function (event) { … }</strong>: This defines a callback function that is executed when a message is received from the server.</li>
+<li>The event object contains the data that the server sent in event.data .</li>
+<li>We simply append the event.data to an HTML element with the ID response-container.</li>
+</ul>
+</section>
+<section id="comparison-with-streamingresponse" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-with-streamingresponse">Comparison with StreamingResponse</h4>
+<ul>
+<li><strong>Structure</strong>: <code>StreamingResponse</code> provides raw data that the client must interpret. SSE provides a structured format with an event-driven approach through which you can have multiple event types.</li>
+<li><strong>Protocol Overhead</strong>: SSE has slightly more protocol overhead than StreamingResponse due to the additional text-based formatting and event structure.</li>
+<li><strong>Client-Side Ease</strong>: The client-side API for SSE is cleaner since the event handling is baked in (EventSource API).</li>
+<li><strong>Use Cases</strong>: <code>StreamingResponse</code> might be better if you are trying to stream very large files because it has less overhead. SSE shines in cases where the messages are structured, which allows clients to act on different event types.</li>
+</ul>
+</section>
+</section>
+<section id="diving-deeper-sse-specification-and-message-fields" class="level3">
+<h3 class="anchored" data-anchor-id="diving-deeper-sse-specification-and-message-fields">Diving Deeper: SSE Specification and Message Fields</h3>
+<p>To gain an even more detailed understanding of Server-Sent Events, let’s refer to the official documentation. The <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events">Mozilla Developer Network (MDN) page on Using server-sent events</a> provides a comprehensive overview of the SSE specification and its various features.</p>
+<p>In particular, the MDN documentation highlights that SSE messages can include various fields, not just the data field we used in our initial example. These fields allow for richer event structures, enabling the client to handle different kinds of events or provide additional context. Here’s a breakdown of the key fields as defined by the SSE specification:</p>
+<ul>
+<li><strong>data</strong>: This is the core field containing the event data. It can be any text that is sent from the server. Each message can have multiple data fields, and they will be concatenated together.</li>
+<li><strong>event</strong>: The event field can be used to specify the event type. This allows the client to use a specific callback handler to react to different events originating from the same SSE stream. If no event type is specified, the client uses the default onmessage callback.</li>
+<li><strong>id</strong>: The id field sets the event ID. This is crucial for client-side error handling and reconnection. When a connection is interrupted and the client reconnects, the client will include the last seen event ID in the Last-Event-ID header. The server can use this information to determine where to resume the stream.</li>
+<li><strong>retry</strong>: The retry field specifies the amount of time (in milliseconds) that the client should wait before trying to reconnect if the connection is lost. This allows the server to control the client-side reconnection behavior.</li>
+</ul>
+<p>These additional fields allow you to build highly structured and robust applications. The server can now send messages such as:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> </span><span class="dv">12345</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="fu">event</span><span class="kw">:</span><span class="at"> user-logged-in</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="fu">retry</span><span class="kw">:</span><span class="at"> </span><span class="dv">10000</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="fu">data</span><span class="kw">:</span><span class="at"> John Doe</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="fu">data</span><span class="kw">:</span><span class="at"> User ID : 123</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> </span><span class="dv">12346</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="fu">event</span><span class="kw">:</span><span class="at"> message</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="fu">data</span><span class="kw">:</span><span class="at"> hello world</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In the above message stream we are using <code>id</code>, <code>event</code>, <code>retry</code> and multiple <code>data</code> fields. You can also format the message with data in one line, like the last message example.</p>
+<p>By understanding these additional message fields, you can design more sophisticated real-time applications leveraging the flexibility of Server-Sent Events.</p>
+</section>
+<section id="a-visual-network-inspection-1" class="level3">
+<h3 class="anchored" data-anchor-id="a-visual-network-inspection-1">A Visual Network Inspection</h3>
+<p>To fully grasp how Server-Sent Events operate, let’s examine the HTTP requests and responses using network inspection tools. Just as with <code>StreamingResponse</code>, visualizing the data flow helps clarify what’s happening behind the scenes. We’ll again use Chrome DevTools and Wireshark to see the structure and details of the transmitted data.</p>
+<section id="chrome-devtools-examining-http-headers-1" class="level4">
+<h4 class="anchored" data-anchor-id="chrome-devtools-examining-http-headers-1">1. Chrome DevTools: Examining HTTP Headers</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/ess/headers.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-01-19-streaming-responses-fastapi/ess/headers.PNG" class="img-fluid"></a></p>
+<p>The first screenshot shows the “Network” tab in Chrome DevTools for our SSE endpoint. Here, you can see the <code>Content-Type</code> header is set to <code>text/event-stream</code>, which is the critical header indicating that we are dealing with an SSE stream. This is different from the text/plain we saw when using the StreamingResponse. The <code>Transfer-Encoding</code> is also set to chunked which signals that the content is being sent in parts.</p>
+</section>
+<section id="chrome-devtools-eventstream-tab" class="level4">
+<h4 class="anchored" data-anchor-id="chrome-devtools-eventstream-tab">2. Chrome DevTools: EventStream Tab</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/ess/event-stream.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-01-19-streaming-responses-fastapi/ess/event-stream.PNG" class="img-fluid"></a></p>
+<p>One of the nice things about Chrome is that when it receives <code>text/event-stream</code> it provides a separate “EventStream” tab to display the events in a more readable format. This view helps in tracing the exact sequence of events sent from the server. Each event includes a timestamp and message data, making debugging straightforward. Here we can also see that each of the messages has a message type of message.</p>
+</section>
+<section id="chrome-devtools-response-tab" class="level4">
+<h4 class="anchored" data-anchor-id="chrome-devtools-response-tab">3. Chrome DevTools: Response Tab</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/ess/response.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-01-19-streaming-responses-fastapi/ess/response.PNG" class="img-fluid"></a></p>
+<p>In this view we can inspect the raw HTTP response that was received from the server. In this view each of the messages that we received are in a separate line. Each of these lines have the prefix of <code>data</code>.</p>
+</section>
+<section id="wireshark-diving-into-the-data-packets-1" class="level4">
+<h4 class="anchored" data-anchor-id="wireshark-diving-into-the-data-packets-1">4. Wireshark: Diving into the Data Packets</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/ess/wireshark.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-01-19-streaming-responses-fastapi/ess/wireshark.PNG" class="img-fluid"></a></p>
+<p>This Wireshark screenshot shows the raw packets for the SSE stream. We see the familiar chunked transfer encoding. Notice that, like <code>StreamingResponse</code>, SSE also sends data in chunks. The final chunk of size 0 signals the end of the stream, and all the messages from the server have been received.</p>
+</section>
+</section>
+</section>
+<section id="method-3-bidirectional-communication-with-websockets" class="level2">
+<h2 class="anchored" data-anchor-id="method-3-bidirectional-communication-with-websockets">Method 3: Bidirectional Communication with WebSockets</h2>
+<p>While <code>StreamingResponse</code> and <code>Server-Sent Events (SSE)</code> are great for sending data from the server to the client, they don’t offer a way for the client to send data back to the server. This is where <code>WebSockets</code> come in. WebSockets provide a persistent, full-duplex communication channel that allows both the server and the client to send and receive data simultaneously over a single TCP connection. This makes WebSockets ideal for real-time applications like chat, live collaboration, and interactive gaming.</p>
+<section id="key-features-of-websockets" class="level4">
+<h4 class="anchored" data-anchor-id="key-features-of-websockets">Key Features of WebSockets</h4>
+<ul>
+<li><strong>Bidirectional</strong>: Unlike SSE, WebSockets enable two-way communication. Both client and server can send messages to each other at any time.</li>
+<li><strong>Full-Duplex</strong>: Communication can occur in both directions simultaneously, unlike half-duplex or simplex communication methods.</li>
+<li><strong>Persistent Connection</strong>: A WebSocket connection remains open until either the client or server explicitly closes it. This persistent connection eliminates the need for repeated connection establishment, making real-time interaction more efficient.</li>
+<li><strong>Low Overhead</strong>: WebSockets provide a lighter-weight communication mechanism compared to repeatedly creating HTTP requests.</li>
+</ul>
+</section>
+<section id="server-side-implementation-fastapi-2" class="level3">
+<h3 class="anchored" data-anchor-id="server-side-implementation-fastapi-2">Server-Side Implementation (FastAPI)</h3>
+<p>Here’s how to implement a WebSocket endpoint with FastAPI:</p>
+<div id="cell-21" class="cell">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>app_websocket.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, WebSocket</span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="im">import</span> asyncio</span>
+<span id="cb10-3"><a href="#cb10-3"></a></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="co"># Test messages (same as before)</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a>MESSAGES <span class="op">=</span> [</span>
+<span id="cb10-6"><a href="#cb10-6"></a>    <span class="st">"This is"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7"></a>    <span class="st">" a large"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8"></a>    <span class="st">" response"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9"></a>    <span class="st">" being"</span>,</span>
+<span id="cb10-10"><a href="#cb10-10"></a>    <span class="st">" streamed"</span>,</span>
+<span id="cb10-11"><a href="#cb10-11"></a>    <span class="st">" through FastAPI WebSocket."</span>,</span>
+<span id="cb10-12"><a href="#cb10-12"></a>    <span class="st">" Here's the final"</span>,</span>
+<span id="cb10-13"><a href="#cb10-13"></a>    <span class="st">" chunk!"</span>,</span>
+<span id="cb10-14"><a href="#cb10-14"></a>]</span>
+<span id="cb10-15"><a href="#cb10-15"></a></span>
+<span id="cb10-16"><a href="#cb10-16"></a>app <span class="op">=</span> FastAPI()</span>
+<span id="cb10-17"><a href="#cb10-17"></a></span>
+<span id="cb10-18"><a href="#cb10-18"></a><span class="at">@app.websocket</span>(<span class="st">"/ws"</span>)</span>
+<span id="cb10-19"><a href="#cb10-19"></a><span class="cf">async</span> <span class="kw">def</span> websocket_endpoint(websocket: WebSocket):</span>
+<span id="cb10-20"><a href="#cb10-20"></a>    <span class="cf">await</span> websocket.accept()</span>
+<span id="cb10-21"><a href="#cb10-21"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-22"><a href="#cb10-22"></a>        <span class="co"># Send initial messages</span></span>
+<span id="cb10-23"><a href="#cb10-23"></a>        <span class="cf">for</span> message <span class="kw">in</span> MESSAGES:</span>
+<span id="cb10-24"><a href="#cb10-24"></a>            <span class="cf">await</span> websocket.send_text(message)</span>
+<span id="cb10-25"><a href="#cb10-25"></a>            <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)</span>
+<span id="cb10-26"><a href="#cb10-26"></a></span>
+<span id="cb10-27"><a href="#cb10-27"></a>        <span class="co"># Keep connection alive and handle incoming messages</span></span>
+<span id="cb10-28"><a href="#cb10-28"></a>        <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb10-29"><a href="#cb10-29"></a>            <span class="cf">try</span>:</span>
+<span id="cb10-30"><a href="#cb10-30"></a>                data <span class="op">=</span> <span class="cf">await</span> asyncio.wait_for(</span>
+<span id="cb10-31"><a href="#cb10-31"></a>                    websocket.receive_text(), timeout<span class="op">=</span><span class="dv">60</span>  <span class="co"># 60 second timeout</span></span>
+<span id="cb10-32"><a href="#cb10-32"></a>                )</span>
+<span id="cb10-33"><a href="#cb10-33"></a>                <span class="cf">await</span> websocket.send_text(<span class="ss">f"Response: </span><span class="sc">{</span>data<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-34"><a href="#cb10-34"></a>            <span class="cf">except</span> asyncio.<span class="pp">TimeoutError</span>:</span>
+<span id="cb10-35"><a href="#cb10-35"></a>                <span class="cf">await</span> websocket.close()</span>
+<span id="cb10-36"><a href="#cb10-36"></a>                <span class="cf">break</span></span>
+<span id="cb10-37"><a href="#cb10-37"></a></span>
+<span id="cb10-38"><a href="#cb10-38"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb10-39"><a href="#cb10-39"></a>        <span class="bu">print</span>(<span class="ss">f"Error: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-40"><a href="#cb10-40"></a>    <span class="cf">finally</span>:</span>
+<span id="cb10-41"><a href="#cb10-41"></a>        <span class="cf">await</span> websocket.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<section id="explanation-of-the-server-side-code" class="level4">
+<h4 class="anchored" data-anchor-id="explanation-of-the-server-side-code">Explanation of the Server-Side Code</h4>
+<ul>
+<li><strong><span class="citation" data-cites="app.websocket">@app.websocket</span>(“/ws”)</strong>: This decorator defines the WebSocket endpoint at the <code>/ws</code> path.</li>
+<li><strong>Websocket</strong>: FastAPI automatically provides a WebSocket object to handle the connection.</li>
+<li><strong>await websocket.accept()</strong>: This line accepts the incoming WebSocket connection, making it active.</li>
+<li><strong>Initial Message Sending</strong>: The code first loops through MESSAGES and sends each one to the client as text using <code>await websocket.send_text(message)</code>. The <code>await asyncio.sleep(1)</code> simulates a delay between sending messages.</li>
+<li><strong>Handling Incoming Messages</strong>: The server waits for new messages from the client with a 60-second timeout, and then it sends a response back. If there is no message received within 60 seconds, it closes the connection.</li>
+</ul>
+</section>
+</section>
+<section id="client-side-implementation-javascript-2" class="level3">
+<h3 class="anchored" data-anchor-id="client-side-implementation-javascript-2">Client-Side Implementation (JavaScript)</h3>
+<p>Here’s the corresponding JavaScript code to connect to the WebSocket endpoint and send messages:</p>
+<div id="cell-23" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>wsocket.html</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>let ws<span class="op">;</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a></span>
+<span id="cb11-3"><a href="#cb11-3"></a>function connectWebSocket() {</span>
+<span id="cb11-4"><a href="#cb11-4"></a>    <span class="op">//</span> Create WebSocket connection</span>
+<span id="cb11-5"><a href="#cb11-5"></a>    ws <span class="op">=</span> new WebSocket(`ws:<span class="op">//</span>${window.location.host}<span class="op">/</span>ws`)<span class="op">;</span></span>
+<span id="cb11-6"><a href="#cb11-6"></a></span>
+<span id="cb11-7"><a href="#cb11-7"></a>    ws.onmessage <span class="op">=</span> function (event) {</span>
+<span id="cb11-8"><a href="#cb11-8"></a>        const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
+<span id="cb11-9"><a href="#cb11-9"></a>        <span class="op">//</span> Add new line <span class="cf">for</span> better readability</span>
+<span id="cb11-10"><a href="#cb11-10"></a>        container.innerHTML <span class="op">+=</span> event.data <span class="op">+</span> <span class="st">'&lt;br&gt;'</span><span class="op">;</span></span>
+<span id="cb11-11"><a href="#cb11-11"></a>        <span class="op">//</span> Auto scroll to bottom</span>
+<span id="cb11-12"><a href="#cb11-12"></a>        container.scrollTop <span class="op">=</span> container.scrollHeight<span class="op">;</span></span>
+<span id="cb11-13"><a href="#cb11-13"></a>    }<span class="op">;</span></span>
+<span id="cb11-14"><a href="#cb11-14"></a></span>
+<span id="cb11-15"><a href="#cb11-15"></a>    ws.onclose <span class="op">=</span> function (event) {</span>
+<span id="cb11-16"><a href="#cb11-16"></a>        console.log(<span class="st">'WebSocket connection closed:'</span>, event)<span class="op">;</span></span>
+<span id="cb11-17"><a href="#cb11-17"></a>        <span class="op">//</span> Optionally show connection status to user</span>
+<span id="cb11-18"><a href="#cb11-18"></a>        const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
+<span id="cb11-19"><a href="#cb11-19"></a>        container.innerHTML <span class="op">+=</span> <span class="st">'&lt;br&gt;Connection closed&lt;br&gt;'</span><span class="op">;</span></span>
+<span id="cb11-20"><a href="#cb11-20"></a>    }<span class="op">;</span></span>
+<span id="cb11-21"><a href="#cb11-21"></a></span>
+<span id="cb11-22"><a href="#cb11-22"></a>    ws.onerror <span class="op">=</span> function (error) {</span>
+<span id="cb11-23"><a href="#cb11-23"></a>        console.error(<span class="st">'WebSocket error:'</span>, error)<span class="op">;</span></span>
+<span id="cb11-24"><a href="#cb11-24"></a>        <span class="op">//</span> Optionally show error to user</span>
+<span id="cb11-25"><a href="#cb11-25"></a>        const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
+<span id="cb11-26"><a href="#cb11-26"></a>        container.innerHTML <span class="op">+=</span> <span class="st">'&lt;br&gt;Error occurred&lt;br&gt;'</span><span class="op">;</span></span>
+<span id="cb11-27"><a href="#cb11-27"></a>    }<span class="op">;</span></span>
+<span id="cb11-28"><a href="#cb11-28"></a></span>
+<span id="cb11-29"><a href="#cb11-29"></a>    ws.onopen <span class="op">=</span> function (event) {</span>
+<span id="cb11-30"><a href="#cb11-30"></a>        console.log(<span class="st">'WebSocket connection established'</span>)<span class="op">;</span></span>
+<span id="cb11-31"><a href="#cb11-31"></a>        <span class="op">//</span> Optionally show connection status to user</span>
+<span id="cb11-32"><a href="#cb11-32"></a>        const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
+<span id="cb11-33"><a href="#cb11-33"></a>        container.innerHTML <span class="op">+=</span> <span class="st">'Connected to server&lt;br&gt;'</span><span class="op">;</span></span>
+<span id="cb11-34"><a href="#cb11-34"></a>    }<span class="op">;</span></span>
+<span id="cb11-35"><a href="#cb11-35"></a>}</span>
+<span id="cb11-36"><a href="#cb11-36"></a></span>
+<span id="cb11-37"><a href="#cb11-37"></a>function sendMessage() {</span>
+<span id="cb11-38"><a href="#cb11-38"></a>    const <span class="bu">input</span> <span class="op">=</span> document.getElementById(<span class="st">'messageInput'</span>)<span class="op">;</span></span>
+<span id="cb11-39"><a href="#cb11-39"></a>    <span class="cf">if</span> (<span class="bu">input</span>.value <span class="op">&amp;&amp;</span> ws.readyState <span class="op">===</span> WebSocket.OPEN) {</span>
+<span id="cb11-40"><a href="#cb11-40"></a>        ws.send(<span class="bu">input</span>.value)<span class="op">;</span></span>
+<span id="cb11-41"><a href="#cb11-41"></a>        <span class="op">//</span> Optionally show sent message</span>
+<span id="cb11-42"><a href="#cb11-42"></a>        const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
+<span id="cb11-43"><a href="#cb11-43"></a>        container.innerHTML <span class="op">+=</span> `Sent: ${<span class="bu">input</span>.value}<span class="op">&lt;</span>br<span class="op">&gt;</span>`<span class="op">;</span></span>
+<span id="cb11-44"><a href="#cb11-44"></a>        <span class="bu">input</span>.value <span class="op">=</span> <span class="st">''</span><span class="op">;</span></span>
+<span id="cb11-45"><a href="#cb11-45"></a>    }</span>
+<span id="cb11-46"><a href="#cb11-46"></a>}</span>
+<span id="cb11-47"><a href="#cb11-47"></a></span>
+<span id="cb11-48"><a href="#cb11-48"></a><span class="op">//</span> Add event listener <span class="cf">for</span> Enter key</span>
+<span id="cb11-49"><a href="#cb11-49"></a>document.getElementById(<span class="st">'messageInput'</span>).addEventListener(<span class="st">'keypress'</span>, function (e) {</span>
+<span id="cb11-50"><a href="#cb11-50"></a>    <span class="cf">if</span> (e.key <span class="op">===</span> <span class="st">'Enter'</span>) {</span>
+<span id="cb11-51"><a href="#cb11-51"></a>        sendMessage()<span class="op">;</span></span>
+<span id="cb11-52"><a href="#cb11-52"></a>    }</span>
+<span id="cb11-53"><a href="#cb11-53"></a>})<span class="op">;</span></span>
+<span id="cb11-54"><a href="#cb11-54"></a></span>
+<span id="cb11-55"><a href="#cb11-55"></a><span class="op">//</span> Connect when page loads</span>
+<span id="cb11-56"><a href="#cb11-56"></a>connectWebSocket()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<section id="explanation-of-the-client-side-code-2" class="level4">
+<h4 class="anchored" data-anchor-id="explanation-of-the-client-side-code-2">Explanation of the Client-Side Code</h4>
+<ul>
+<li><strong>ws = new WebSocket(…)</strong>: Creates a new WebSocket connection to the specified server endpoint.</li>
+<li><strong>ws.onmessage</strong>: This event handler is called when the client receives a message from the server.</li>
+<li><strong>ws.onclose</strong>: This event handler is called when the connection is closed either by the server or client.</li>
+<li><strong>ws.onerror</strong>: This event handler is called when there is an error in WebSocket communication.</li>
+<li><strong>ws.onopen</strong>: This event handler is called when connection is successfully created</li>
+<li><strong>sendMessage</strong>(): This function sends text that is retrieved from the user from a message input box to the server.</li>
+<li><strong>connectWebSocket()</strong>: Establishes a connection when page loads.</li>
+</ul>
+</section>
+</section>
+<section id="comparison-with-sse-and-streamingresponse" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-with-sse-and-streamingresponse">Comparison with SSE and StreamingResponse</h3>
+<ul>
+<li><strong>Bidirectional Communication</strong>: The primary advantage of WebSockets is the ability for both server and client to send data at will. SSE and StreamingResponse are only for server to client communication.</li>
+<li><strong>Complexity</strong>: WebSockets are generally more complex to implement than SSE, as they require more code for handling connection establishment, message processing, and connection closing.</li>
+<li><strong>Use Cases</strong>: WebSockets are essential for highly interactive, real-time applications. SSE is sufficient for applications where the server primarily sends updates to the client. StreamingResponse is most suited for cases where raw data or large files are sent from server to client.</li>
+</ul>
+</section>
+<section id="further-learning-websocket-api-reference" class="level3">
+<h3 class="anchored" data-anchor-id="further-learning-websocket-api-reference">Further Learning: WebSocket API Reference</h3>
+<p>To deepen your understanding of WebSockets and explore their full capabilities, consult <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API">Mozilla Developer Network (MDN) page on the WebSocket API</a> provides a comprehensive and detailed reference for all aspects of the WebSocket interface.</p>
+</section>
+<section id="a-visual-network-inspection-2" class="level3">
+<h3 class="anchored" data-anchor-id="a-visual-network-inspection-2">A Visual Network Inspection</h3>
+<p>To understand the real-time communication capabilities of WebSockets, let’s examine how connections are established and messages are exchanged. We’ll use Chrome DevTools and Wireshark to visualize these interactions, gaining insights into the underlying protocol.</p>
+<section id="chrome-devtools-websocket-connection-handshake" class="level4">
+<h4 class="anchored" data-anchor-id="chrome-devtools-websocket-connection-handshake">1. Chrome DevTools: WebSocket Connection Handshake</h4>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-19-streaming-responses-fastapi/wsocket/headers-01.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/headers-01.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-19-streaming-responses-fastapi/wsocket/headers-01.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/headers-01.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>The first two screenshots are from the “Network” tab in Chrome DevTools. They display the initial HTTP GET request made to the /ws endpoint. Observe the following key aspects:</p>
+<ul>
+<li><strong>GET Request</strong>: The client initiates the connection using a standard HTTP GET request to the <code>/ws</code> endpoint.</li>
+<li><strong>101 Switching Protocols</strong>: The server’s response header indicates a status code of “101 Switching Protocols”. This signals the server’s agreement to upgrade the connection from HTTP to the WebSocket protocol.</li>
+<li><strong>Upgrade and Connection Headers</strong>: The request headers include <code>Upgrade: websocket</code> and <code>Connection: Upgrade</code> headers, which instructs the server to switch to the websocket protocol.</li>
+<li><strong>Sec-WebSocket-Key and Sec-WebSocket-Version</strong>: The request includes a <code>Sec-WebSocket-Key</code> (a random key for security) and <code>Sec-WebSocket-Version</code> (indicating the WebSocket protocol version) headers.</li>
+<li><strong>Sec-WebSocket-Accept</strong>: The server’s response header includes a <code>Sec-WebSocket-Accept</code>, which is derived from the <code>Sec-WebSocket-Key</code>. This confirms that the server has acknowledged the handshake.</li>
+</ul>
+</section>
+<section id="wireshark-initial-protocol-upgrade" class="level4">
+<h4 class="anchored" data-anchor-id="wireshark-initial-protocol-upgrade">2. Wireshark: Initial Protocol Upgrade</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/wsocket/wireshark-headers.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/wireshark-headers.PNG" class="img-fluid"></a></p>
+<p>This Wireshark screenshot shows the raw packets of the initial handshake. Like Chrome, Wireshark also shows that the connection begins with an HTTP request where client requests to switch to the Websocket Protocol. The Server also responds with the status code 101 switching protocols.</p>
+</section>
+<section id="wireshark-server-to-client-messages" class="level4">
+<h4 class="anchored" data-anchor-id="wireshark-server-to-client-messages">3. Wireshark: Server-to-Client Messages</h4>
+<p><strong>First Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-01.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-01.PNG" class="img-fluid"></a> This image shows the first message sent from the server after connection. We can see that the server sends “This is” as the first message. The text payload is also displayed in the lower section of the image.</p>
+<p><strong>Second Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-02.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-02.PNG" class="img-fluid"></a> This image displays the server’s second message to the client which is “a large”</p>
+<p><strong>Seventh Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-07.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-07.PNG" class="img-fluid"></a> This image shows the server’s message “Here’s the final”.</p>
+<p><strong>Eighth Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-08.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-08.PNG" class="img-fluid"></a> This image shows the last message from the server “chunk!”.</p>
+</section>
+<section id="wireshark-bidirectional-communication" class="level4">
+<h4 class="anchored" data-anchor-id="wireshark-bidirectional-communication">4. Wireshark: Bidirectional Communication</h4>
+<p><a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-hello.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-hello.PNG" class="img-fluid"></a></p>
+<p>This Wireshark screenshot illustrates bidirectional communication. The server sent “hello” as a response to the client sending a message. The message that is send by client is also shown. Note that Wireshark marks client sent message with [MASKED], which is part of the websocket protocol to prevent proxy attacks.</p>
+</section>
+<section id="wireshark-pingpong-connection-close" class="level4">
+<h4 class="anchored" data-anchor-id="wireshark-pingpong-connection-close">5. Wireshark: Ping/Pong &amp; Connection Close</h4>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-19-streaming-responses-fastapi/wsocket/ping.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/ping.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-19-streaming-responses-fastapi/wsocket/pong.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/pong.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>The last set of images showcase some of the features of websocket protocol. We can see that the server is sending ping messages to the client and the client is responding back with the pong message. These messages keep the connection alive and also help in detecting connection issues. In the end the server also sends the <code>[FIN]</code> which closes the connection and the client acknowledges it by also sending a <code>[FIN]</code> message.</p>
+</section>
+</section>
+</section>
+<section id="conclusion-and-thanks" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion-and-thanks">Conclusion and Thanks</h2>
+<p>This post explored three powerful streaming techniques in FastAPI: <code>StreamingResponse</code>, <code>Server-Sent Events (SSE)</code>, and <code>WebSockets</code>. We saw that <code>StreamingResponse</code> is excellent for sending large data chunks, <code>SSE</code> is ideal for server-pushed updates, and <code>WebSockets</code> enable bidirectional, real-time interaction. We covered implementation with code examples and visualized communication using network tools. Understanding these methods lets you build more responsive and efficient applications.</p>
+<p>Thank you for taking the time to delve into the world of streaming with FastAPI. I hope you found this guide insightful and that it equips you to build even more powerful applications. Feel free to leave your questions or comments below, and happy coding!</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
