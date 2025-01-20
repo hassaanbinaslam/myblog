@@ -279,6 +279,19 @@ fastapi==0.115.6
 sse_starlette==2.2.1</code></pre>
 </div>
 </div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code Samples
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All the code examples used in this post can be found on the GitHub repo <a href="https://github.com/hassaanbinaslam/2025-01-19-streaming-responses-fastapi">2025-01-19-streaming-responses-fastapi</a></p>
+</div>
+</div>
 </section>
 <section id="simulating-llm-streaming-output" class="level3">
 <h3 class="anchored" data-anchor-id="simulating-llm-streaming-output">Simulating LLM Streaming Output</h3>
@@ -300,7 +313,7 @@ sse_starlette==2.2.1</code></pre>
 <span id="cb3-14"><a href="#cb3-14"></a>    <span class="cf">for</span> message <span class="kw">in</span> MESSAGES:</span>
 <span id="cb3-15"><a href="#cb3-15"></a>        <span class="cf">yield</span> message</span>
 <span id="cb3-16"><a href="#cb3-16"></a>        <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)  <span class="co"># Simulate an async delay</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>As you can see, the <code>event_generator</code> iterates through a list of predefined messages. With each iteration, it yields a dictionary containing the data and then pauses for 1 second using <code>asyncio.sleep(1)</code>. This pause mimics the time it might take for an LLM to generate the next portion of a response. This approach makes the simulation both easy to understand and also representative of the asynchronous nature of LLM output. We’ll use this <code>event_generator</code> function across all the streaming examples in this post.</p>
+<p>As you can see, the <code>event_generator</code> iterates through a list of predefined messages. With each iteration, it yields a message chunk and then pauses for 1 second using <code>asyncio.sleep(1)</code>. This pause mimics the time it might take for an LLM to generate the next portion of a response. This approach makes the simulation both easy to understand and also representative of the nature of LLM output. We’ll use this <code>event_generator</code> function across all the streaming examples in this post.</p>
 </section>
 </section>
 <section id="method-1-streaming-with-streamingresponse" class="level2">
@@ -333,7 +346,7 @@ sse_starlette==2.2.1</code></pre>
 <section id="server-side-implementation-fastapi" class="level3">
 <h3 class="anchored" data-anchor-id="server-side-implementation-fastapi">Server-Side Implementation (FastAPI)</h3>
 <p>Now, let’s solidify our understanding with a concrete example using FastAPI’s StreamingResponse. On the server side, our endpoint will use the <code>event_generator</code> we defined earlier to stream data:</p>
-<div id="cell-8" class="cell" data-execution_count="3">
+<div id="cell-9" class="cell" data-execution_count="3">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -371,12 +384,12 @@ sse_starlette==2.2.1</code></pre>
 </details>
 </div>
 </div>
-<p>In this code, the <code>/stream</code> endpoint utilizes <code>StreamingResponse</code>. We’re passing in the output of the <code>event_generator</code> after extracting the data field, which will be streamed as <code>text/plain</code>. The key here is that the data isn’t collected into a single string first; instead, it is yielded piece-by-piece, and <code>StreamingResponse</code> handles the chunking and transmission.</p>
+<p>In this code, the <code>/stream</code> endpoint utilizes <code>StreamingResponse</code>. We’re passing in the output of the <code>event_generator</code>, which will be streamed as <code>text/plain</code>. The key here is that the data isn’t collected into a single string first; instead, it is yielded piece-by-piece, and <code>StreamingResponse</code> handles the chunking and transmission.</p>
 </section>
 <section id="client-side-implementation-javascript" class="level3">
 <h3 class="anchored" data-anchor-id="client-side-implementation-javascript">Client-Side Implementation (JavaScript)</h3>
 <p>On the client side, fetching this stream requires a slightly different approach than traditional REST calls. Instead of waiting for a single, complete JSON response, we read from the stream as it becomes available. Here is the JavaScript code:</p>
-<div id="cell-10" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
+<div id="cell-11" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -411,11 +424,13 @@ sse_starlette==2.2.1</code></pre>
 <h4 class="anchored" data-anchor-id="explanation-of-the-client-side-code">Explanation of the Client-Side Code</h4>
 <ul>
 <li><strong>response.body.getReader()</strong>: This line retrieves a <code>ReadableStreamReader</code> from the response body. The <code>ReadableStream</code> allows us to process incoming data in chunks as they are received, rather than having to wait for the entire response to be downloaded.</li>
-<li><strong>const { value, done } = await reader.read()</strong>: This is the heart of the stream processing. It asynchronously reads the next chunk of data from the stream. The return value is an object that contains two properties:</li>
+<li><strong>const { value, done } = await reader.read()</strong>: This is the heart of the stream processing. It asynchronously reads the next chunk of data from the stream. The return value is an object that contains two properties:
+<ul>
 <li><strong>value</strong>: This is a <code>Uint8Array</code> (binary data) containing the latest chunk of data.</li>
 <li><strong>done</strong>: A boolean that signals if the stream has completed. If done is true, it indicates that there is no more data to process, and the loop should terminate.</li>
+</ul></li>
 <li><strong>const text = decoder.decode(value)</strong>: The binary chunk (value) is converted to a string using <code>TextDecoder</code>, making it usable for display or further processing.</li>
-<li><strong>container.innerText += text</strong>: The decoded string is appended to an HTML element with the ID response-container. This provides visible feedback on the incoming data.</li>
+<li><strong>container.innerText += text</strong>: The decoded string is appended to an HTML element with the ID <code>response-container</code>. This provides visible feedback on the incoming data.</li>
 </ul>
 </section>
 <section id="comparison-to-rest-api-calls" class="level4">
@@ -423,12 +438,12 @@ sse_starlette==2.2.1</code></pre>
 <p>In contrast to this streaming approach, a typical REST API call looks like this:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode numberSource javascript number-lines code-with-copy"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="fu">fetch</span>(<span class="st">'/api/data'</span>)<span class="op">;</span>  <span class="co">// Make the REST API request</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="kw">const</span> data <span class="op">=</span> <span class="cf">await</span> response<span class="op">.</span><span class="fu">json</span>()<span class="op">;</span> <span class="co">// Parse the JSON response body</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The difference is stark. In a REST API call, we wait for the entire response before processing, while with <code>StreamingResponse</code> (and the client-side code), we handle each chunk of data as it becomes available. This allows us to display output to the user almost instantly rather than after a long wait.</p>
+<p>The difference is stark. In a REST API call, we wait for the entire response before processing. While with <code>StreamingResponse</code>, we handle each chunk of data as it becomes available. This allows us to display output to the user almost instantly rather than after a long wait.</p>
 </section>
 </section>
 <section id="a-visual-network-inspection" class="level3">
 <h3 class="anchored" data-anchor-id="a-visual-network-inspection">A Visual Network Inspection</h3>
-<p>To truly understand what’s happening under the hood with <code>StreamingResponse</code>, let’s take a look at the actual HTTP requests and responses using network inspection tools. We’ll use Chrome DevTools and Wireshark to examine the data being transmitted between the client and the server.</p>
+<p>To truly understand what’s happening under the hood with <code>StreamingResponse</code>, let’s take a look at the actual HTTP requests and responses using network inspection tools. We’ll use <a href="https://developer.chrome.com/docs/devtools">Chrome DevTools</a> and <a href="https://www.wireshark.org/">Wireshark</a> to examine the data being transmitted between the client and the server.</p>
 <section id="chrome-devtools-examining-http-headers" class="level4">
 <h4 class="anchored" data-anchor-id="chrome-devtools-examining-http-headers">1. Chrome DevTools: Examining HTTP Headers</h4>
 <p><a href="images/2025-01-19-streaming-responses-fastapi/stream/stream-html-chrome-dev-tools.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-01-19-streaming-responses-fastapi/stream/stream-html-chrome-dev-tools.PNG" class="img-fluid"></a></p>
@@ -449,7 +464,7 @@ sse_starlette==2.2.1</code></pre>
 <p>Here we have the seventh data chunk, indicated by a size of 17 octets. This maps to the message ” Here’s the final”.</p>
 <p><strong>Eighth Data Chunk:</strong></p>
 <p><a href="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-03.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-03.PNG" class="img-fluid"></a></p>
-<p>In this screenshot we opened the eighth data chunk. Here the chunk size is 7 octets and it corresponds to the message ” chunk!“.</p>
+<p>In this screenshot we opened the eighth data chunk. Here the chunk size is 7 octets and it corresponds to the last message ” chunk!“.</p>
 <p><strong>Last Data Chunk:</strong></p>
 <p><a href="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-04.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-01-19-streaming-responses-fastapi/stream/wireshark-chunks-04.PNG" class="img-fluid"></a></p>
 <p>Finally, we can see the last chunk being sent. It has a size of 0 octets. This zero-size chunk tells the client that the server has finished sending the stream, and it can close the connection.</p>
@@ -462,15 +477,15 @@ sse_starlette==2.2.1</code></pre>
 <section id="key-features-of-sse" class="level4">
 <h4 class="anchored" data-anchor-id="key-features-of-sse">Key Features of SSE</h4>
 <ul>
-<li><strong>Unidirectional</strong>: SSE is a one-way communication channel. The server pushes data to the client, but the client cannot send data back to the server over the same connection. (For bidirectional communication, we would need to use WebSockets, which we’ll discuss later).</li>
-<li><strong>Text-Based</strong>: SSE is a text-based protocol. Data is formatted as simple text events, which are easy to parse on the client side.</li>
-<li><strong>Automatic Reconnection</strong>: If the connection between the server and client is interrupted, the client will automatically try to reconnect to the server after a short delay. This is a key benefit of using SSE because it makes sure your connection is always live.</li>
+<li><p><strong>Unidirectional</strong>: SSE is a one-way communication channel. The server pushes data to the client, but the client cannot send data back to the server over the same connection. (For bidirectional communication, we would need to use WebSockets, which we’ll discuss later).</p></li>
+<li><p><strong>Text-Based</strong>: SSE is a text-based protocol. Data is formatted as simple text events, which are easy to parse on the client side.</p></li>
+<li><p><strong>Automatic Reconnection</strong>: If the connection between the server and client is interrupted, the client will automatically try to reconnect to the server after a short delay. This is a key benefit of using SSE because it makes sure your connection is always live.</p></li>
 </ul>
 </section>
 <section id="server-side-implementation-fastapi-1" class="level3">
 <h3 class="anchored" data-anchor-id="server-side-implementation-fastapi-1">Server-Side Implementation (FastAPI)</h3>
 <p>Here’s how we can implement SSE with FastAPI, using our existing <code>event_generator</code>:</p>
-<div id="cell-14" class="cell">
+<div id="cell-15" class="cell">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -511,7 +526,7 @@ sse_starlette==2.2.1</code></pre>
 <section id="client-side-implementation-javascript-1" class="level3">
 <h3 class="anchored" data-anchor-id="client-side-implementation-javascript-1">Client-Side Implementation (JavaScript)</h3>
 <p>On the client side, connecting to an SSE stream is also remarkably simple:</p>
-<div id="cell-16" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
+<div id="cell-17" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -531,18 +546,20 @@ sse_starlette==2.2.1</code></pre>
 <h4 class="anchored" data-anchor-id="explanation-of-the-client-side-code-1">Explanation of the Client-Side Code</h4>
 <ul>
 <li><strong>const eventSource = new EventSource(‘/stream’)</strong>: This line establishes the connection to the SSE endpoint. When the connection is successful, the client begins to receive server-sent events.</li>
-<li><strong>eventSource.onmessage = function (event) { … }</strong>: This defines a callback function that is executed when a message is received from the server.</li>
+<li><strong>eventSource.onmessage = function (event) { … }</strong>: This defines a callback function that is executed when a message is received from the server.
+<ul>
 <li>The event object contains the data that the server sent in event.data .</li>
-<li>We simply append the event.data to an HTML element with the ID response-container.</li>
+<li>We simply append the <code>event.data</code> to an HTML element with the ID <code>response-container</code>.</li>
+</ul></li>
 </ul>
 </section>
 <section id="comparison-with-streamingresponse" class="level4">
 <h4 class="anchored" data-anchor-id="comparison-with-streamingresponse">Comparison with StreamingResponse</h4>
 <ul>
-<li><strong>Structure</strong>: <code>StreamingResponse</code> provides raw data that the client must interpret. SSE provides a structured format with an event-driven approach through which you can have multiple event types.</li>
-<li><strong>Protocol Overhead</strong>: SSE has slightly more protocol overhead than StreamingResponse due to the additional text-based formatting and event structure.</li>
-<li><strong>Client-Side Ease</strong>: The client-side API for SSE is cleaner since the event handling is baked in (EventSource API).</li>
-<li><strong>Use Cases</strong>: <code>StreamingResponse</code> might be better if you are trying to stream very large files because it has less overhead. SSE shines in cases where the messages are structured, which allows clients to act on different event types.</li>
+<li><p><strong>Structure</strong>: <code>StreamingResponse</code> provides raw data that the client must interpret. SSE provides a structured format with an event-driven approach through which you can have multiple event types.</p></li>
+<li><p><strong>Protocol Overhead</strong>: SSE has slightly more protocol overhead than StreamingResponse due to the additional text-based formatting and event structure.</p></li>
+<li><p><strong>Client-Side Ease</strong>: The client-side API for SSE is cleaner since the event handling is baked in (<a href="https://developer.mozilla.org/en-US/docs/Web/API/EventSource">EventSource API</a>).</p></li>
+<li><p><strong>Use Cases</strong>: <code>StreamingResponse</code> might be better if you are trying to stream very large files because it has less overhead. SSE shines in cases where the messages are structured, which allows clients to act on different event types.</p></li>
 </ul>
 </section>
 </section>
@@ -575,7 +592,7 @@ sse_starlette==2.2.1</code></pre>
 <section id="chrome-devtools-examining-http-headers-1" class="level4">
 <h4 class="anchored" data-anchor-id="chrome-devtools-examining-http-headers-1">1. Chrome DevTools: Examining HTTP Headers</h4>
 <p><a href="images/2025-01-19-streaming-responses-fastapi/ess/headers.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-01-19-streaming-responses-fastapi/ess/headers.PNG" class="img-fluid"></a></p>
-<p>The first screenshot shows the “Network” tab in Chrome DevTools for our SSE endpoint. Here, you can see the <code>Content-Type</code> header is set to <code>text/event-stream</code>, which is the critical header indicating that we are dealing with an SSE stream. This is different from the text/plain we saw when using the StreamingResponse. The <code>Transfer-Encoding</code> is also set to chunked which signals that the content is being sent in parts.</p>
+<p>The first screenshot shows the “Network” tab in Chrome DevTools for our SSE endpoint. Here, you can see the <code>Content-Type</code> header is set to <code>text/event-stream</code>, which is the critical header indicating that we are dealing with an SSE stream. This is different from the <code>text/plain</code> we saw when using the StreamingResponse. The <code>Transfer-Encoding</code> is also set to chunked which signals that the content is being sent in parts.</p>
 </section>
 <section id="chrome-devtools-eventstream-tab" class="level4">
 <h4 class="anchored" data-anchor-id="chrome-devtools-eventstream-tab">2. Chrome DevTools: EventStream Tab</h4>
@@ -600,16 +617,16 @@ sse_starlette==2.2.1</code></pre>
 <section id="key-features-of-websockets" class="level4">
 <h4 class="anchored" data-anchor-id="key-features-of-websockets">Key Features of WebSockets</h4>
 <ul>
-<li><strong>Bidirectional</strong>: Unlike SSE, WebSockets enable two-way communication. Both client and server can send messages to each other at any time.</li>
-<li><strong>Full-Duplex</strong>: Communication can occur in both directions simultaneously, unlike half-duplex or simplex communication methods.</li>
-<li><strong>Persistent Connection</strong>: A WebSocket connection remains open until either the client or server explicitly closes it. This persistent connection eliminates the need for repeated connection establishment, making real-time interaction more efficient.</li>
-<li><strong>Low Overhead</strong>: WebSockets provide a lighter-weight communication mechanism compared to repeatedly creating HTTP requests.</li>
+<li><p><strong>Bidirectional</strong>: Unlike SSE, WebSockets enable two-way communication. Both client and server can send messages to each other at any time.</p></li>
+<li><p><strong>Full-Duplex</strong>: Communication can occur in both directions simultaneously, unlike half-duplex or simplex communication methods.</p></li>
+<li><p><strong>Persistent Connection</strong>: A WebSocket connection remains open until either the client or server explicitly closes it. This persistent connection eliminates the need for repeated connection establishment, making real-time interaction more efficient.</p></li>
+<li><p><strong>Low Overhead</strong>: WebSockets provide a lighter-weight communication mechanism compared to repeatedly creating HTTP requests.</p></li>
 </ul>
 </section>
 <section id="server-side-implementation-fastapi-2" class="level3">
 <h3 class="anchored" data-anchor-id="server-side-implementation-fastapi-2">Server-Side Implementation (FastAPI)</h3>
 <p>Here’s how to implement a WebSocket endpoint with FastAPI:</p>
-<div id="cell-21" class="cell">
+<div id="cell-22" class="cell">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -674,7 +691,7 @@ sse_starlette==2.2.1</code></pre>
 <section id="client-side-implementation-javascript-2" class="level3">
 <h3 class="anchored" data-anchor-id="client-side-implementation-javascript-2">Client-Side Implementation (JavaScript)</h3>
 <p>Here’s the corresponding JavaScript code to connect to the WebSocket endpoint and send messages:</p>
-<div id="cell-23" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
+<div id="cell-24" class="cell" data-vscode="{&quot;languageId&quot;:&quot;javascript&quot;}">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -763,7 +780,7 @@ sse_starlette==2.2.1</code></pre>
 </section>
 <section id="further-learning-websocket-api-reference" class="level3">
 <h3 class="anchored" data-anchor-id="further-learning-websocket-api-reference">Further Learning: WebSocket API Reference</h3>
-<p>To deepen your understanding of WebSockets and explore their full capabilities, consult <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API">Mozilla Developer Network (MDN) page on the WebSocket API</a> provides a comprehensive and detailed reference for all aspects of the WebSocket interface.</p>
+<p>To deepen your understanding of WebSockets and explore their full capabilities, consult <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API">Mozilla Developer Network (MDN) page on the WebSocket API</a> which provides a comprehensive and detailed reference for all aspects of the WebSocket interface.</p>
 </section>
 <section id="a-visual-network-inspection-2" class="level3">
 <h3 class="anchored" data-anchor-id="a-visual-network-inspection-2">A Visual Network Inspection</h3>
@@ -786,9 +803,9 @@ sse_starlette==2.2.1</code></pre>
 <p>The first two screenshots are from the “Network” tab in Chrome DevTools. They display the initial HTTP GET request made to the /ws endpoint. Observe the following key aspects:</p>
 <ul>
 <li><strong>GET Request</strong>: The client initiates the connection using a standard HTTP GET request to the <code>/ws</code> endpoint.</li>
-<li><strong>101 Switching Protocols</strong>: The server’s response header indicates a status code of “101 Switching Protocols”. This signals the server’s agreement to upgrade the connection from HTTP to the WebSocket protocol.</li>
 <li><strong>Upgrade and Connection Headers</strong>: The request headers include <code>Upgrade: websocket</code> and <code>Connection: Upgrade</code> headers, which instructs the server to switch to the websocket protocol.</li>
 <li><strong>Sec-WebSocket-Key and Sec-WebSocket-Version</strong>: The request includes a <code>Sec-WebSocket-Key</code> (a random key for security) and <code>Sec-WebSocket-Version</code> (indicating the WebSocket protocol version) headers.</li>
+<li><strong>101 Switching Protocols</strong>: The server’s response header indicates a status code of “101 Switching Protocols”. This signals the server’s agreement to upgrade the connection from HTTP to the WebSocket protocol.</li>
 <li><strong>Sec-WebSocket-Accept</strong>: The server’s response header includes a <code>Sec-WebSocket-Accept</code>, which is derived from the <code>Sec-WebSocket-Key</code>. This confirms that the server has acknowledged the handshake.</li>
 </ul>
 </section>
@@ -799,10 +816,14 @@ sse_starlette==2.2.1</code></pre>
 </section>
 <section id="wireshark-server-to-client-messages" class="level4">
 <h4 class="anchored" data-anchor-id="wireshark-server-to-client-messages">3. Wireshark: Server-to-Client Messages</h4>
-<p><strong>First Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-01.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-01.PNG" class="img-fluid"></a> This image shows the first message sent from the server after connection. We can see that the server sends “This is” as the first message. The text payload is also displayed in the lower section of the image.</p>
-<p><strong>Second Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-02.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-02.PNG" class="img-fluid"></a> This image displays the server’s second message to the client which is “a large”</p>
-<p><strong>Seventh Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-07.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-07.PNG" class="img-fluid"></a> This image shows the server’s message “Here’s the final”.</p>
-<p><strong>Eighth Message</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-08.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-08.PNG" class="img-fluid"></a> This image shows the last message from the server “chunk!”.</p>
+<p><strong>First Message:</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-01.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-01.PNG" class="img-fluid"></a></p>
+<p>This image shows the first message sent from the server after WebSocket connection. We can see that the server sends “This is” as the first message. The text payload is also displayed in the lower section of the image.</p>
+<p><strong>Second Message:</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-02.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-02.PNG" class="img-fluid"></a></p>
+<p>This image displays the server’s second message to the client which is “a large”.</p>
+<p><strong>Seventh Message:</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-07.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-07.PNG" class="img-fluid"></a></p>
+<p>This image shows the server’s message “Here’s the final”.</p>
+<p><strong>Eighth Message:</strong> <a href="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-08.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="images/2025-01-19-streaming-responses-fastapi/wsocket/chunk-08.PNG" class="img-fluid"></a></p>
+<p>This image shows the last message from the server “chunk!”.</p>
 </section>
 <section id="wireshark-bidirectional-communication" class="level4">
 <h4 class="anchored" data-anchor-id="wireshark-bidirectional-communication">4. Wireshark: Bidirectional Communication</h4>
@@ -830,7 +851,7 @@ sse_starlette==2.2.1</code></pre>
 </section>
 <section id="conclusion-and-thanks" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion-and-thanks">Conclusion and Thanks</h2>
-<p>This post explored three powerful streaming techniques in FastAPI: <code>StreamingResponse</code>, <code>Server-Sent Events (SSE)</code>, and <code>WebSockets</code>. We saw that <code>StreamingResponse</code> is excellent for sending large data chunks, <code>SSE</code> is ideal for server-pushed updates, and <code>WebSockets</code> enable bidirectional, real-time interaction. We covered implementation with code examples and visualized communication using network tools. Understanding these methods lets you build more responsive and efficient applications.</p>
+<p>This post explored three streaming techniques in FastAPI: <code>StreamingResponse</code>, <code>Server-Sent Events (SSE)</code>, and <code>WebSockets</code>. We saw that <code>StreamingResponse</code> is excellent for sending large data chunks, <code>SSE</code> is ideal for server-pushed updates, and <code>WebSockets</code> enable bidirectional, real-time interaction. We covered implementation with code examples and visualized communication using network tools. Understanding these methods lets you build more responsive and efficient applications.</p>
 <p>Thank you for taking the time to delve into the world of streaming with FastAPI. I hope you found this guide insightful and that it equips you to build even more powerful applications. Feel free to leave your questions or comments below, and happy coding!</p>
 
 
