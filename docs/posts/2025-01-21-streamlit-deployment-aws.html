@@ -121,11 +121,11 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="My Streamlit Deployment Journey on AWS : What Worked, What Didn’t – Random Thoughts">
-<meta property="og:description" content="Deploying a Streamlit app on AWS revealed challenges due to its reliance on WebSockets, which common services like Lambda, AppRunner, and Lightsail couldn’t fully support. After multiple attempts, I succeeded by building a custom stack with AWS CDK, leveraging services like Fargate, and LoadBalancer. This post summarizes my journey and offers a practical guide for similar deployments.">
+<meta property="og:description" content="Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.">
 <meta property="og:image" content="images/2025-01-21-streamlit-deployment-aws.jpg">
 <meta property="og:site_name" content="Random Thoughts">
 <meta name="twitter:title" content="My Streamlit Deployment Journey on AWS : What Worked, What Didn’t – Random Thoughts">
-<meta name="twitter:description" content="Deploying a Streamlit app on AWS revealed challenges due to its reliance on WebSockets, which common services like Lambda, AppRunner, and Lightsail couldn’t fully support. After multiple attempts, I succeeded by building a custom stack with AWS CDK, leveraging services like Fargate, and LoadBalancer. This post summarizes my journey and offers a practical guide for similar deployments.">
+<meta name="twitter:description" content="Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.">
 <meta name="twitter:image" content="images/2025-01-21-streamlit-deployment-aws.jpg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -193,6 +193,9 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#first-attempt-the-serverless-approach-with-aws-lambda" id="toc-first-attempt-the-serverless-approach-with-aws-lambda" class="nav-link" data-scroll-target="#first-attempt-the-serverless-approach-with-aws-lambda">First Attempt: The Serverless Approach with AWS Lambda</a></li>
   <li><a href="#second-attempt-containerized-deployment-with-aws-app-runner" id="toc-second-attempt-containerized-deployment-with-aws-app-runner" class="nav-link" data-scroll-target="#second-attempt-containerized-deployment-with-aws-app-runner">Second Attempt: Containerized Deployment with AWS App Runner</a></li>
   <li><a href="#third-attempt-the-unexpected-success-with-aws-lightsail" id="toc-third-attempt-the-unexpected-success-with-aws-lightsail" class="nav-link" data-scroll-target="#third-attempt-the-unexpected-success-with-aws-lightsail">Third Attempt: The Unexpected Success with AWS Lightsail</a></li>
+  <li><a href="#the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk" id="toc-the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk" class="nav-link" data-scroll-target="#the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk">The Final Piece: Deploying Streamlit with Fargate and AWS CDK</a></li>
+  <li><a href="#a-practical-look-at-pricing-lightsail-vs.-fargate" id="toc-a-practical-look-at-pricing-lightsail-vs.-fargate" class="nav-link" data-scroll-target="#a-practical-look-at-pricing-lightsail-vs.-fargate">A Practical Look at Pricing: Lightsail vs.&nbsp;Fargate</a></li>
+  <li><a href="#lessons-learned-and-looking-ahead" id="toc-lessons-learned-and-looking-ahead" class="nav-link" data-scroll-target="#lessons-learned-and-looking-ahead">Lessons Learned and Looking Ahead</a></li>
   </ul>
 </nav>
     </div>
@@ -449,6 +452,74 @@ AWS App Runner: HTTP Support
 <p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="img-fluid"></a></p>
 <p>You can see from the image above that the initial HTTP requests are completed to load the basic html and javascripts and then the application was able to successfully establish a stream connection using websockets.</p>
 <p>It turned out that even though Lightsail’s public endpoint is HTTP based, it somehow transparently handles WebSocket connections for containerized applications. This experience was a clear indication that sometimes documentation might not capture the entire picture, and it is important to try things out.</p>
+</section>
+<section id="the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk" class="level2">
+<h2 class="anchored" data-anchor-id="the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk">The Final Piece: Deploying Streamlit with Fargate and AWS CDK</h2>
+<p>While the success with Lightsail was encouraging, I still felt the need for a solution that gave me greater transparency and control over my infrastructure. Lightsail is fantastic for quick deployments and prototypes, but it still abstracts away certain complexities that I wanted to manage myself. I started researching alternative approaches, keeping my desire for rapid setup and customization in mind. This led me to a solution based on AWS Fargate, fronted by an Application Load Balancer, and using the AWS CDK for infrastructure as code.</p>
+<p>As illustrated in the architectural diagram below, the client browser connects to an Application Load Balancer, which then routes the traffic to the Fargate container running the Streamlit application.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-fargate.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-fargate.png" class="img-fluid"></a></p>
+<p>At first, the thought of setting up a full-fledged ECS cluster with Fargate and a load balancer seemed like an overwhelming task. The process involves provisioning various resources like VPC, security groups, load balancers, and more. However, I then discovered the <a href="https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns-readme.html">aws_ecs_patterns module</a> within AWS CDK, which provides a convenient way to create common application patterns using a single line of code. One such pre-built pattern is <a href="https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ecs_patterns/ApplicationLoadBalancedFargateService.html">ApplicationLoadBalancedFargateService</a>, which creates all the necessary resources and then deploys your container on it.</p>
+<p>The beauty of this approach is that while it takes care of setting up all the underlying infrastructure, it also gives you complete control. Everything is defined and deployed through code using CDK. You can version control your infrastructure, enabling easy management and scalability. This combination of control, simplicity, and automation made this the ideal choice. My experience with the previous three AWS services gave me confidence in my understanding of the problem. Thus, armed with this knowledge and the power of AWS CDK, I decided to build the custom stack to deploy my application.</p>
+<p>I have used this small piece of code to create the entire stack.</p>
+<div id="cell-15" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>streamlit_fargate_stack.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>vpc <span class="op">=</span> ec2.Vpc(</span>
+<span id="cb4-2"><a href="#cb4-2"></a>    <span class="va">self</span>,</span>
+<span id="cb4-3"><a href="#cb4-3"></a>    <span class="st">"StreamlitFargateVpc"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    max_azs<span class="op">=</span><span class="dv">2</span>,  <span class="co"># Min=2. Default is all AZs in the region</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>)</span>
+<span id="cb4-6"><a href="#cb4-6"></a></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="co"># Create an ECS Cluster</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a>cluster <span class="op">=</span> ecs.Cluster(<span class="va">self</span>, <span class="st">"StreamlitFargateCluster"</span>, vpc<span class="op">=</span>vpc)</span>
+<span id="cb4-9"><a href="#cb4-9"></a></span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="co"># Define a Fargate Task Definition and Service</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a>fargate_service <span class="op">=</span> ecs_patterns.ApplicationLoadBalancedFargateService(</span>
+<span id="cb4-12"><a href="#cb4-12"></a>    <span class="va">self</span>,</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    <span class="st">"StreamlitFargateService"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14"></a>    cluster<span class="op">=</span>cluster,</span>
+<span id="cb4-15"><a href="#cb4-15"></a>    task_image_options<span class="op">=</span>{</span>
+<span id="cb4-16"><a href="#cb4-16"></a>        <span class="st">"image"</span>: image,</span>
+<span id="cb4-17"><a href="#cb4-17"></a>        <span class="st">"container_port"</span>: <span class="dv">8501</span>,  <span class="co"># Streamlit default port=8501. Should be adjusted based on Dockerfile</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a>    },</span>
+<span id="cb4-19"><a href="#cb4-19"></a>    public_load_balancer<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb4-20"><a href="#cb4-20"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<p>While the code looks quite simple, a lot is happening behind the scenes. If you check the CloudFormation console, you will see the resources created.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/fargate-cdk-resources.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="images/2025-01-21-streamlit-deployment-aws/fargate-cdk-resources.png" class="img-fluid"></a></p>
+<p>As you can see from the image, the code has created 41 resources, including VPC, subnets, route tables, security groups, Elastic IPs, NAT Gateways, Internet Gateways, and IAM roles. This is a complex stack that was created with a very small piece of code.</p>
+<p>After deploying the stack using CDK, I was able to access my Streamlit application through a public URL. And this time the WebSockets were working perfectly!</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/fargate-hello.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="images/2025-01-21-streamlit-deployment-aws/fargate-hello.png" class="img-fluid"></a></p>
+<p>As you can see, the app is working as expected, the connection has been established and the “Hello From Streamlit” message is shown on the page. This was my final and successful approach in deploying the Streamlit application.</p>
+</section>
+<section id="a-practical-look-at-pricing-lightsail-vs.-fargate" class="level2">
+<h2 class="anchored" data-anchor-id="a-practical-look-at-pricing-lightsail-vs.-fargate">A Practical Look at Pricing: Lightsail vs.&nbsp;Fargate</h2>
+<p>While the custom Fargate solution provides the control and transparency I was looking for, it’s important to consider the cost implications. Let’s compare it with the simplicity and pricing of Lightsail to see how they stack up.</p>
+<p>Lightsail offers a very straightforward and transparent pricing structure. For my initial Streamlit deployment, I used the container service with the nano option, which has a fixed cost of 7 USD per month. You can see its pricing structure in the screenshot below.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-container-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-container-pricing.png" class="img-fluid"></a></p>
+<p>This makes it a very appealing choice for quick prototypes and projects that need a budget-friendly setup.</p>
+<p>Now let’s take a look at the costs associated with the custom Fargate solution. Although Fargate itself is relatively inexpensive, the overall cost can become significantly higher due to other resources like NAT Gateways, Load Balancers, and Elastic IPs that get created along with it. In my setup, the Fargate cost was almost negligible, less than 1 USD. The rest of the cost was distributed in these other services.</p>
+<p>The most expensive component in this solution is the NAT Gateways. Since my setup involved deploying the app across two availability zones, the solution created two NAT gateways, one for each AZ. The minimum cost of each NAT Gateway is around 32 USD per month, totaling around 64 USD per month for this setup.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/natgayeway-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="images/2025-01-21-streamlit-deployment-aws/natgayeway-pricing.png" class="img-fluid"></a></p>
+<p>As you can see from the image, NAT Gateway charges by hour, and it costs $0.045 per hour. If we assume a minimum usage of 30 days a month, it amounts to $32 per month for a single NAT gateway. This is 4 times more expensive than the entire cost of the Lightsail container service.</p>
+<p>Another significant cost factor is the Application Load Balancer (ALB). With minimum usage, it roughly costs 16 USD per month, which also charges hourly.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/alb-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-21"><img src="images/2025-01-21-streamlit-deployment-aws/alb-pricing.png" class="img-fluid"></a></p>
+<p>Looking at the image, it can be seen that the cost of the ALB is $0.0225 per ALB-hour. For minimum usage it roughly translates to around $16 USD a month.</p>
+<p>Lastly, two Elastic IPs (EIPs) are created by the stack (one for each NAT gateway). The cost for these two EIPs is around 7.30 USD per month.</p>
+<p>When you sum it up, while the actual cost of running the Fargate container itself is barely around 1 USD per month, the cost of NAT gateways, Load Balancer, and EIPs adds up significantly. For this simple setup, I estimate that the cost of this custom Fargate solution would easily amount to around 90 USD per month. This is much higher than the 7 USD per month that I estimated with the Lightsail container service. It’s important to note that these costs might vary based on usage, but even with minimal activity, the custom Fargate solution will remain significantly more expensive than the Lightsail option.</p>
+<p>While the custom Fargate setup does provide more control and transparency, the cost implications are something that you should keep in mind for running your prototypes.</p>
+</section>
+<section id="lessons-learned-and-looking-ahead" class="level2">
+<h2 class="anchored" data-anchor-id="lessons-learned-and-looking-ahead">Lessons Learned and Looking Ahead</h2>
+<p>My journey to deploy a Streamlit application on AWS was filled with unexpected challenges, and valuable learning moments. I started with a simple assumption but quickly learned the critical role of WebSockets for Streamlit applications, and the limitations of AWS Lambda and App Runner, which only support HTTP requests. Though AWS Lightsail provided a surprisingly simple solution for deploying the app, I decided to build my own solution with AWS CDK and Fargate for more control.</p>
+<p>This journey highlighted the importance of understanding your application requirements, and the costs associated with them. While a custom Fargate deployment provides the most control, it also came with hidden costs that made it far more expensive than the simpler Lightsail setup. The most important takeaway for me is that there is not a one size fits all solution, and each deployment strategy comes with its own limitations, and it is critical to understand what we are doing.</p>
+<p>Ultimately, the right approach depends on your specific needs. I hope that by sharing my experiences, you can avoid some of the pitfalls I encountered. Thank you for joining me on this journey!</p>
 
 
 </section>
