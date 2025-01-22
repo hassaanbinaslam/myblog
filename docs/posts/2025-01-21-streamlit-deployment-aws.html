@@ -191,6 +191,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#diving-deep-streamlit-network-communication" id="toc-diving-deep-streamlit-network-communication" class="nav-link" data-scroll-target="#diving-deep-streamlit-network-communication">Diving Deep: Streamlit Network Communication</a></li>
   </ul></li>
   <li><a href="#first-attempt-the-serverless-approach-with-aws-lambda" id="toc-first-attempt-the-serverless-approach-with-aws-lambda" class="nav-link" data-scroll-target="#first-attempt-the-serverless-approach-with-aws-lambda">First Attempt: The Serverless Approach with AWS Lambda</a></li>
+  <li><a href="#second-attempt-containerized-deployment-with-aws-app-runner" id="toc-second-attempt-containerized-deployment-with-aws-app-runner" class="nav-link" data-scroll-target="#second-attempt-containerized-deployment-with-aws-app-runner">Second Attempt: Containerized Deployment with AWS App Runner</a></li>
+  <li><a href="#third-attempt-the-unexpected-success-with-aws-lightsail" id="toc-third-attempt-the-unexpected-success-with-aws-lightsail" class="nav-link" data-scroll-target="#third-attempt-the-unexpected-success-with-aws-lightsail">Third Attempt: The Unexpected Success with AWS Lightsail</a></li>
   </ul>
 </nav>
     </div>
@@ -251,6 +253,19 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>To truly grasp the importance of WebSockets for Streamlit, let’s take a look at what’s happening under the hood during its network communication. I have used <a href="https://www.wireshark.org/">Wireshark</a> to capture the network communication that happens when a simple Streamlit app (shown below) is loaded in a browser.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="img-fluid"></a></p>
 <p>As you can see, the app simply displays “Hello From Streamlit” and is running on <code>localhost:8501</code>.</p>
+<div id="cell-5" class="cell">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>app.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a>st.title(<span class="st">"Hello From Streamlit"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
 <p>The screenshot below shows the Wireshark capture of the complete network communication trace.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-complete-trace.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-complete-trace.png" class="img-fluid"></a></p>
 <p>Initially, the communication starts with the standard HTTP protocol, and it can be seen by the green lines. The browser sends GET requests to fetch resources like JavaScript and CSS files. Then, after initial handshakes, the protocol switches to WebSockets which can be seen in the blue lines. The communication over WebSockets is for the actual application logic. This screenshot highlights the critical role WebSockets play in Streamlit’s operation.</p>
@@ -263,55 +278,55 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>The response body contains the HTML page that needs to be rendered, and the browser then parses it and starts loading the associated CSS and JS files.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-loaded-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-loaded-page.png" class="img-fluid"></a></p>
 <p>The following code block is the HTML page that is returned by the server.</p>
-<div id="cell-5" class="cell" data-vscode="{&quot;languageId&quot;:&quot;html&quot;}">
+<div id="cell-7" class="cell" data-vscode="{&quot;languageId&quot;:&quot;html&quot;}">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">&lt;!--</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a> Copyright (c) Streamlit Inc. (<span class="dv">2018</span><span class="op">-</span><span class="dv">2022</span>) Snowflake Inc. (<span class="dv">2022</span><span class="op">-</span><span class="dv">2024</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a></span>
-<span id="cb1-4"><a href="#cb1-4"></a> Licensed under the Apache License, Version <span class="fl">2.0</span> (the <span class="st">"License"</span>)<span class="op">;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a> you may <span class="kw">not</span> use this <span class="bu">file</span> <span class="cf">except</span> <span class="kw">in</span> compliance <span class="cf">with</span> the License.</span>
-<span id="cb1-6"><a href="#cb1-6"></a> You may obtain a copy of the License at</span>
-<span id="cb1-7"><a href="#cb1-7"></a></span>
-<span id="cb1-8"><a href="#cb1-8"></a>     http:<span class="op">//</span>www.apache.org<span class="op">/</span>licenses<span class="op">/</span>LICENSE<span class="op">-</span><span class="fl">2.0</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a></span>
-<span id="cb1-10"><a href="#cb1-10"></a> Unless required by applicable law <span class="kw">or</span> agreed to <span class="kw">in</span> writing, software</span>
-<span id="cb1-11"><a href="#cb1-11"></a> distributed under the License <span class="kw">is</span> distributed on an <span class="st">"AS IS"</span> BASIS,</span>
-<span id="cb1-12"><a href="#cb1-12"></a> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express <span class="kw">or</span> implied.</span>
-<span id="cb1-13"><a href="#cb1-13"></a> See the License <span class="cf">for</span> the specific language governing permissions <span class="kw">and</span></span>
-<span id="cb1-14"><a href="#cb1-14"></a> limitations under the License.</span>
-<span id="cb1-15"><a href="#cb1-15"></a><span class="op">--&gt;</span></span>
-<span id="cb1-16"><a href="#cb1-16"></a></span>
-<span id="cb1-17"><a href="#cb1-17"></a><span class="op">&lt;!</span>DOCTYPE html<span class="op">&gt;</span></span>
-<span id="cb1-18"><a href="#cb1-18"></a><span class="op">&lt;</span>html lang<span class="op">=</span><span class="st">"en"</span><span class="op">&gt;</span></span>
-<span id="cb1-19"><a href="#cb1-19"></a></span>
-<span id="cb1-20"><a href="#cb1-20"></a><span class="op">&lt;</span>head<span class="op">&gt;</span></span>
-<span id="cb1-21"><a href="#cb1-21"></a>   <span class="op">&lt;</span>meta charset<span class="op">=</span><span class="st">"UTF-8"</span> <span class="op">/&gt;</span></span>
-<span id="cb1-22"><a href="#cb1-22"></a>   <span class="op">&lt;</span>meta name<span class="op">=</span><span class="st">"viewport"</span> content<span class="op">=</span><span class="st">"width=device-width, initial-scale=1, shrink-to-fit=no"</span> <span class="op">/&gt;</span></span>
-<span id="cb1-23"><a href="#cb1-23"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"shortcut icon"</span> href<span class="op">=</span><span class="st">"./favicon.png"</span> <span class="op">/&gt;</span></span>
-<span id="cb1-24"><a href="#cb1-24"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Regular.DZLUzqI4.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
-<span id="cb1-25"><a href="#cb1-25"></a>       crossorigin <span class="op">/&gt;</span></span>
-<span id="cb1-26"><a href="#cb1-26"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-SemiBold.sKQIyTMz.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
-<span id="cb1-27"><a href="#cb1-27"></a>       crossorigin <span class="op">/&gt;</span></span>
-<span id="cb1-28"><a href="#cb1-28"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Bold.-6c9oR8J.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
-<span id="cb1-29"><a href="#cb1-29"></a>       crossorigin <span class="op">/&gt;</span></span>
-<span id="cb1-30"><a href="#cb1-30"></a></span>
-<span id="cb1-31"><a href="#cb1-31"></a>   <span class="op">&lt;</span>title<span class="op">&gt;</span>Streamlit<span class="op">&lt;/</span>title<span class="op">&gt;</span></span>
-<span id="cb1-32"><a href="#cb1-32"></a></span>
-<span id="cb1-33"><a href="#cb1-33"></a>   <span class="op">&lt;!--</span> initialize window.prerenderReady to false <span class="kw">and</span> then <span class="bu">set</span> to true <span class="kw">in</span> React app when app <span class="kw">is</span> ready <span class="cf">for</span> indexing <span class="op">--&gt;</span></span>
-<span id="cb1-34"><a href="#cb1-34"></a>   <span class="op">&lt;</span>script<span class="op">&gt;</span></span>
-<span id="cb1-35"><a href="#cb1-35"></a>       window.prerenderReady <span class="op">=</span> false</span>
-<span id="cb1-36"><a href="#cb1-36"></a>   <span class="op">&lt;/</span>script<span class="op">&gt;</span></span>
-<span id="cb1-37"><a href="#cb1-37"></a>   <span class="op">&lt;</span>script <span class="bu">type</span><span class="op">=</span><span class="st">"module"</span> crossorigin src<span class="op">=</span><span class="st">"./static/js/index.Phesr84n.js"</span><span class="op">&gt;&lt;/</span>script<span class="op">&gt;</span></span>
-<span id="cb1-38"><a href="#cb1-38"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"stylesheet"</span> crossorigin href<span class="op">=</span><span class="st">"./static/css/index.CcCsR6ah.css"</span><span class="op">&gt;</span></span>
-<span id="cb1-39"><a href="#cb1-39"></a><span class="op">&lt;/</span>head<span class="op">&gt;</span></span>
-<span id="cb1-40"><a href="#cb1-40"></a></span>
-<span id="cb1-41"><a href="#cb1-41"></a><span class="op">&lt;</span>body<span class="op">&gt;</span></span>
-<span id="cb1-42"><a href="#cb1-42"></a>   <span class="op">&lt;</span>noscript<span class="op">&gt;</span>You need to enable JavaScript to run this app.<span class="op">&lt;/</span>noscript<span class="op">&gt;</span></span>
-<span id="cb1-43"><a href="#cb1-43"></a>   <span class="op">&lt;</span>div <span class="bu">id</span><span class="op">=</span><span class="st">"root"</span><span class="op">&gt;&lt;/</span>div<span class="op">&gt;</span></span>
-<span id="cb1-44"><a href="#cb1-44"></a><span class="op">&lt;/</span>body<span class="op">&gt;</span></span>
-<span id="cb1-45"><a href="#cb1-45"></a></span>
-<span id="cb1-46"><a href="#cb1-46"></a><span class="op">&lt;/</span>html<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">&lt;!--</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a> Copyright (c) Streamlit Inc. (<span class="dv">2018</span><span class="op">-</span><span class="dv">2022</span>) Snowflake Inc. (<span class="dv">2022</span><span class="op">-</span><span class="dv">2024</span>)</span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a> Licensed under the Apache License, Version <span class="fl">2.0</span> (the <span class="st">"License"</span>)<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a> you may <span class="kw">not</span> use this <span class="bu">file</span> <span class="cf">except</span> <span class="kw">in</span> compliance <span class="cf">with</span> the License.</span>
+<span id="cb2-6"><a href="#cb2-6"></a> You may obtain a copy of the License at</span>
+<span id="cb2-7"><a href="#cb2-7"></a></span>
+<span id="cb2-8"><a href="#cb2-8"></a>     http:<span class="op">//</span>www.apache.org<span class="op">/</span>licenses<span class="op">/</span>LICENSE<span class="op">-</span><span class="fl">2.0</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a> Unless required by applicable law <span class="kw">or</span> agreed to <span class="kw">in</span> writing, software</span>
+<span id="cb2-11"><a href="#cb2-11"></a> distributed under the License <span class="kw">is</span> distributed on an <span class="st">"AS IS"</span> BASIS,</span>
+<span id="cb2-12"><a href="#cb2-12"></a> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express <span class="kw">or</span> implied.</span>
+<span id="cb2-13"><a href="#cb2-13"></a> See the License <span class="cf">for</span> the specific language governing permissions <span class="kw">and</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a> limitations under the License.</span>
+<span id="cb2-15"><a href="#cb2-15"></a><span class="op">--&gt;</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="op">&lt;!</span>DOCTYPE html<span class="op">&gt;</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a><span class="op">&lt;</span>html lang<span class="op">=</span><span class="st">"en"</span><span class="op">&gt;</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a></span>
+<span id="cb2-20"><a href="#cb2-20"></a><span class="op">&lt;</span>head<span class="op">&gt;</span></span>
+<span id="cb2-21"><a href="#cb2-21"></a>   <span class="op">&lt;</span>meta charset<span class="op">=</span><span class="st">"UTF-8"</span> <span class="op">/&gt;</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a>   <span class="op">&lt;</span>meta name<span class="op">=</span><span class="st">"viewport"</span> content<span class="op">=</span><span class="st">"width=device-width, initial-scale=1, shrink-to-fit=no"</span> <span class="op">/&gt;</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"shortcut icon"</span> href<span class="op">=</span><span class="st">"./favicon.png"</span> <span class="op">/&gt;</span></span>
+<span id="cb2-24"><a href="#cb2-24"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Regular.DZLUzqI4.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb2-25"><a href="#cb2-25"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-SemiBold.sKQIyTMz.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Bold.-6c9oR8J.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb2-29"><a href="#cb2-29"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a></span>
+<span id="cb2-31"><a href="#cb2-31"></a>   <span class="op">&lt;</span>title<span class="op">&gt;</span>Streamlit<span class="op">&lt;/</span>title<span class="op">&gt;</span></span>
+<span id="cb2-32"><a href="#cb2-32"></a></span>
+<span id="cb2-33"><a href="#cb2-33"></a>   <span class="op">&lt;!--</span> initialize window.prerenderReady to false <span class="kw">and</span> then <span class="bu">set</span> to true <span class="kw">in</span> React app when app <span class="kw">is</span> ready <span class="cf">for</span> indexing <span class="op">--&gt;</span></span>
+<span id="cb2-34"><a href="#cb2-34"></a>   <span class="op">&lt;</span>script<span class="op">&gt;</span></span>
+<span id="cb2-35"><a href="#cb2-35"></a>       window.prerenderReady <span class="op">=</span> false</span>
+<span id="cb2-36"><a href="#cb2-36"></a>   <span class="op">&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb2-37"><a href="#cb2-37"></a>   <span class="op">&lt;</span>script <span class="bu">type</span><span class="op">=</span><span class="st">"module"</span> crossorigin src<span class="op">=</span><span class="st">"./static/js/index.Phesr84n.js"</span><span class="op">&gt;&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb2-38"><a href="#cb2-38"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"stylesheet"</span> crossorigin href<span class="op">=</span><span class="st">"./static/css/index.CcCsR6ah.css"</span><span class="op">&gt;</span></span>
+<span id="cb2-39"><a href="#cb2-39"></a><span class="op">&lt;/</span>head<span class="op">&gt;</span></span>
+<span id="cb2-40"><a href="#cb2-40"></a></span>
+<span id="cb2-41"><a href="#cb2-41"></a><span class="op">&lt;</span>body<span class="op">&gt;</span></span>
+<span id="cb2-42"><a href="#cb2-42"></a>   <span class="op">&lt;</span>noscript<span class="op">&gt;</span>You need to enable JavaScript to run this app.<span class="op">&lt;/</span>noscript<span class="op">&gt;</span></span>
+<span id="cb2-43"><a href="#cb2-43"></a>   <span class="op">&lt;</span>div <span class="bu">id</span><span class="op">=</span><span class="st">"root"</span><span class="op">&gt;&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb2-44"><a href="#cb2-44"></a><span class="op">&lt;/</span>body<span class="op">&gt;</span></span>
+<span id="cb2-45"><a href="#cb2-45"></a></span>
+<span id="cb2-46"><a href="#cb2-46"></a><span class="op">&lt;/</span>html<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>After loading the HTML page, the embedded JS code starts making subsequent HTTP requests for fetching CSS and JavaScript files. Once these files are loaded, the client is ready to switch to the WebSocket protocol.</p>
@@ -329,7 +344,34 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>Given my initial goal of quick prototyping and a preference for serverless architectures, <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> seemed like the ideal first choice. It promised a cost-effective and low-maintenance solution where I could just upload my code and let AWS handle the infrastructure. I envisioned deploying the Streamlit app as a Lambda function and then expose it to the public internet through an API Gateway endpoint. My understanding was that this would be the easiest, cheapest, and fastest way to make my app accessible to others.</p>
 <p>To make this happen, I used the <a href="https://github.com/awslabs/aws-lambda-web-adapter">Lambda Web Adapter</a>, which is designed to allow Lambda functions to respond to HTTP requests like a typical web server. As illustrated in the diagram below, the client browser would send requests to the <a href="https://aws.amazon.com/blogs/aws/announcing-aws-lambda-function-urls-built-in-https-endpoints-for-single-function-microservices/">Lambda Function URL</a>.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="img-fluid"></a></p>
-<p>The Lambda function, through the Lambda Web Adapter, would then pass these requests to the Docker container running my Streamlit app, which was pushed to Amazon ECR.</p>
+<p>The Lambda function, through the Lambda Web Adapter, would then pass these requests to the Docker container running my Streamlit app, which was pushed to Amazon ECR. Following is the <code>Dockerfile</code> I used to build the app container.</p>
+<div id="cell-10" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>Dockerfile</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Use the AWS Lambda Python base image</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>FROM public.ecr.aws<span class="op">/</span>docker<span class="op">/</span>library<span class="op">/</span>python:<span class="fl">3.12.1</span><span class="op">-</span>slim</span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Add the AWS Lambda Web Adapter</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>COPY <span class="op">--</span><span class="im">from</span><span class="op">=</span>public.ecr.aws<span class="op">/</span>awsguru<span class="op">/</span>aws<span class="op">-</span><span class="kw">lambda</span><span class="op">-</span>adapter:<span class="fl">0.8.4</span> <span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter <span class="op">/</span>opt<span class="op">/</span>extensions<span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter</span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co"># Set the working directory</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>WORKDIR <span class="op">/</span>var<span class="op">/</span>task</span>
+<span id="cb3-9"><a href="#cb3-9"></a></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co"># Copy app code and dependencies</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>COPY app.py requirements.txt .<span class="op">/</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="co"># Install dependencies</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>RUN pip install <span class="op">--</span>no<span class="op">-</span>cache<span class="op">-</span><span class="bu">dir</span> <span class="op">-</span>r requirements.txt</span>
+<span id="cb3-15"><a href="#cb3-15"></a></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="co"># Command to start Streamlit</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>CMD [<span class="st">"streamlit"</span>, <span class="st">"run"</span>, <span class="st">"app.py"</span>, <span class="st">"--server.port=8080"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
 <p>When I deployed my app and loaded the page, to my utter frustration, it was just an empty page. No errors, just a blank screen! I refreshed the page, checked my code, and looked at the logs, and everything seemed to be fine. I was able to get a response from the server, indicating that my request was reaching the Lambda function and that my Streamlit app was running inside a container. My browser was connecting to the server, and the server was responding to HTTP requests. However, I was still unable to see my Streamlit app!</p>
 <p>This is when I discovered the critical limitation: Lambda functions and the Lambda Web Adapter, by design, operate using a request-response pattern with the HTTP protocol. While the <a href="https://aws.amazon.com/blogs/compute/using-response-streaming-with-aws-lambda-web-adapter-to-optimize-performance/">Web Adapter does support HTTP request streaming</a>, it does not support WebSockets. My Streamlit app was loading till the point where the page receives HTTP responses for loading the basic HTML page, JS and CSS files. The application was working as far as HTTP communication was concerned. However, as we discussed before, Streamlit relies heavily on WebSockets for its real-time interactivity. This is evident from the browser’s developer tools screenshot:</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-lambda-page-error-headers.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-lambda-page-error-headers.png" class="img-fluid"></a></p>
@@ -356,6 +398,57 @@ AWS Lambda Function URL and Lambda Web Adapter: HTTP-Only Support
 </div>
 </div>
 </div>
+</section>
+<section id="second-attempt-containerized-deployment-with-aws-app-runner" class="level2">
+<h2 class="anchored" data-anchor-id="second-attempt-containerized-deployment-with-aws-app-runner">Second Attempt: Containerized Deployment with AWS App Runner</h2>
+<p>After my unsuccessful attempt with AWS Lambda, I knew I needed a solution that handled persistent WebSockets. AWS <a href="https://aws.amazon.com/apprunner/">App Runner</a> seemed like a promising next step, as a managed container platform that would supposedly handle the underlying infrastructure for me. Since my Docker image was already on ECR, I thought switching to App Runner would be easy. With just a few clicks, I could run my containerized app, automatically managing the networking configurations, and access it through a public URL.</p>
+<p>I configured an App Runner service, pointing it to my container image and specifying the necessary port configurations. The service deployed successfully and provided a public URL. However, just like before, my browser showed a blank page!</p>
+<p>The issue, as with Lambda, was the lack of WebSocket support. AWS App Runner, as highlighted in its documentation below, is designed for HTTP 1.0 and HTTP 1.1 applications and does not provide support for persistent WebSockets connections, and it can be seen in the screenshot below as well.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/apprunner-docs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-01-21-streamlit-deployment-aws/apprunner-docs.png" class="img-fluid"></a></p>
+<p>The screenshot from my browser’s developer tools shows the same issue that I observed with Lambda, highlighting the fact that the initial resources were loading using HTTP protocol, but the websocket connection attempt fails:</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-apprunner-page-error.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-apprunner-page-error.png" class="img-fluid"></a></p>
+<p>This was another learning moment for me and helped me realize that a containerized service alone doesn’t guarantee compatibility with applications like Streamlit, which require WebSockets. It highlighted the importance of understanding the specific requirements of my application before choosing a deployment service.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+AWS App Runner: HTTP Support
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>AWS App Runner provides support for HTTP 1.0 and HTTP 1.1 to handle web requests directed to container instances.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="third-attempt-the-unexpected-success-with-aws-lightsail" class="level2">
+<h2 class="anchored" data-anchor-id="third-attempt-the-unexpected-success-with-aws-lightsail">Third Attempt: The Unexpected Success with AWS Lightsail</h2>
+<p>After hitting roadblocks with serverless and managed container solutions, I decided to explore <a href="https://aws.amazon.com/lightsail/">AWS Lightsail</a>, and I was drawn to Lightsail for its simplicity and intuitive interface. With a few clicks, you can provision a virtual server, and also it has predictable and budget-friendly pricing, making it an attractive option for various projects. Moreover, unlike App Runner, Lightsail’s container service provides a dedicated virtual server to run your container. And not only that it also gives a public URL to access your web app. Lightsail basically offers an alternative and simplified version of services such as instances, containers, databases, storage, and more to get your web application up and running in just a few clicks. This makes it an excellent choice for rapid prototyping, proof-of-concept projects, and developers seeking a hassle-free experience.</p>
+<p>I was initially skeptical because the official Lightsail documentation clearly states that its public endpoints only support HTTPS traffic and do not support TCP or UDP, which also meant it does not provide WebSockets. Here is the image of the documentation.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-docs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-docs.png" class="img-fluid"></a></p>
+<p>However, I had also come across blog posts where others had successfully deployed WebSocket applications on Lightsail. I decided to give it a try. I’ll also link one such post here <a href="https://betterprogramming.pub/how-to-deploy-a-websocket-app-to-amazon-lightsail-63ec29edd2e0">Link to the blog post</a>. Since my container image was already in ECR, deploying it to Lightsail was straightforward.</p>
+<p>I configured my Lightsail container service, provided my ECR image URI, and set up the correct port mappings. You may use the linked post to find all the required steps <a href="https://dev.to/aws-builders/containers-on-aws-amazon-lightsail-containers-4eco">Link to the blog post</a>. The entire process was remarkably simple and I was very hopeful, this time.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-container.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-container.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-configs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-configs.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>When I checked the public URL, my Streamlit app was working! The app was not showing a blank page anymore, but the “Hello From Streamlit” message was properly rendered. I was surprised to see that it was working, and also curious to see how it worked since Lightsail does not directly provide WebSockets support, and my application is working on websocket protocol. I looked at the browser’s developer tools and confirmed that the WebSocket connection was indeed established successfully!</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="img-fluid"></a></p>
+<p>You can see from the image above that the initial HTTP requests are completed to load the basic html and javascripts and then the application was able to successfully establish a stream connection using websockets.</p>
+<p>It turned out that even though Lightsail’s public endpoint is HTTP based, it somehow transparently handles WebSocket connections for containerized applications. This experience was a clear indication that sometimes documentation might not capture the entire picture, and it is important to try things out.</p>
 
 
 </section>
