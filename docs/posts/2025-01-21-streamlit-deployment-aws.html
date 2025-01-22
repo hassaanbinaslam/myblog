@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2025-01-21">
-<meta name="description" content="Deploying a Streamlit app on AWS revealed challenges due to its reliance on WebSockets, which common services like Lambda, AppRunner, and Lightsail couldn’t fully support. After multiple attempts, I succeeded by building a custom stack with AWS CDK, leveraging services like Fargate, and LoadBalancer. This post summarizes my journey and offers a practical guide for similar deployments.">
+<meta name="description" content="Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.">
 
 <title>My Streamlit Deployment Journey on AWS : What Worked, What Didn’t – Random Thoughts</title>
 <style>
@@ -208,7 +208,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div>
   <div class="description">
-    Deploying a Streamlit app on AWS revealed challenges due to its reliance on WebSockets, which common services like Lambda, AppRunner, and Lightsail couldn’t fully support. After multiple attempts, I succeeded by building a custom stack with AWS CDK, leveraging services like Fargate, and LoadBalancer. This post summarizes my journey and offers a practical guide for similar deployments.
+    Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.
   </div>
 </div>
 
@@ -244,11 +244,11 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <section id="the-initial-assumption-docker-cloud-easy-deployment" class="level2">
 <h2 class="anchored" data-anchor-id="the-initial-assumption-docker-cloud-easy-deployment">The Initial Assumption: Docker + Cloud = Easy Deployment</h2>
 <p>With my Streamlit application working perfectly on my local machine, I confidently assumed the next step would be straightforward. “Dockerize it, and deploy it to the cloud,” I thought. After all, Docker simplifies application packaging, and cloud platforms like AWS are built for containerized apps, right? My understanding was that the cloud provided a wide array of services to host containerized apps, automatically managing network configurations, and quickly exposing my app through a public URL. I naively believed it would be a seamless and fast process.</p>
-<p>To understand where I went wrong, it’s helpful to understand the internal architecture of Streamlit. As shown in the diagram below, a Streamlit application consists of three main parts: a React-based frontend, a Tornado web server, and the Streamlit library. The React frontend is responsible for rendering the user interface, while the Tornado web server manages the application’s logic and communication with the frontend. What’s crucial is that the frontend and the Tornado web server communicate through the <code>WebSocket protocol</code>, enabling real-time, bi-directional communication. This is a key detail which is easy to overlook when starting out.</p>
+<p>To understand where I went wrong, it’s helpful to understand the internal architecture of Streamlit. As shown in the diagram below, a Streamlit application consists of three main parts: a React-based frontend, a <a href="https://www.tornadoweb.org/">Tornado web server</a>, and the Streamlit library. The React frontend is responsible for rendering the user interface, while the Tornado web server manages the application’s logic and communication with the frontend. What’s crucial is that the frontend and the Tornado web server communicate through the <code>WebSocket protocol</code>, enabling real-time, bi-directional communication. This is a key detail which is easy to overlook when starting out.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-architecture.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-architecture.png" class="img-fluid"></a></p>
 <section id="diving-deep-streamlit-network-communication" class="level3">
 <h3 class="anchored" data-anchor-id="diving-deep-streamlit-network-communication">Diving Deep: Streamlit Network Communication</h3>
-<p>To truly grasp the importance of WebSockets for Streamlit, let’s take a look at what’s happening under the hood during its network communication. I have used Wireshark to capture the network communication that happens when a simple Streamlit app (shown below) is loaded in a browser.</p>
+<p>To truly grasp the importance of WebSockets for Streamlit, let’s take a look at what’s happening under the hood during its network communication. I have used <a href="https://www.wireshark.org/">Wireshark</a> to capture the network communication that happens when a simple Streamlit app (shown below) is loaded in a browser.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="img-fluid"></a></p>
 <p>As you can see, the app simply displays “Hello From Streamlit” and is running on <code>localhost:8501</code>.</p>
 <p>The screenshot below shows the Wireshark capture of the complete network communication trace.</p>
@@ -316,20 +316,46 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p>After loading the HTML page, the embedded JS code starts making subsequent HTTP requests for fetching CSS and JavaScript files. Once these files are loaded, the client is ready to switch to the WebSocket protocol.</p>
 <p><strong>Stage 3: Switching of Protocols</strong></p>
-<p>The next image shows that the browser requests the server to switch from HTTP to WebSocket using the 101 Switching Protocol message.</p>
+<p>The next image shows that the browser requests the server to switch from HTTP to WebSocket using the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/101">101 Switching Protocols</a> message.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-switching-protocol.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-switching-protocol.png" class="img-fluid"></a></p>
 <p>After this handshake, the communication from client and server happens using the WebSocket protocol. The image below shows how the application data is sent from the server to the client using WebSockets.</p>
 <p><strong>Stage 4: Application Logic</strong></p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-content.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-content.png" class="img-fluid"></a></p>
-<p>This shows how the data containing the message “Hello From Streamlit” is exchanged through WebSockets. After that, most of the communication between the client and server consists of ping/pong messages, which indicates that the connection is active. This pattern of sending data using WebSockets is what makes Streamlit apps interactive.</p>
+<p>This shows how the data containing the message “Hello From Streamlit” is exchanged through WebSockets. After that, most of the communication between the client and server consists of <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#pings_and_pongs_the_heartbeat_of_websockets">ping/pong messages</a>, which indicates that the connection is active. This pattern of sending data using WebSockets is what makes Streamlit apps interactive.</p>
 </section>
 </section>
 <section id="first-attempt-the-serverless-approach-with-aws-lambda" class="level2">
 <h2 class="anchored" data-anchor-id="first-attempt-the-serverless-approach-with-aws-lambda">First Attempt: The Serverless Approach with AWS Lambda</h2>
-<p>Given my initial goal of quick prototyping and a preference for serverless architectures, AWS Lambda seemed like the ideal first choice. It promised a cost-effective and low-maintenance solution where I could just upload my code and let AWS handle the infrastructure. I envisioned deploying the Streamlit app as a Lambda function and then expose it to the public internet through an API Gateway endpoint. My understanding was that this would be the easiest, cheapest, and fastest way to make my app accessible to others.</p>
-<p>To make this happen, I used the Lambda Web Adapter, which is designed to allow Lambda functions to respond to HTTP requests like a typical web server. I created a Docker image containing my Streamlit application and configured the Lambda function to use this image. Everything seemed to be in order, and I was excited to see my app live on the cloud. I uploaded my code, configured my endpoint, and confidently navigated to the public URL.</p>
-<p>The page loaded, but to my utter frustration, it was just an empty page. No errors, just a blank screen! I refreshed the page, checked my code, and looked at the logs, and everything seemed to be fine. I was able to get a response from the server, indicating that my request was reaching the Lambda function and that my streamlit app was running. My browser was making the connection, and the server was responding as well. However, I was unable to see my streamlit app!</p>
-<p>This is when I discovered the critical limitation: Lambda functions and the Lambda Web Adapter, operate using a request-response pattern with the HTTP protocol. However, Streamlit relies heavily on WebSockets for its real-time interactivity and communication. Since HTTP connections are not persistent, the connection was being closed after the initial request, and the web sockets were never able to establish a connection with the server. The initial request was processed, and the page was sent to the client, but no websocket connection was established. This was not a bug, but a fundamental mismatch in how Streamlit and Lambda work. This prompted me to realize that I had to think differently. This was the first major learning moment for me in my journey.</p>
+<p>Given my initial goal of quick prototyping and a preference for serverless architectures, <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> seemed like the ideal first choice. It promised a cost-effective and low-maintenance solution where I could just upload my code and let AWS handle the infrastructure. I envisioned deploying the Streamlit app as a Lambda function and then expose it to the public internet through an API Gateway endpoint. My understanding was that this would be the easiest, cheapest, and fastest way to make my app accessible to others.</p>
+<p>To make this happen, I used the <a href="https://github.com/awslabs/aws-lambda-web-adapter">Lambda Web Adapter</a>, which is designed to allow Lambda functions to respond to HTTP requests like a typical web server. As illustrated in the diagram below, the client browser would send requests to the <a href="https://aws.amazon.com/blogs/aws/announcing-aws-lambda-function-urls-built-in-https-endpoints-for-single-function-microservices/">Lambda Function URL</a>.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="img-fluid"></a></p>
+<p>The Lambda function, through the Lambda Web Adapter, would then pass these requests to the Docker container running my Streamlit app, which was pushed to Amazon ECR.</p>
+<p>When I deployed my app and loaded the page, to my utter frustration, it was just an empty page. No errors, just a blank screen! I refreshed the page, checked my code, and looked at the logs, and everything seemed to be fine. I was able to get a response from the server, indicating that my request was reaching the Lambda function and that my Streamlit app was running inside a container. My browser was connecting to the server, and the server was responding to HTTP requests. However, I was still unable to see my Streamlit app!</p>
+<p>This is when I discovered the critical limitation: Lambda functions and the Lambda Web Adapter, by design, operate using a request-response pattern with the HTTP protocol. While the <a href="https://aws.amazon.com/blogs/compute/using-response-streaming-with-aws-lambda-web-adapter-to-optimize-performance/">Web Adapter does support HTTP request streaming</a>, it does not support WebSockets. My Streamlit app was loading till the point where the page receives HTTP responses for loading the basic HTML page, JS and CSS files. The application was working as far as HTTP communication was concerned. However, as we discussed before, Streamlit relies heavily on WebSockets for its real-time interactivity. This is evident from the browser’s developer tools screenshot:</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-lambda-page-error-headers.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-lambda-page-error-headers.png" class="img-fluid"></a></p>
+<p>You can see that while the initial HTTP requests for resources like HTML, JS, and CSS files are successful, the crucial “stream” connection using WebSocket fails, hence the empty page. The frontend was trying to establish a WebSocket connection with the Lambda, but since the Lambda Function URL + Web Adapter only support HTTP/s requests and does not support WebSocket, the connection attempt failed, and the page was stuck.</p>
+<p>This realization was a learning moment and made it clear to me that I needed a completely different approach.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+AWS Lambda Function URL and Lambda Web Adapter: HTTP-Only Support
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>AWS Lambda Function URL and Lambda Web Adapter enable HTTP(S) access to Lambda functions:</p>
+<ul>
+<li><strong>Lambda Function URL</strong>: Creates a direct HTTPS endpoint for invoking Lambda functions, ideal for lightweight, event-driven HTTP-based applications.</li>
+<li><strong>Lambda Web Adapter</strong>: Bridges Lambda with web frameworks (e.g., Flask, Express.js), routing HTTP requests to the application.</li>
+</ul>
+<p>Both support only HTTP(S) traffic, not protocols like WebSocket or raw TCP/UDP, making them suited for RESTful APIs, webhooks, and serverless web apps requiring HTTP communication.</p>
+</div>
+</div>
+</div>
 
 
 </section>
