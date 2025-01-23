@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2025-01-21">
-<meta name="description" content="Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.">
+<meta name="description" content="Deploying Streamlit on AWS? I faced WebSocket issues with Lambda and App Runner, found a solution with Lightsail, and built a custom Fargate solution with AWS CDK. This post shares my lessons and cost insights.">
 
 <title>My Streamlit Deployment Journey on AWS : What Worked, What Didn’t – Random Thoughts</title>
 <style>
@@ -185,7 +185,10 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  </ul></li>
   <li><a href="#the-initial-assumption-docker-cloud-easy-deployment" id="toc-the-initial-assumption-docker-cloud-easy-deployment" class="nav-link" data-scroll-target="#the-initial-assumption-docker-cloud-easy-deployment">The Initial Assumption: Docker + Cloud = Easy Deployment</a>
   <ul class="collapse">
   <li><a href="#diving-deep-streamlit-network-communication" id="toc-diving-deep-streamlit-network-communication" class="nav-link" data-scroll-target="#diving-deep-streamlit-network-communication">Diving Deep: Streamlit Network Communication</a></li>
@@ -213,7 +216,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div>
   <div class="description">
-    Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.
+    Deploying Streamlit on AWS? I faced WebSocket issues with Lambda and App Runner, found a solution with Lightsail, and built a custom Fargate solution with AWS CDK. This post shares my lessons and cost insights.
   </div>
 </div>
 
@@ -245,27 +248,63 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>I recently embarked on a journey to rapidly prototype a personal LLM application. Like many developers, I was drawn to Streamlit for its simplicity and Python-first approach. The ability to quickly design interactive UIs without wrestling with HTML or CSS made it the perfect fit. However, the road to deploying that Streamlit app on AWS turned out to be much more challenging than I initially anticipated. I naively thought that containerizing my app with Docker would be the golden ticket, and I’d be up and running in no time. I was wrong! This post will take you through my learning experience, detailing the various approaches I tried to host the Streamlit application on the AWS cloud, and share what I learned through the process. From serverless lambda functions to dedicated virtual machines, I’ll describe what worked, what didn’t, and most importantly, why. By the end of the post, I hope that my experience helps you avoid the pitfalls and saves you from many days of frustration. Let’s begin!</p>
+<section id="environment-details" class="level3">
+<h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<div id="cell-4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> streamlit</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"streamlit=="</span> <span class="op">+</span> streamlit.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.12.8
+streamlit==1.41.1</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code Samples
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All the code examples used in this post can be found on the GitHub repo <a href="https://github.com/hassaanbinaslam/2025-01-21-streamlit-deployment-aws">2025-01-21-streamlit-deployment-aws</a></p>
+</div>
+</div>
+</section>
 </section>
 <section id="the-initial-assumption-docker-cloud-easy-deployment" class="level2">
 <h2 class="anchored" data-anchor-id="the-initial-assumption-docker-cloud-easy-deployment">The Initial Assumption: Docker + Cloud = Easy Deployment</h2>
 <p>With my Streamlit application working perfectly on my local machine, I confidently assumed the next step would be straightforward. “Dockerize it, and deploy it to the cloud,” I thought. After all, Docker simplifies application packaging, and cloud platforms like AWS are built for containerized apps, right? My understanding was that the cloud provided a wide array of services to host containerized apps, automatically managing network configurations, and quickly exposing my app through a public URL. I naively believed it would be a seamless and fast process.</p>
-<p>To understand where I went wrong, it’s helpful to understand the internal architecture of Streamlit. As shown in the diagram below, a Streamlit application consists of three main parts: a React-based frontend, a <a href="https://www.tornadoweb.org/">Tornado web server</a>, and the Streamlit library. The React frontend is responsible for rendering the user interface, while the Tornado web server manages the application’s logic and communication with the frontend. What’s crucial is that the frontend and the Tornado web server communicate through the <code>WebSocket protocol</code>, enabling real-time, bi-directional communication. This is a key detail which is easy to overlook when starting out.</p>
+<p>To understand where I went wrong, it’s helpful to understand the internal architecture of Streamlit. As shown in the diagram below, a Streamlit application consists of three main parts:</p>
+<ul>
+<li>a React-based frontend</li>
+<li>a <a href="https://www.tornadoweb.org/">Tornado web server</a></li>
+<li>and the Streamlit library.</li>
+</ul>
+<p>The React frontend is responsible for rendering the user interface, while the Tornado web server manages the application’s logic and communication with the frontend. What’s crucial is that the frontend and the Tornado web server communicate through the <code>WebSocket protocol</code>, enabling real-time, bi-directional communication. This is a key detail which is easy to overlook when starting out.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-architecture.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-architecture.png" class="img-fluid"></a></p>
 <section id="diving-deep-streamlit-network-communication" class="level3">
 <h3 class="anchored" data-anchor-id="diving-deep-streamlit-network-communication">Diving Deep: Streamlit Network Communication</h3>
 <p>To truly grasp the importance of WebSockets for Streamlit, let’s take a look at what’s happening under the hood during its network communication. I have used <a href="https://www.wireshark.org/">Wireshark</a> to capture the network communication that happens when a simple Streamlit app (shown below) is loaded in a browser.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="img-fluid"></a></p>
 <p>As you can see, the app simply displays “Hello From Streamlit” and is running on <code>localhost:8501</code>.</p>
-<div id="cell-5" class="cell">
+<div id="cell-8" class="cell">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="code-with-filename-file">
 <pre><strong>app.py</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
-<span id="cb1-2"><a href="#cb1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3"></a>st.title(<span class="st">"Hello From Streamlit"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a>st.title(<span class="st">"Hello From Streamlit"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -281,58 +320,58 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>The response body contains the HTML page that needs to be rendered, and the browser then parses it and starts loading the associated CSS and JS files.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-loaded-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-loaded-page.png" class="img-fluid"></a></p>
 <p>The following code block is the HTML page that is returned by the server.</p>
-<div id="cell-7" class="cell" data-vscode="{&quot;languageId&quot;:&quot;html&quot;}">
+<div id="cell-10" class="cell" data-vscode="{&quot;languageId&quot;:&quot;html&quot;}">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">&lt;!--</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a> Copyright (c) Streamlit Inc. (<span class="dv">2018</span><span class="op">-</span><span class="dv">2022</span>) Snowflake Inc. (<span class="dv">2022</span><span class="op">-</span><span class="dv">2024</span>)</span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a> Licensed under the Apache License, Version <span class="fl">2.0</span> (the <span class="st">"License"</span>)<span class="op">;</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a> you may <span class="kw">not</span> use this <span class="bu">file</span> <span class="cf">except</span> <span class="kw">in</span> compliance <span class="cf">with</span> the License.</span>
-<span id="cb2-6"><a href="#cb2-6"></a> You may obtain a copy of the License at</span>
-<span id="cb2-7"><a href="#cb2-7"></a></span>
-<span id="cb2-8"><a href="#cb2-8"></a>     http:<span class="op">//</span>www.apache.org<span class="op">/</span>licenses<span class="op">/</span>LICENSE<span class="op">-</span><span class="fl">2.0</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a></span>
-<span id="cb2-10"><a href="#cb2-10"></a> Unless required by applicable law <span class="kw">or</span> agreed to <span class="kw">in</span> writing, software</span>
-<span id="cb2-11"><a href="#cb2-11"></a> distributed under the License <span class="kw">is</span> distributed on an <span class="st">"AS IS"</span> BASIS,</span>
-<span id="cb2-12"><a href="#cb2-12"></a> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express <span class="kw">or</span> implied.</span>
-<span id="cb2-13"><a href="#cb2-13"></a> See the License <span class="cf">for</span> the specific language governing permissions <span class="kw">and</span></span>
-<span id="cb2-14"><a href="#cb2-14"></a> limitations under the License.</span>
-<span id="cb2-15"><a href="#cb2-15"></a><span class="op">--&gt;</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a></span>
-<span id="cb2-17"><a href="#cb2-17"></a><span class="op">&lt;!</span>DOCTYPE html<span class="op">&gt;</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a><span class="op">&lt;</span>html lang<span class="op">=</span><span class="st">"en"</span><span class="op">&gt;</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a></span>
-<span id="cb2-20"><a href="#cb2-20"></a><span class="op">&lt;</span>head<span class="op">&gt;</span></span>
-<span id="cb2-21"><a href="#cb2-21"></a>   <span class="op">&lt;</span>meta charset<span class="op">=</span><span class="st">"UTF-8"</span> <span class="op">/&gt;</span></span>
-<span id="cb2-22"><a href="#cb2-22"></a>   <span class="op">&lt;</span>meta name<span class="op">=</span><span class="st">"viewport"</span> content<span class="op">=</span><span class="st">"width=device-width, initial-scale=1, shrink-to-fit=no"</span> <span class="op">/&gt;</span></span>
-<span id="cb2-23"><a href="#cb2-23"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"shortcut icon"</span> href<span class="op">=</span><span class="st">"./favicon.png"</span> <span class="op">/&gt;</span></span>
-<span id="cb2-24"><a href="#cb2-24"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Regular.DZLUzqI4.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
-<span id="cb2-25"><a href="#cb2-25"></a>       crossorigin <span class="op">/&gt;</span></span>
-<span id="cb2-26"><a href="#cb2-26"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-SemiBold.sKQIyTMz.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a>       crossorigin <span class="op">/&gt;</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Bold.-6c9oR8J.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
-<span id="cb2-29"><a href="#cb2-29"></a>       crossorigin <span class="op">/&gt;</span></span>
-<span id="cb2-30"><a href="#cb2-30"></a></span>
-<span id="cb2-31"><a href="#cb2-31"></a>   <span class="op">&lt;</span>title<span class="op">&gt;</span>Streamlit<span class="op">&lt;/</span>title<span class="op">&gt;</span></span>
-<span id="cb2-32"><a href="#cb2-32"></a></span>
-<span id="cb2-33"><a href="#cb2-33"></a>   <span class="op">&lt;!--</span> initialize window.prerenderReady to false <span class="kw">and</span> then <span class="bu">set</span> to true <span class="kw">in</span> React app when app <span class="kw">is</span> ready <span class="cf">for</span> indexing <span class="op">--&gt;</span></span>
-<span id="cb2-34"><a href="#cb2-34"></a>   <span class="op">&lt;</span>script<span class="op">&gt;</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a>       window.prerenderReady <span class="op">=</span> false</span>
-<span id="cb2-36"><a href="#cb2-36"></a>   <span class="op">&lt;/</span>script<span class="op">&gt;</span></span>
-<span id="cb2-37"><a href="#cb2-37"></a>   <span class="op">&lt;</span>script <span class="bu">type</span><span class="op">=</span><span class="st">"module"</span> crossorigin src<span class="op">=</span><span class="st">"./static/js/index.Phesr84n.js"</span><span class="op">&gt;&lt;/</span>script<span class="op">&gt;</span></span>
-<span id="cb2-38"><a href="#cb2-38"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"stylesheet"</span> crossorigin href<span class="op">=</span><span class="st">"./static/css/index.CcCsR6ah.css"</span><span class="op">&gt;</span></span>
-<span id="cb2-39"><a href="#cb2-39"></a><span class="op">&lt;/</span>head<span class="op">&gt;</span></span>
-<span id="cb2-40"><a href="#cb2-40"></a></span>
-<span id="cb2-41"><a href="#cb2-41"></a><span class="op">&lt;</span>body<span class="op">&gt;</span></span>
-<span id="cb2-42"><a href="#cb2-42"></a>   <span class="op">&lt;</span>noscript<span class="op">&gt;</span>You need to enable JavaScript to run this app.<span class="op">&lt;/</span>noscript<span class="op">&gt;</span></span>
-<span id="cb2-43"><a href="#cb2-43"></a>   <span class="op">&lt;</span>div <span class="bu">id</span><span class="op">=</span><span class="st">"root"</span><span class="op">&gt;&lt;/</span>div<span class="op">&gt;</span></span>
-<span id="cb2-44"><a href="#cb2-44"></a><span class="op">&lt;/</span>body<span class="op">&gt;</span></span>
-<span id="cb2-45"><a href="#cb2-45"></a></span>
-<span id="cb2-46"><a href="#cb2-46"></a><span class="op">&lt;/</span>html<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">&lt;!--</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a> Copyright (c) Streamlit Inc. (<span class="dv">2018</span><span class="op">-</span><span class="dv">2022</span>) Snowflake Inc. (<span class="dv">2022</span><span class="op">-</span><span class="dv">2024</span>)</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a> Licensed under the Apache License, Version <span class="fl">2.0</span> (the <span class="st">"License"</span>)<span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a> you may <span class="kw">not</span> use this <span class="bu">file</span> <span class="cf">except</span> <span class="kw">in</span> compliance <span class="cf">with</span> the License.</span>
+<span id="cb4-6"><a href="#cb4-6"></a> You may obtain a copy of the License at</span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a>     http:<span class="op">//</span>www.apache.org<span class="op">/</span>licenses<span class="op">/</span>LICENSE<span class="op">-</span><span class="fl">2.0</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a></span>
+<span id="cb4-10"><a href="#cb4-10"></a> Unless required by applicable law <span class="kw">or</span> agreed to <span class="kw">in</span> writing, software</span>
+<span id="cb4-11"><a href="#cb4-11"></a> distributed under the License <span class="kw">is</span> distributed on an <span class="st">"AS IS"</span> BASIS,</span>
+<span id="cb4-12"><a href="#cb4-12"></a> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express <span class="kw">or</span> implied.</span>
+<span id="cb4-13"><a href="#cb4-13"></a> See the License <span class="cf">for</span> the specific language governing permissions <span class="kw">and</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a> limitations under the License.</span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="op">--&gt;</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="op">&lt;!</span>DOCTYPE html<span class="op">&gt;</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="op">&lt;</span>html lang<span class="op">=</span><span class="st">"en"</span><span class="op">&gt;</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="op">&lt;</span>head<span class="op">&gt;</span></span>
+<span id="cb4-21"><a href="#cb4-21"></a>   <span class="op">&lt;</span>meta charset<span class="op">=</span><span class="st">"UTF-8"</span> <span class="op">/&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a>   <span class="op">&lt;</span>meta name<span class="op">=</span><span class="st">"viewport"</span> content<span class="op">=</span><span class="st">"width=device-width, initial-scale=1, shrink-to-fit=no"</span> <span class="op">/&gt;</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"shortcut icon"</span> href<span class="op">=</span><span class="st">"./favicon.png"</span> <span class="op">/&gt;</span></span>
+<span id="cb4-24"><a href="#cb4-24"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Regular.DZLUzqI4.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb4-25"><a href="#cb4-25"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb4-26"><a href="#cb4-26"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-SemiBold.sKQIyTMz.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb4-27"><a href="#cb4-27"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb4-28"><a href="#cb4-28"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Bold.-6c9oR8J.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb4-29"><a href="#cb4-29"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb4-30"><a href="#cb4-30"></a></span>
+<span id="cb4-31"><a href="#cb4-31"></a>   <span class="op">&lt;</span>title<span class="op">&gt;</span>Streamlit<span class="op">&lt;/</span>title<span class="op">&gt;</span></span>
+<span id="cb4-32"><a href="#cb4-32"></a></span>
+<span id="cb4-33"><a href="#cb4-33"></a>   <span class="op">&lt;!--</span> initialize window.prerenderReady to false <span class="kw">and</span> then <span class="bu">set</span> to true <span class="kw">in</span> React app when app <span class="kw">is</span> ready <span class="cf">for</span> indexing <span class="op">--&gt;</span></span>
+<span id="cb4-34"><a href="#cb4-34"></a>   <span class="op">&lt;</span>script<span class="op">&gt;</span></span>
+<span id="cb4-35"><a href="#cb4-35"></a>       window.prerenderReady <span class="op">=</span> false</span>
+<span id="cb4-36"><a href="#cb4-36"></a>   <span class="op">&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb4-37"><a href="#cb4-37"></a>   <span class="op">&lt;</span>script <span class="bu">type</span><span class="op">=</span><span class="st">"module"</span> crossorigin src<span class="op">=</span><span class="st">"./static/js/index.Phesr84n.js"</span><span class="op">&gt;&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb4-38"><a href="#cb4-38"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"stylesheet"</span> crossorigin href<span class="op">=</span><span class="st">"./static/css/index.CcCsR6ah.css"</span><span class="op">&gt;</span></span>
+<span id="cb4-39"><a href="#cb4-39"></a><span class="op">&lt;/</span>head<span class="op">&gt;</span></span>
+<span id="cb4-40"><a href="#cb4-40"></a></span>
+<span id="cb4-41"><a href="#cb4-41"></a><span class="op">&lt;</span>body<span class="op">&gt;</span></span>
+<span id="cb4-42"><a href="#cb4-42"></a>   <span class="op">&lt;</span>noscript<span class="op">&gt;</span>You need to enable JavaScript to run this app.<span class="op">&lt;/</span>noscript<span class="op">&gt;</span></span>
+<span id="cb4-43"><a href="#cb4-43"></a>   <span class="op">&lt;</span>div <span class="bu">id</span><span class="op">=</span><span class="st">"root"</span><span class="op">&gt;&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb4-44"><a href="#cb4-44"></a><span class="op">&lt;/</span>body<span class="op">&gt;</span></span>
+<span id="cb4-45"><a href="#cb4-45"></a></span>
+<span id="cb4-46"><a href="#cb4-46"></a><span class="op">&lt;/</span>html<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>After loading the HTML page, the embedded JS code starts making subsequent HTTP requests for fetching CSS and JavaScript files. Once these files are loaded, the client is ready to switch to the WebSocket protocol.</p>
+<p>After loading the HTML page, the embedded <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload">preload links</a> starts making subsequent HTTP requests for fetching CSS and JavaScript files. Once these files are loaded, the client is ready to switch to the WebSocket protocol.</p>
 <p><strong>Stage 3: Switching of Protocols</strong></p>
 <p>The next image shows that the browser requests the server to switch from HTTP to WebSocket using the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/101">101 Switching Protocols</a> message.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-switching-protocol.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-switching-protocol.png" class="img-fluid"></a></p>
@@ -344,34 +383,34 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </section>
 <section id="first-attempt-the-serverless-approach-with-aws-lambda" class="level2">
 <h2 class="anchored" data-anchor-id="first-attempt-the-serverless-approach-with-aws-lambda">First Attempt: The Serverless Approach with AWS Lambda</h2>
-<p>Given my initial goal of quick prototyping and a preference for serverless architectures, <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> seemed like the ideal first choice. It promised a cost-effective and low-maintenance solution where I could just upload my code and let AWS handle the infrastructure. I envisioned deploying the Streamlit app as a Lambda function and then expose it to the public internet through an API Gateway endpoint. My understanding was that this would be the easiest, cheapest, and fastest way to make my app accessible to others.</p>
+<p>Given my initial goal of quick prototyping and a preference for serverless architectures, <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> seemed like the ideal first choice. It promised a cost-effective and low-maintenance solution where I could just upload my code and let AWS handle the infrastructure. I envisioned deploying the Streamlit app as a Lambda function and then expose it to the public internet through an endpoint. My understanding was that this would be the easiest, cheapest, and fastest way to make my app accessible to others.</p>
 <p>To make this happen, I used the <a href="https://github.com/awslabs/aws-lambda-web-adapter">Lambda Web Adapter</a>, which is designed to allow Lambda functions to respond to HTTP requests like a typical web server. As illustrated in the diagram below, the client browser would send requests to the <a href="https://aws.amazon.com/blogs/aws/announcing-aws-lambda-function-urls-built-in-https-endpoints-for-single-function-microservices/">Lambda Function URL</a>.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="img-fluid"></a></p>
 <p>The Lambda function, through the Lambda Web Adapter, would then pass these requests to the Docker container running my Streamlit app, which was pushed to Amazon ECR. Following is the <code>Dockerfile</code> I used to build the app container.</p>
-<div id="cell-10" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
+<div id="cell-13" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="code-with-filename-file">
 <pre><strong>Dockerfile</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Use the AWS Lambda Python base image</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>FROM public.ecr.aws<span class="op">/</span>docker<span class="op">/</span>library<span class="op">/</span>python:<span class="fl">3.12.1</span><span class="op">-</span>slim</span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Add the AWS Lambda Web Adapter</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>COPY <span class="op">--</span><span class="im">from</span><span class="op">=</span>public.ecr.aws<span class="op">/</span>awsguru<span class="op">/</span>aws<span class="op">-</span><span class="kw">lambda</span><span class="op">-</span>adapter:<span class="fl">0.8.4</span> <span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter <span class="op">/</span>opt<span class="op">/</span>extensions<span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter</span>
-<span id="cb3-6"><a href="#cb3-6"></a></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="co"># Set the working directory</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>WORKDIR <span class="op">/</span>var<span class="op">/</span>task</span>
-<span id="cb3-9"><a href="#cb3-9"></a></span>
-<span id="cb3-10"><a href="#cb3-10"></a><span class="co"># Copy app code and dependencies</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a>COPY app.py requirements.txt .<span class="op">/</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a></span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="co"># Install dependencies</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a>RUN pip install <span class="op">--</span>no<span class="op">-</span>cache<span class="op">-</span><span class="bu">dir</span> <span class="op">-</span>r requirements.txt</span>
-<span id="cb3-15"><a href="#cb3-15"></a></span>
-<span id="cb3-16"><a href="#cb3-16"></a><span class="co"># Command to start Streamlit</span></span>
-<span id="cb3-17"><a href="#cb3-17"></a>CMD [<span class="st">"streamlit"</span>, <span class="st">"run"</span>, <span class="st">"app.py"</span>, <span class="st">"--server.port=8080"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># Use the AWS Lambda Python base image</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>FROM public.ecr.aws<span class="op">/</span>docker<span class="op">/</span>library<span class="op">/</span>python:<span class="fl">3.12.1</span><span class="op">-</span>slim</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co"># Add the AWS Lambda Web Adapter</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>COPY <span class="op">--</span><span class="im">from</span><span class="op">=</span>public.ecr.aws<span class="op">/</span>awsguru<span class="op">/</span>aws<span class="op">-</span><span class="kw">lambda</span><span class="op">-</span>adapter:<span class="fl">0.8.4</span> <span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter <span class="op">/</span>opt<span class="op">/</span>extensions<span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter</span>
+<span id="cb5-6"><a href="#cb5-6"></a></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co"># Set the working directory</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>WORKDIR <span class="op">/</span>var<span class="op">/</span>task</span>
+<span id="cb5-9"><a href="#cb5-9"></a></span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co"># Copy app code and dependencies</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>COPY app.py requirements.txt .<span class="op">/</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co"># Install dependencies</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a>RUN pip install <span class="op">--</span>no<span class="op">-</span>cache<span class="op">-</span><span class="bu">dir</span> <span class="op">-</span>r requirements.txt</span>
+<span id="cb5-15"><a href="#cb5-15"></a></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="co"># Command to start Streamlit</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a>CMD [<span class="st">"streamlit"</span>, <span class="st">"run"</span>, <span class="st">"app.py"</span>, <span class="st">"--server.port=8080"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -381,7 +420,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>You can see that while the initial HTTP requests for resources like HTML, JS, and CSS files are successful, the crucial “stream” connection using WebSocket fails, hence the empty page. The frontend was trying to establish a WebSocket connection with the Lambda, but since the Lambda Function URL + Web Adapter only support HTTP/s requests and does not support WebSocket, the connection attempt failed, and the page was stuck.</p>
 <p>This realization was a learning moment and made it clear to me that I needed a completely different approach.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -390,7 +429,7 @@ AWS Lambda Function URL and Lambda Web Adapter: HTTP-Only Support
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>AWS Lambda Function URL and Lambda Web Adapter enable HTTP(S) access to Lambda functions:</p>
 <ul>
@@ -406,13 +445,13 @@ AWS Lambda Function URL and Lambda Web Adapter: HTTP-Only Support
 <h2 class="anchored" data-anchor-id="second-attempt-containerized-deployment-with-aws-app-runner">Second Attempt: Containerized Deployment with AWS App Runner</h2>
 <p>After my unsuccessful attempt with AWS Lambda, I knew I needed a solution that handled persistent WebSockets. AWS <a href="https://aws.amazon.com/apprunner/">App Runner</a> seemed like a promising next step, as a managed container platform that would supposedly handle the underlying infrastructure for me. Since my Docker image was already on ECR, I thought switching to App Runner would be easy. With just a few clicks, I could run my containerized app, automatically managing the networking configurations, and access it through a public URL.</p>
 <p>I configured an App Runner service, pointing it to my container image and specifying the necessary port configurations. The service deployed successfully and provided a public URL. However, just like before, my browser showed a blank page!</p>
-<p>The issue, as with Lambda, was the lack of WebSocket support. AWS App Runner, as highlighted in its documentation below, is designed for HTTP 1.0 and HTTP 1.1 applications and does not provide support for persistent WebSockets connections, and it can be seen in the screenshot below as well.</p>
+<p>The issue, as with Lambda, was the lack of WebSocket support. AWS App Runner, as highlighted in its documentation below, is designed for HTTP 1.0 and HTTP 1.1 applications and does not provide support for persistent WebSockets connections, and it can be seen in the screenshot below as well. <a href="https://docs.aws.amazon.com/apprunner/latest/dg/develop.html#develop.considerations">Link to docs here</a>.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/apprunner-docs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-01-21-streamlit-deployment-aws/apprunner-docs.png" class="img-fluid"></a></p>
 <p>The screenshot from my browser’s developer tools shows the same issue that I observed with Lambda, highlighting the fact that the initial resources were loading using HTTP protocol, but the websocket connection attempt fails:</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-apprunner-page-error.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-apprunner-page-error.png" class="img-fluid"></a></p>
 <p>This was another learning moment for me and helped me realize that a containerized service alone doesn’t guarantee compatibility with applications like Streamlit, which require WebSockets. It highlighted the importance of understanding the specific requirements of my application before choosing a deployment service.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -421,7 +460,7 @@ AWS App Runner: HTTP Support
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>AWS App Runner provides support for HTTP 1.0 and HTTP 1.1 to handle web requests directed to container instances.</p>
 </div>
@@ -431,7 +470,7 @@ AWS App Runner: HTTP Support
 <section id="third-attempt-the-unexpected-success-with-aws-lightsail" class="level2">
 <h2 class="anchored" data-anchor-id="third-attempt-the-unexpected-success-with-aws-lightsail">Third Attempt: The Unexpected Success with AWS Lightsail</h2>
 <p>After hitting roadblocks with serverless and managed container solutions, I decided to explore <a href="https://aws.amazon.com/lightsail/">AWS Lightsail</a>, and I was drawn to Lightsail for its simplicity and intuitive interface. With a few clicks, you can provision a virtual server, and also it has predictable and budget-friendly pricing, making it an attractive option for various projects. Moreover, unlike App Runner, Lightsail’s container service provides a dedicated virtual server to run your container. And not only that it also gives a public URL to access your web app. Lightsail basically offers an alternative and simplified version of services such as instances, containers, databases, storage, and more to get your web application up and running in just a few clicks. This makes it an excellent choice for rapid prototyping, proof-of-concept projects, and developers seeking a hassle-free experience.</p>
-<p>I was initially skeptical because the official Lightsail documentation clearly states that its public endpoints only support HTTPS traffic and do not support TCP or UDP, which also meant it does not provide WebSockets. Here is the image of the documentation.</p>
+<p>I was initially skeptical because the official Lightsail documentation clearly states that its public endpoints only support HTTPS traffic and do not support TCP or UDP, which also meant it does not provide WebSockets. Here is the image of the documentation. <a href="https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-container-services.html#understanding-lightsail-container-services">Link to docs here</a></p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-docs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-docs.png" class="img-fluid"></a></p>
 <p>However, I had also come across blog posts where others had successfully deployed WebSocket applications on Lightsail. I decided to give it a try. I’ll also link one such post here <a href="https://betterprogramming.pub/how-to-deploy-a-websocket-app-to-amazon-lightsail-63ec29edd2e0">Link to the blog post</a>. Since my container image was already in ECR, deploying it to Lightsail was straightforward.</p>
 <p>I configured my Lightsail container service, provided my ECR image URI, and set up the correct port mappings. You may use the linked post to find all the required steps <a href="https://dev.to/aws-builders/containers-on-aws-amazon-lightsail-containers-4eco">Link to the blog post</a>. The entire process was remarkably simple and I was very hopeful, this time.</p>
@@ -448,7 +487,7 @@ AWS App Runner: HTTP Support
 </div>
 </div>
 </div>
-<p>When I checked the public URL, my Streamlit app was working! The app was not showing a blank page anymore, but the “Hello From Streamlit” message was properly rendered. I was surprised to see that it was working, and also curious to see how it worked since Lightsail does not directly provide WebSockets support, and my application is working on websocket protocol. I looked at the browser’s developer tools and confirmed that the WebSocket connection was indeed established successfully!</p>
+<p>When I checked the public URL, my Streamlit app was working! The app was not showing a blank page anymore, and the “Hello From Streamlit” message was properly rendered. I was surprised to see that it was working, and also curious to see how it worked since Lightsail does not directly provide WebSockets support. I looked at the browser’s developer tools and confirmed that the WebSocket connection was indeed established successfully!</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="img-fluid"></a></p>
 <p>You can see from the image above that the initial HTTP requests are completed to load the basic html and javascripts and then the application was able to successfully establish a stream connection using websockets.</p>
 <p>It turned out that even though Lightsail’s public endpoint is HTTP based, it somehow transparently handles WebSocket connections for containerized applications. This experience was a clear indication that sometimes documentation might not capture the entire picture, and it is important to try things out.</p>
@@ -461,33 +500,33 @@ AWS App Runner: HTTP Support
 <p>At first, the thought of setting up a full-fledged ECS cluster with Fargate and a load balancer seemed like an overwhelming task. The process involves provisioning various resources like VPC, security groups, load balancers, and more. However, I then discovered the <a href="https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns-readme.html">aws_ecs_patterns module</a> within AWS CDK, which provides a convenient way to create common application patterns using a single line of code. One such pre-built pattern is <a href="https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ecs_patterns/ApplicationLoadBalancedFargateService.html">ApplicationLoadBalancedFargateService</a>, which creates all the necessary resources and then deploys your container on it.</p>
 <p>The beauty of this approach is that while it takes care of setting up all the underlying infrastructure, it also gives you complete control. Everything is defined and deployed through code using CDK. You can version control your infrastructure, enabling easy management and scalability. This combination of control, simplicity, and automation made this the ideal choice. My experience with the previous three AWS services gave me confidence in my understanding of the problem. Thus, armed with this knowledge and the power of AWS CDK, I decided to build the custom stack to deploy my application.</p>
 <p>I have used this small piece of code to create the entire stack.</p>
-<div id="cell-15" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
+<div id="cell-18" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
 <div class="code-with-filename">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="code-with-filename-file">
 <pre><strong>streamlit_fargate_stack.py</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>vpc <span class="op">=</span> ec2.Vpc(</span>
-<span id="cb4-2"><a href="#cb4-2"></a>    <span class="va">self</span>,</span>
-<span id="cb4-3"><a href="#cb4-3"></a>    <span class="st">"StreamlitFargateVpc"</span>,</span>
-<span id="cb4-4"><a href="#cb4-4"></a>    max_azs<span class="op">=</span><span class="dv">2</span>,  <span class="co"># Min=2. Default is all AZs in the region</span></span>
-<span id="cb4-5"><a href="#cb4-5"></a>)</span>
-<span id="cb4-6"><a href="#cb4-6"></a></span>
-<span id="cb4-7"><a href="#cb4-7"></a><span class="co"># Create an ECS Cluster</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a>cluster <span class="op">=</span> ecs.Cluster(<span class="va">self</span>, <span class="st">"StreamlitFargateCluster"</span>, vpc<span class="op">=</span>vpc)</span>
-<span id="cb4-9"><a href="#cb4-9"></a></span>
-<span id="cb4-10"><a href="#cb4-10"></a><span class="co"># Define a Fargate Task Definition and Service</span></span>
-<span id="cb4-11"><a href="#cb4-11"></a>fargate_service <span class="op">=</span> ecs_patterns.ApplicationLoadBalancedFargateService(</span>
-<span id="cb4-12"><a href="#cb4-12"></a>    <span class="va">self</span>,</span>
-<span id="cb4-13"><a href="#cb4-13"></a>    <span class="st">"StreamlitFargateService"</span>,</span>
-<span id="cb4-14"><a href="#cb4-14"></a>    cluster<span class="op">=</span>cluster,</span>
-<span id="cb4-15"><a href="#cb4-15"></a>    task_image_options<span class="op">=</span>{</span>
-<span id="cb4-16"><a href="#cb4-16"></a>        <span class="st">"image"</span>: image,</span>
-<span id="cb4-17"><a href="#cb4-17"></a>        <span class="st">"container_port"</span>: <span class="dv">8501</span>,  <span class="co"># Streamlit default port=8501. Should be adjusted based on Dockerfile</span></span>
-<span id="cb4-18"><a href="#cb4-18"></a>    },</span>
-<span id="cb4-19"><a href="#cb4-19"></a>    public_load_balancer<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb4-20"><a href="#cb4-20"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>vpc <span class="op">=</span> ec2.Vpc(</span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="va">self</span>,</span>
+<span id="cb6-3"><a href="#cb6-3"></a>    <span class="st">"StreamlitFargateVpc"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4"></a>    max_azs<span class="op">=</span><span class="dv">2</span>,  <span class="co"># Min=2. Default is all AZs in the region</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>)</span>
+<span id="cb6-6"><a href="#cb6-6"></a></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co"># Create an ECS Cluster</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>cluster <span class="op">=</span> ecs.Cluster(<span class="va">self</span>, <span class="st">"StreamlitFargateCluster"</span>, vpc<span class="op">=</span>vpc)</span>
+<span id="cb6-9"><a href="#cb6-9"></a></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co"># Define a Fargate Task Definition and Service</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>fargate_service <span class="op">=</span> ecs_patterns.ApplicationLoadBalancedFargateService(</span>
+<span id="cb6-12"><a href="#cb6-12"></a>    <span class="va">self</span>,</span>
+<span id="cb6-13"><a href="#cb6-13"></a>    <span class="st">"StreamlitFargateService"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14"></a>    cluster<span class="op">=</span>cluster,</span>
+<span id="cb6-15"><a href="#cb6-15"></a>    task_image_options<span class="op">=</span>{</span>
+<span id="cb6-16"><a href="#cb6-16"></a>        <span class="st">"image"</span>: image,</span>
+<span id="cb6-17"><a href="#cb6-17"></a>        <span class="st">"container_port"</span>: <span class="dv">8501</span>,  <span class="co"># Streamlit default port=8501. Should be adjusted based on Dockerfile</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a>    },</span>
+<span id="cb6-19"><a href="#cb6-19"></a>    public_load_balancer<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb6-20"><a href="#cb6-20"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -497,21 +536,37 @@ AWS App Runner: HTTP Support
 <p>After deploying the stack using CDK, I was able to access my Streamlit application through a public URL. And this time the WebSockets were working perfectly!</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/fargate-hello.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="images/2025-01-21-streamlit-deployment-aws/fargate-hello.png" class="img-fluid"></a></p>
 <p>As you can see, the app is working as expected, the connection has been established and the “Hello From Streamlit” message is shown on the page. This was my final and successful approach in deploying the Streamlit application.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Want Full Stack Control?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>If you want more control and flexibility, you may built the entire stack on your own without relying on the <code>aws_ecs_patterns</code> module. If you want that, check out this post from the AWS Blog: <a href="https://aws.amazon.com/blogs/machine-learning/build-and-deploy-a-ui-for-your-generative-ai-applications-with-aws-and-python/">Build and deploy a UI for your generative AI applications with AWS and Python</a>. The GitHub repo associated with this post builds the complete stack using individual components.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="a-practical-look-at-pricing-lightsail-vs.-fargate" class="level2">
 <h2 class="anchored" data-anchor-id="a-practical-look-at-pricing-lightsail-vs.-fargate">A Practical Look at Pricing: Lightsail vs.&nbsp;Fargate</h2>
 <p>While the custom Fargate solution provides the control and transparency I was looking for, it’s important to consider the cost implications. Let’s compare it with the simplicity and pricing of Lightsail to see how they stack up.</p>
-<p>Lightsail offers a very straightforward and transparent pricing structure. For my initial Streamlit deployment, I used the container service with the nano option, which has a fixed cost of 7 USD per month. You can see its pricing structure in the screenshot below.</p>
+<p>Lightsail offers a very straightforward and transparent pricing structure. For my initial Streamlit deployment, I used the container service with the Nano option, which has a fixed cost of 7 USD per month. You can see its pricing structure in the screenshot below.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-container-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-container-pricing.png" class="img-fluid"></a></p>
 <p>This makes it a very appealing choice for quick prototypes and projects that need a budget-friendly setup.</p>
 <p>Now let’s take a look at the costs associated with the custom Fargate solution. Although Fargate itself is relatively inexpensive, the overall cost can become significantly higher due to other resources like NAT Gateways, Load Balancers, and Elastic IPs that get created along with it. In my setup, the Fargate cost was almost negligible, less than 1 USD. The rest of the cost was distributed in these other services.</p>
-<p>The most expensive component in this solution is the NAT Gateways. Since my setup involved deploying the app across two availability zones, the solution created two NAT gateways, one for each AZ. The minimum cost of each NAT Gateway is around 32 USD per month, totaling around 64 USD per month for this setup.</p>
+<p>The most expensive component in this solution is the <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html">NAT Gateways</a>. Since my setup involved deploying the app across two availability zones (<code>aws_ecs_patterns</code> enforces high availability), the solution also created two NAT gateways, one for each AZ. The minimum cost of each NAT Gateway is around 32 USD per month, totaling around 64 USD per month for this setup.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/natgayeway-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="images/2025-01-21-streamlit-deployment-aws/natgayeway-pricing.png" class="img-fluid"></a></p>
 <p>As you can see from the image, NAT Gateway charges by hour, and it costs $0.045 per hour. If we assume a minimum usage of 30 days a month, it amounts to $32 per month for a single NAT gateway. This is 4 times more expensive than the entire cost of the Lightsail container service.</p>
-<p>Another significant cost factor is the Application Load Balancer (ALB). With minimum usage, it roughly costs 16 USD per month, which also charges hourly.</p>
+<p>Another significant cost factor is the <a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html">Application Load Balancer (ALB)</a>. With minimum usage, it roughly costs 16 USD per month, which also charges hourly.</p>
 <p><a href="images/2025-01-21-streamlit-deployment-aws/alb-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-21"><img src="images/2025-01-21-streamlit-deployment-aws/alb-pricing.png" class="img-fluid"></a></p>
 <p>Looking at the image, it can be seen that the cost of the ALB is $0.0225 per ALB-hour. For minimum usage it roughly translates to around $16 USD a month.</p>
-<p>Lastly, two Elastic IPs (EIPs) are created by the stack (one for each NAT gateway). The cost for these two EIPs is around 7.30 USD per month.</p>
+<p>Lastly, two <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html">Elastic IPs (EIPs)</a> are created by the stack (one for each NAT gateway). The cost for these two EIPs is around 7.30 USD per month.</p>
 <p>When you sum it up, while the actual cost of running the Fargate container itself is barely around 1 USD per month, the cost of NAT gateways, Load Balancer, and EIPs adds up significantly. For this simple setup, I estimate that the cost of this custom Fargate solution would easily amount to around 90 USD per month. This is much higher than the 7 USD per month that I estimated with the Lightsail container service. It’s important to note that these costs might vary based on usage, but even with minimal activity, the custom Fargate solution will remain significantly more expensive than the Lightsail option.</p>
 <p>While the custom Fargate setup does provide more control and transparency, the cost implications are something that you should keep in mind for running your prototypes.</p>
 </section>
