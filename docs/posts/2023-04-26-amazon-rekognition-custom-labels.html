@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2023-04-26">
 <meta name="description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their specific use case. In this post, we will use this service to train a custom model with a small set of labeled images and use it to analyze new images via an API. This service uses AutoML to train models to find objects, scenes, concepts, object locations, and brand locations in images.">
 
-<title>Random Thoughts - Creating an Object Detection Model using Amazon Rekognition Custom Labels</title>
+<title>Creating an Object Detection Model using Amazon Rekognition Custom Labels – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,47 +49,17 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -136,17 +113,17 @@ gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Creating an Object Detection Model using Amazon Rekognition Custom Labels">
-<meta property="og:description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their…">
+<meta property="og:title" content="Creating an Object Detection Model using Amazon Rekognition Custom Labels – Random Thoughts">
+<meta property="og:description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their specific use case. In this post, we will use this service to train a custom model with a small set of labeled images and use it to analyze new images via an API. This service uses AutoML to train models to find objects, scenes, concepts, object locations, and brand locations in images.">
 <meta property="og:image" content="images/2023-04-26-amazon-rekognition-custom-labels.jpg">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Creating an Object Detection Model using Amazon Rekognition Custom Labels">
-<meta name="twitter:description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their…">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Creating an Object Detection Model using Amazon Rekognition Custom Labels – Random Thoughts">
+<meta name="twitter:description" content="Amazon Rekognition Custom Labels is a feature of Amazon Rekognition that enables customers to build specialized image analysis capabilities to detect unique objects and scenes integral to their specific use case. In this post, we will use this service to train a custom model with a small set of labeled images and use it to analyze new images via an API. This service uses AutoML to train models to find objects, scenes, concepts, object locations, and brand locations in images.">
 <meta name="twitter:image" content="images/2023-04-26-amazon-rekognition-custom-labels.jpg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -155,45 +132,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -255,12 +231,14 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2023-04-26-amazon-rekognition-custom-labels.jpg" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">image source: https://openart.ai/discovery/md-438e164b-250d-4dca-8989-cda9e5dda6ec</figcaption><p></p>
+<figcaption>image source: https://openart.ai/discovery/md-438e164b-250d-4dca-8989-cda9e5dda6ec</figcaption>
 </figure>
 </div>
 <section id="credits" class="level2">
@@ -272,12 +250,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p><a href="https://aws.amazon.com/rekognition/custom-labels-features/">Amazon Rekognition Custom Labels</a> is a fully managed computer vision service that allows developers to build custom models to classify and identify objects in images that are specific and unique to your business. <code>Rekognition Custom Labels doesn’t require you to have any prior computer vision expertise</code>. For example, you can find your logo in social media posts, identify your products on store shelves, classify machine parts in an assembly line, distinguish healthy and infected plants, or detect animated characters in videos.</p>
 <p>Developing a custom model to analyze images is a significant undertaking that requires time, expertise, and resources, often taking months to complete. Additionally, it often requires thousands or tens of thousands of hand-labeled images to provide the model with enough data to accurately make decisions. Generating this data can take months to gather and requires large teams of labelers to prepare it for use in machine learning (ML).</p>
 <p><code>Rekognition Custom Labels</code> builds off of the existing capabilities of <a href="https://aws.amazon.com/rekognition/">Amazon Rekognition</a>, which are already trained on tens of millions of images across many categories. Instead of thousands of images, you simply need to upload a small set of training images (typically a few hundred images or less) that are specific to your use case using the Amazon Rekognition console. If the images are already labeled, you can begin training a model in just a few clicks. If not, you can label them directly on the Rekognition Custom Labels console, or use Amazon SageMaker Ground Truth to label them. <code>Rekognition Custom Labels uses transfer learning and AutoML to automatically inspect the training data, select the right model framework and algorithm, optimize the hyperparameters, and train the model</code>. When you’re satisfied with the model accuracy, you can start hosting the trained model with just one click.</p>
-<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Note
 </div>
 </div>
@@ -300,7 +278,7 @@ Note
 <section id="step-1-download-and-clean-raspberry-pi-images" class="level2">
 <h2 class="anchored" data-anchor-id="step-1-download-and-clean-raspberry-pi-images">Step 1: Download and clean Raspberry Pi images</h2>
 <p>We need to collect relevant images to successfully train a model that can detect Raspberry Pi logos on computer boards. We can use the <code>Google Images</code> search to find such images. But downloading many pictures from Google search can take much work to automate. So instead, we can use a different search engine, <a href="https://duckduckgo.com/">DuckDuckGo.com</a>, that provides a more straightforward interface <a href="https://pypi.org/project/duckduckgo-search/">duckduckgo_search</a> for search. For downloading and resizing images, we will use additional libraries from the <code>FastAI</code> ecosystem <a href="https://github.com/fastai/fastai">fastai</a> and <a href="https://github.com/fastai/fastdownload/tree/master/">fastdownload</a>.</p>
-<div class="cell" data-tags="[]" data-execution_count="2">
+<div id="cell-7" class="cell" data-tags="[]" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>writefile requirements.txt</span>
 <span id="cb1-2"><a href="#cb1-2"></a>duckduckgo<span class="op">-</span>search<span class="op">==</span><span class="fl">2.8.6</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>fastai<span class="op">==</span><span class="fl">2.7.12</span> </span>
@@ -310,7 +288,7 @@ Note
 <pre><code>Overwriting requirements.txt</code></pre>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="3">
+<div id="cell-8" class="cell" data-tags="[]" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%%</span>capture</span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="op">!</span>pip install <span class="op">-</span>r requirements.txt </span>
 <span id="cb3-3"><a href="#cb3-3"></a></span>
@@ -320,7 +298,7 @@ Note
 <span id="cb3-7"><a href="#cb3-7"></a><span class="co"># 3. `fastai` to open, visualize, and transform images</span></span>
 <span id="cb3-8"><a href="#cb3-8"></a><span class="co"># 4. `fastcore` extends Python list functionality</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="4">
+<div id="cell-9" class="cell" data-tags="[]" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> duckduckgo_search <span class="im">import</span> ddg_images</span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="im">from</span> fastcore.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a></span>
@@ -347,7 +325,7 @@ Note
 </div>
 </div>
 <p>Above, we have defined a function that can be used to search images and return their URLs. Next, we can use these URLs to download and save images to a local directory.</p>
-<div class="cell" data-tags="[]" data-execution_count="5">
+<div id="cell-11" class="cell" data-tags="[]" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb7-2"><a href="#cb7-2"></a></span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="co"># Define a local path to store downloaded images</span></span>
@@ -357,7 +335,7 @@ Note
 <span id="cb7-7"><a href="#cb7-7"></a>local_path <span class="op">=</span> Path(local_dir)</span>
 <span id="cb7-8"><a href="#cb7-8"></a>local_path.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="6">
+<div id="cell-12" class="cell" data-tags="[]" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="im">from</span> fastdownload <span class="im">import</span> download_url</span>
 <span id="cb8-3"><a href="#cb8-3"></a></span>
@@ -398,11 +376,15 @@ Note
     
 </div>
 <div class="cell-output cell-output-display" data-execution_count="6">
-<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-6-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-6-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>In the above image, you can see the <code>Raspberry Pi logo</code> in the center of the board. That is our target and we want our model to locate it automatically. This sample image shows that our search string is correct, and we can proceed to download similar images.</p>
-<div class="cell" data-tags="[]" data-execution_count="15">
+<div id="cell-14" class="cell" data-tags="[]" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># Use each search string to search and download images</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a>max_images <span class="op">=</span> <span class="dv">200</span>  <span class="co"># total number of images to search for</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a></span>
@@ -419,7 +401,7 @@ Note
 </div>
 </div>
 <p>At this point, the search and download step is complete. Next, let’s count the number of images successfully downloaded to our local directory.</p>
-<div class="cell" data-tags="[]" data-execution_count="8">
+<div id="cell-16" class="cell" data-tags="[]" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># Check the count of downloaded images</span></span>
 <span id="cb11-2"><a href="#cb11-2"></a>(local_path_raw <span class="op">/</span> <span class="st">"pi"</span>).ls()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -427,7 +409,7 @@ Note
 </div>
 </div>
 <p>We have downloaded the required images (#156 in total), but there is no guarantee that all our photos contain a Raspberry Pi logo. An image without a proper logo is useless for training. So we need to manually verify all the pictures and remove any that does not meet our requirements. This is a manual step and has to be performed <em>very patiently</em>. After cleaning all the images, I uploaded them under the <code>/clean</code> directory.</p>
-<div class="cell" data-tags="[]" data-execution_count="9">
+<div id="cell-18" class="cell" data-tags="[]" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># After downloading the images, next step is to manually clean all the images</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a><span class="co"># After cleaning, check the count of images</span></span>
 <span id="cb13-3"><a href="#cb13-3"></a>local_path_clean <span class="op">=</span> local_path <span class="op">/</span> <span class="st">"clean"</span></span>
@@ -437,7 +419,7 @@ Note
 </div>
 </div>
 <p>Let’s display a sample of the cleaned images.</p>
-<div class="cell" data-tags="[]" data-execution_count="11">
+<div id="cell-20" class="cell" data-tags="[]" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># Define a function to display the extention of the image.</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a><span class="co"># Note that only JPG and PNG images can be used for training in Rekognition custom labels</span></span>
 <span id="cb15-3"><a href="#cb15-3"></a><span class="kw">def</span> label_func(f):</span>
@@ -456,14 +438,18 @@ Note
 <span id="cb15-16"><a href="#cb15-16"></a><span class="co"># Display a subset of images</span></span>
 <span id="cb15-17"><a href="#cb15-17"></a>dls.show_batch(max_n<span class="op">=</span><span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-10-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="step-2-upload-images-to-s3-bucket" class="level2">
 <h2 class="anchored" data-anchor-id="step-2-upload-images-to-s3-bucket">Step 2: Upload images to S3 bucket</h2>
 <p>The next step is to upload our finalized training images to AWS S3 bucket. I have created a bucket with the name <code>2023-04-26-amazon-rekognition-custom-labels</code>. You may use a unique name of your own choice to create an S3 bucket.</p>
-<div class="cell" data-tags="[]" data-execution_count="31">
+<div id="cell-22" class="cell" data-tags="[]" data-execution_count="31">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># Define S3 bucket name, bucket URL and images S3 path</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a></span>
 <span id="cb16-3"><a href="#cb16-3"></a>s3_bucket_name <span class="op">=</span> <span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
@@ -480,7 +466,7 @@ Note
 s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code></pre>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="32">
+<div id="cell-23" class="cell" data-tags="[]" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## Create an S3 bucket using AWS CLI MakeBucket (mb) command. </span></span>
 <span id="cb18-2"><a href="#cb18-2"></a><span class="co"># https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3/mb.html</span></span>
 <span id="cb18-3"><a href="#cb18-3"></a><span class="op">!</span>aws s3 mb $s3_bucket_url <span class="op">--</span>region $region</span>
@@ -490,13 +476,13 @@ s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code><
 <pre><code>make_bucket failed: s3://2023-04-26-amazon-rekognition-custom-labels An error occurred (BucketAlreadyOwnedByYou) when calling the CreateBucket operation: Your previous request to create the named bucket succeeded and you already own it.</code></pre>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="33">
+<div id="cell-24" class="cell" data-tags="[]" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># Upload images to s3 bucket</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a><span class="op">!</span>aws s3 sync .<span class="op">/</span>$local_path_clean $s3_images_path <span class="op">--</span>region $region</span>
 <span id="cb20-3"><a href="#cb20-3"></a></span>
 <span id="cb20-4"><a href="#cb20-4"></a><span class="co"># !aws s3 sync ./assets/2023-04-26-amazon-rekognition-custom-labels/clean s3://2023-04-26-amazon-rekognition-custom-labels/images --region us-east-2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="38">
+<div id="cell-25" class="cell" data-tags="[]" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># Display the list of images from S3</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="op">!</span>aws s3 ls $s3_images_path <span class="op">--</span>recursive</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -625,12 +611,12 @@ s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code><
 <section id="step-4-create-a-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="step-4-create-a-dataset">Step 4: Create a Dataset</h2>
 <p>Next we will create a dataset under the project. This dataset will hold our training and test images. For this go to <code>Custom Labels &gt; Projects &gt; raspberry-pi-logos &gt; Create dataset</code>.</p>
-<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Dataset
 </div>
 </div>
@@ -654,12 +640,12 @@ Dataset
 <section id="step-5-add-labels" class="level2">
 <h2 class="anchored" data-anchor-id="step-5-add-labels">Step 5: Add Labels</h2>
 <p>Next step is to add labels. For this go to <code>Custom Labels &gt; Projects &gt; raspberry-pi-logos &gt; Add labels</code></p>
-<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Labels
 </div>
 </div>
@@ -713,8 +699,8 @@ Labels
 <li><p><strong>display_image</strong> This function reads an image from the S3 bucket, and draws a bounding box around the Raspberry Pi logo based on the coordinates received from the model API.</p></li>
 <li><p><strong>show_custom_labels</strong> This function uses the Boto3 library to initiate Amazon Rekognition service client, and invoke its APIs. For custom label detection, it uses the interface <code>detect_custom_labels</code>. To read more about this API and the available features, refer to the documentation page <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rekognition/client/detect_custom_labels.html">Rekognition.Client.detect_custom_labels</a></p></li>
 </ol>
-<div class="cell" data-tags="[]" data-execution_count="33">
-<details>
+<div id="cell-32" class="cell" data-tags="[]" data-execution_count="33">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="im">import</span> boto3</span>
 <span id="cb23-2"><a href="#cb23-2"></a><span class="im">import</span> io</span>
@@ -778,7 +764,7 @@ Labels
 <span id="cb23-60"><a href="#cb23-60"></a>    <span class="cf">return</span> image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="34">
+<div id="cell-33" class="cell" data-tags="[]" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>bucket<span class="op">=</span><span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
 <span id="cb24-2"><a href="#cb24-2"></a>photo<span class="op">=</span><span class="st">'images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg'</span></span>
 <span id="cb24-3"><a href="#cb24-3"></a>model<span class="op">=</span><span class="st">'arn:aws:rekognition:us-east-2:801598032724:project/raspberry-pi-logos/version/raspberry-pi-logos.2023-05-01T18.56.34/1682949462653'</span></span>
@@ -798,11 +784,15 @@ Label Width: 70
 Label Height: 41</code></pre>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="35">
+<div id="cell-34" class="cell" data-tags="[]" data-execution_count="35">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># Let's display the image with labels</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="35">
-<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-04-26-amazon-rekognition-custom-labels_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -835,121 +825,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -957,12 +832,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -994,11 +872,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1008,8 +923,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1021,9 +945,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -1066,6 +1225,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 

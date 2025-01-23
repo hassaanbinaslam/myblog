@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2022-05-17">
 <meta name="description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models. This is a five parts series where we will prepare, import, explore, process, and export data using AWS Data Wrangler. You are reading Part 1:Prepare synthetic data and place it on multiple sources.">
 
-<title>Random Thoughts - Data Preparation with SageMaker Data Wrangler (Part 1)</title>
+<title>Data Preparation with SageMaker Data Wrangler (Part 1) – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,47 +49,17 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -136,17 +113,17 @@ gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Data Preparation with SageMaker Data Wrangler (Part 1)">
-<meta property="og:description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models.">
+<meta property="og:title" content="Data Preparation with SageMaker Data Wrangler (Part 1) – Random Thoughts">
+<meta property="og:description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models. This is a five parts series where we will prepare, import, explore, process, and export data using AWS Data Wrangler. You are reading Part 1:Prepare synthetic data and place it on multiple sources.">
 <meta property="og:image" content="images/2022-05-17-aws-sagemaker-wrangler-p1.jpeg">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Data Preparation with SageMaker Data Wrangler (Part 1)">
-<meta name="twitter:description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models.">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Data Preparation with SageMaker Data Wrangler (Part 1) – Random Thoughts">
+<meta name="twitter:description" content="A detailed guide on AWS SageMaker Data Wrangler to prepare data for machine learning models. This is a five parts series where we will prepare, import, explore, process, and export data using AWS Data Wrangler. You are reading Part 1:Prepare synthetic data and place it on multiple sources.">
 <meta name="twitter:image" content="images/2022-05-17-aws-sagemaker-wrangler-p1.jpeg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -155,45 +132,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -252,7 +228,9 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <p><img src="images/2022-05-17-aws-sagemaker-wrangler-p1.jpeg" class="img-fluid"></p>
 <section id="enviornment" class="level1">
@@ -278,7 +256,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </section>
 <section id="preparation" class="level2">
 <h2 class="anchored" data-anchor-id="preparation">Preparation</h2>
-<div class="cell" data-execution_count="1">
+<div id="cell-7" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">##</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="co"># install aws data wrangler package</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="co"># restart kernel after installation</span></span>
@@ -290,7 +268,7 @@ WARNING: You are using pip version 22.0.4; however, version 22.1 is available.
 You should consider upgrading via the '/opt/conda/bin/python -m pip install --upgrade pip' command.</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="1">
+<div id="cell-8" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">## import required libraries</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="im">import</span> sagemaker</span>
@@ -298,13 +276,13 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 <span id="cb3-5"><a href="#cb3-5"></a>sess <span class="op">=</span> sagemaker.Session()</span>
 <span id="cb3-6"><a href="#cb3-6"></a>prefix <span class="op">=</span> <span class="st">'myblog/demo-customer-churn'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="2">
+<div id="cell-9" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">!</span>aws s3 cp s3:<span class="op">//</span>sagemaker<span class="op">-</span>sample<span class="op">-</span>files<span class="op">/</span>datasets<span class="op">/</span>tabular<span class="op">/</span>synthetic<span class="op">/</span>churn.txt .<span class="op">/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>download: s3://sagemaker-sample-files/datasets/tabular/synthetic/churn.txt to ./churn.txt</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="3">
+<div id="cell-10" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"./churn.txt"</span>)</span>
 <span id="cb6-2"><a href="#cb6-2"></a></span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="co"># make 'CustomerID' column from the index</span></span>
@@ -313,294 +291,295 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 <span id="cb6-6"><a href="#cb6-6"></a>pd.set_option(<span class="st">"display.max_columns"</span>, <span class="dv">500</span>)</span>
 <span id="cb6-7"><a href="#cb6-7"></a>df.head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>State</th>
-      <th>Account Length</th>
-      <th>Area Code</th>
-      <th>Phone</th>
-      <th>Int'l Plan</th>
-      <th>VMail Plan</th>
-      <th>VMail Message</th>
-      <th>Day Mins</th>
-      <th>Day Calls</th>
-      <th>Day Charge</th>
-      <th>Eve Mins</th>
-      <th>Eve Calls</th>
-      <th>Eve Charge</th>
-      <th>Night Mins</th>
-      <th>Night Calls</th>
-      <th>Night Charge</th>
-      <th>Intl Mins</th>
-      <th>Intl Calls</th>
-      <th>Intl Charge</th>
-      <th>CustServ Calls</th>
-      <th>Churn?</th>
-      <th>CustomerID</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>PA</td>
-      <td>163</td>
-      <td>806</td>
-      <td>403-2562</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>300</td>
-      <td>8.162204</td>
-      <td>3</td>
-      <td>7.579174</td>
-      <td>3.933035</td>
-      <td>4</td>
-      <td>6.508639</td>
-      <td>4.065759</td>
-      <td>100</td>
-      <td>5.111624</td>
-      <td>4.928160</td>
-      <td>6</td>
-      <td>5.673203</td>
-      <td>3</td>
-      <td>True.</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>SC</td>
-      <td>15</td>
-      <td>836</td>
-      <td>158-8416</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>0</td>
-      <td>10.018993</td>
-      <td>4</td>
-      <td>4.226289</td>
-      <td>2.325005</td>
-      <td>0</td>
-      <td>9.972592</td>
-      <td>7.141040</td>
-      <td>200</td>
-      <td>6.436188</td>
-      <td>3.221748</td>
-      <td>6</td>
-      <td>2.559749</td>
-      <td>8</td>
-      <td>False.</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>MO</td>
-      <td>131</td>
-      <td>777</td>
-      <td>896-6253</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>300</td>
-      <td>4.708490</td>
-      <td>3</td>
-      <td>4.768160</td>
-      <td>4.537466</td>
-      <td>3</td>
-      <td>4.566715</td>
-      <td>5.363235</td>
-      <td>100</td>
-      <td>5.142451</td>
-      <td>7.139023</td>
-      <td>2</td>
-      <td>6.254157</td>
-      <td>4</td>
-      <td>False.</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>WY</td>
-      <td>75</td>
-      <td>878</td>
-      <td>817-5729</td>
-      <td>yes</td>
-      <td>yes</td>
-      <td>700</td>
-      <td>1.268734</td>
-      <td>3</td>
-      <td>2.567642</td>
-      <td>2.528748</td>
-      <td>5</td>
-      <td>2.333624</td>
-      <td>3.773586</td>
-      <td>450</td>
-      <td>3.814413</td>
-      <td>2.245779</td>
-      <td>6</td>
-      <td>1.080692</td>
-      <td>6</td>
-      <td>False.</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>WY</td>
-      <td>146</td>
-      <td>878</td>
-      <td>450-4942</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>0</td>
-      <td>2.696177</td>
-      <td>3</td>
-      <td>5.908916</td>
-      <td>6.015337</td>
-      <td>3</td>
-      <td>3.670408</td>
-      <td>3.751673</td>
-      <td>250</td>
-      <td>2.796812</td>
-      <td>6.905545</td>
-      <td>4</td>
-      <td>7.134343</td>
-      <td>6</td>
-      <td>True.</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>VA</td>
-      <td>83</td>
-      <td>866</td>
-      <td>454-9110</td>
-      <td>no</td>
-      <td>no</td>
-      <td>0</td>
-      <td>3.634776</td>
-      <td>7</td>
-      <td>4.804892</td>
-      <td>6.051944</td>
-      <td>5</td>
-      <td>5.278437</td>
-      <td>2.937880</td>
-      <td>300</td>
-      <td>4.817958</td>
-      <td>4.948816</td>
-      <td>4</td>
-      <td>5.135323</td>
-      <td>5</td>
-      <td>False.</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>IN</td>
-      <td>140</td>
-      <td>737</td>
-      <td>331-5751</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>0</td>
-      <td>3.229420</td>
-      <td>4</td>
-      <td>3.165082</td>
-      <td>2.440153</td>
-      <td>8</td>
-      <td>0.264543</td>
-      <td>2.352274</td>
-      <td>300</td>
-      <td>3.869176</td>
-      <td>5.393439</td>
-      <td>4</td>
-      <td>1.784765</td>
-      <td>4</td>
-      <td>False.</td>
-      <td>6</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>LA</td>
-      <td>54</td>
-      <td>766</td>
-      <td>871-3612</td>
-      <td>no</td>
-      <td>no</td>
-      <td>0</td>
-      <td>0.567920</td>
-      <td>6</td>
-      <td>1.950098</td>
-      <td>4.507027</td>
-      <td>0</td>
-      <td>4.473086</td>
-      <td>0.688785</td>
-      <td>400</td>
-      <td>6.132137</td>
-      <td>5.012747</td>
-      <td>5</td>
-      <td>0.417421</td>
-      <td>8</td>
-      <td>False.</td>
-      <td>7</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>MO</td>
-      <td>195</td>
-      <td>777</td>
-      <td>249-5723</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>0</td>
-      <td>5.811116</td>
-      <td>6</td>
-      <td>4.331065</td>
-      <td>8.104126</td>
-      <td>2</td>
-      <td>4.475034</td>
-      <td>4.208352</td>
-      <td>250</td>
-      <td>5.974575</td>
-      <td>4.750153</td>
-      <td>7</td>
-      <td>3.320311</td>
-      <td>7</td>
-      <td>True.</td>
-      <td>8</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>AL</td>
-      <td>104</td>
-      <td>657</td>
-      <td>767-7682</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>0</td>
-      <td>2.714430</td>
-      <td>7</td>
-      <td>5.138669</td>
-      <td>8.529944</td>
-      <td>6</td>
-      <td>3.321121</td>
-      <td>2.342177</td>
-      <td>300</td>
-      <td>4.328966</td>
-      <td>3.433554</td>
-      <td>5</td>
-      <td>5.677058</td>
-      <td>4</td>
-      <td>False.</td>
-      <td>9</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">State</th>
+<th data-quarto-table-cell-role="th">Account Length</th>
+<th data-quarto-table-cell-role="th">Area Code</th>
+<th data-quarto-table-cell-role="th">Phone</th>
+<th data-quarto-table-cell-role="th">Int'l Plan</th>
+<th data-quarto-table-cell-role="th">VMail Plan</th>
+<th data-quarto-table-cell-role="th">VMail Message</th>
+<th data-quarto-table-cell-role="th">Day Mins</th>
+<th data-quarto-table-cell-role="th">Day Calls</th>
+<th data-quarto-table-cell-role="th">Day Charge</th>
+<th data-quarto-table-cell-role="th">Eve Mins</th>
+<th data-quarto-table-cell-role="th">Eve Calls</th>
+<th data-quarto-table-cell-role="th">Eve Charge</th>
+<th data-quarto-table-cell-role="th">Night Mins</th>
+<th data-quarto-table-cell-role="th">Night Calls</th>
+<th data-quarto-table-cell-role="th">Night Charge</th>
+<th data-quarto-table-cell-role="th">Intl Mins</th>
+<th data-quarto-table-cell-role="th">Intl Calls</th>
+<th data-quarto-table-cell-role="th">Intl Charge</th>
+<th data-quarto-table-cell-role="th">CustServ Calls</th>
+<th data-quarto-table-cell-role="th">Churn?</th>
+<th data-quarto-table-cell-role="th">CustomerID</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>PA</td>
+<td>163</td>
+<td>806</td>
+<td>403-2562</td>
+<td>no</td>
+<td>yes</td>
+<td>300</td>
+<td>8.162204</td>
+<td>3</td>
+<td>7.579174</td>
+<td>3.933035</td>
+<td>4</td>
+<td>6.508639</td>
+<td>4.065759</td>
+<td>100</td>
+<td>5.111624</td>
+<td>4.928160</td>
+<td>6</td>
+<td>5.673203</td>
+<td>3</td>
+<td>True.</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>SC</td>
+<td>15</td>
+<td>836</td>
+<td>158-8416</td>
+<td>yes</td>
+<td>no</td>
+<td>0</td>
+<td>10.018993</td>
+<td>4</td>
+<td>4.226289</td>
+<td>2.325005</td>
+<td>0</td>
+<td>9.972592</td>
+<td>7.141040</td>
+<td>200</td>
+<td>6.436188</td>
+<td>3.221748</td>
+<td>6</td>
+<td>2.559749</td>
+<td>8</td>
+<td>False.</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>MO</td>
+<td>131</td>
+<td>777</td>
+<td>896-6253</td>
+<td>no</td>
+<td>yes</td>
+<td>300</td>
+<td>4.708490</td>
+<td>3</td>
+<td>4.768160</td>
+<td>4.537466</td>
+<td>3</td>
+<td>4.566715</td>
+<td>5.363235</td>
+<td>100</td>
+<td>5.142451</td>
+<td>7.139023</td>
+<td>2</td>
+<td>6.254157</td>
+<td>4</td>
+<td>False.</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>WY</td>
+<td>75</td>
+<td>878</td>
+<td>817-5729</td>
+<td>yes</td>
+<td>yes</td>
+<td>700</td>
+<td>1.268734</td>
+<td>3</td>
+<td>2.567642</td>
+<td>2.528748</td>
+<td>5</td>
+<td>2.333624</td>
+<td>3.773586</td>
+<td>450</td>
+<td>3.814413</td>
+<td>2.245779</td>
+<td>6</td>
+<td>1.080692</td>
+<td>6</td>
+<td>False.</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>WY</td>
+<td>146</td>
+<td>878</td>
+<td>450-4942</td>
+<td>yes</td>
+<td>no</td>
+<td>0</td>
+<td>2.696177</td>
+<td>3</td>
+<td>5.908916</td>
+<td>6.015337</td>
+<td>3</td>
+<td>3.670408</td>
+<td>3.751673</td>
+<td>250</td>
+<td>2.796812</td>
+<td>6.905545</td>
+<td>4</td>
+<td>7.134343</td>
+<td>6</td>
+<td>True.</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>VA</td>
+<td>83</td>
+<td>866</td>
+<td>454-9110</td>
+<td>no</td>
+<td>no</td>
+<td>0</td>
+<td>3.634776</td>
+<td>7</td>
+<td>4.804892</td>
+<td>6.051944</td>
+<td>5</td>
+<td>5.278437</td>
+<td>2.937880</td>
+<td>300</td>
+<td>4.817958</td>
+<td>4.948816</td>
+<td>4</td>
+<td>5.135323</td>
+<td>5</td>
+<td>False.</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>IN</td>
+<td>140</td>
+<td>737</td>
+<td>331-5751</td>
+<td>yes</td>
+<td>no</td>
+<td>0</td>
+<td>3.229420</td>
+<td>4</td>
+<td>3.165082</td>
+<td>2.440153</td>
+<td>8</td>
+<td>0.264543</td>
+<td>2.352274</td>
+<td>300</td>
+<td>3.869176</td>
+<td>5.393439</td>
+<td>4</td>
+<td>1.784765</td>
+<td>4</td>
+<td>False.</td>
+<td>6</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>LA</td>
+<td>54</td>
+<td>766</td>
+<td>871-3612</td>
+<td>no</td>
+<td>no</td>
+<td>0</td>
+<td>0.567920</td>
+<td>6</td>
+<td>1.950098</td>
+<td>4.507027</td>
+<td>0</td>
+<td>4.473086</td>
+<td>0.688785</td>
+<td>400</td>
+<td>6.132137</td>
+<td>5.012747</td>
+<td>5</td>
+<td>0.417421</td>
+<td>8</td>
+<td>False.</td>
+<td>7</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>MO</td>
+<td>195</td>
+<td>777</td>
+<td>249-5723</td>
+<td>yes</td>
+<td>no</td>
+<td>0</td>
+<td>5.811116</td>
+<td>6</td>
+<td>4.331065</td>
+<td>8.104126</td>
+<td>2</td>
+<td>4.475034</td>
+<td>4.208352</td>
+<td>250</td>
+<td>5.974575</td>
+<td>4.750153</td>
+<td>7</td>
+<td>3.320311</td>
+<td>7</td>
+<td>True.</td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>AL</td>
+<td>104</td>
+<td>657</td>
+<td>767-7682</td>
+<td>yes</td>
+<td>no</td>
+<td>0</td>
+<td>2.714430</td>
+<td>7</td>
+<td>5.138669</td>
+<td>8.529944</td>
+<td>6</td>
+<td>3.321121</td>
+<td>2.342177</td>
+<td>300</td>
+<td>4.328966</td>
+<td>3.433554</td>
+<td>5</td>
+<td>5.677058</td>
+<td>4</td>
+<td>False.</td>
+<td>9</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
-<div class="cell" data-execution_count="4">
+<div id="cell-11" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a>df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>(5000, 22)</code></pre>
@@ -626,7 +605,7 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 </ul>
 <p>The last attribute, <strong>Churn?</strong>, is known as the target attribute: the attribute that we want the ML model to predict. Because the target attribute is binary, our model will be performing binary prediction, also known as binary classification.</p>
 <p>We have our dataset. Now we will split this dataset into three subsets * <code>customer</code>: customer data, and place it as a CSV file on the S3 bucket * <code>account</code>: accounts data, and place it as CSV on the same S3 bucket * <code>utility</code>: utility data, and place it as Glue tables</p>
-<div class="cell" data-execution_count="5">
+<div id="cell-13" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>customer_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'State'</span>, <span class="st">'Area Code'</span>, <span class="st">'Phone'</span>]</span>
 <span id="cb9-2"><a href="#cb9-2"></a>account_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'Account Length'</span>, <span class="st">"Int'l Plan"</span>, <span class="st">'VMail Plan'</span>, <span class="st">'Churn?'</span>]</span>
 <span id="cb9-3"><a href="#cb9-3"></a>utility_columns <span class="op">=</span> [<span class="st">'CustomerID'</span>, <span class="st">'VMail Message'</span>, <span class="st">'Day Mins'</span>, <span class="st">'Day Calls'</span>, <span class="st">'Day Charge'</span>, </span>
@@ -634,7 +613,7 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 <span id="cb9-5"><a href="#cb9-5"></a>                   <span class="st">'Night Charge'</span>, <span class="st">'Intl Mins'</span>, <span class="st">'Intl Calls'</span>, <span class="st">'Intl Charge'</span>, <span class="st">'CustServ Calls'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will use the default bucket associated with our SageMaker session. You may use any other bucket with proper access permissions.</p>
-<div class="cell" data-execution_count="6">
+<div id="cell-15" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>bucket <span class="op">=</span> sess.default_bucket()</span>
 <span id="cb10-2"><a href="#cb10-2"></a>bucket</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
@@ -650,12 +629,12 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 <p>Please note that AWS SageMaker session needs some additional AWS Glue permissions to create a database. If you get an error while creating a Glue database in following steps then add those permissions.</p>
 <p><strong>Error</strong>: <code>AccessDeniedException: An error occurred (AccessDeniedException) when calling the GetDatabase operation: User: arn:aws:sts::801598032724:assumed-role/AmazonSageMaker-ExecutionRole-20220516T161743/SageMaker is not authorized to perform: glue:GetDatabase on resource: arn:aws:glue:us-east-1:801598032724:database/telco_db because no identity-based policy allows the glue:GetDatabase action</code></p>
 <p><strong>Fix</strong>: Go to your SageMaker Execution Role and add permission <code>AWSGlueConsoleFullAccess</code></p>
-<div class="cell" data-execution_count="7">
+<div id="cell-18" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a><span class="co"># define the Glue DB name</span></span>
 <span id="cb12-3"><a href="#cb12-3"></a>db_name <span class="op">=</span> <span class="st">'telco_db'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="8">
+<div id="cell-19" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">##</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a><span class="im">import</span> awswrangler <span class="im">as</span> wr</span>
 <span id="cb13-3"><a href="#cb13-3"></a></span>
@@ -688,7 +667,7 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 2                 telco_db  Demo DB for telco churn dataset</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="9">
+<div id="cell-20" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">##</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a><span class="co"># in case you want to delete a database using this notebook</span></span>
 <span id="cb15-3"><a href="#cb15-3"></a><span class="co"># wr.catalog.delete_database(db_name)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -697,11 +676,11 @@ You should consider upgrading via the '/opt/conda/bin/python -m pip install --up
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-05-17-aws-sagemaker-wrangler-p1/aws-glue-database.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">aws-glue-database</figcaption><p></p>
+<figcaption>aws-glue-database</figcaption>
 </figure>
 </div>
 <p>Now we will place the three data subsets into their respective locations.</p>
-<div class="cell" data-execution_count="10">
+<div id="cell-23" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>suffix <span class="op">=</span> [<span class="st">'customer_info'</span>, <span class="st">'account_info'</span>, <span class="st">'utility'</span>]</span>
 <span id="cb16-2"><a href="#cb16-2"></a><span class="cf">for</span> i, columns <span class="kw">in</span> <span class="bu">enumerate</span>([customer_columns, account_columns, utility_columns]):</span>
 <span id="cb16-3"><a href="#cb16-3"></a>    </span>
@@ -749,18 +728,18 @@ output path: s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/da
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-05-17-aws-sagemaker-wrangler-p1/aws-s3-churn-data.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">aws-s3-churn-data</figcaption><p></p>
+<figcaption>aws-s3-churn-data</figcaption>
 </figure>
 </div>
 <p>Similarly, from Glue console we can verify that the utility table has been created.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-05-17-aws-sagemaker-wrangler-p1/aws-glue-churn-data.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">aws-glue-churn-data</figcaption><p></p>
+<figcaption>aws-glue-churn-data</figcaption>
 </figure>
 </div>
 <p>If you want to remain within the notebook and do the verification then that can also be done.</p>
-<div class="cell" data-execution_count="11">
+<div id="cell-26" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">##</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a><span class="co"># list s3 objects</span></span>
 <span id="cb18-3"><a href="#cb18-3"></a>wr.s3.list_objects(<span class="st">'s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/data/'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -770,38 +749,39 @@ output path: s3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/da
  's3://sagemaker-us-east-1-801598032724/myblog/demo-customer-churn/data/telco_churn_utility/b4003acdf33e48ce989401e92146923c.csv']</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="13">
+<div id="cell-27" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">##</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a><span class="co"># list glue catalog tables</span></span>
 <span id="cb20-3"><a href="#cb20-3"></a>wr.catalog.tables()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>Database</th>
-      <th>Table</th>
-      <th>Description</th>
-      <th>TableType</th>
-      <th>Columns</th>
-      <th>Partitions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>telco_db</td>
-      <td>telco_churn_utility</td>
-      <td></td>
-      <td>EXTERNAL_TABLE</td>
-      <td>customerid, vmail_message, day_mins, day_calls...</td>
-      <td></td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Database</th>
+<th data-quarto-table-cell-role="th">Table</th>
+<th data-quarto-table-cell-role="th">Description</th>
+<th data-quarto-table-cell-role="th">TableType</th>
+<th data-quarto-table-cell-role="th">Columns</th>
+<th data-quarto-table-cell-role="th">Partitions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>telco_db</td>
+<td>telco_churn_utility</td>
+<td></td>
+<td>EXTERNAL_TABLE</td>
+<td>customerid, vmail_message, day_mins, day_calls...</td>
+<td></td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
@@ -835,121 +815,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -957,12 +822,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -994,11 +862,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1008,8 +913,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1021,9 +935,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -1066,6 +1215,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 

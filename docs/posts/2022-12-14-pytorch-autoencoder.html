@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2022-12-14">
 <meta name="description" content="This is a practice notebook to implement AutoEncoder in PyTorch. An autoencoder takes an image as input, stores it in a lower dimension (term encoder), and tries to reproduce the same image as output, hence the term auto. Autoencoders come in handy to identify and group similar images.">
 
-<title>Random Thoughts - Implementing AutoEncoder with PyTorch</title>
+<title>Implementing AutoEncoder with PyTorch – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,47 +49,17 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -136,18 +113,18 @@ gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Implementing AutoEncoder with PyTorch">
-<meta property="og:description" content="This is a practice notebook to implement AutoEncoder in PyTorch.">
+<meta property="og:title" content="Implementing AutoEncoder with PyTorch – Random Thoughts">
+<meta property="og:description" content="This is a practice notebook to implement AutoEncoder in PyTorch. An autoencoder takes an image as input, stores it in a lower dimension (term encoder), and tries to reproduce the same image as output, hence the term auto. Autoencoders come in handy to identify and group similar images.">
 <meta property="og:image" content="images/2022-12-14-pytorch-autoencoder.png">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Implementing AutoEncoder with PyTorch">
-<meta name="twitter:description" content="This is a practice notebook to implement AutoEncoder in PyTorch.">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Implementing AutoEncoder with PyTorch – Random Thoughts">
+<meta name="twitter:description" content="This is a practice notebook to implement AutoEncoder in PyTorch. An autoencoder takes an image as input, stores it in a lower dimension (term encoder), and tries to reproduce the same image as output, hence the term auto. Autoencoders come in handy to identify and group similar images.">
 <meta name="twitter:image" content="images/2022-12-14-pytorch-autoencoder.png">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -156,45 +133,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -252,7 +228,9 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <p><img src="images/2022-12-14-pytorch-autoencoder.png" class="img-fluid"></p>
 <section id="credits" class="level2">
@@ -283,8 +261,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <li><strong>GitHub</strong>: <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2022-12-14-pytorch-autoencoder.ipynb">2022-12-14-pytorch-autoencoder.ipynb</a></li>
 <li><strong>Open In Colab</strong>: <a href="https://colab.research.google.com/github/hassaanbinaslam/myblog/blob/main/posts/2022-12-14-pytorch-autoencoder.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:5097,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116013884,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e3912be3-89c0-4765-e907-dff72f8ea36e" data-execution_count="1">
-<details>
+<div id="cell-4" class="cell" data-executioninfo="{&quot;elapsed&quot;:5097,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116013884,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e3912be3-89c0-4765-e907-dff72f8ea36e" data-execution_count="1">
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> numpy, matplotlib, pandas, torch</span>
@@ -302,8 +280,8 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <p>Let’s also set the device and seed for results reproducibility.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:658,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116014526,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="121b66cc-4af8-4bd2-9d5d-cd51a604d83b" data-execution_count="2">
-<details>
+<div id="cell-6" class="cell" data-executioninfo="{&quot;elapsed&quot;:658,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116014526,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="121b66cc-4af8-4bd2-9d5d-cd51a604d83b" data-execution_count="2">
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> torch, os, random</span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -346,7 +324,7 @@ Random seed set as 42</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/2022-12-14-pytorch-autoencoder/autoencoder.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">Figure 1: A basic fully connected AutoEncoder</figcaption><p></p>
+<figcaption>Figure 1: A basic fully connected AutoEncoder</figcaption>
 </figure>
 </div>
 <p>From these descriptions, we can deduce the following points about an autoencoder working.</p>
@@ -370,7 +348,7 @@ Random seed set as 42</code></pre>
 <section id="load-mnist-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="load-mnist-dataset">Load MNIST Dataset</h3>
 <p>In the next cell, I downloaded the MNIST dataset and created a DataLoader with a batch size of 256.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:1437,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015944,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="22ab80e0-d966-4080-ad6a-bdb41ddc13bd" data-execution_count="3">
+<div id="cell-10" class="cell" data-executioninfo="{&quot;elapsed&quot;:1437,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015944,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="22ab80e0-d966-4080-ad6a-bdb41ddc13bd" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> torchvision <span class="im">import</span> datasets</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb5-3"><a href="#cb5-3"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
@@ -392,7 +370,7 @@ Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to data/
 </div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"8ad10cd9cba54f0b9ecfe4dbf25d19a9","version_major":2,"version_minor":0}
+{"model_id":"8ad10cd9cba54f0b9ecfe4dbf25d19a9","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
 </script>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -403,7 +381,7 @@ Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to data/
 </div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"3590778a271942febb8f0f50646a3b68","version_major":2,"version_minor":0}
+{"model_id":"3590778a271942febb8f0f50646a3b68","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
 </script>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -414,7 +392,7 @@ Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to data/M
 </div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"b70cefcef47c4b7b81ed250fe7060e24","version_major":2,"version_minor":0}
+{"model_id":"b70cefcef47c4b7b81ed250fe7060e24","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
 </script>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -425,7 +403,7 @@ Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to data/M
 </div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"ea212f1cc8db4da0a18d36f896a988c1","version_major":2,"version_minor":0}
+{"model_id":"ea212f1cc8db4da0a18d36f896a988c1","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
 </script>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -443,7 +421,7 @@ Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to data/M
 <li>Scales image pixel values from the range [0, 255] to range [0.0, 1.0]</li>
 </ul>
 <p>Let’s check the dimension of our dataset.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:15,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015945,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="993e5774-55d4-49b6-f823-585bb8555f24" data-execution_count="4">
+<div id="cell-12" class="cell" data-executioninfo="{&quot;elapsed&quot;:15,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015945,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="993e5774-55d4-49b6-f823-585bb8555f24" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="cf">for</span> images, labels <span class="kw">in</span> train_loader:</span>
 <span id="cb11-2"><a href="#cb11-2"></a>    <span class="bu">print</span>(</span>
 <span id="cb11-3"><a href="#cb11-3"></a>        <span class="st">"Image batch dimensions:"</span>, images.shape</span>
@@ -464,7 +442,7 @@ Image label dimensions: torch.Size([256])</code></pre>
 <li>Latent space dimension (<code>latent_dim</code>) is kept configurable so we can use the same model class to configure autoencoder having different latent spaces</li>
 <li>I have used <code>torch.sigmoid()</code> in the forward pass. This is to squash the data into the range [0, 1]. This is done because the input image received by the model is assumed to be in this range (remember <code>transforms.ToTensor()</code> function while creating datasets). So we want the image created (or returned) by the model to be in the same distribution range.</li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:9,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015947,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="5">
+<div id="cell-14" class="cell" data-executioninfo="{&quot;elapsed&quot;:9,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116015947,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb13-2"><a href="#cb13-2"></a></span>
 <span id="cb13-3"><a href="#cb13-3"></a><span class="kw">class</span> AutoEncoder(nn.Module):</span>
@@ -502,7 +480,7 @@ Image label dimensions: torch.Size([256])</code></pre>
 <li>We want to try an extreme case, and you will be surprised to see that even with two features in latent space, we can construct the whole image with acceptable quality.</li>
 <li>We want to visualize the 2D latent space. Visualizing (plotting) latent space with higher dimensions will not be possible.</li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:4743,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116020682,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="6">
+<div id="cell-16" class="cell" data-executioninfo="{&quot;elapsed&quot;:4743,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116020682,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>learning_rate <span class="op">=</span> <span class="fl">0.005</span></span>
 <span id="cb14-2"><a href="#cb14-2"></a>num_features <span class="op">=</span> <span class="dv">28</span> <span class="op">*</span> <span class="dv">28</span>  <span class="co"># image height X image width = 784</span></span>
 <span id="cb14-3"><a href="#cb14-3"></a>latent_dim <span class="op">=</span> <span class="dv">2</span></span>
@@ -512,7 +490,7 @@ Image label dimensions: torch.Size([256])</code></pre>
 <span id="cb14-7"><a href="#cb14-7"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span>learning_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We have configured our model and optimizer, and we can start training our model.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:57384,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116078022,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="3308e8c0-c938-44a1-8a5f-8ab8dcfe9c69" data-execution_count="7">
+<div id="cell-18" class="cell" data-executioninfo="{&quot;elapsed&quot;:57384,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116078022,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="3308e8c0-c938-44a1-8a5f-8ab8dcfe9c69" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> time</span>
 <span id="cb15-2"><a href="#cb15-2"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
 <span id="cb15-3"><a href="#cb15-3"></a></span>
@@ -602,7 +580,7 @@ Total Training Time: 0.96 min</code></pre>
 <li><code>decoded</code> = decoded or reconstructed images from latent space. This is because it runs the forward pass when we predict from our model (<code>decoded = model(features)</code>). And we know that during the forward pass, we will first encode the input image, then use the output (latent representation) to reconstruct the image using the decoder.</li>
 </ul>
 <p>Let’s plot these original images and decoded ones to see how much we are successful in doing that.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:5175,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083068,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e2e775a4-7b12-4b5e-f8b2-be223c38a3de" data-execution_count="8">
+<div id="cell-20" class="cell" data-executioninfo="{&quot;elapsed&quot;:5175,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083068,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e2e775a4-7b12-4b5e-f8b2-be223c38a3de" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb17-2"><a href="#cb17-2"></a><span class="op">%</span>matplotlib inline</span>
 <span id="cb17-3"><a href="#cb17-3"></a></span>
@@ -620,11 +598,15 @@ Total Training Time: 0.96 min</code></pre>
 <span id="cb17-15"><a href="#cb17-15"></a>        curr_img <span class="op">=</span> img[i].detach().to(torch.device(<span class="st">'cpu'</span>))</span>
 <span id="cb17-16"><a href="#cb17-16"></a>        ax[i].imshow(curr_img.view((image_width, image_width)), cmap<span class="op">=</span><span class="st">'binary'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-9-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>These results are remarkable, considering we only use information from two pixels to generate a complete image of 784 pixels. So what information is stored in those two pixels (embedding)? Let’s also print embeddings for the above generated images.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:27,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083069,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="596c5345-2cf7-4067-ecbc-43f2e172fb18" data-execution_count="9">
+<div id="cell-22" class="cell" data-executioninfo="{&quot;elapsed&quot;:27,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083069,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="596c5345-2cf7-4067-ecbc-43f2e172fb18" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="cf">for</span> feature, target <span class="kw">in</span> <span class="bu">zip</span>(orig_images, label_images):</span>
 <span id="cb18-2"><a href="#cb18-2"></a>    feature <span class="op">=</span> feature.view(<span class="op">-</span><span class="dv">1</span>, num_features).to(device)</span>
 <span id="cb18-3"><a href="#cb18-3"></a>    <span class="cf">with</span> torch.no_grad():</span>
@@ -650,7 +632,7 @@ Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
 </div>
 </div>
 <p>By analyzing these values, we can say that our autoencoder has learned to use slightly different ranges for embeddings each of the digits. Next, let’s try to visualize the distribution of latent space for the complete training set. For this, I have used a helper function. This function creates scatter plots of the latent space for all the digits.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:20,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083072,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="10">
+<div id="cell-24" class="cell" data-executioninfo="{&quot;elapsed&quot;:20,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116083072,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb20-2"><a href="#cb20-2"></a><span class="im">import</span> matplotlib.colors <span class="im">as</span> mcolors</span>
 <span id="cb20-3"><a href="#cb20-3"></a></span>
@@ -681,7 +663,7 @@ Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
 <span id="cb20-28"><a href="#cb20-28"></a>    plt.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s create the plot.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:6365,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089418,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="564f8a31-47d7-4141-85a3-518c9d606f44" data-execution_count="11">
+<div id="cell-26" class="cell" data-executioninfo="{&quot;elapsed&quot;:6365,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089418,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="564f8a31-47d7-4141-85a3-518c9d606f44" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>plot_latent_space_with_labels(</span>
 <span id="cb21-2"><a href="#cb21-2"></a>    num_classes<span class="op">=</span><span class="bu">len</span>(train_dataset.classes),  <span class="co"># 10</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a>    data_loader<span class="op">=</span>train_loader,</span>
@@ -692,12 +674,16 @@ Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
 <span id="cb21-8"><a href="#cb21-8"></a>plt.legend()</span>
 <span id="cb21-9"><a href="#cb21-9"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-12-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This plot tells us different digits are occupying different areas in the latent space. If we want to draw a sample for a number (e.g., 0), we must take the point from its range. It is a 2D plot, so If I take a sample from it, I will get two points (x, y), and then I can use that as an embedding. I can then reconstruct an image using the <code>decoder</code> of my model from this embedding.</p>
 <p>In the next cell, I have created a helper function that can take the embeddings list and decode an image from it.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:81,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089428,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="12">
+<div id="cell-28" class="cell" data-executioninfo="{&quot;elapsed&quot;:81,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089428,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">def</span> decode_images(model, embedding_list):</span>
 <span id="cb22-2"><a href="#cb22-2"></a>    fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="bu">len</span>(embedding_list), figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="fl">2.5</span>))</span>
 <span id="cb22-3"><a href="#cb22-3"></a></span>
@@ -715,7 +701,7 @@ Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
 <span id="cb22-15"><a href="#cb22-15"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, I created some embeddings using the above plot.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:78,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089433,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="13">
+<div id="cell-30" class="cell" data-executioninfo="{&quot;elapsed&quot;:78,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116089433,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>embedding_list <span class="op">=</span> [</span>
 <span id="cb23-2"><a href="#cb23-2"></a>    (<span class="st">"0"</span>, [<span class="fl">5.0</span>, <span class="op">-</span><span class="fl">10.0</span>]),</span>
 <span id="cb23-3"><a href="#cb23-3"></a>    (<span class="st">"1"</span>, [<span class="op">-</span><span class="fl">4.0</span>, <span class="fl">13.0</span>]),</span>
@@ -740,10 +726,14 @@ Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
 <li>Digit 3 image generated from the embedding range not visible in the plot</li>
 </ul></li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:1085,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116090443,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1c6be446-d706-47df-883c-01589b6e5ae4" data-execution_count="14">
+<div id="cell-32" class="cell" data-executioninfo="{&quot;elapsed&quot;:1085,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116090443,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1c6be446-d706-47df-883c-01589b6e5ae4" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>decode_images(model, embedding_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -751,7 +741,7 @@ Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
 <h2 class="anchored" data-anchor-id="autoencoder-with-latent-space-dimension5-10-20-50">AutoEncoder with latent space dimension=[5, 10, 20, 50]</h2>
 <p>We have seen the quality of decoded images from 2d latent space. Our understanding is that if we increase the dimension, it will retain more information and improve the image quality.</p>
 <p>Next, I have created a function that can take a model to train it. We will iteratively create models with increasing dimensions and use this function to train them.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:95,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116090447,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="15">
+<div id="cell-34" class="cell" data-executioninfo="{&quot;elapsed&quot;:95,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116090447,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">def</span> training_loop(train_loader, model, optimizer, device, num_epochs<span class="op">=</span><span class="dv">10</span>):</span>
 <span id="cb25-2"><a href="#cb25-2"></a>    start_time <span class="op">=</span> time.time()</span>
 <span id="cb25-3"><a href="#cb25-3"></a>    <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
@@ -774,7 +764,7 @@ Label: 0, Embedding: [[ 13.757708 -11.047596]]</code></pre>
 <span id="cb25-20"><a href="#cb25-20"></a></span>
 <span id="cb25-21"><a href="#cb25-21"></a>    <span class="bu">print</span>(<span class="st">"Total Training Time: </span><span class="sc">%.2f</span><span class="st"> min"</span> <span class="op">%</span> ((time.time() <span class="op">-</span> start_time) <span class="op">/</span> <span class="dv">60</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:218792,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116309149,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="7ba1149d-ceda-4145-f3e7-3a4780272810" data-execution_count="16">
+<div id="cell-35" class="cell" data-executioninfo="{&quot;elapsed&quot;:218792,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116309149,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="7ba1149d-ceda-4145-f3e7-3a4780272810" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a>models_list <span class="op">=</span> [model]  <span class="co"># model with latent_dim=2</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>latent_dimensions <span class="op">=</span> [<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">50</span>]</span>
 <span id="cb26-3"><a href="#cb26-3"></a></span>
@@ -846,7 +836,7 @@ Total Training Time: 0.91 min</code></pre>
 </div>
 </div>
 <p>Verify the latent space dimension of our models.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:47,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116309150,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="96d970ae-b23c-4293-eabc-db657e5371d8" data-execution_count="17">
+<div id="cell-37" class="cell" data-executioninfo="{&quot;elapsed&quot;:47,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116309150,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="96d970ae-b23c-4293-eabc-db657e5371d8" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="cf">for</span> model_n <span class="kw">in</span> models_list:</span>
 <span id="cb28-2"><a href="#cb28-2"></a>    <span class="bu">print</span>(model_n.latent_dim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -859,7 +849,7 @@ Total Training Time: 0.91 min</code></pre>
 </div>
 <p>Next, we will compare the results from these models. This time I have used the test dataset that our model has not seen. From the results, you may note that the results from the models with latent_dim 2 and 5 are blurry and make mistakes while decoding the input image. In comparison, the results from the rest are more accurate and of better quality.</p>
 <p>It also tells us that we can significantly compress the images without losing much information. For example, our <code>model_50</code> (model with latent_dim=50) can generate an original image with 16x less information. But this performance also depends on the type of images used. For example, we have black-and-white digit images with large white spaces, so we were able to compress them significantly. On the other hand, we may get different performances with images having more patterns.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:14701,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116323829,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="c77d6ff8-bbaa-4b7e-e812-65300e7ebde7" data-execution_count="18">
+<div id="cell-39" class="cell" data-executioninfo="{&quot;elapsed&quot;:14701,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116323829,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="c77d6ff8-bbaa-4b7e-e812-65300e7ebde7" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>img_sample_count <span class="op">=</span> <span class="dv">25</span></span>
 <span id="cb30-2"><a href="#cb30-2"></a></span>
 <span id="cb30-3"><a href="#cb30-3"></a><span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(img_sample_count):</span>
@@ -894,84 +884,184 @@ Total Training Time: 0.91 min</code></pre>
 <span id="cb30-32"><a href="#cb30-32"></a>    plt.tight_layout()</span>
 <span id="cb30-33"><a href="#cb30-33"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-4.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-5.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-6.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-6.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-7.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-7.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-8.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-8.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-9.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-9.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-10.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-10.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-11.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-11.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-12.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-12.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-13.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-13.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-14.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-14.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-15.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-15.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-16.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-16.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-17.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-17.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-18.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-18.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-19.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-19.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-20.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-20.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-21.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-21.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-22.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-22.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-23.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-23.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-24.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-24.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-25.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-19-output-25.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>From model_50, we are getting considerably good results compared to model_2 and model_5. The last time we visualized the embeddings for model_2, we also found that the latent space of digits was overlapping. Since the output quality of model_50 has improved, the overlap in the latent space should be less. Let’s confirm this assumption.</p>
 <p>For this, we will first gather the embeddings of the test images. Remember that the output from the <code>model.encoder</code> is the embedding of an image (or compressed representation).</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:48,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116323830,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b94f4eaf-a8a4-4953-8ccf-d27022f3443e" data-execution_count="19">
+<div id="cell-41" class="cell" data-executioninfo="{&quot;elapsed&quot;:48,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116323830,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b94f4eaf-a8a4-4953-8ccf-d27022f3443e" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>latent_vectors <span class="op">=</span> []</span>
 <span id="cb31-2"><a href="#cb31-2"></a>classes <span class="op">=</span> []</span>
 <span id="cb31-3"><a href="#cb31-3"></a>model_50 <span class="op">=</span> models_list[<span class="op">-</span><span class="dv">1</span>]</span>
@@ -982,7 +1072,7 @@ Total Training Time: 0.91 min</code></pre>
 </div>
 </div>
 <p>In the next cell, I am collecting the embeddings. Note that each fetch from the DataLoader iterator returns a batch of images (batch_size=256).</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:727,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324514,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="20">
+<div id="cell-43" class="cell" data-executioninfo="{&quot;elapsed&quot;:727,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324514,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="cf">for</span> images_batch,labels_batch <span class="kw">in</span> test_loader:</span>
 <span id="cb33-2"><a href="#cb33-2"></a>    <span class="co"># images_batch.shape = torch.Size([256, 1, 28, 28]</span></span>
 <span id="cb33-3"><a href="#cb33-3"></a>    <span class="co"># labels_batch.shape = torch.Size([256])</span></span>
@@ -1001,13 +1091,13 @@ Total Training Time: 0.91 min</code></pre>
 <li><code>latent_vectors[0].shape = torch.Size([256, 50]</code>. It means that each latent vector holds embeddings of size 50 for a batch of 256 images</li>
 <li><code>torch.cat(latent_vectors).shape = torch.Size([10000, 50])</code>. It means that if we concatenate the embeddings of all the images, we will have a tensor of 10,000 rows with 50 dimensions (or features/columns)</li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:47,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324517,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="a421db15-39a1-4608-f6d9-580e728049ed" data-execution_count="21">
+<div id="cell-45" class="cell" data-executioninfo="{&quot;elapsed&quot;:47,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324517,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="a421db15-39a1-4608-f6d9-580e728049ed" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="bu">len</span>(latent_vectors), latent_vectors[<span class="dv">0</span>].shape, torch.cat(latent_vectors).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>(40, torch.Size([256, 50]), torch.Size([10000, 50]))</code></pre>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324520,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="73a801ca-e9f6-4d3a-883e-baba57f77f64" data-execution_count="22">
+<div id="cell-46" class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116324520,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="73a801ca-e9f6-4d3a-883e-baba57f77f64" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co"># concatenate all test images embeddings</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a>latent_vectors_cat <span class="op">=</span> torch.cat(latent_vectors).cpu().detach().numpy()</span>
 <span id="cb36-3"><a href="#cb36-3"></a>latent_vectors_cat.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1018,7 +1108,7 @@ Total Training Time: 0.91 min</code></pre>
 <p>Now that we have all the embeddings, we can visualize them too. But how can we visualize embeddings with 50 features? We can use <a href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">sklearn.manifold.TSNE.html</a>.</p>
 <p><code>chatGPT prompt &gt; explain T-distributed Stochastic Neighbor Embedding</code></p>
 <p>T-distributed Stochastic Neighbor Embedding (t-SNE) is a machine learning algorithm that is used to reduce the dimensionality of high-dimensional data and visualize it in a lower-dimensional space. It works by measuring the similarity between the data points and representing them as points in a lower-dimensional space, such that similar data points are grouped together, and dissimilar ones are separated. This allows for better visualization and understanding of the structure of the data.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:89663,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414159,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6bad205c-bc7a-498c-b602-d408af780fad" data-execution_count="23">
+<div id="cell-48" class="cell" data-executioninfo="{&quot;elapsed&quot;:89663,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414159,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6bad205c-bc7a-498c-b602-d408af780fad" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="im">from</span> sklearn.manifold <span class="im">import</span> TSNE</span>
 <span id="cb38-2"><a href="#cb38-2"></a></span>
 <span id="cb38-3"><a href="#cb38-3"></a>tsne <span class="op">=</span> TSNE(<span class="dv">2</span>)</span>
@@ -1034,11 +1124,12 @@ Total Training Time: 0.91 min</code></pre>
 /usr/local/lib/python3.8/dist-packages/sklearn/manifold/_t_sne.py:790: FutureWarning: The default learning rate in TSNE will change from 200.0 to 'auto' in 1.2.
   warnings.warn(</code></pre>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="23">
-<pre><code>&lt;matplotlib.colorbar.Colorbar at 0x7f686a71de50&gt;</code></pre>
-</div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-24-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-24-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>What does this plot tell us?</p>
@@ -1052,66 +1143,70 @@ Total Training Time: 0.91 min</code></pre>
 </ul></li>
 </ul>
 <p>We can prove this by adding some noise to these embeddings and trying to regenerate images from them.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:152,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414160,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6e079dbf-c905-4247-bd75-55c3347550c1" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="co"># step 1: transpose to get 50 embeddings with 10000 features</span></span>
-<span id="cb41-2"><a href="#cb41-2"></a><span class="co"># len(latent_vectors_transpose) = 50</span></span>
-<span id="cb41-3"><a href="#cb41-3"></a></span>
-<span id="cb41-4"><a href="#cb41-4"></a>latent_vectors_transpose <span class="op">=</span> latent_vectors_cat.transpose(<span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb41-5"><a href="#cb41-5"></a>latent_vectors_cat.shape, latent_vectors_transpose.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-50" class="cell" data-executioninfo="{&quot;elapsed&quot;:152,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414160,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6e079dbf-c905-4247-bd75-55c3347550c1" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co"># step 1: transpose to get 50 embeddings with 10000 features</span></span>
+<span id="cb40-2"><a href="#cb40-2"></a><span class="co"># len(latent_vectors_transpose) = 50</span></span>
+<span id="cb40-3"><a href="#cb40-3"></a></span>
+<span id="cb40-4"><a href="#cb40-4"></a>latent_vectors_transpose <span class="op">=</span> latent_vectors_cat.transpose(<span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb40-5"><a href="#cb40-5"></a>latent_vectors_cat.shape, latent_vectors_transpose.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
 <pre><code>((10000, 50), (50, 10000))</code></pre>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:142,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414168,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="co"># step 2: add some noise.</span></span>
-<span id="cb43-2"><a href="#cb43-2"></a><span class="co"># take each row, calucate mean and std</span></span>
-<span id="cb43-3"><a href="#cb43-3"></a><span class="co"># use mean and std to generate 100 new features. each time add some noise to std</span></span>
-<span id="cb43-4"><a href="#cb43-4"></a></span>
-<span id="cb43-5"><a href="#cb43-5"></a>rand_vectors <span class="op">=</span> []  <span class="co"># randomized latent vectors</span></span>
-<span id="cb43-6"><a href="#cb43-6"></a><span class="cf">for</span> col <span class="kw">in</span> latent_vectors_transpose:</span>
-<span id="cb43-7"><a href="#cb43-7"></a>    mu, sigma <span class="op">=</span> col.mean(), col.std()</span>
-<span id="cb43-8"><a href="#cb43-8"></a>    rand_vectors.append(sigma <span class="op">*</span> torch.randn(<span class="dv">1</span>, <span class="dv">100</span>) <span class="op">+</span> mu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-51" class="cell" data-executioninfo="{&quot;elapsed&quot;:142,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414168,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co"># step 2: add some noise.</span></span>
+<span id="cb42-2"><a href="#cb42-2"></a><span class="co"># take each row, calucate mean and std</span></span>
+<span id="cb42-3"><a href="#cb42-3"></a><span class="co"># use mean and std to generate 100 new features. each time add some noise to std</span></span>
+<span id="cb42-4"><a href="#cb42-4"></a></span>
+<span id="cb42-5"><a href="#cb42-5"></a>rand_vectors <span class="op">=</span> []  <span class="co"># randomized latent vectors</span></span>
+<span id="cb42-6"><a href="#cb42-6"></a><span class="cf">for</span> col <span class="kw">in</span> latent_vectors_transpose:</span>
+<span id="cb42-7"><a href="#cb42-7"></a>    mu, sigma <span class="op">=</span> col.mean(), col.std()</span>
+<span id="cb42-8"><a href="#cb42-8"></a>    rand_vectors.append(sigma <span class="op">*</span> torch.randn(<span class="dv">1</span>, <span class="dv">100</span>) <span class="op">+</span> mu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:141,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414172,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="f731bc59-ec5b-46d4-d46d-afd4c6efd834" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="co"># step 3: verify dimensions</span></span>
-<span id="cb44-2"><a href="#cb44-2"></a></span>
-<span id="cb44-3"><a href="#cb44-3"></a><span class="bu">len</span>(rand_vectors), rand_vectors[<span class="dv">0</span>].shape, torch.cat(rand_vectors).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-52" class="cell" data-executioninfo="{&quot;elapsed&quot;:141,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414172,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="f731bc59-ec5b-46d4-d46d-afd4c6efd834" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="co"># step 3: verify dimensions</span></span>
+<span id="cb43-2"><a href="#cb43-2"></a></span>
+<span id="cb43-3"><a href="#cb43-3"></a><span class="bu">len</span>(rand_vectors), rand_vectors[<span class="dv">0</span>].shape, torch.cat(rand_vectors).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="26">
 <pre><code>(50, torch.Size([1, 100]), torch.Size([50, 100]))</code></pre>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:135,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414175,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fa0a0d26-a16d-479f-db08-ecbbc702ec00" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="co"># step 4: concat 100 features</span></span>
-<span id="cb46-2"><a href="#cb46-2"></a></span>
-<span id="cb46-3"><a href="#cb46-3"></a>rand_vectors_cat <span class="op">=</span> torch.cat(rand_vectors)</span>
-<span id="cb46-4"><a href="#cb46-4"></a>rand_vectors_cat.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-53" class="cell" data-executioninfo="{&quot;elapsed&quot;:135,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414175,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fa0a0d26-a16d-479f-db08-ecbbc702ec00" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a><span class="co"># step 4: concat 100 features</span></span>
+<span id="cb45-2"><a href="#cb45-2"></a></span>
+<span id="cb45-3"><a href="#cb45-3"></a>rand_vectors_cat <span class="op">=</span> torch.cat(rand_vectors)</span>
+<span id="cb45-4"><a href="#cb45-4"></a>rand_vectors_cat.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="27">
 <pre><code>torch.Size([50, 100])</code></pre>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:125,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414177,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fc523b15-ba04-44c9-fc00-f008646686ae" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co"># step 5: transpose back to have 100 embeddings of dimension 50</span></span>
-<span id="cb48-2"><a href="#cb48-2"></a></span>
-<span id="cb48-3"><a href="#cb48-3"></a>rand_vectors_transpose <span class="op">=</span> rand_vectors_cat.transpose(<span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb48-4"><a href="#cb48-4"></a>rand_vectors_cat.shape, rand_vectors_transpose.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-54" class="cell" data-executioninfo="{&quot;elapsed&quot;:125,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116414177,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fc523b15-ba04-44c9-fc00-f008646686ae" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a><span class="co"># step 5: transpose back to have 100 embeddings of dimension 50</span></span>
+<span id="cb47-2"><a href="#cb47-2"></a></span>
+<span id="cb47-3"><a href="#cb47-3"></a>rand_vectors_transpose <span class="op">=</span> rand_vectors_cat.transpose(<span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb47-4"><a href="#cb47-4"></a>rand_vectors_cat.shape, rand_vectors_transpose.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="28">
 <pre><code>(torch.Size([50, 100]), torch.Size([100, 50]))</code></pre>
 </div>
 </div>
 <p>We have generated 100 new (random) embeddings by adding some noise to the original embeddings. We have done it in a way so that these embeddings do not represent any digit. They are like a mix of embeddings of all the numbers. So when we try to use them, they will generate distorted images. Similar to decoded images generated by taking a sample from an overlapping latent space.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:8718,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116422785,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="17074aee-d9df-4689-fff0-f04a6be40bb9" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>rand_vectors_transpose <span class="op">=</span> rand_vectors_transpose.to(device)</span>
-<span id="cb50-2"><a href="#cb50-2"></a></span>
-<span id="cb50-3"><a href="#cb50-3"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">10</span>, <span class="dv">10</span>, figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">20</span>))</span>
-<span id="cb50-4"><a href="#cb50-4"></a>ax <span class="op">=</span> <span class="bu">iter</span>(ax.flat)</span>
-<span id="cb50-5"><a href="#cb50-5"></a><span class="cf">for</span> idx, rand_latent_vector <span class="kw">in</span> <span class="bu">enumerate</span>(rand_vectors_transpose):</span>
-<span id="cb50-6"><a href="#cb50-6"></a>    decoded_img <span class="op">=</span> model_50.decoder(rand_latent_vector)</span>
-<span id="cb50-7"><a href="#cb50-7"></a>    decoded_img <span class="op">=</span> torch.sigmoid(decoded_img)</span>
-<span id="cb50-8"><a href="#cb50-8"></a>    decoded_img <span class="op">=</span> decoded_img.view(<span class="dv">28</span>, <span class="dv">28</span>)</span>
-<span id="cb50-9"><a href="#cb50-9"></a>    decoded_img <span class="op">=</span> decoded_img.detach().to(torch.device(<span class="st">"cpu"</span>))</span>
-<span id="cb50-10"><a href="#cb50-10"></a>    ax[idx].imshow(decoded_img, cmap<span class="op">=</span><span class="st">"binary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-56" class="cell" data-executioninfo="{&quot;elapsed&quot;:8718,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1671116422785,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="17074aee-d9df-4689-fff0-f04a6be40bb9" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>rand_vectors_transpose <span class="op">=</span> rand_vectors_transpose.to(device)</span>
+<span id="cb49-2"><a href="#cb49-2"></a></span>
+<span id="cb49-3"><a href="#cb49-3"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">10</span>, <span class="dv">10</span>, figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">20</span>))</span>
+<span id="cb49-4"><a href="#cb49-4"></a>ax <span class="op">=</span> <span class="bu">iter</span>(ax.flat)</span>
+<span id="cb49-5"><a href="#cb49-5"></a><span class="cf">for</span> idx, rand_latent_vector <span class="kw">in</span> <span class="bu">enumerate</span>(rand_vectors_transpose):</span>
+<span id="cb49-6"><a href="#cb49-6"></a>    decoded_img <span class="op">=</span> model_50.decoder(rand_latent_vector)</span>
+<span id="cb49-7"><a href="#cb49-7"></a>    decoded_img <span class="op">=</span> torch.sigmoid(decoded_img)</span>
+<span id="cb49-8"><a href="#cb49-8"></a>    decoded_img <span class="op">=</span> decoded_img.view(<span class="dv">28</span>, <span class="dv">28</span>)</span>
+<span id="cb49-9"><a href="#cb49-9"></a>    decoded_img <span class="op">=</span> decoded_img.detach().to(torch.device(<span class="st">"cpu"</span>))</span>
+<span id="cb49-10"><a href="#cb49-10"></a>    ax[idx].imshow(decoded_img, cmap<span class="op">=</span><span class="st">"binary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-30-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-14-pytorch-autoencoder_files/figure-html/cell-30-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>What does this plot tell us? It shows that the latent space of the (vanilla) autoencoder is restricted to specific ranges and has discrete values. Therefore, we cannot use any value from latent space to generate an image. It can be a problem since it is difficult to know an autoencoder’s range of latent space beforehand, making them less useful for image generation.</p>
@@ -1153,121 +1248,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -1275,12 +1255,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1312,11 +1295,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1326,8 +1346,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1339,9 +1368,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -1384,6 +1648,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 

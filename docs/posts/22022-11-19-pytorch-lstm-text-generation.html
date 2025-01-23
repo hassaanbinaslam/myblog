@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2022-11-19">
 <meta name="description" content="This is a practice notebook to build a character-level language model with LSTM using PyTorch. We will train a model on an input text, and our goal will be to generate some new text.">
 
-<title>Random Thoughts - Generating Text with Recurrent Neural Networks in PyTorch</title>
+<title>Generating Text with Recurrent Neural Networks in PyTorch – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,43 +49,13 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -138,11 +115,11 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Generating Text with Recurrent Neural Networks in PyTorch">
+<meta property="og:title" content="Generating Text with Recurrent Neural Networks in PyTorch – Random Thoughts">
 <meta property="og:description" content="This is a practice notebook to build a character-level language model with LSTM using PyTorch. We will train a model on an input text, and our goal will be to generate some new text.">
 <meta property="og:image" content="images/2022-11-19-pytorch-lstm-text-generation.jpeg">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Generating Text with Recurrent Neural Networks in PyTorch">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Generating Text with Recurrent Neural Networks in PyTorch – Random Thoughts">
 <meta name="twitter:description" content="This is a practice notebook to build a character-level language model with LSTM using PyTorch. We will train a model on an input text, and our goal will be to generate some new text.">
 <meta name="twitter:image" content="images/2022-11-19-pytorch-lstm-text-generation.jpeg">
 <meta name="twitter:card" content="summary_large_image">
@@ -152,45 +129,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -263,7 +239,9 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <p><img src="images/2022-11-19-pytorch-lstm-text-generation.jpeg" class="img-fluid"></p>
 <section id="credits" class="level2">
@@ -282,8 +260,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <li><strong>GitHub</strong>: <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2022-11-19-pytorch-lstm-text-generation.ipynb">2022-11-19-pytorch-lstm-text-generation.ipynb</a></li>
 <li><strong>Open In Colab</strong>: <a href="https://colab.research.google.com/github/hassaanbinaslam/myblog/blob/main/posts/2022-11-19-pytorch-lstm-text-generation.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></li>
 </ul>
-<div class="cell" data-outputid="8b4cefed-e790-4b6c-9998-e49b8f2d6b47" data-execution_count="1">
-<details>
+<div id="cell-4" class="cell" data-outputid="8b4cefed-e790-4b6c-9998-e49b8f2d6b47" data-execution_count="1">
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> numpy, matplotlib, pandas, torch</span>
@@ -310,7 +288,7 @@ matplotlib==3.2.2</code></pre>
 <section id="download-data" class="level3">
 <h3 class="anchored" data-anchor-id="download-data">Download data</h3>
 <p>For input text, we will use a famous English folk story (though any other text will work equally well) with the name <a href="https://en.wikipedia.org/wiki/Cinderella">Cinderella</a>. To download the story text, you may use <a href="https://www.gutenberg.org/cache/epub/10830/pg10830.txt">Project Gutenberg</a> site or <a href="https://ia600204.us.archive.org/30/items/cinderella10830gut/10830.txt">Archive.org</a>.</p>
-<div class="cell" data-execution_count="2">
+<div id="cell-8" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a>download_link <span class="op">=</span> <span class="st">"https://ia600204.us.archive.org/30/items/cinderella10830gut/10830.txt"</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co">## alternate download link</span></span>
@@ -318,7 +296,7 @@ matplotlib==3.2.2</code></pre>
 <span id="cb3-5"><a href="#cb3-5"></a></span>
 <span id="cb3-6"><a href="#cb3-6"></a>file_name <span class="op">=</span> <span class="st">'input.txt'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-outputid="08ab0427-083e-441f-c596-868284544089" data-execution_count="3">
+<div id="cell-9" class="cell" data-outputid="08ab0427-083e-441f-c596-868284544089" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">##</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="co"># download the story text and save it as {file_name}</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="op">!</span> curl {download_link} <span class="op">-</span>o {file_name}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -329,7 +307,7 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <p>The download is complete. We can now open the file and read its contents.</p>
-<div class="cell" data-execution_count="4">
+<div id="cell-11" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">##</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="co"># Reading and processing text</span></span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="cf">with</span> <span class="bu">open</span>(file_name, <span class="st">"r"</span>, encoding<span class="op">=</span><span class="st">"utf8"</span>) <span class="im">as</span> fp:</span>
@@ -339,7 +317,7 @@ matplotlib==3.2.2</code></pre>
 <section id="preprocess-data" class="level3">
 <h3 class="anchored" data-anchor-id="preprocess-data">Preprocess data</h3>
 <p>The downloaded text has been published as a volunteer effort under <strong>Project Gutenberg</strong>. They have added some project and license information after the original story text as part of the project requirements. We are not interested in that text (boilerplate text), so let’s omit that and limit our input text to the folk story.</p>
-<div class="cell" data-outputid="b9127f6f-d88f-41bf-9b03-b29d1af1c715" data-execution_count="5">
+<div id="cell-13" class="cell" data-outputid="b9127f6f-d88f-41bf-9b03-b29d1af1c715" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">##</span></span>
 <span id="cb7-2"><a href="#cb7-2"></a><span class="co"># truncate text till story start and end</span></span>
 <span id="cb7-3"><a href="#cb7-3"></a>start_indx <span class="op">=</span> text.find(</span>
@@ -359,7 +337,7 @@ matplotlib==3.2.2</code></pre>
 <section id="how-does-the-data-look" class="level3">
 <h3 class="anchored" data-anchor-id="how-does-the-data-look">How does the data look?</h3>
 <p>Let’s view the first 500 characters from the story text.</p>
-<div class="cell" data-outputid="372bb33a-850f-471e-e086-d5ffc4f86298" data-execution_count="6">
+<div id="cell-15" class="cell" data-outputid="372bb33a-850f-471e-e086-d5ffc4f86298" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># view the text start</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a>text[:<span class="dv">500</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
@@ -367,7 +345,7 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <p>And the last 500 characters.</p>
-<div class="cell" data-outputid="83201752-ee9e-44a6-b39e-71acbc27bec3" data-execution_count="7">
+<div id="cell-17" class="cell" data-outputid="83201752-ee9e-44a6-b39e-71acbc27bec3" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># view the text end</span></span>
 <span id="cb11-2"><a href="#cb11-2"></a>text[<span class="op">-</span><span class="dv">500</span>:]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
@@ -379,7 +357,7 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="preparing-data-dictionary">Preparing data dictionary</h3>
 <p>Our data is a string and can’t be used to train a model. So instead, we have to convert it into integers. For this encoding, we will use a simple methodology where each unique character in the text is assigned an integer and then replaced with all occurrences of that character in the text with that integer value.</p>
 <p>For this, let’s first create a set of all the unique characters in the text.</p>
-<div class="cell" data-outputid="e8c52889-57ad-47cc-a8c8-b4bef4adcacb" data-execution_count="8">
+<div id="cell-19" class="cell" data-outputid="e8c52889-57ad-47cc-a8c8-b4bef4adcacb" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb13-2"><a href="#cb13-2"></a></span>
 <span id="cb13-3"><a href="#cb13-3"></a><span class="co"># find unique chars from text</span></span>
@@ -395,7 +373,7 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <p>We now know all the unique characters in our input text. Accordingly, we can create a dictionary and assign each character in <code>char_set</code> a unique integer.</p>
-<div class="cell" data-outputid="0b7a8e2c-d7f7-4ae0-acc4-818af3912c53" data-execution_count="9">
+<div id="cell-21" class="cell" data-outputid="0b7a8e2c-d7f7-4ae0-acc4-818af3912c53" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># encode chars</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a>char2int <span class="op">=</span> {ch: i <span class="cf">for</span> i, ch <span class="kw">in</span> <span class="bu">enumerate</span>(chars_sorted)}</span>
 <span id="cb15-3"><a href="#cb15-3"></a></span>
@@ -406,7 +384,7 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <p>But more than just the encoding, we also need a way to convert the encoded characters back to the original form. For this, we will use a separate array that will hold the index of each <code>char</code> in the dictionary. Together with <code>char2int</code> and <code>int2char</code> we can move back and forth between encoded and decoded characters.</p>
-<div class="cell" data-outputid="c3767341-eced-4fab-f94e-3e8951aa7c5d" data-execution_count="10">
+<div id="cell-23" class="cell" data-outputid="c3767341-eced-4fab-f94e-3e8951aa7c5d" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>int2char <span class="op">=</span> np.array(chars_sorted)</span>
 <span id="cb17-2"><a href="#cb17-2"></a></span>
 <span id="cb17-3"><a href="#cb17-3"></a><span class="co"># `int2char` for int -&gt; char</span></span>
@@ -422,7 +400,7 @@ matplotlib==3.2.2</code></pre>
 <section id="encode-input-text" class="level3">
 <h3 class="anchored" data-anchor-id="encode-input-text">Encode input text</h3>
 <p>In this step, we will use the <code>char2int</code> dictionary to encode our story text. The encoded version of <code>text</code> is called <code>text_encoded</code>.</p>
-<div class="cell" data-outputid="85147933-cc61-4443-b731-926d8361ed5d" data-execution_count="11">
+<div id="cell-25" class="cell" data-outputid="85147933-cc61-4443-b731-926d8361ed5d" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
 <span id="cb19-2"><a href="#cb19-2"></a><span class="co"># encode original text</span></span>
 <span id="cb19-3"><a href="#cb19-3"></a>text_encoded <span class="op">=</span> np.array([char2int[ch] <span class="cf">for</span> ch <span class="kw">in</span> text], dtype<span class="op">=</span>np.int32)</span>
@@ -433,7 +411,7 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <p>Let’s use <code>int2char</code> to decode and return the original text.</p>
-<div class="cell" data-outputid="3dfc5e40-bfe5-4d42-c3d4-e1deb39e5bb0" data-execution_count="12">
+<div id="cell-27" class="cell" data-outputid="3dfc5e40-bfe5-4d42-c3d4-e1deb39e5bb0" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">##</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="co"># decoding original text</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a><span class="cf">for</span> ex <span class="kw">in</span> text_encoded[:<span class="dv">5</span>]:</span>
@@ -447,7 +425,7 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <p>Another example of encoding and decoding. This time I used multiple words together.</p>
-<div class="cell" data-outputid="9e2b9f46-a56f-4901-9524-e0b10ad483c1" data-execution_count="13">
+<div id="cell-29" class="cell" data-outputid="9e2b9f46-a56f-4901-9524-e0b10ad483c1" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="bu">print</span>(text[:<span class="dv">18</span>], <span class="st">"     == Encoding ==&gt; "</span>, text_encoded[:<span class="dv">18</span>])</span>
 <span id="cb23-2"><a href="#cb23-2"></a><span class="bu">print</span>(text_encoded[<span class="dv">19</span>:<span class="dv">41</span>], <span class="st">" == Reverse  ==&gt; "</span>, <span class="st">""</span>.join(int2char[text_encoded[<span class="dv">19</span>:<span class="dv">41</span>]]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -463,7 +441,7 @@ matplotlib==3.2.2</code></pre>
 <li>The first 40 characters in sequence form the input</li>
 <li>The last character in sequence (41) represents the output</li>
 </ul>
-<div class="cell" data-execution_count="14">
+<div id="cell-31" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">##</span></span>
 <span id="cb25-2"><a href="#cb25-2"></a><span class="co"># make sequences of encoded text as `text_chunks`</span></span>
 <span id="cb25-3"><a href="#cb25-3"></a>seq_length <span class="op">=</span> <span class="dv">40</span></span>
@@ -473,7 +451,7 @@ matplotlib==3.2.2</code></pre>
 <span id="cb25-7"><a href="#cb25-7"></a>    text_encoded[i : i <span class="op">+</span> chunk_size] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(text_encoded) <span class="op">-</span> chunk_size <span class="op">+</span> <span class="dv">1</span>)</span>
 <span id="cb25-8"><a href="#cb25-8"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-outputid="fe404cbb-adcc-4d22-d784-b3842a02de76" data-execution_count="15">
+<div id="cell-32" class="cell" data-outputid="fe404cbb-adcc-4d22-d784-b3842a02de76" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">##</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a><span class="co"># inspect the first chuck</span></span>
 <span id="cb26-3"><a href="#cb26-3"></a><span class="cf">for</span> seq <span class="kw">in</span> text_chunks[:<span class="dv">1</span>]:</span>
@@ -488,7 +466,7 @@ matplotlib==3.2.2</code></pre>
 'There once lived a gentleman and his wif'  -&gt;  'e'</code></pre>
 </div>
 </div>
-<div class="cell" data-outputid="a01e82c2-7a34-420d-e98f-64e573d98589" data-execution_count="16">
+<div id="cell-33" class="cell" data-outputid="a01e82c2-7a34-420d-e98f-64e573d98589" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">##</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a><span class="co"># inspect the second chuck</span></span>
 <span id="cb28-3"><a href="#cb28-3"></a><span class="cf">for</span> seq <span class="kw">in</span> text_chunks[<span class="dv">1</span>:<span class="dv">2</span>]:</span>
@@ -511,8 +489,8 @@ matplotlib==3.2.2</code></pre>
 <section id="load-data-into-dataset-class" class="level3">
 <h3 class="anchored" data-anchor-id="load-data-into-dataset-class">Load data into Dataset class</h3>
 <p>class <code>TextDataset</code> is derived from PyTorch <code>Dataset</code>. When we get a sequence using this class, it will return the sequence as a tuple of input and target.</p>
-<div class="cell" data-outputid="b5befe45-930a-45fa-c85c-768c1dd6317d" data-execution_count="17">
-<details open="">
+<div id="cell-35" class="cell" data-outputid="b5befe45-930a-45fa-c85c-768c1dd6317d" data-execution_count="17">
+<details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="im">import</span> torch</span>
 <span id="cb30-2"><a href="#cb30-2"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset</span>
@@ -543,7 +521,7 @@ matplotlib==3.2.2</code></pre>
 <li><code>target</code> data that we will use to compare the model output</li>
 </ul>
 <p>Remember that both <code>input</code> and <code>target</code> sequences are derived from the same encoded text. We train our model to predict the next character from the given input. One character is given as an input to the model, and one character output comes out of the model. In an ideal case, the model output character should represent the next character in a sequence. And our <code>target</code> sequence is just that: one next character from the input sequence.</p>
-<div class="cell" data-outputid="7da935b2-0c86-4736-ca4a-26d5ed4df0f8" data-execution_count="18">
+<div id="cell-37" class="cell" data-outputid="7da935b2-0c86-4736-ca4a-26d5ed4df0f8" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="cf">for</span> i, (seq, target) <span class="kw">in</span> <span class="bu">enumerate</span>(seq_dataset):</span>
 <span id="cb32-2"><a href="#cb32-2"></a>    <span class="bu">print</span>(<span class="st">" Input (x):"</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[seq])))</span>
 <span id="cb32-3"><a href="#cb32-3"></a>    <span class="bu">print</span>(<span class="st">"Target (y):"</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[target])))</span>
@@ -563,7 +541,7 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <section id="load-data-into-dataloader-class-to-prepare-batches" class="level3">
 <h3 class="anchored" data-anchor-id="load-data-into-dataloader-class-to-prepare-batches">Load data into DataLoader class to prepare batches</h3>
 <p>In this step, we have prepared training batches using the PyTorch <a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">DataLoader</a> class.</p>
-<div class="cell" data-execution_count="19">
+<div id="cell-39" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb34-2"><a href="#cb34-2"></a></span>
 <span id="cb34-3"><a href="#cb34-3"></a>batch_size <span class="op">=</span> <span class="dv">64</span></span>
@@ -577,8 +555,8 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <h2 class="anchored" data-anchor-id="model-configuration-and-training">Model Configuration and Training</h2>
 <p>In this section, we will configure a model for character-level language modeling. This model will have an Embedding layer at the start. Next, output from the embedding layer will be passed to the LSTM layer. Finally, at the output, we have a fully connected linear layer.</p>
 <p>For an in-depth analysis of the working of an Embedding layer, I recommend this article <a href="https://www.featureform.com/post/the-definitive-guide-to-embeddings">Embeddings in Machine Learning: Everything You Need to Know</a></p>
-<div class="cell" data-execution_count="20">
-<details open="">
+<div id="cell-41" class="cell" data-execution_count="20">
+<details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb35-2"><a href="#cb35-2"></a></span>
@@ -604,7 +582,7 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <span id="cb35-22"><a href="#cb35-22"></a>        <span class="cf">return</span> hidden.to(device), cell.to(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="cell" data-outputid="0d50bde3-f39f-4900-900b-cc4eb488e8eb" data-execution_count="21">
+<div id="cell-42" class="cell" data-outputid="0d50bde3-f39f-4900-900b-cc4eb488e8eb" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
 <span id="cb36-2"><a href="#cb36-2"></a></span>
 <span id="cb36-3"><a href="#cb36-3"></a><span class="co"># define model dimensions</span></span>
@@ -630,7 +608,7 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <li>For the loss function, we will use <a href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html">CrossEntropyLoss</a>. This is because we are dealing with a classification problem, and our model has to predict the next character from <code>vocab_size</code> of 65 classes.</li>
 <li>For optimization, we will use <a href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html">torch.optim.Adam</a></li>
 </ul>
-<div class="cell" data-execution_count="22">
+<div id="cell-44" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span>
 <span id="cb38-2"><a href="#cb38-2"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">0.005</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -638,8 +616,8 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <section id="model-training" class="level3">
 <h3 class="anchored" data-anchor-id="model-training">Model training</h3>
 <p>All parts are ready so let’s start the training. Google Colab “CPU” runtime can take significantly longer to train. I would suggest using “GPU” runtime instead.</p>
-<div class="cell" data-outputid="2f289099-3541-49b3-9e38-f124466370ca" data-execution_count="27">
-<details open="">
+<div id="cell-46" class="cell" data-outputid="2f289099-3541-49b3-9e38-f124466370ca" data-execution_count="27">
+<details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a><span class="co"># for execution time measurement</span></span>
 <span id="cb39-2"><a href="#cb39-2"></a><span class="im">from</span> timeit <span class="im">import</span> default_timer <span class="im">as</span> timer</span>
@@ -714,8 +692,8 @@ Device type:  cuda</code></pre>
 <li>This way, we can also control the predictability of the model output by controlling the probability distribution (calculated from logits) passed to the Categorical object. If we can make probabilities a lot more similar (through scaling), the sample generated by Categorical will also be mostly the same. On the other hand, if we can make the probabilities further apart, then we can also increase the randomness of the output from the Categorical class.</li>
 </ul></li>
 </ul>
-<div class="cell" data-execution_count="28">
-<details open="">
+<div id="cell-48" class="cell" data-execution_count="28">
+<details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="im">from</span> torch.distributions.categorical <span class="im">import</span> Categorical</span>
 <span id="cb41-2"><a href="#cb41-2"></a></span>
@@ -749,7 +727,7 @@ Device type:  cuda</code></pre>
 <section id="generating-new-text-passages" class="level2">
 <h2 class="anchored" data-anchor-id="generating-new-text-passages">Generating new text passages</h2>
 <p>We are processing text and model output on the ‘CPU’ device in the ‘sample’ function. So let’s also move the model to the same device.</p>
-<div class="cell" data-outputid="1911eba3-6f14-466e-d427-971a2f1cc322" data-execution_count="30">
+<div id="cell-50" class="cell" data-outputid="1911eba3-6f14-466e-d427-971a2f1cc322" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">##</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a><span class="co"># move model to cpu</span></span>
 <span id="cb42-3"><a href="#cb42-3"></a>model.to(<span class="st">'cpu'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -763,21 +741,21 @@ Device type:  cuda</code></pre>
 </div>
 <p>Before generating some lengthy text, let’s experiment with simple words and see if our model can complete them.</p>
 <p>At first, I used the string “fat” and asked the model to generate the following three characters to complete this word. But at the same time, I have passed a tiny scaling factor meaning I have decreased the model’s predictability.</p>
-<div class="cell" data-outputid="567aab7e-229d-47e7-9058-8f35b195ef39" data-execution_count="33">
+<div id="cell-52" class="cell" data-outputid="567aab7e-229d-47e7-9058-8f35b195ef39" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"fat"</span>, len_generated_text<span class="op">=</span><span class="dv">3</span>, scale_factor<span class="op">=</span><span class="fl">0.1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>fat, i</code></pre>
 </div>
 </div>
 <p>Next, I asked the model to use the same input and predict the following three characters, but I increased the model’s predictability ten times. So let’s see the output this time.</p>
-<div class="cell" data-outputid="64b81ecd-a1f5-4133-a93b-3d7e03db9c0c" data-execution_count="32">
+<div id="cell-54" class="cell" data-outputid="64b81ecd-a1f5-4133-a93b-3d7e03db9c0c" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">'fat'</span>, len_generated_text<span class="op">=</span><span class="dv">3</span>, scale_factor<span class="op">=</span><span class="fl">1.0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>father</code></pre>
 </div>
 </div>
 <p>The second time model generated the correct word “father” it had seen before in the training text. So let’s now generate some lengthy texts.</p>
-<div class="cell" data-outputid="789757fd-0635-4444-bd01-43e34ad61f48" data-execution_count="34">
+<div id="cell-56" class="cell" data-outputid="789757fd-0635-4444-bd01-43e34ad61f48" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">##</span></span>
 <span id="cb48-2"><a href="#cb48-2"></a><span class="co"># text generation example 1</span></span>
 <span id="cb48-3"><a href="#cb48-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The father"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -791,7 +769,7 @@ carriage as nimbly as if they had been footmen and laced so tight, touched Cinde
 horses, much handsomer than your sisters', to say the least</code></pre>
 </div>
 </div>
-<div class="cell" data-outputid="9bf79006-546a-4d37-82d5-c96c81f95841" data-execution_count="35">
+<div id="cell-57" class="cell" data-outputid="9bf79006-546a-4d37-82d5-c96c81f95841" data-execution_count="35">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a><span class="co">##</span></span>
 <span id="cb50-2"><a href="#cb50-2"></a><span class="co"># text generation example 2</span></span>
 <span id="cb50-3"><a href="#cb50-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The mother"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -811,7 +789,7 @@ that he did not eat one morsel of the supper.
 Cinderella drew</code></pre>
 </div>
 </div>
-<div class="cell" data-outputid="abd71fa5-7526-41b4-dbd6-6d19032151c9" data-execution_count="37">
+<div id="cell-58" class="cell" data-outputid="abd71fa5-7526-41b4-dbd6-6d19032151c9" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a><span class="co">##</span></span>
 <span id="cb52-2"><a href="#cb52-2"></a><span class="co"># text generation example 3</span></span>
 <span id="cb52-3"><a href="#cb52-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The three sisters"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -831,7 +809,7 @@ Gracefulness seemed to play in the attempt.
 The long-wished-for evening came at last, an</code></pre>
 </div>
 </div>
-<div class="cell" data-outputid="e1aabb58-eed7-405c-b970-fe504107e75e" data-execution_count="38">
+<div id="cell-59" class="cell" data-outputid="e1aabb58-eed7-405c-b970-fe504107e75e" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1"></a><span class="co">##</span></span>
 <span id="cb54-2"><a href="#cb54-2"></a><span class="co"># text generation example 4</span></span>
 <span id="cb54-3"><a href="#cb54-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The lovely prince"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -871,121 +849,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -993,12 +856,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1030,11 +896,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1044,8 +947,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1057,9 +969,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -1102,6 +1249,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 

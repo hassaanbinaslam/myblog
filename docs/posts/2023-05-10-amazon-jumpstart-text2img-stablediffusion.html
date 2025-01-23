@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2023-05-10">
 <meta name="description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart to generate images from text using state-of-the-art Stable Diffusion models.">
 
-<title>Random Thoughts - Build your own Generative AI Art Studio with Amazon SageMaker JumpStart</title>
+<title>Build your own Generative AI Art Studio with Amazon SageMaker JumpStart – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,43 +49,13 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -138,11 +115,11 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Build your own Generative AI Art Studio with Amazon SageMaker JumpStart">
+<meta property="og:title" content="Build your own Generative AI Art Studio with Amazon SageMaker JumpStart – Random Thoughts">
 <meta property="og:description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart to generate images from text using state-of-the-art Stable Diffusion models.">
 <meta property="og:image" content="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion.jpg">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Build your own Generative AI Art Studio with Amazon SageMaker JumpStart">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Build your own Generative AI Art Studio with Amazon SageMaker JumpStart – Random Thoughts">
 <meta name="twitter:description" content="In this notebook, I demonstrate how to use the SageMaker Jumpstart to generate images from text using state-of-the-art Stable Diffusion models.">
 <meta name="twitter:image" content="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -152,45 +129,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -288,12 +264,14 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion.jpg" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">image source: https://prompthero.com/prompt/967d64692e0</figcaption><p></p>
+<figcaption>image source: https://prompthero.com/prompt/967d64692e0</figcaption>
 </figure>
 </div>
 <section id="credits" class="level2">
@@ -305,12 +283,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <section id="what-is-amazon-sagemaker" class="level3">
 <h3 class="anchored" data-anchor-id="what-is-amazon-sagemaker">What Is Amazon SageMaker?</h3>
 <p><em>Amazon SageMaker is a fully managed machine learning service</em>. With SageMaker, data scientists and developers can quickly and easily build and train machine learning models, and then directly deploy them into a production-ready hosted environment. It provides an integrated Jupyter authoring notebook instance for easy access to your data sources for exploration and analysis, so you don’t have to manage servers. It also provides common machine learning algorithms that are optimized to run efficiently against extremely large data in a distributed environment. With native support for bring-your-own-algorithms and frameworks, SageMaker offers flexible distributed training options that adjust to your specific workflows. You can deploy a model into a secure and scalable environment by launching it with a few clicks from SageMaker Studio or the SageMaker console.</p>
-<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Note
 </div>
 </div>
@@ -322,12 +300,12 @@ Note
 <section id="what-is-sagemaker-jumpstart" class="level3">
 <h3 class="anchored" data-anchor-id="what-is-sagemaker-jumpstart">What is SageMaker JumpStart?</h3>
 <p><em>SageMaker JumpStart is the machine learning (ML) hub of SageMaker that provides hundreds of built-in algorithms, pre-trained models, and end-to-end solution templates to help you quickly get started with ML</em>. JumpStart also provides solution templates that set up infrastructure for common use cases, and executable example notebooks for machine learning with SageMaker.</p>
-<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Note
 </div>
 </div>
@@ -342,12 +320,12 @@ Note
 <section id="how-does-jumpstart-simplify-it" class="level4">
 <h4 class="anchored" data-anchor-id="how-does-jumpstart-simplify-it">How does JumpStart simplify it?</h4>
 <p>Training, deploying, and running inference on large models such as Stable Diffusion is often challenging. It includes issues such as CUDA being out of memory, the payload size limit being exceeded, and so on. <em>JumpStart</em> simplifies this process by providing ready-to-use scripts that have been robustly tested. Furthermore, it provides guidance on each step of the process, including the recommended instance types, how to select parameters to guide the image generation process, prompt engineering, etc. Moreover, you can deploy and run inference on any of the 80+ Diffusion models from JumpStart without having to write any piece of your own code.</p>
-<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Note
 </div>
 </div>
@@ -366,12 +344,12 @@ Note
 </ul>
 <p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/notebook-env.png" class="img-fluid"></p>
 <p>For model deployment and inference, I recommend using the <code>ml.p3.2xlarge</code> or <code>ml.g4dn.2xlarge</code> instance. I have relied on the <code>ml.p3.2xlarge</code> instance for this notebook. For generating multiple images per prompt, <code>ml.g4dn.2xlarge</code> can be slow, and you will get timeout errors as highlighted below.</p>
-<div class="callout-important callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Important
 </div>
 </div>
@@ -380,12 +358,12 @@ Important
 </div>
 </div>
 <p><img src="images/2023-05-10-amazon-jumpstart-text2img-stablediffusion/invoke-endpoint-timeout.png" class="img-fluid"></p>
-<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Tip
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
@@ -411,7 +389,7 @@ Tip
 <section id="set-up-the-environment" class="level2">
 <h2 class="anchored" data-anchor-id="set-up-the-environment">Set up the environment</h2>
 <p>There are some initial steps required to execute this notebook. They mainly involve installing the needed packages and initializing the SageMaker session.</p>
-<div class="cell" data-tags="[]" data-execution_count="2">
+<div id="cell-6" class="cell" data-tags="[]" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span>pip install <span class="op">--</span>upgrade sagemaker</span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="op">!</span>pip install matplotlib</span>
@@ -422,13 +400,13 @@ Tip
 <span id="cb1-8"><a href="#cb1-8"></a><span class="co"># 3. Install watermark. An IPython magic extension for printing date and time stamps, version numbers, and hardware information. https://github.com/rasbt/watermark</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><a href="https://github.com/rasbt/watermark">watermark</a> extension is a great utility to expose packages, kernel, and hardware information. Though this is optional, and you may skip this step, it is a great way to report execution environment information and make it more transparent.</p>
-<div class="cell" data-tags="[]" data-execution_count="3">
+<div id="cell-8" class="cell" data-tags="[]" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="co"># To load the watermark magic, execute the following line in your IPython notebook or current IPython shell</span></span>
 <span id="cb2-4"><a href="#cb2-4"></a><span class="co"># to learn more about the usage: https://github.com/rasbt/watermark/blob/master/docs/watermark.ipynb</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="4">
+<div id="cell-9" class="cell" data-tags="[]" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p numpy,matplotlib,boto3,json,sagemaker</span>
 <span id="cb3-2"><a href="#cb3-2"></a></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co"># watermark the notebook environment</span></span>
@@ -456,7 +434,7 @@ Architecture: 64bit
 </div>
 <p>Next, we will initialize the SageMaker session. This session manages interactions with the Amazon SageMaker APIs and any other AWS services needed. It provides convenient methods for manipulating entities and resources that Amazon SageMaker uses, such as training jobs, endpoints, and input datasets in S3. AWS service calls are delegated to an underlying Boto3 session, which is initialized using the AWS configuration chain by default.</p>
 <p>To read more about <em>SageMaker Session</em> refer to the documentation <a href="https://sagemaker.readthedocs.io/en/stable/api/utility/session.html#sagemaker.session.Session">sagemaker.session.Session</a></p>
-<div class="cell" data-tags="[]" data-execution_count="5">
+<div id="cell-11" class="cell" data-tags="[]" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> sagemaker, boto3</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="im">from</span> sagemaker <span class="im">import</span> get_execution_role</span>
 <span id="cb5-3"><a href="#cb5-3"></a></span>
@@ -473,8 +451,8 @@ Architecture: 64bit
 <section id="define-functions-to-deploy-models-and-get-inference-endpoints" class="level2">
 <h2 class="anchored" data-anchor-id="define-functions-to-deploy-models-and-get-inference-endpoints">Define functions to deploy models and get inference endpoints</h2>
 <p>In this section, we will define some functions that will make it easy for us to deploy JumpStart pre-trained models and get inference endpoints against them.</p>
-<div class="cell" data-tags="[]" data-execution_count="10">
-<details>
+<div id="cell-13" class="cell" data-tags="[]" data-execution_count="10">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris, model_uris</span>
 <span id="cb7-2"><a href="#cb7-2"></a><span class="im">from</span> sagemaker.model <span class="im">import</span> Model</span>
@@ -548,8 +526,8 @@ Architecture: 64bit
 <section id="define-functions-to-query-endpoints-and-display-results" class="level2">
 <h2 class="anchored" data-anchor-id="define-functions-to-query-endpoints-and-display-results">Define functions to query endpoints and display results</h2>
 <p>In the next section, we will define some functions that we will use to query the inference endpoint and display the results.</p>
-<div class="cell" data-tags="[]" data-execution_count="23">
-<details>
+<div id="cell-15" class="cell" data-tags="[]" data-execution_count="23">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -656,12 +634,12 @@ Architecture: 64bit
 <span id="cb9-8"><a href="#cb9-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb9-9"><a href="#cb9-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb9-10"><a href="#cb9-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Tip
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
@@ -710,12 +688,12 @@ Tip
 <li>Some other types include “oil painting,” “pencil drawing, “pop art,” “digital art,” “anime,” “cartoon,” “futurism,” “watercolor,” “manga,” etc.</li>
 <li>You can also include details such as lighting or camera lenses such as 35mm wide lens or 85mm wide lens, and information on the framing (portrait/landscape/close up, etc.).</li>
 </ul>
-<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Tip
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
@@ -736,7 +714,7 @@ Tip
 <section id="stable-diffusion-v2-1" class="level2">
 <h2 class="anchored" data-anchor-id="stable-diffusion-v2-1">Stable Diffusion v2-1</h2>
 <p>Let’s get our first model up and running <a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">stable-diffusion-2-1</a>.</p>
-<div class="cell" data-tags="[]" data-execution_count="26">
+<div id="cell-19" class="cell" data-tags="[]" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>model_id <span class="op">=</span> <span class="st">"model-txt2img-stabilityai-stable-diffusion-v2-1-base"</span></span>
 <span id="cb10-2"><a href="#cb10-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -754,12 +732,12 @@ Tip
 <section id="realistic-people" class="level3">
 <h3 class="anchored" data-anchor-id="realistic-people">Realistic people</h3>
 <p>Let’s see how good is this model to generate real people images.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -768,8 +746,8 @@ Prompt
 <p>Negative = disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="27">
-<details>
+<div id="cell-21" class="cell" data-tags="[]" data-execution_count="27">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w"</span></span>
@@ -788,19 +766,39 @@ Prompt
 <span id="cb12-15"><a href="#cb12-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-4.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-5.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-9-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The model can generate images of faces with good symmetry but still struggles with hands and fingers. This is visible in images 3 and 5, where the fingers are distorted. Otherwise, it was able to capture the instructions from the prompt.</p>
@@ -811,12 +809,12 @@ Prompt
 <li>wearing dress</li>
 </ul>
 <p>Let’s try another prompt; this time, we will focus more on the body shape, parts, and aesthetics.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -826,8 +824,8 @@ Prompt
 </div>
 </div>
 <p>The results could be better, again highlighting that the Stable Diffusion v2.1 model still needs to improve at generating proper people faces and shapes.</p>
-<div class="cell">
-<details>
+<div id="cell-23" class="cell">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>prompt <span class="op">=</span> <span class="st">"sitting on green grass, bodybuilder posing, bodycam footage, man esthete with disgust face, overlooking a dark street, black and white photograph, sitting on a bench, dirty concrete wall, very sexy outfit, perfect face mode, sport photography, black business suit"</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad"</span></span>
@@ -846,31 +844,51 @@ Prompt
 <span id="cb13-15"><a href="#cb13-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-4.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-5.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-10-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="architecture" class="level3">
 <h3 class="anchored" data-anchor-id="architecture">Architecture</h3>
 <p>Okay, we have seen that model struggles with depicting accurate body shapes. So let’s try something more complex and see how well the model understands building shapes and architectures.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -878,8 +896,8 @@ Prompt
 <p>A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="28">
-<details>
+<div id="cell-25" class="cell" data-tags="[]" data-execution_count="28">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>prompt <span class="op">=</span> <span class="st">"A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
 <span id="cb14-2"><a href="#cb14-2"></a></span>
@@ -896,29 +914,49 @@ Prompt
 <span id="cb14-13"><a href="#cb14-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-4.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-5.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-11-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>These are very impressive results. The model is adept at understanding how modern buildings should look like. It can intelligently place windows, balconies, chairs, trees, shadows, and even reflections at appropriate locations. The design is also modern, meaning it follows the instructions well.</p>
 <p>Let’s try another difficult prompt focusing on a city’s complex geometry and formations.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -926,8 +964,8 @@ Prompt
 <p>A beautiful digital illustration of BARCELONA, 4k, crystal clear, ultra HD, high definition, detailed, trending in artstation, fantasy</p>
 </div>
 </div>
-<div class="cell">
-<details>
+<div id="cell-27" class="cell">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful digital illustration of BARCELONA, 4k, crystal clear, ultra HD, high definition, detailed, trending in artstation, fantasy"</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a></span>
@@ -944,13 +982,25 @@ Prompt
 <span id="cb15-13"><a href="#cb15-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-12-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The results are pretty good. The model can understand that structures at the front are expansive, and those at the far back slowly decreases in size. It also understands that roads run through and divides a typical city layout. The last image is impressive, containing a green belt having trees in the center. After that, there is a road busy with vehicles. And then, at the peripheries, there are building with intricate layouts.</p>
@@ -958,12 +1008,12 @@ Prompt
 <section id="abstract-art-and-styles" class="level3">
 <h3 class="anchored" data-anchor-id="abstract-art-and-styles">Abstract art and styles</h3>
 <p>Let’s move to abstract art, styles, and artists and see how well the model portrays them.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -971,8 +1021,8 @@ Prompt
 <p>A surreal 3D render of a cityscape with twisted buildings, upside-down structures, and floating objects, creating a dreamlike and disorienting atmosphere, by Simon Stålenhag</p>
 </div>
 </div>
-<div class="cell">
-<details>
+<div id="cell-29" class="cell">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>prompt <span class="op">=</span> <span class="st">"A surreal 3D render of a cityscape with twisted buildings, upside-down structures, and floating objects, creating a dreamlike and disorienting atmosphere, by Simon Stålenhag"</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a></span>
@@ -989,28 +1039,48 @@ Prompt
 <span id="cb16-13"><a href="#cb16-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-4.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-5.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-13-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>“Twisted upside-down buildings and floating objects” is very unusual, and hard to imagine what such a world would look like. But it is not difficult for the model to produce it. So let’s try some more prompts.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1018,8 +1088,8 @@ Prompt
 <p>A futuristic space station orbiting a distant planet, with a sleek design and advanced technology visible through the windows, Nuremberg Chronicle, 1493, Liber Chronicarum, Michael Wolgemut, detailed architecture</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="46">
-<details>
+<div id="cell-31" class="cell" data-tags="[]" data-execution_count="46">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>prompt <span class="op">=</span> <span class="st">"A futuristic space station orbiting a distant planet, with sleek design and advanced technology visible through the windows, Nuremberg Chronicle, 1493, Liber Chronicarum, Michael Wolgemut, detailed archtitecture"</span></span>
 <span id="cb17-2"><a href="#cb17-2"></a>negative_prompt <span class="op">=</span> <span class="st">"writings, ugly, bad, immature, anime, b&amp;w, lines, latin"</span></span>
@@ -1038,21 +1108,33 @@ Prompt
 <span id="cb17-15"><a href="#cb17-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-14-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1060,8 +1142,8 @@ Prompt
 <p>Realistic 3D render of an isometric hospital in a low poly art style, medical workers, doctors, nurses, patients, beds and equipment.</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="45">
-<details>
+<div id="cell-33" class="cell" data-tags="[]" data-execution_count="45">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a>prompt <span class="op">=</span> <span class="st">"Realistic 3D render of an isometric hospital in a low poly art style, medical workers, doctors, nurses, patients, beds and equipment."</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a></span>
@@ -1078,25 +1160,37 @@ Prompt
 <span id="cb18-13"><a href="#cb18-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-15-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="landscapes" class="level3">
 <h3 class="anchored" data-anchor-id="landscapes">Landscapes</h3>
 <p>Let’s move to a more natural setting. The model can generate beautiful scenes involving meadows, wildlands, mountains, rivers, etc. The depth and details in the results are remarkable. Some prompts that I tried are provided here.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1104,8 +1198,8 @@ Prompt
 <p>The green idyllic Arcadian prairie with sheep by Thomas Cole, Breath-taking digital painting with placid colors, amazing art, artstation 3, cottagecore.</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="41">
-<details>
+<div id="cell-35" class="cell" data-tags="[]" data-execution_count="41">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a>prompt <span class="op">=</span> <span class="st">"The green idyllic Arcadian prairie with sheep by Thomas Cole, Breath-taking digital painting with placid colors, amazing art, artstation 3, cottagecore."</span></span>
 <span id="cb19-2"><a href="#cb19-2"></a></span>
@@ -1122,23 +1216,35 @@ Prompt
 <span id="cb19-13"><a href="#cb19-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-16-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <section id="prompt-8" class="level4">
 <h4 class="anchored" data-anchor-id="prompt-8">Prompt</h4>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Note
 </div>
 </div>
@@ -1146,8 +1252,8 @@ Note
 <p>A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ, full view</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="42">
-<details>
+<div id="cell-37" class="cell" data-tags="[]" data-execution_count="42">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ, full view"</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a></span>
@@ -1164,13 +1270,25 @@ Note
 <span id="cb20-13"><a href="#cb20-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-17-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -1178,12 +1296,12 @@ Note
 <section id="portraits-and-paintings" class="level3">
 <h3 class="anchored" data-anchor-id="portraits-and-paintings">Portraits and paintings</h3>
 <p>I also tried generating portraits and paintings of imaginative scenarios. Stable Diffusion is again very good at it. But similar to its limitations in creating accurate human body shapes, it struggles with them in paintings.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1192,8 +1310,8 @@ Prompt
 <p>Negative = logos, icons, writings, description</p>
 </div>
 </div>
-<div class="cell">
-<details>
+<div id="cell-39" class="cell">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>prompt <span class="op">=</span> <span class="st">"A painting of a pirate ship in the ocean, a digital painting, renaissance, color study, portrait, castle, three masts, davinci, whole page illustration, small boat"</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a>negative_prompt <span class="op">=</span> <span class="st">"logos, icons, writings, description"</span></span>
@@ -1212,21 +1330,33 @@ Prompt
 <span id="cb21-15"><a href="#cb21-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-18-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1234,8 +1364,8 @@ Prompt
 <p>Complex detailed medieval painting of a fantasy medieval cleric woman walking through a field of flowers, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="48">
-<details>
+<div id="cell-41" class="cell" data-tags="[]" data-execution_count="48">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a>prompt <span class="op">=</span> <span class="st">"Complex detailed medieval painting of a fantasy medieval cleric woman walking through a field of flowers, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting"</span></span>
 <span id="cb22-2"><a href="#cb22-2"></a></span>
@@ -1252,25 +1382,37 @@ Prompt
 <span id="cb22-13"><a href="#cb22-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-19-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Please delete the model endpoint once it is no longer required to avoid unforeseen costs.</p>
-<div class="cell" data-tags="[]" data-execution_count="49">
+<div id="cell-43" class="cell" data-tags="[]" data-execution_count="49">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Tip
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
@@ -1287,7 +1429,7 @@ Tip
 <h2 class="anchored" data-anchor-id="prompthero-openjourney">PromptHero Openjourney</h2>
 <p>Besides the Stable Diffusion base models, people have also released models with unique styles and tastes. One such model is <a href="https://huggingface.co/prompthero/openjourney">OpenJourney</a>. Openjourney is based on <a href="https://huggingface.co/runwayml/stable-diffusion-v1-5">Stable Diffusion v1.5</a> but fine-tuned with many <a href="https://en.wikipedia.org/wiki/Midjourney">Midjourney</a> images. The result is a model capable of generating very detailed and colorful photos. But to invoke the model’s unique style, we must append the prompt with the text <code>modern-v4 style</code>.</p>
 <p>Let’s get this model up and running.</p>
-<div class="cell" data-tags="[]" data-execution_count="50">
+<div id="cell-46" class="cell" data-tags="[]" data-execution_count="50">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-prompthero-openjourney"</span></span>
 <span id="cb24-2"><a href="#cb24-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1297,12 +1439,12 @@ Tip
 <section id="realistic-people-and-portraits" class="level3">
 <h3 class="anchored" data-anchor-id="realistic-people-and-portraits">Realistic people and portraits</h3>
 <p>Remember that this OpenJourney model is based on an older version of stable diffusion, but I found it equally good at generating faces and body shapes with acceptable symmetry.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1311,8 +1453,8 @@ Prompt
 <p>Negative = logo, CGI, 3d, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="52">
-<details>
+<div id="cell-48" class="cell" data-tags="[]" data-execution_count="52">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style old, female robot, metal, rust, wisible wires, destroyed, sad, dark, dirty, looking at viewer, portrait, photography, detailed skin, realistic, photo-realistic, 8k, highly detailed, full length frame, High detail RAW color art, piercing, diffused soft lighting, shallow depth of field, sharp focus, hyperrealism, cinematic lighting"</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>negative_prompt <span class="op">=</span> <span class="st">"logo, CGI, 3d, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature"</span></span>
@@ -1332,21 +1474,33 @@ Prompt
 <span id="cb26-16"><a href="#cb26-16"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-22-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1355,8 +1509,8 @@ Prompt
 <p>Negative = backlight, dark face, white fur, gold fabric, cropped head, out of frame, deformed, cripple, ugly, additional arms, additional legs, additional head, two heads, multiple people, group of people</p>
 </div>
 </div>
-<div class="cell">
-<details>
+<div id="cell-50" class="cell">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style portrait photograph of Madison Beer as Pocahontas, young beautiful native american woman, perfect symmetrical face, feather jewelry, traditional handmade dress, armed female hunter warrior, wild west environment, Utah landscape, ultra realistic, concept art, elegant, intricate, highly detailed, depth of field, professionally color graded, 8k, art by artgerm and greg rutkowski and alphonse mucha"</span></span>
 <span id="cb27-2"><a href="#cb27-2"></a>negative_prompt <span class="op">=</span> <span class="st">"backlight, dark face, white fur, gold fabric, cropped head, out of frame, deformed, cripple, ugly, additional arms, additional legs, additional head, two heads, multiple people, group of people"</span></span>
@@ -1374,21 +1528,33 @@ Prompt
 <span id="cb27-14"><a href="#cb27-14"></a><span class="co"># https://prompthero.com/prompt/d4f36f0dcdf</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-23-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1397,8 +1563,8 @@ Prompt
 <p>Negative = long neck, skinny</p>
 </div>
 </div>
-<div class="cell">
-<details>
+<div id="cell-52" class="cell">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style Incredibly detailed technical diagram of the profile of a woman with the top and back of her head split into complex geometric shapes and flowers growing from the shapes, Chiaroscuro lighting, fine intricate details"</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a>negative_prompt <span class="op">=</span> <span class="st">"long neck, skinny"</span></span>
@@ -1416,25 +1582,37 @@ Prompt
 <span id="cb28-14"><a href="#cb28-14"></a><span class="co"># https://prompthero.com/prompt/0c8536f3b23</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-24-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="fairy-landscapes" class="level3">
 <h3 class="anchored" data-anchor-id="fairy-landscapes">Fairy Landscapes</h3>
 <p>You can also create very detailed and colorful photos of landscapes.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1442,8 +1620,8 @@ Prompt
 <p>mdjrny-v4 style painting of a fairy forest, dream light, full of colors, mushroom tree, dim light, super detailed, unreal engine 5, hdr, 12k, by Vincent Van Goth</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="53">
-<details>
+<div id="cell-54" class="cell" data-tags="[]" data-execution_count="53">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style painting of a fairy forest, dream light, full of colors, mushroom tree, dim light, super detailed, unreal engine 5, hdr, 12k, by Vincent Van Goth"</span></span>
 <span id="cb29-2"><a href="#cb29-2"></a>payload <span class="op">=</span> {</span>
@@ -1459,25 +1637,37 @@ Prompt
 <span id="cb29-12"><a href="#cb29-12"></a><span class="co"># https://prompthero.com/prompt/19c0ad9cac1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-25-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="other-digital-art-prompts" class="level3">
 <h3 class="anchored" data-anchor-id="other-digital-art-prompts">Other digital art prompts</h3>
 <p>Some other prompt examples where the results are very impressive.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1485,8 +1675,8 @@ Prompt
 <p>mdjrny-v4 style little dragon staring at magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="54">
-<details>
+<div id="cell-56" class="cell" data-tags="[]" data-execution_count="54">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style little dragon staring at magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
 <span id="cb30-2"><a href="#cb30-2"></a>payload <span class="op">=</span> {</span>
@@ -1502,21 +1692,33 @@ Prompt
 <span id="cb30-12"><a href="#cb30-12"></a><span class="co"># https://prompthero.com/prompt/63c7ed7865f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-26-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1524,8 +1726,8 @@ Prompt
 <p>mdjrny-v4 style, magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="55">
-<details>
+<div id="cell-58" class="cell" data-tags="[]" data-execution_count="55">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style, magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
 <span id="cb31-2"><a href="#cb31-2"></a>payload <span class="op">=</span> {</span>
@@ -1541,16 +1743,28 @@ Prompt
 <span id="cb31-12"><a href="#cb31-12"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-27-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="58">
+</div>
+<div id="cell-59" class="cell" data-tags="[]" data-execution_count="58">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -1559,7 +1773,7 @@ Prompt
 <h2 class="anchored" data-anchor-id="fantasyai-anything-v4.0">FantasyAI Anything V4.0</h2>
 <p><a href="https://huggingface.co/andite/anything-v4.0">anything-v4.0</a> is another model with a particular style. It is also based on Stable Diffusion and is good at producing high-quality, highly detailed anime styles with just a few prompts.</p>
 <p>Let’s get this model up and running.</p>
-<div class="cell" data-tags="[]" data-execution_count="59">
+<div id="cell-61" class="cell" data-tags="[]" data-execution_count="59">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-andite-anything-v4-0"</span></span>
 <span id="cb33-2"><a href="#cb33-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1569,12 +1783,12 @@ Prompt
 <section id="realistic-people-1" class="level3">
 <h3 class="anchored" data-anchor-id="realistic-people-1">Realistic people</h3>
 <p>I used a simple prompt to get a portrait of a casual boy sitting in the coffee shop. From the results, you can see that it has a notable anime and manga taste. In addition, the boy’s eyes, hairstyle, clothes, and lighting all represent anime fashion.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1582,8 +1796,8 @@ Prompt
 <p>1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="60">
-<details>
+<div id="cell-63" class="cell" data-tags="[]" data-execution_count="60">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a>prompt <span class="op">=</span> <span class="st">"1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
 <span id="cb35-2"><a href="#cb35-2"></a>payload <span class="op">=</span> {</span>
@@ -1598,22 +1812,34 @@ Prompt
 <span id="cb35-11"><a href="#cb35-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-30-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Let’s also try the same prompt we used to generate portraits of a young woman. But this time, all the generated images are in anime style.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1622,8 +1848,8 @@ Prompt
 <p>Negative = disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="61">
-<details>
+<div id="cell-65" class="cell" data-tags="[]" data-execution_count="61">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w"</span></span>
@@ -1640,21 +1866,33 @@ Prompt
 <span id="cb36-13"><a href="#cb36-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-31-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-warning callout callout-style-default callout-captioned">
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Warning
 </div>
 </div>
@@ -1666,12 +1904,12 @@ Warning
 <section id="landscapes-1" class="level3">
 <h3 class="anchored" data-anchor-id="landscapes-1">Landscapes</h3>
 <p>Let’s also try our castle prompt. Again the generative images are representative of anime and manga styles.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1679,8 +1917,8 @@ Prompt
 <p>A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="62">
-<details>
+<div id="cell-67" class="cell" data-tags="[]" data-execution_count="62">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
 <span id="cb37-2"><a href="#cb37-2"></a>payload <span class="op">=</span> {</span>
@@ -1695,16 +1933,28 @@ Prompt
 <span id="cb37-11"><a href="#cb37-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-32-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="66">
+</div>
+<div id="cell-68" class="cell" data-tags="[]" data-execution_count="66">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -1712,7 +1962,7 @@ Prompt
 <section id="mo-di-diffusion" class="level2">
 <h2 class="anchored" data-anchor-id="mo-di-diffusion">Mo Di Diffusion</h2>
 <p><a href="https://huggingface.co/nitrosocke/mo-di-diffusion">mo-di-diffusion</a> is another model good at expressing Disney animation studio style. It is based on Stable Diffusion 1.5 and fine-tuned on screenshots from Disney animation studio. However, users must use the tokens <code>modern disney style</code> in the prompts to get the desired effect.</p>
-<div class="cell" data-tags="[]" data-execution_count="67">
+<div id="cell-70" class="cell" data-tags="[]" data-execution_count="67">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-nitrosocke-mo-di-diffusion"</span></span>
 <span id="cb39-2"><a href="#cb39-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1722,12 +1972,12 @@ Prompt
 <section id="realistic-people-2" class="level3">
 <h3 class="anchored" data-anchor-id="realistic-people-2">Realistic people</h3>
 <p>Let’s start with our same “young boy in a coffee shop” prompt. This time the young boy is an attractive youthful adult characteristic of the Disney Animation world. The generated photographs have a very close resemblance to <a href="https://disney.fandom.com/wiki/Kristoff">Kristoff from Frozen</a> or <a href="https://disney.fandom.com/wiki/Tadashi_Hamada">Tadashi from Big Hero 6</a>.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1735,8 +1985,8 @@ Prompt
 <p>modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="69">
-<details>
+<div id="cell-72" class="cell" data-tags="[]" data-execution_count="69">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
 <span id="cb41-2"><a href="#cb41-2"></a>payload <span class="op">=</span> {</span>
@@ -1751,22 +2001,34 @@ Prompt
 <span id="cb41-11"><a href="#cb41-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-35-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The same is the case with a photo of young women. They remind me of <a href="https://en.wikipedia.org/wiki/Moana_(character)">Princess Moana</a> from Disney World. But, unfortunately, the last image is distorted because MoDi is based on Stable Diffusion, which has these inherent limitations.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1775,8 +2037,8 @@ Prompt
 <p>Negative = disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="70">
-<details>
+<div id="cell-74" class="cell" data-tags="[]" data-execution_count="70">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, crowd, people"</span></span>
@@ -1793,25 +2055,37 @@ Prompt
 <span id="cb42-13"><a href="#cb42-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-36-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="landscapes-and-architectures" class="level3">
 <h3 class="anchored" data-anchor-id="landscapes-and-architectures">Landscapes and architectures</h3>
 <p>I have also tried generating landscapes and building architectures. Both cases have a heavy touch of Disney World animation style.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1819,8 +2093,8 @@ Prompt
 <p>“modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="71">
-<details>
+<div id="cell-76" class="cell" data-tags="[]" data-execution_count="71">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
 <span id="cb43-2"><a href="#cb43-2"></a>payload <span class="op">=</span> {</span>
@@ -1835,21 +2109,33 @@ Prompt
 <span id="cb43-11"><a href="#cb43-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-37-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1857,8 +2143,8 @@ Prompt
 <p>modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="72">
-<details>
+<div id="cell-78" class="cell" data-tags="[]" data-execution_count="72">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
 <span id="cb44-2"><a href="#cb44-2"></a>payload <span class="op">=</span> {</span>
@@ -1873,16 +2159,28 @@ Prompt
 <span id="cb44-11"><a href="#cb44-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-38-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="73">
+</div>
+<div id="cell-79" class="cell" data-tags="[]" data-execution_count="73">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -1891,7 +2189,7 @@ Prompt
 <h2 class="anchored" data-anchor-id="inkpunk-diffusion">Inkpunk Diffusion</h2>
 <p>Our last model to try is <a href="https://huggingface.co/Envvi/Inkpunk-Diffusion">Inkpunk-Diffusion</a>. It is also based on Stable Diffusion and fine-tuned for “Inky” and “Punky” styles. We have to use <code>nvinkpunk</code> in our prompts to summon this style. If you find that the <em>InkPunk style</em> is very dominating in the outcomes, then try experimenting without this token to get a lighter version of this style.</p>
 <p>Let’s get this model up and running.</p>
-<div class="cell" data-tags="[]" data-execution_count="74">
+<div id="cell-81" class="cell" data-tags="[]" data-execution_count="74">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-envvi-inkpunk-diffusion"</span></span>
 <span id="cb46-2"><a href="#cb46-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1901,12 +2199,12 @@ Prompt
 <section id="realistic-people-and-portraits-1" class="level3">
 <h3 class="anchored" data-anchor-id="realistic-people-and-portraits-1">Realistic people and portraits</h3>
 <p>I asked for a “medieval cleric woman”. In the <em>InkPunk world</em>, the lady turned out to be a super-rocky astro-woman from the century 2100. But the style is fantastic.</p>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1914,8 +2212,8 @@ Prompt
 <p>nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting.</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="75">
-<details>
+<div id="cell-83" class="cell" data-tags="[]" data-execution_count="75">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting."</span></span>
 <span id="cb48-2"><a href="#cb48-2"></a>payload <span class="op">=</span> {</span>
@@ -1930,24 +2228,36 @@ Prompt
 <span id="cb48-11"><a href="#cb48-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-41-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="landscapes-and-architectures-1" class="level3">
 <h3 class="anchored" data-anchor-id="landscapes-and-architectures-1">Landscapes and architectures</h3>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1955,8 +2265,8 @@ Prompt
 <p>nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="76">
-<details>
+<div id="cell-85" class="cell" data-tags="[]" data-execution_count="76">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
 <span id="cb49-2"><a href="#cb49-2"></a>payload <span class="op">=</span> {</span>
@@ -1971,24 +2281,36 @@ Prompt
 <span id="cb49-11"><a href="#cb49-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-42-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="other-digital-art-prompts-1" class="level3">
 <h3 class="anchored" data-anchor-id="other-digital-art-prompts-1">Other digital art prompts</h3>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -1996,8 +2318,8 @@ Prompt
 <p>nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="77">
-<details>
+<div id="cell-87" class="cell" data-tags="[]" data-execution_count="77">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot"</span></span>
 <span id="cb50-2"><a href="#cb50-2"></a>payload <span class="op">=</span> {</span>
@@ -2013,21 +2335,33 @@ Prompt
 <span id="cb50-12"><a href="#cb50-12"></a><span class="co"># https://prompthero.com/prompt/67bc77c123f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-43-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -2035,8 +2369,8 @@ Prompt
 <p>nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="78">
-<details>
+<div id="cell-89" class="cell" data-tags="[]" data-execution_count="78">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines"</span></span>
 <span id="cb51-2"><a href="#cb51-2"></a>payload <span class="op">=</span> {</span>
@@ -2051,21 +2385,33 @@ Prompt
 <span id="cb51-11"><a href="#cb51-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-44-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="callout-note callout callout-style-default no-icon callout-captioned">
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Prompt
 </div>
 </div>
@@ -2073,8 +2419,8 @@ Prompt
 <p>nvinkpunk steampunk style blimp, Jules Verne, mechanical</p>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="79">
-<details>
+<div id="cell-91" class="cell" data-tags="[]" data-execution_count="79">
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk steampunk style blimp, Jules Verne, mechanical"</span></span>
 <span id="cb52-2"><a href="#cb52-2"></a>payload <span class="op">=</span> {</span>
@@ -2089,16 +2435,28 @@ Prompt
 <span id="cb52-11"><a href="#cb52-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-2.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-3.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2023-05-10-amazon-jumpstart-text2img-stablediffusion_files/figure-html/cell-45-output-3.png" class="img-fluid figure-img"></p>
+</figure>
 </div>
 </div>
-<div class="cell" data-tags="[]" data-execution_count="81">
+</div>
+<div id="cell-92" class="cell" data-tags="[]" data-execution_count="81">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
@@ -2127,121 +2485,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -2249,12 +2492,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -2286,11 +2532,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -2300,8 +2583,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -2313,9 +2605,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -2358,6 +2885,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 
