@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-01-21">
+<meta name="description" content="Deploying Streamlit on AWS? I faced WebSocket issues with Lambda and App Runner, found a solution with Lightsail, and built a custom Fargate solution with AWS CDK. This post shares my lessons and cost insights.">
+
+<title>My Streamlit Deployment Journey on AWS : What Worked, What Didn’t – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-9f447091f8b1454dcd9b1558d5056ce7.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-8aa8884591a9136173b71f6048871fae.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="My Streamlit Deployment Journey on AWS : What Worked, What Didn’t – Random Thoughts">
+<meta property="og:description" content="Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.">
+<meta property="og:image" content="images/2025-01-21-streamlit-deployment-aws.jpg">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="My Streamlit Deployment Journey on AWS : What Worked, What Didn’t – Random Thoughts">
+<meta name="twitter:description" content="Deploying a Streamlit app on AWS was challenging due to its reliance on WebSockets, which services like Lambda, AppRunner, and Lightsail couldn’t fully support. I ultimately succeeded by using AWS Fargate and Application Load Balancer. This post summarizes my experience and provides a practical guide for similar deployments.">
+<meta name="twitter:image" content="images/2025-01-21-streamlit-deployment-aws.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  </ul></li>
+  <li><a href="#the-initial-assumption-docker-cloud-easy-deployment" id="toc-the-initial-assumption-docker-cloud-easy-deployment" class="nav-link" data-scroll-target="#the-initial-assumption-docker-cloud-easy-deployment">The Initial Assumption: Docker + Cloud = Easy Deployment</a>
+  <ul class="collapse">
+  <li><a href="#diving-deep-streamlit-network-communication" id="toc-diving-deep-streamlit-network-communication" class="nav-link" data-scroll-target="#diving-deep-streamlit-network-communication">Diving Deep: Streamlit Network Communication</a></li>
+  </ul></li>
+  <li><a href="#first-attempt-the-serverless-approach-with-aws-lambda" id="toc-first-attempt-the-serverless-approach-with-aws-lambda" class="nav-link" data-scroll-target="#first-attempt-the-serverless-approach-with-aws-lambda">First Attempt: The Serverless Approach with AWS Lambda</a></li>
+  <li><a href="#second-attempt-containerized-deployment-with-aws-app-runner" id="toc-second-attempt-containerized-deployment-with-aws-app-runner" class="nav-link" data-scroll-target="#second-attempt-containerized-deployment-with-aws-app-runner">Second Attempt: Containerized Deployment with AWS App Runner</a></li>
+  <li><a href="#third-attempt-the-unexpected-success-with-aws-lightsail" id="toc-third-attempt-the-unexpected-success-with-aws-lightsail" class="nav-link" data-scroll-target="#third-attempt-the-unexpected-success-with-aws-lightsail">Third Attempt: The Unexpected Success with AWS Lightsail</a></li>
+  <li><a href="#the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk" id="toc-the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk" class="nav-link" data-scroll-target="#the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk">The Final Piece: Deploying Streamlit with Fargate and AWS CDK</a></li>
+  <li><a href="#a-practical-look-at-pricing-lightsail-vs.-fargate" id="toc-a-practical-look-at-pricing-lightsail-vs.-fargate" class="nav-link" data-scroll-target="#a-practical-look-at-pricing-lightsail-vs.-fargate">A Practical Look at Pricing: Lightsail vs.&nbsp;Fargate</a></li>
+  <li><a href="#lessons-learned-and-looking-ahead" id="toc-lessons-learned-and-looking-ahead" class="nav-link" data-scroll-target="#lessons-learned-and-looking-ahead">Lessons Learned and Looking Ahead</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">My Streamlit Deployment Journey on AWS : What Worked, What Didn’t</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">python</div>
+    <div class="quarto-category">aws</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Deploying Streamlit on AWS? I faced WebSocket issues with Lambda and App Runner, found a solution with Lightsail, and built a custom Fargate solution with AWS CDK. This post shares my lessons and cost insights.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 21, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-01-21-streamlit-deployment-aws.jpg" class="img-fluid figure-img"></p>
+<figcaption>image source: https://www.artbreeder.com/image/5172f176d52800751b4463f4d554</figcaption>
+</figure>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>I recently embarked on a journey to rapidly prototype a personal LLM application. Like many developers, I was drawn to Streamlit for its simplicity and Python-first approach. The ability to quickly design interactive UIs without wrestling with HTML or CSS made it the perfect fit. However, the road to deploying that Streamlit app on AWS turned out to be much more challenging than I initially anticipated. I naively thought that containerizing my app with Docker would be the golden ticket, and I’d be up and running in no time. I was wrong! This post will take you through my learning experience, detailing the various approaches I tried to host the Streamlit application on the AWS cloud, and share what I learned through the process. From serverless lambda functions to dedicated virtual machines, I’ll describe what worked, what didn’t, and most importantly, why. By the end of the post, I hope that my experience helps you avoid the pitfalls and saves you from many days of frustration. Let’s begin!</p>
+<section id="environment-details" class="level3">
+<h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<div id="cell-4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> streamlit</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"streamlit=="</span> <span class="op">+</span> streamlit.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.12.8
+streamlit==1.41.1</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code Samples
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All the code examples used in this post can be found on the GitHub repo <a href="https://github.com/hassaanbinaslam/2025-01-21-streamlit-deployment-aws">2025-01-21-streamlit-deployment-aws</a></p>
+</div>
+</div>
+</section>
+</section>
+<section id="the-initial-assumption-docker-cloud-easy-deployment" class="level2">
+<h2 class="anchored" data-anchor-id="the-initial-assumption-docker-cloud-easy-deployment">The Initial Assumption: Docker + Cloud = Easy Deployment</h2>
+<p>With my Streamlit application working perfectly on my local machine, I confidently assumed the next step would be straightforward. “Dockerize it, and deploy it to the cloud,” I thought. After all, Docker simplifies application packaging, and cloud platforms like AWS are built for containerized apps, right? My understanding was that the cloud provided a wide array of services to host containerized apps, automatically managing network configurations, and quickly exposing my app through a public URL. I naively believed it would be a seamless and fast process.</p>
+<p>To understand where I went wrong, it’s helpful to understand the internal architecture of Streamlit. As shown in the diagram below, a Streamlit application consists of three main parts:</p>
+<ul>
+<li>a React-based frontend</li>
+<li>a <a href="https://www.tornadoweb.org/">Tornado web server</a></li>
+<li>and the Streamlit library.</li>
+</ul>
+<p>The React frontend is responsible for rendering the user interface, while the Tornado web server manages the application’s logic and communication with the frontend. What’s crucial is that the frontend and the Tornado web server communicate through the <code>WebSocket protocol</code>, enabling real-time, bi-directional communication. This is a key detail which is easy to overlook when starting out.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-architecture.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-architecture.png" class="img-fluid"></a></p>
+<section id="diving-deep-streamlit-network-communication" class="level3">
+<h3 class="anchored" data-anchor-id="diving-deep-streamlit-network-communication">Diving Deep: Streamlit Network Communication</h3>
+<p>To truly grasp the importance of WebSockets for Streamlit, let’s take a look at what’s happening under the hood during its network communication. I have used <a href="https://www.wireshark.org/">Wireshark</a> to capture the network communication that happens when a simple Streamlit app (shown below) is loaded in a browser.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-hello-page.png" class="img-fluid"></a></p>
+<p>As you can see, the app simply displays “Hello From Streamlit” and is running on <code>localhost:8501</code>.</p>
+<div id="cell-8" class="cell">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>app.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a>st.title(<span class="st">"Hello From Streamlit"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<p>The screenshot below shows the Wireshark capture of the complete network communication trace.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-complete-trace.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-complete-trace.png" class="img-fluid"></a></p>
+<p>Initially, the communication starts with the standard HTTP protocol, and it can be seen by the green lines. The browser sends GET requests to fetch resources like JavaScript and CSS files. Then, after initial handshakes, the protocol switches to WebSockets which can be seen in the blue lines. The communication over WebSockets is for the actual application logic. This screenshot highlights the critical role WebSockets play in Streamlit’s operation.</p>
+<p>Let’s take a closer look.</p>
+<p><strong>Stage 1: First Contact with Server</strong></p>
+<p>The first request from the browser is a simple GET request for the main page. The server then sends back an HTML document. This is shown in the below image.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-tornado-server.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-tornado-server.png" class="img-fluid"></a></p>
+<p>Here, we can see that the server identifies itself as a “TornadoServer” and the content type is <code>text/html</code>. This confirms that the underlying web server in Streamlit is indeed Tornado.</p>
+<p><strong>Stage 2: Initial HTML Payload from Server</strong></p>
+<p>The response body contains the HTML page that needs to be rendered, and the browser then parses it and starts loading the associated CSS and JS files.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-loaded-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-loaded-page.png" class="img-fluid"></a></p>
+<p>The following code block is the HTML page that is returned by the server.</p>
+<div id="cell-10" class="cell" data-vscode="{&quot;languageId&quot;:&quot;html&quot;}">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">&lt;!--</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a> Copyright (c) Streamlit Inc. (<span class="dv">2018</span><span class="op">-</span><span class="dv">2022</span>) Snowflake Inc. (<span class="dv">2022</span><span class="op">-</span><span class="dv">2024</span>)</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a> Licensed under the Apache License, Version <span class="fl">2.0</span> (the <span class="st">"License"</span>)<span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a> you may <span class="kw">not</span> use this <span class="bu">file</span> <span class="cf">except</span> <span class="kw">in</span> compliance <span class="cf">with</span> the License.</span>
+<span id="cb4-6"><a href="#cb4-6"></a> You may obtain a copy of the License at</span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a>     http:<span class="op">//</span>www.apache.org<span class="op">/</span>licenses<span class="op">/</span>LICENSE<span class="op">-</span><span class="fl">2.0</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a></span>
+<span id="cb4-10"><a href="#cb4-10"></a> Unless required by applicable law <span class="kw">or</span> agreed to <span class="kw">in</span> writing, software</span>
+<span id="cb4-11"><a href="#cb4-11"></a> distributed under the License <span class="kw">is</span> distributed on an <span class="st">"AS IS"</span> BASIS,</span>
+<span id="cb4-12"><a href="#cb4-12"></a> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express <span class="kw">or</span> implied.</span>
+<span id="cb4-13"><a href="#cb4-13"></a> See the License <span class="cf">for</span> the specific language governing permissions <span class="kw">and</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a> limitations under the License.</span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="op">--&gt;</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="op">&lt;!</span>DOCTYPE html<span class="op">&gt;</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="op">&lt;</span>html lang<span class="op">=</span><span class="st">"en"</span><span class="op">&gt;</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="op">&lt;</span>head<span class="op">&gt;</span></span>
+<span id="cb4-21"><a href="#cb4-21"></a>   <span class="op">&lt;</span>meta charset<span class="op">=</span><span class="st">"UTF-8"</span> <span class="op">/&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a>   <span class="op">&lt;</span>meta name<span class="op">=</span><span class="st">"viewport"</span> content<span class="op">=</span><span class="st">"width=device-width, initial-scale=1, shrink-to-fit=no"</span> <span class="op">/&gt;</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"shortcut icon"</span> href<span class="op">=</span><span class="st">"./favicon.png"</span> <span class="op">/&gt;</span></span>
+<span id="cb4-24"><a href="#cb4-24"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Regular.DZLUzqI4.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb4-25"><a href="#cb4-25"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb4-26"><a href="#cb4-26"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-SemiBold.sKQIyTMz.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb4-27"><a href="#cb4-27"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb4-28"><a href="#cb4-28"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"preload"</span> href<span class="op">=</span><span class="st">"./static/media/SourceSansPro-Bold.-6c9oR8J.woff2"</span> <span class="im">as</span><span class="op">=</span><span class="st">"font"</span> <span class="bu">type</span><span class="op">=</span><span class="st">"font/woff2"</span></span>
+<span id="cb4-29"><a href="#cb4-29"></a>       crossorigin <span class="op">/&gt;</span></span>
+<span id="cb4-30"><a href="#cb4-30"></a></span>
+<span id="cb4-31"><a href="#cb4-31"></a>   <span class="op">&lt;</span>title<span class="op">&gt;</span>Streamlit<span class="op">&lt;/</span>title<span class="op">&gt;</span></span>
+<span id="cb4-32"><a href="#cb4-32"></a></span>
+<span id="cb4-33"><a href="#cb4-33"></a>   <span class="op">&lt;!--</span> initialize window.prerenderReady to false <span class="kw">and</span> then <span class="bu">set</span> to true <span class="kw">in</span> React app when app <span class="kw">is</span> ready <span class="cf">for</span> indexing <span class="op">--&gt;</span></span>
+<span id="cb4-34"><a href="#cb4-34"></a>   <span class="op">&lt;</span>script<span class="op">&gt;</span></span>
+<span id="cb4-35"><a href="#cb4-35"></a>       window.prerenderReady <span class="op">=</span> false</span>
+<span id="cb4-36"><a href="#cb4-36"></a>   <span class="op">&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb4-37"><a href="#cb4-37"></a>   <span class="op">&lt;</span>script <span class="bu">type</span><span class="op">=</span><span class="st">"module"</span> crossorigin src<span class="op">=</span><span class="st">"./static/js/index.Phesr84n.js"</span><span class="op">&gt;&lt;/</span>script<span class="op">&gt;</span></span>
+<span id="cb4-38"><a href="#cb4-38"></a>   <span class="op">&lt;</span>link rel<span class="op">=</span><span class="st">"stylesheet"</span> crossorigin href<span class="op">=</span><span class="st">"./static/css/index.CcCsR6ah.css"</span><span class="op">&gt;</span></span>
+<span id="cb4-39"><a href="#cb4-39"></a><span class="op">&lt;/</span>head<span class="op">&gt;</span></span>
+<span id="cb4-40"><a href="#cb4-40"></a></span>
+<span id="cb4-41"><a href="#cb4-41"></a><span class="op">&lt;</span>body<span class="op">&gt;</span></span>
+<span id="cb4-42"><a href="#cb4-42"></a>   <span class="op">&lt;</span>noscript<span class="op">&gt;</span>You need to enable JavaScript to run this app.<span class="op">&lt;/</span>noscript<span class="op">&gt;</span></span>
+<span id="cb4-43"><a href="#cb4-43"></a>   <span class="op">&lt;</span>div <span class="bu">id</span><span class="op">=</span><span class="st">"root"</span><span class="op">&gt;&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb4-44"><a href="#cb4-44"></a><span class="op">&lt;/</span>body<span class="op">&gt;</span></span>
+<span id="cb4-45"><a href="#cb4-45"></a></span>
+<span id="cb4-46"><a href="#cb4-46"></a><span class="op">&lt;/</span>html<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>After loading the HTML page, the embedded <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload">preload links</a> starts making subsequent HTTP requests for fetching CSS and JavaScript files. Once these files are loaded, the client is ready to switch to the WebSocket protocol.</p>
+<p><strong>Stage 3: Switching of Protocols</strong></p>
+<p>The next image shows that the browser requests the server to switch from HTTP to WebSocket using the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/101">101 Switching Protocols</a> message.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-switching-protocol.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-switching-protocol.png" class="img-fluid"></a></p>
+<p>After this handshake, the communication from client and server happens using the WebSocket protocol. The image below shows how the application data is sent from the server to the client using WebSockets.</p>
+<p><strong>Stage 4: Application Logic</strong></p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/wireshark-content.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-01-21-streamlit-deployment-aws/wireshark-content.png" class="img-fluid"></a></p>
+<p>This shows how the data containing the message “Hello From Streamlit” is exchanged through WebSockets. After that, most of the communication between the client and server consists of <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#pings_and_pongs_the_heartbeat_of_websockets">ping/pong messages</a>, which indicates that the connection is active. This pattern of sending data using WebSockets is what makes Streamlit apps interactive.</p>
+</section>
+</section>
+<section id="first-attempt-the-serverless-approach-with-aws-lambda" class="level2">
+<h2 class="anchored" data-anchor-id="first-attempt-the-serverless-approach-with-aws-lambda">First Attempt: The Serverless Approach with AWS Lambda</h2>
+<p>Given my initial goal of quick prototyping and a preference for serverless architectures, <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> seemed like the ideal first choice. It promised a cost-effective and low-maintenance solution where I could just upload my code and let AWS handle the infrastructure. I envisioned deploying the Streamlit app as a Lambda function and then expose it to the public internet through an endpoint. My understanding was that this would be the easiest, cheapest, and fastest way to make my app accessible to others.</p>
+<p>To make this happen, I used the <a href="https://github.com/awslabs/aws-lambda-web-adapter">Lambda Web Adapter</a>, which is designed to allow Lambda functions to respond to HTTP requests like a typical web server. As illustrated in the diagram below, the client browser would send requests to the <a href="https://aws.amazon.com/blogs/aws/announcing-aws-lambda-function-urls-built-in-https-endpoints-for-single-function-microservices/">Lambda Function URL</a>.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-01-21-streamlit-deployment-aws/lambda-web-adapter.png" class="img-fluid"></a></p>
+<p>The Lambda function, through the Lambda Web Adapter, would then pass these requests to the Docker container running my Streamlit app, which was pushed to Amazon ECR. Following is the <code>Dockerfile</code> I used to build the app container.</p>
+<div id="cell-13" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>Dockerfile</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># Use the AWS Lambda Python base image</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>FROM public.ecr.aws<span class="op">/</span>docker<span class="op">/</span>library<span class="op">/</span>python:<span class="fl">3.12.1</span><span class="op">-</span>slim</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co"># Add the AWS Lambda Web Adapter</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>COPY <span class="op">--</span><span class="im">from</span><span class="op">=</span>public.ecr.aws<span class="op">/</span>awsguru<span class="op">/</span>aws<span class="op">-</span><span class="kw">lambda</span><span class="op">-</span>adapter:<span class="fl">0.8.4</span> <span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter <span class="op">/</span>opt<span class="op">/</span>extensions<span class="op">/</span><span class="kw">lambda</span><span class="op">-</span>adapter</span>
+<span id="cb5-6"><a href="#cb5-6"></a></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co"># Set the working directory</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>WORKDIR <span class="op">/</span>var<span class="op">/</span>task</span>
+<span id="cb5-9"><a href="#cb5-9"></a></span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co"># Copy app code and dependencies</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>COPY app.py requirements.txt .<span class="op">/</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co"># Install dependencies</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a>RUN pip install <span class="op">--</span>no<span class="op">-</span>cache<span class="op">-</span><span class="bu">dir</span> <span class="op">-</span>r requirements.txt</span>
+<span id="cb5-15"><a href="#cb5-15"></a></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="co"># Command to start Streamlit</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a>CMD [<span class="st">"streamlit"</span>, <span class="st">"run"</span>, <span class="st">"app.py"</span>, <span class="st">"--server.port=8080"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<p>When I deployed my app and loaded the page, to my utter frustration, it was just an empty page. No errors, just a blank screen! I refreshed the page, checked my code, and looked at the logs, and everything seemed to be fine. I was able to get a response from the server, indicating that my request was reaching the Lambda function and that my Streamlit app was running inside a container. My browser was connecting to the server, and the server was responding to HTTP requests. However, I was still unable to see my Streamlit app!</p>
+<p>This is when I discovered the critical limitation: Lambda functions and the Lambda Web Adapter, by design, operate using a request-response pattern with the HTTP protocol. While the <a href="https://aws.amazon.com/blogs/compute/using-response-streaming-with-aws-lambda-web-adapter-to-optimize-performance/">Web Adapter does support HTTP request streaming</a>, it does not support WebSockets. My Streamlit app was loading till the point where the page receives HTTP responses for loading the basic HTML page, JS and CSS files. The application was working as far as HTTP communication was concerned. However, as we discussed before, Streamlit relies heavily on WebSockets for its real-time interactivity. This is evident from the browser’s developer tools screenshot:</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-lambda-page-error-headers.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-lambda-page-error-headers.png" class="img-fluid"></a></p>
+<p>You can see that while the initial HTTP requests for resources like HTML, JS, and CSS files are successful, the crucial “stream” connection using WebSocket fails, hence the empty page. The frontend was trying to establish a WebSocket connection with the Lambda, but since the Lambda Function URL + Web Adapter only support HTTP/s requests and does not support WebSocket, the connection attempt failed, and the page was stuck.</p>
+<p>This realization was a learning moment and made it clear to me that I needed a completely different approach.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+AWS Lambda Function URL and Lambda Web Adapter: HTTP-Only Support
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>AWS Lambda Function URL and Lambda Web Adapter enable HTTP(S) access to Lambda functions:</p>
+<ul>
+<li><strong>Lambda Function URL</strong>: Creates a direct HTTPS endpoint for invoking Lambda functions, ideal for lightweight, event-driven HTTP-based applications.</li>
+<li><strong>Lambda Web Adapter</strong>: Bridges Lambda with web frameworks (e.g., Flask, Express.js), routing HTTP requests to the application.</li>
+</ul>
+<p>Both support only HTTP(S) traffic, not protocols like WebSocket or raw TCP/UDP, making them suited for RESTful APIs, webhooks, and serverless web apps requiring HTTP communication.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="second-attempt-containerized-deployment-with-aws-app-runner" class="level2">
+<h2 class="anchored" data-anchor-id="second-attempt-containerized-deployment-with-aws-app-runner">Second Attempt: Containerized Deployment with AWS App Runner</h2>
+<p>After my unsuccessful attempt with AWS Lambda, I knew I needed a solution that handled persistent WebSockets. AWS <a href="https://aws.amazon.com/apprunner/">App Runner</a> seemed like a promising next step, as a managed container platform that would supposedly handle the underlying infrastructure for me. Since my Docker image was already on ECR, I thought switching to App Runner would be easy. With just a few clicks, I could run my containerized app, automatically managing the networking configurations, and access it through a public URL.</p>
+<p>I configured an App Runner service, pointing it to my container image and specifying the necessary port configurations. The service deployed successfully and provided a public URL. However, just like before, my browser showed a blank page!</p>
+<p>The issue, as with Lambda, was the lack of WebSocket support. AWS App Runner, as highlighted in its documentation below, is designed for HTTP 1.0 and HTTP 1.1 applications and does not provide support for persistent WebSockets connections, and it can be seen in the screenshot below as well. <a href="https://docs.aws.amazon.com/apprunner/latest/dg/develop.html#develop.considerations">Link to docs here</a>.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/apprunner-docs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-01-21-streamlit-deployment-aws/apprunner-docs.png" class="img-fluid"></a></p>
+<p>The screenshot from my browser’s developer tools shows the same issue that I observed with Lambda, highlighting the fact that the initial resources were loading using HTTP protocol, but the websocket connection attempt fails:</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-apprunner-page-error.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-apprunner-page-error.png" class="img-fluid"></a></p>
+<p>This was another learning moment for me and helped me realize that a containerized service alone doesn’t guarantee compatibility with applications like Streamlit, which require WebSockets. It highlighted the importance of understanding the specific requirements of my application before choosing a deployment service.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+AWS App Runner: HTTP Support
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>AWS App Runner provides support for HTTP 1.0 and HTTP 1.1 to handle web requests directed to container instances.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="third-attempt-the-unexpected-success-with-aws-lightsail" class="level2">
+<h2 class="anchored" data-anchor-id="third-attempt-the-unexpected-success-with-aws-lightsail">Third Attempt: The Unexpected Success with AWS Lightsail</h2>
+<p>After hitting roadblocks with serverless and managed container solutions, I decided to explore <a href="https://aws.amazon.com/lightsail/">AWS Lightsail</a>, and I was drawn to Lightsail for its simplicity and intuitive interface. With a few clicks, you can provision a virtual server, and also it has predictable and budget-friendly pricing, making it an attractive option for various projects. Moreover, unlike App Runner, Lightsail’s container service provides a dedicated virtual server to run your container. And not only that it also gives a public URL to access your web app. Lightsail basically offers an alternative and simplified version of services such as instances, containers, databases, storage, and more to get your web application up and running in just a few clicks. This makes it an excellent choice for rapid prototyping, proof-of-concept projects, and developers seeking a hassle-free experience.</p>
+<p>I was initially skeptical because the official Lightsail documentation clearly states that its public endpoints only support HTTPS traffic and do not support TCP or UDP, which also meant it does not provide WebSockets. Here is the image of the documentation. <a href="https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-container-services.html#understanding-lightsail-container-services">Link to docs here</a></p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-docs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-docs.png" class="img-fluid"></a></p>
+<p>However, I had also come across blog posts where others had successfully deployed WebSocket applications on Lightsail. I decided to give it a try. I’ll also link one such post here <a href="https://betterprogramming.pub/how-to-deploy-a-websocket-app-to-amazon-lightsail-63ec29edd2e0">Link to the blog post</a>. Since my container image was already in ECR, deploying it to Lightsail was straightforward.</p>
+<p>I configured my Lightsail container service, provided my ECR image URI, and set up the correct port mappings. You may use the linked post to find all the required steps <a href="https://dev.to/aws-builders/containers-on-aws-amazon-lightsail-containers-4eco">Link to the blog post</a>. The entire process was remarkably simple and I was very hopeful, this time.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-container.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-container.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-configs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-configs.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>When I checked the public URL, my Streamlit app was working! The app was not showing a blank page anymore, and the “Hello From Streamlit” message was properly rendered. I was surprised to see that it was working, and also curious to see how it worked since Lightsail does not directly provide WebSockets support. I looked at the browser’s developer tools and confirmed that the WebSocket connection was indeed established successfully!</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-hello-page.png" class="img-fluid"></a></p>
+<p>You can see from the image above that the initial HTTP requests are completed to load the basic html and javascripts and then the application was able to successfully establish a stream connection using websockets.</p>
+<p>It turned out that even though Lightsail’s public endpoint is HTTP based, it somehow transparently handles WebSocket connections for containerized applications. This experience was a clear indication that sometimes documentation might not capture the entire picture, and it is important to try things out.</p>
+</section>
+<section id="the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk" class="level2">
+<h2 class="anchored" data-anchor-id="the-final-piece-deploying-streamlit-with-fargate-and-aws-cdk">The Final Piece: Deploying Streamlit with Fargate and AWS CDK</h2>
+<p>While the success with Lightsail was encouraging, I still felt the need for a solution that gave me greater transparency and control over my infrastructure. Lightsail is fantastic for quick deployments and prototypes, but it still abstracts away certain complexities that I wanted to manage myself. I started researching alternative approaches, keeping my desire for rapid setup and customization in mind. This led me to a solution based on AWS Fargate, fronted by an Application Load Balancer, and using the AWS CDK for infrastructure as code.</p>
+<p>As illustrated in the architectural diagram below, the client browser connects to an Application Load Balancer, which then routes the traffic to the Fargate container running the Streamlit application.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/streamlit-fargate.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-01-21-streamlit-deployment-aws/streamlit-fargate.png" class="img-fluid"></a></p>
+<p>At first, the thought of setting up a full-fledged ECS cluster with Fargate and a load balancer seemed like an overwhelming task. The process involves provisioning various resources like VPC, security groups, load balancers, and more. However, I then discovered the <a href="https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns-readme.html">aws_ecs_patterns module</a> within AWS CDK, which provides a convenient way to create common application patterns using a single line of code. One such pre-built pattern is <a href="https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ecs_patterns/ApplicationLoadBalancedFargateService.html">ApplicationLoadBalancedFargateService</a>, which creates all the necessary resources and then deploys your container on it.</p>
+<p>The beauty of this approach is that while it takes care of setting up all the underlying infrastructure, it also gives you complete control. Everything is defined and deployed through code using CDK. You can version control your infrastructure, enabling easy management and scalability. This combination of control, simplicity, and automation made this the ideal choice. My experience with the previous three AWS services gave me confidence in my understanding of the problem. Thus, armed with this knowledge and the power of AWS CDK, I decided to build the custom stack to deploy my application.</p>
+<p>I have used this small piece of code to create the entire stack.</p>
+<div id="cell-18" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}">
+<div class="code-with-filename">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-with-filename-file">
+<pre><strong>streamlit_fargate_stack.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>vpc <span class="op">=</span> ec2.Vpc(</span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="va">self</span>,</span>
+<span id="cb6-3"><a href="#cb6-3"></a>    <span class="st">"StreamlitFargateVpc"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4"></a>    max_azs<span class="op">=</span><span class="dv">2</span>,  <span class="co"># Min=2. Default is all AZs in the region</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>)</span>
+<span id="cb6-6"><a href="#cb6-6"></a></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co"># Create an ECS Cluster</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>cluster <span class="op">=</span> ecs.Cluster(<span class="va">self</span>, <span class="st">"StreamlitFargateCluster"</span>, vpc<span class="op">=</span>vpc)</span>
+<span id="cb6-9"><a href="#cb6-9"></a></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co"># Define a Fargate Task Definition and Service</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>fargate_service <span class="op">=</span> ecs_patterns.ApplicationLoadBalancedFargateService(</span>
+<span id="cb6-12"><a href="#cb6-12"></a>    <span class="va">self</span>,</span>
+<span id="cb6-13"><a href="#cb6-13"></a>    <span class="st">"StreamlitFargateService"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14"></a>    cluster<span class="op">=</span>cluster,</span>
+<span id="cb6-15"><a href="#cb6-15"></a>    task_image_options<span class="op">=</span>{</span>
+<span id="cb6-16"><a href="#cb6-16"></a>        <span class="st">"image"</span>: image,</span>
+<span id="cb6-17"><a href="#cb6-17"></a>        <span class="st">"container_port"</span>: <span class="dv">8501</span>,  <span class="co"># Streamlit default port=8501. Should be adjusted based on Dockerfile</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a>    },</span>
+<span id="cb6-19"><a href="#cb6-19"></a>    public_load_balancer<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb6-20"><a href="#cb6-20"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+<p>While the code looks quite simple, a lot is happening behind the scenes. If you check the CloudFormation console, you will see the resources created.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/fargate-cdk-resources.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="images/2025-01-21-streamlit-deployment-aws/fargate-cdk-resources.png" class="img-fluid"></a></p>
+<p>As you can see from the image, the code has created 41 resources, including VPC, subnets, route tables, security groups, Elastic IPs, NAT Gateways, Internet Gateways, and IAM roles. This is a complex stack that was created with a very small piece of code.</p>
+<p>After deploying the stack using CDK, I was able to access my Streamlit application through a public URL. And this time the WebSockets were working perfectly!</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/fargate-hello.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="images/2025-01-21-streamlit-deployment-aws/fargate-hello.png" class="img-fluid"></a></p>
+<p>As you can see, the app is working as expected, the connection has been established and the “Hello From Streamlit” message is shown on the page. This was my final and successful approach in deploying the Streamlit application.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Want Full Stack Control?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>If you want more control and flexibility, you may built the entire stack on your own without relying on the <code>aws_ecs_patterns</code> module. If you want that, check out this post from the AWS Blog: <a href="https://aws.amazon.com/blogs/machine-learning/build-and-deploy-a-ui-for-your-generative-ai-applications-with-aws-and-python/">Build and deploy a UI for your generative AI applications with AWS and Python</a>. The GitHub repo associated with this post builds the complete stack using individual components.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="a-practical-look-at-pricing-lightsail-vs.-fargate" class="level2">
+<h2 class="anchored" data-anchor-id="a-practical-look-at-pricing-lightsail-vs.-fargate">A Practical Look at Pricing: Lightsail vs.&nbsp;Fargate</h2>
+<p>While the custom Fargate solution provides the control and transparency I was looking for, it’s important to consider the cost implications. Let’s compare it with the simplicity and pricing of Lightsail to see how they stack up.</p>
+<p>Lightsail offers a very straightforward and transparent pricing structure. For my initial Streamlit deployment, I used the container service with the Nano option, which has a fixed cost of 7 USD per month. You can see its pricing structure in the screenshot below.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/lightsail-container-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="images/2025-01-21-streamlit-deployment-aws/lightsail-container-pricing.png" class="img-fluid"></a></p>
+<p>This makes it a very appealing choice for quick prototypes and projects that need a budget-friendly setup.</p>
+<p>Now let’s take a look at the costs associated with the custom Fargate solution. Although Fargate itself is relatively inexpensive, the overall cost can become significantly higher due to other resources like NAT Gateways, Load Balancers, and Elastic IPs that get created along with it. In my setup, the Fargate cost was almost negligible, less than 1 USD. The rest of the cost was distributed in these other services.</p>
+<p>The most expensive component in this solution is the <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html">NAT Gateways</a>. Since my setup involved deploying the app across two availability zones (<code>aws_ecs_patterns</code> enforces high availability), the solution also created two NAT gateways, one for each AZ. The minimum cost of each NAT Gateway is around 32 USD per month, totaling around 64 USD per month for this setup.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/natgayeway-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="images/2025-01-21-streamlit-deployment-aws/natgayeway-pricing.png" class="img-fluid"></a></p>
+<p>As you can see from the image, NAT Gateway charges by hour, and it costs $0.045 per hour. If we assume a minimum usage of 30 days a month, it amounts to $32 per month for a single NAT gateway. This is 4 times more expensive than the entire cost of the Lightsail container service.</p>
+<p>Another significant cost factor is the <a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html">Application Load Balancer (ALB)</a>. With minimum usage, it roughly costs 16 USD per month, which also charges hourly.</p>
+<p><a href="images/2025-01-21-streamlit-deployment-aws/alb-pricing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-21"><img src="images/2025-01-21-streamlit-deployment-aws/alb-pricing.png" class="img-fluid"></a></p>
+<p>Looking at the image, it can be seen that the cost of the ALB is $0.0225 per ALB-hour. For minimum usage it roughly translates to around $16 USD a month.</p>
+<p>Lastly, two <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html">Elastic IPs (EIPs)</a> are created by the stack (one for each NAT gateway). The cost for these two EIPs is around 7.30 USD per month.</p>
+<p>When you sum it up, while the actual cost of running the Fargate container itself is barely around 1 USD per month, the cost of NAT gateways, Load Balancer, and EIPs adds up significantly. For this simple setup, I estimate that the cost of this custom Fargate solution would easily amount to around 90 USD per month. This is much higher than the 7 USD per month that I estimated with the Lightsail container service. It’s important to note that these costs might vary based on usage, but even with minimal activity, the custom Fargate solution will remain significantly more expensive than the Lightsail option.</p>
+<p>While the custom Fargate setup does provide more control and transparency, the cost implications are something that you should keep in mind for running your prototypes.</p>
+</section>
+<section id="lessons-learned-and-looking-ahead" class="level2">
+<h2 class="anchored" data-anchor-id="lessons-learned-and-looking-ahead">Lessons Learned and Looking Ahead</h2>
+<p>My journey to deploy a Streamlit application on AWS was filled with unexpected challenges, and valuable learning moments. I started with a simple assumption but quickly learned the critical role of WebSockets for Streamlit applications, and the limitations of AWS Lambda and App Runner, which only support HTTP requests. Though AWS Lightsail provided a surprisingly simple solution for deploying the app, I decided to build my own solution with AWS CDK and Fargate for more control.</p>
+<p>This journey highlighted the importance of understanding your application requirements, and the costs associated with them. While a custom Fargate deployment provides the most control, it also came with hidden costs that made it far more expensive than the simpler Lightsail setup. The most important takeaway for me is that there is not a one size fits all solution, and each deployment strategy comes with its own limitations, and it is critical to understand what we are doing.</p>
+<p>Ultimately, the right approach depends on your specific needs. I hope that by sharing my experiences, you can avoid some of the pitfalls I encountered. Thank you for joining me on this journey!</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
