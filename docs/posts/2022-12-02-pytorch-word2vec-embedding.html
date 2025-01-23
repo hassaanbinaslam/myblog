@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2022-12-02">
 <meta name="description" content="This is a practice notebook to implement word2vec in PyTorch.">
 
-<title>Random Thoughts - Implementing Word2Vec with PyTorch</title>
+<title>Implementing Word2Vec with PyTorch – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,47 +49,17 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -136,17 +113,17 @@ gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Implementing Word2Vec with PyTorch">
+<meta property="og:title" content="Implementing Word2Vec with PyTorch – Random Thoughts">
 <meta property="og:description" content="This is a practice notebook to implement word2vec in PyTorch.">
 <meta property="og:image" content="images/2022-12-02-pytorch-word2vec-embedding.png">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Implementing Word2Vec with PyTorch">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Implementing Word2Vec with PyTorch – Random Thoughts">
 <meta name="twitter:description" content="This is a practice notebook to implement word2vec in PyTorch.">
 <meta name="twitter:image" content="images/2022-12-02-pytorch-word2vec-embedding.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -156,45 +133,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -260,7 +236,9 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <p><img src="images/2022-12-02-pytorch-word2vec-embedding.png" class="img-fluid"></p>
 <section id="credits" class="level2">
@@ -280,12 +258,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <li><strong>Open In Colab</strong>: <a href="https://colab.research.google.com/github/hassaanbinaslam/myblog/blob/main/posts/2022-12-02-pytorch-word2vec-embedding.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></li>
 </ul>
 <p><a href="https://huggingface.co/docs/datasets/index">Hugging Face Datasets</a> library is required for this post.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:4182,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327669270,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="4bef8920-d475-4392-c626-eff7bec46cd2">
+<div id="cell-4" class="cell" data-executioninfo="{&quot;elapsed&quot;:4182,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327669270,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="4bef8920-d475-4392-c626-eff7bec46cd2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># install hugging face datasets</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span> pip install datasets</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:1902,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327671155,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="88ceae6c-0eb7-4b3b-b23e-eddf05a0cfe0" data-execution_count="2">
-<details>
+<div id="cell-5" class="cell" data-executioninfo="{&quot;elapsed&quot;:1902,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327671155,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="88ceae6c-0eb7-4b3b-b23e-eddf05a0cfe0" data-execution_count="2">
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="im">import</span> numpy, matplotlib, pandas, torch, datasets</span>
@@ -334,7 +312,7 @@ datasets==2.7.1</code></pre>
 <section id="load-hugging-face-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="load-hugging-face-dataset">Load Hugging Face Dataset</h3>
 <p>For this notebook, I will use Hugging Face <a href="https://huggingface.co/datasets/tweets_hate_speech_detection">Twitter Hate Speech Dataset</a>. It contains training data with approximately 32K tweets divided into two groups: <code>hate speech</code> and <code>not a hate speech</code>. This dataset is originally for classification tasks, but we may use it to learn word embeddings (or word contexts). This approach can also be used to identify inherent biases present in the data.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:2234,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673382,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="16456549-3281-4124-aea6-451e98eeaf01" data-execution_count="3">
+<div id="cell-9" class="cell" data-executioninfo="{&quot;elapsed&quot;:2234,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673382,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="16456549-3281-4124-aea6-451e98eeaf01" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">import</span> datasets</span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
 <span id="cb4-3"><a href="#cb4-3"></a>dataset <span class="op">=</span> datasets.load_dataset(<span class="st">"tweets_hate_speech_detection"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -343,11 +321,11 @@ datasets==2.7.1</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"fd43128fc4d74e10a6d4d64df3d3195a","version_major":2,"version_minor":0}
+{"model_id":"fd43128fc4d74e10a6d4d64df3d3195a","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
 </script>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:34,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673383,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fb6fd427-9d13-4044-c9e0-a381d6d5eb21" data-execution_count="4">
+<div id="cell-10" class="cell" data-executioninfo="{&quot;elapsed&quot;:34,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673383,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fb6fd427-9d13-4044-c9e0-a381d6d5eb21" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># Let's check the downloaded object</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a>dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
@@ -360,7 +338,7 @@ datasets==2.7.1</code></pre>
 </div>
 </div>
 <p>It shows that we have only a training set, and each element from the set has a <code>label</code> and <code>tweet</code> text.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:32,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673385,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="5e54a2b7-279a-409d-d906-66e551d1c071" data-execution_count="5">
+<div id="cell-12" class="cell" data-executioninfo="{&quot;elapsed&quot;:32,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673385,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="5e54a2b7-279a-409d-d906-66e551d1c071" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>train_ds <span class="op">=</span> dataset[<span class="st">"train"</span>]</span>
 <span id="cb8-2"><a href="#cb8-2"></a>train_ds.features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
@@ -369,7 +347,7 @@ datasets==2.7.1</code></pre>
 </div>
 </div>
 <p>Let’s check what the raw data looks like.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673387,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1a57b624-37ba-4873-ba11-745ce4576d7c" data-execution_count="6">
+<div id="cell-14" class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673387,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1a57b624-37ba-4873-ba11-745ce4576d7c" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># print a few labels</span></span>
 <span id="cb10-2"><a href="#cb10-2"></a><span class="bu">print</span>(<span class="st">"** labels **</span><span class="ch">\n</span><span class="st">"</span>, train_ds[<span class="st">"label"</span>][:<span class="dv">5</span>])</span>
 <span id="cb10-3"><a href="#cb10-3"></a></span>
@@ -390,7 +368,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p>This raw data shows that the labels are encoded as <code>0</code> and <code>1</code> for <code>no-hate</code> and <code>hate</code> speech, respectively. Therefore, we can improve our view by putting labels and tweets in Pandas’s DataFrame and analyzing them side by side.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673391,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2424417e-661f-42e1-edfd-767bf7110512" data-execution_count="7">
+<div id="cell-16" class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673391,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2424417e-661f-42e1-edfd-767bf7110512" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb12-2"><a href="#cb12-2"></a></span>
 <span id="cb12-3"><a href="#cb12-3"></a>pd.set_option(<span class="st">"display.max_colwidth"</span>, <span class="va">None</span>)</span>
@@ -407,83 +385,84 @@ factsguide: society now    #motivation</code></pre>
 <span id="cb12-14"><a href="#cb12-14"></a>df.head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 
-
   <div id="df-61dd778d-af34-4e0c-affc-b54453c4d2c8">
     <div class="colab-df-container">
       <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>label</th>
-      <th>tweet</th>
-      <th>label_name</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0</td>
-      <td>@user when a father is dysfunctional and is so selfish he drags his kids into his dysfunction.   #run</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>0</td>
-      <td>@user @user thanks for #lyft credit i can't use cause they don't offer wheelchair vans in pdx.    #disapointed #getthanked</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>0</td>
-      <td>bihday your majesty</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>0</td>
-      <td>#model   i love u take with u all the time in urð±!!! ððððð¦ð¦ð¦</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>0</td>
-      <td>factsguide: society now    #motivation</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>0</td>
-      <td>[2/2] huge fan fare and big talking before they leave. chaos and pay disputes when they get there. #allshowandnogo</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>0</td>
-      <td>@user camping tomorrow @user @user @user @user @user @user @user dannyâ¦</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>0</td>
-      <td>the next school year is the year for exams.ð¯ can't think about that ð­ #school #exams   #hate #imagine #actorslife #revolutionschool #girl</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>0</td>
-      <td>we won!!! love the land!!! #allin #cavs #champions #cleveland #clevelandcavaliers  â¦</td>
-      <td>no-hate-speech</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>0</td>
-      <td>@user @user welcome here !  i'm   it's so #gr8 !</td>
-      <td>no-hate-speech</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">label</th>
+<th data-quarto-table-cell-role="th">tweet</th>
+<th data-quarto-table-cell-role="th">label_name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0</td>
+<td>@user when a father is dysfunctional and is so selfish he drags his kids into his dysfunction. #run</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0</td>
+<td>@user @user thanks for #lyft credit i can't use cause they don't offer wheelchair vans in pdx. #disapointed #getthanked</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>0</td>
+<td>bihday your majesty</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>0</td>
+<td>#model i love u take with u all the time in urðŸ“±!!! ðŸ˜™ðŸ˜ŽðŸ‘„ðŸ‘…ðŸ’¦ðŸ’¦ðŸ’¦</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>0</td>
+<td>factsguide: society now #motivation</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>0</td>
+<td>[2/2] huge fan fare and big talking before they leave. chaos and pay disputes when they get there. #allshowandnogo</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>0</td>
+<td>@user camping tomorrow @user @user @user @user @user @user @user dannyâ€¦</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>0</td>
+<td>the next school year is the year for exams.ðŸ˜¯ can't think about that ðŸ˜­ #school #exams #hate #imagine #actorslife #revolutionschool #girl</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>0</td>
+<td>we won!!! love the land!!! #allin #cavs #champions #cleveland #clevelandcavaliers â€¦</td>
+<td>no-hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>0</td>
+<td>@user @user welcome here ! i'm it's so #gr8 !</td>
+<td>no-hate-speech</td>
+</tr>
+</tbody>
 </table>
+
 </div>
       <button class="colab-df-convert" onclick="convertToInteractive('df-61dd778d-af34-4e0c-affc-b54453c4d2c8')" title="Convert this dataframe to an interactive table." style="display:none;">
         
@@ -561,87 +540,88 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p>All these tweets are labeled as <code>no-hate-speech</code>. Let’s view some of the tweets from the other class.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673393,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="088ea4cc-f69c-4f7a-c898-d26f56c03500" data-execution_count="8">
+<div id="cell-18" class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673393,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="088ea4cc-f69c-4f7a-c898-d26f56c03500" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>df[df[<span class="st">"label"</span>]<span class="op">==</span><span class="dv">1</span>].head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
-
 
   <div id="df-1fdf6e0d-078c-45e1-914b-bc6ffdc075f3">
     <div class="colab-df-container">
       <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>label</th>
-      <th>tweet</th>
-      <th>label_name</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>13</th>
-      <td>1</td>
-      <td>@user #cnn calls #michigan middle school 'build the wall' chant '' #tcot</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>1</td>
-      <td>no comment!  in #australia   #opkillingbay #seashepherd #helpcovedolphins #thecove  #helpcovedolphins</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>1</td>
-      <td>retweet if you agree!</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>1</td>
-      <td>@user @user lumpy says i am a . prove it lumpy.</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>34</th>
-      <td>1</td>
-      <td>it's unbelievable that in the 21st century we'd need something like this. again. #neverump  #xenophobia</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>56</th>
-      <td>1</td>
-      <td>@user lets fight against  #love #peace</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>68</th>
-      <td>1</td>
-      <td>ð©the white establishment can't have blk folx running around loving themselves and promoting our greatness</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>77</th>
-      <td>1</td>
-      <td>@user hey, white people: you can call people 'white' by @user  #race  #identity #medâ¦</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>82</th>
-      <td>1</td>
-      <td>how the #altright uses  &amp;amp; insecurity to lure men into #whitesupremacy</td>
-      <td>hate-speech</td>
-    </tr>
-    <tr>
-      <th>111</th>
-      <td>1</td>
-      <td>@user i'm not interested in a #linguistics that doesn't address #race &amp;amp; . racism is about #power. #raciolinguistics bringsâ¦</td>
-      <td>hate-speech</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">label</th>
+<th data-quarto-table-cell-role="th">tweet</th>
+<th data-quarto-table-cell-role="th">label_name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">13</td>
+<td>1</td>
+<td>@user #cnn calls #michigan middle school 'build the wall' chant '' #tcot</td>
+<td>hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">14</td>
+<td>1</td>
+<td>no comment! in #australia #opkillingbay #seashepherd #helpcovedolphins #thecove #helpcovedolphins</td>
+<td>hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">17</td>
+<td>1</td>
+<td>retweet if you agree!</td>
+<td>hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">23</td>
+<td>1</td>
+<td>@user @user lumpy says i am a . prove it lumpy.</td>
+<td>hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">34</td>
+<td>1</td>
+<td>it's unbelievable that in the 21st century we'd need something like this. again. #neverump #xenophobia</td>
+<td>hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">56</td>
+<td>1</td>
+<td>@user lets fight against #love #peace</td>
+<td>hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">68</td>
+<td>1</td>
+<td>ðŸ˜©the white establishment can't have blk folx running around loving themselves and promoting our greatness</td>
+<td>hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">77</td>
+<td>1</td>
+<td>@user hey, white people: you can call people 'white' by @user #race #identity #medâ€¦</td>
+<td>hate-speech</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">82</td>
+<td>1</td>
+<td>how the #altright uses &amp;amp; insecurity to lure men into #whitesupremacy</td>
+<td>hate-speech</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">111</td>
+<td>1</td>
+<td>@user i'm not interested in a #linguistics that doesn't address #race &amp;amp; . racism is about #power. #raciolinguistics bringsâ€¦</td>
+<td>hate-speech</td>
+</tr>
+</tbody>
 </table>
+
 </div>
       <button class="colab-df-convert" onclick="convertToInteractive('df-1fdf6e0d-078c-45e1-914b-bc6ffdc075f3')" title="Convert this dataframe to an interactive table." style="display:none;">
         
@@ -718,7 +698,7 @@ factsguide: society now    #motivation</code></pre>
   
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673394,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="9">
+<div id="cell-19" class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327673394,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># reset dataset to its original format</span></span>
 <span id="cb14-2"><a href="#cb14-2"></a>train_ds.reset_format()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -735,7 +715,7 @@ factsguide: society now    #motivation</code></pre>
 <blockquote class="blockquote">
 <p>NLTK is a leading platform for building Python programs to work with human language data. It provides easy-to-use interfaces to over 50 corpora and lexical resources such as WordNet, along with a suite of text processing libraries for classification, tokenization, stemming, tagging, parsing, and semantic reasoning, wrappers for industrial-strength NLP libraries.</p>
 </blockquote>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:914,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674278,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b93b19a3-9300-49fe-f5d1-51df4f0d8882" data-execution_count="10">
+<div id="cell-21" class="cell" data-executioninfo="{&quot;elapsed&quot;:914,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674278,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b93b19a3-9300-49fe-f5d1-51df4f0d8882" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> nltk</span>
 <span id="cb15-2"><a href="#cb15-2"></a></span>
 <span id="cb15-3"><a href="#cb15-3"></a>nltk.download(<span class="st">"stopwords"</span>)  <span class="co"># for filtering common words</span></span>
@@ -754,7 +734,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p>I have created a helper function in the next cell to preprocess and split the tweet text into tokens.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:38,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674282,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="11">
+<div id="cell-23" class="cell" data-executioninfo="{&quot;elapsed&quot;:38,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674282,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="im">from</span> nltk.corpus <span class="im">import</span> stopwords</span>
 <span id="cb18-2"><a href="#cb18-2"></a><span class="im">from</span> nltk.stem <span class="im">import</span> WordNetLemmatizer</span>
 <span id="cb18-3"><a href="#cb18-3"></a></span>
@@ -780,7 +760,7 @@ factsguide: society now    #motivation</code></pre>
 <span id="cb18-23"><a href="#cb18-23"></a>    <span class="cf">return</span> row</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s use a sample tweet text to uncover the working of this function.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:38,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674283,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1a68394b-7cf6-479f-9730-0bd16f8a4629" data-execution_count="12">
+<div id="cell-25" class="cell" data-executioninfo="{&quot;elapsed&quot;:38,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674283,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1a68394b-7cf6-479f-9730-0bd16f8a4629" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a>sample_tweet <span class="op">=</span> train_ds[<span class="dv">0</span>][<span class="st">"tweet"</span>]</span>
 <span id="cb19-2"><a href="#cb19-2"></a>sample_tweet</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
@@ -788,7 +768,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p><strong>Step 1: lower the text</strong></p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:41,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674288,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="763b9635-593e-4cae-8dbc-9e608f00a843" data-execution_count="13">
+<div id="cell-27" class="cell" data-executioninfo="{&quot;elapsed&quot;:41,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674288,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="763b9635-593e-4cae-8dbc-9e608f00a843" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>t <span class="op">=</span> sample_tweet.lower()</span>
 <span id="cb21-2"><a href="#cb21-2"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
@@ -796,7 +776,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p><strong>Step 2: remove all other characters except alphabets, numbers, and spaces</strong></p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:41,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674289,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b4d25011-3464-4e4d-80d3-2af1befcb4da" data-execution_count="14">
+<div id="cell-29" class="cell" data-executioninfo="{&quot;elapsed&quot;:41,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674289,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b4d25011-3464-4e4d-80d3-2af1befcb4da" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>t <span class="op">=</span> re.sub(<span class="vs">r"[^a-z 0-9]"</span>, <span class="st">""</span>,t)</span>
 <span id="cb23-2"><a href="#cb23-2"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="14">
@@ -804,7 +784,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p><strong>Step 3: split the text into words or tokens. split is made at each “space” character</strong></p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674290,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="681c3f73-3e91-45d3-e7b4-ceeb6e191a73" data-execution_count="15">
+<div id="cell-31" class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674290,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="681c3f73-3e91-45d3-e7b4-ceeb6e191a73" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a>t <span class="op">=</span> re.split(<span class="vs">r" +"</span>, t)</span>
 <span id="cb25-2"><a href="#cb25-2"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
@@ -829,7 +809,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p><strong>Step 4: remove stop words</strong> Besides stop words, I have also filtered “user” from the text. This is because in the original tweet text, any reference to a Twitter user (e.g., <span class="citation" data-cites="hassaanbinaslam">@hassaanbinaslam</span>) is replaced with <code>@user</code> to hide identity.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:36,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674291,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="4f91ba1f-d70b-4360-b699-dd3ba027f787" data-execution_count="16">
+<div id="cell-33" class="cell" data-executioninfo="{&quot;elapsed&quot;:36,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674291,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="4f91ba1f-d70b-4360-b699-dd3ba027f787" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a>t <span class="op">=</span> [i <span class="cf">for</span> i <span class="kw">in</span> t <span class="cf">if</span> (i <span class="kw">not</span> <span class="kw">in</span> sw) <span class="kw">and</span> (i <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"user"</span>]) <span class="kw">and</span> <span class="bu">len</span>(i)]</span>
 <span id="cb27-2"><a href="#cb27-2"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
@@ -837,7 +817,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p>English language stop words taken from the NLTK library include the following list.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:33,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674293,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="02e41b35-c74f-484e-83e8-a6f3f7270eca" data-execution_count="17">
+<div id="cell-35" class="cell" data-executioninfo="{&quot;elapsed&quot;:33,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327674293,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="02e41b35-c74f-484e-83e8-a6f3f7270eca" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a><span class="co"># englist language stopwords from NLTK</span></span>
 <span id="cb29-2"><a href="#cb29-2"></a><span class="bu">print</span>(sw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -845,7 +825,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p><strong>Step 5: lemmatize words</strong> <em>What is lemmatization anyway?</em> Lemmatization is applied to normalize the text. It considers the context and converts the word to its meaningful base form, which is called Lemma. to read more about it, refer to <a href="https://stackoverflow.com/questions/1787110/what-is-the-difference-between-lemmatization-vs-stemming">what-is-the-difference-between-lemmatization-vs-stemming</a></p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:1659,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675924,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="ace851b5-5a4b-4721-f2da-f42d8d71b355" data-execution_count="18">
+<div id="cell-37" class="cell" data-executioninfo="{&quot;elapsed&quot;:1659,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675924,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="ace851b5-5a4b-4721-f2da-f42d8d71b355" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>t <span class="op">=</span> [wl.lemmatize(i) <span class="cf">for</span> i <span class="kw">in</span> t]</span>
 <span id="cb31-2"><a href="#cb31-2"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
@@ -853,7 +833,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p>Let’s use the helper function <code>split_tokens</code> and compare our output.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:56,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675924,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="25c4e1d8-1fe8-4930-9491-f6655483461c" data-execution_count="19">
+<div id="cell-39" class="cell" data-executioninfo="{&quot;elapsed&quot;:56,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675924,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="25c4e1d8-1fe8-4930-9491-f6655483461c" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a>split_tokens(train_ds[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
 <pre><code>{'label': 0,
@@ -868,7 +848,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p>Our preprocessing steps and tokenize function is ready. So let’s apply it to our entire tweet dataset.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:50,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675925,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2aaedbd6-ef73-4299-d773-383a22447258" data-execution_count="20">
+<div id="cell-41" class="cell" data-executioninfo="{&quot;elapsed&quot;:50,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675925,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2aaedbd6-ef73-4299-d773-383a22447258" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="co"># tokenize tweet dataset</span></span>
 <span id="cb35-2"><a href="#cb35-2"></a>train_ds_all_tokens <span class="op">=</span> train_ds.<span class="bu">map</span>(split_tokens)</span>
 <span id="cb35-3"><a href="#cb35-3"></a>train_ds_all_tokens</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -892,7 +872,7 @@ factsguide: society now    #motivation</code></pre>
 <li>After that, we will put our filtered tokens in an ordered dictionary</li>
 <li>Pass the ordered dictionary to Pytorch <a href="https://pytorch.org/text/stable/vocab.html">Vocab class</a>. A vocab object automatically maps tokens to indices.</li>
 </ol>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:48,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675928,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="d0a494d4-c7ea-4af6-eccf-e9321638101b" data-execution_count="21">
+<div id="cell-43" class="cell" data-executioninfo="{&quot;elapsed&quot;:48,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675928,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="d0a494d4-c7ea-4af6-eccf-e9321638101b" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="co"># create a frequency map for all toekns</span></span>
 <span id="cb38-2"><a href="#cb38-2"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
 <span id="cb38-3"><a href="#cb38-3"></a></span>
@@ -905,7 +885,7 @@ factsguide: society now    #motivation</code></pre>
 <pre><code>Number of tokens found:  38988</code></pre>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:44,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675929,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="c4c93c5c-353f-4301-9343-377750dc58fb" data-execution_count="22">
+<div id="cell-44" class="cell" data-executioninfo="{&quot;elapsed&quot;:44,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675929,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="c4c93c5c-353f-4301-9343-377750dc58fb" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co"># remove uncommon tokens</span></span>
 <span id="cb40-2"><a href="#cb40-2"></a>min_token_freq <span class="op">=</span> <span class="dv">10</span></span>
 <span id="cb40-3"><a href="#cb40-3"></a>token_count_filtered <span class="op">=</span> {k: v <span class="cf">for</span> k, v <span class="kw">in</span> token_count.items() <span class="cf">if</span> v <span class="op">&gt;</span> min_token_freq}</span>
@@ -916,7 +896,7 @@ factsguide: society now    #motivation</code></pre>
 </div>
 </div>
 <p>Notice that by removing uncommon tokens, we have significantly reduced the size of our vocabulary (almost 13x less). In the next step, we will sort them, convert them to <a href="https://realpython.com/python-ordereddict/">OrdreredDict</a>, and pass them to <code>torchtext.vocab</code>.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:41,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675929,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="23">
+<div id="cell-46" class="cell" data-executioninfo="{&quot;elapsed&quot;:41,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675929,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="im">from</span> torchtext.vocab <span class="im">import</span> vocab</span>
 <span id="cb42-2"><a href="#cb42-2"></a><span class="im">from</span> collections <span class="im">import</span> OrderedDict</span>
 <span id="cb42-3"><a href="#cb42-3"></a></span>
@@ -938,13 +918,13 @@ factsguide: society now    #motivation</code></pre>
 <li><code>vb.get_itos()[0]</code> to get token ‘love’ from id ‘0’</li>
 <li><code>vb.lookup_indices([0, 2])</code> to get token ‘love’ and ‘happy’ from id ‘0’ and ‘2’</li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675929,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2e083e6d-5d6c-4e39-8e15-27b07a7570ac" data-execution_count="24">
+<div id="cell-48" class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675929,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2e083e6d-5d6c-4e39-8e15-27b07a7570ac" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>vb[<span class="st">"love"</span>], vb.get_stoi()[<span class="st">"love"</span>], vb.get_itos()[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
 <pre><code>(0, 0, 'love')</code></pre>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:38,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675930,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="5f7097ef-d395-403e-c9fd-c85b4a0b16b8" data-execution_count="25">
+<div id="cell-49" class="cell" data-executioninfo="{&quot;elapsed&quot;:38,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675930,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="5f7097ef-d395-403e-c9fd-c85b4a0b16b8" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a><span class="co"># let's check a few more tokens</span></span>
 <span id="cb45-2"><a href="#cb45-2"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
 <span id="cb45-3"><a href="#cb45-3"></a>    token <span class="op">=</span> vb.get_itos()[i]</span>
@@ -970,7 +950,7 @@ amp ---&gt; 4
 </div>
 </div>
 <p>Alright, we have our vocabulary ready. Remember that we have filtered our vocabulary to remove uncommon tokens. Let’s use this vocabulary to do the same for our tweet text tokens.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:32,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675930,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="4a263a03-04bf-4554-db72-1406f3ec4d9e" data-execution_count="26">
+<div id="cell-51" class="cell" data-executioninfo="{&quot;elapsed&quot;:32,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675930,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="4a263a03-04bf-4554-db72-1406f3ec4d9e" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a><span class="co"># use vocabulary to filter uncommon tokens from tweets</span></span>
 <span id="cb47-2"><a href="#cb47-2"></a><span class="kw">def</span> remove_rare_tokens(row):</span>
 <span id="cb47-3"><a href="#cb47-3"></a>    row[<span class="st">"tokens"</span>] <span class="op">=</span> [t <span class="cf">for</span> t <span class="kw">in</span> row[<span class="st">"all_tokens"</span>] <span class="cf">if</span> t <span class="kw">in</span> vb]</span>
@@ -983,7 +963,7 @@ amp ---&gt; 4
 </div>
 </div>
 <p>In the following cell output, note that only three tokens are left for a sample tweet after removing uncommon tokens.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675931,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="8bcc2aea-2080-4533-b30d-f136e8c1495f" data-execution_count="27">
+<div id="cell-53" class="cell" data-executioninfo="{&quot;elapsed&quot;:30,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675931,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="8bcc2aea-2080-4533-b30d-f136e8c1495f" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a><span class="co"># verify the dataset after filtering</span></span>
 <span id="cb49-2"><a href="#cb49-2"></a>train_ds_tokens[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="27">
@@ -1003,7 +983,7 @@ amp ---&gt; 4
 <section id="create-training-samples-using-skip-gram" class="level3">
 <h3 class="anchored" data-anchor-id="create-training-samples-using-skip-gram">Create training samples using skip-gram</h3>
 <p>The next step is to create training samples using a ” skip-gram ” technique. To understand it, let’s take an example of a sample tweet text: <code>i get to see my daddy today!</code>. After applying preprocessing steps, the word tokens produced from the tweet are: <code>['get', 'see', 'daddy', 'today']</code>. The vocabulary indices (integer value) for these tokens are provided below.</p>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th style="text-align: center;"><strong>Tokens</strong></th>
@@ -1030,7 +1010,7 @@ amp ---&gt; 4
 </tbody>
 </table>
 <p>For creating training samples using skip-gram, we take each token as an input and a surrounding token as the label. But we also need to decide the window size, meaning how many surrounding tokens to create training samples. Suppose we take <code>window_size=2</code>; then the training sample for this tweet will be.</p>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
 <col style="width: 10%">
@@ -1186,7 +1166,7 @@ amp ---&gt; 4
 <li>output or the label value</li>
 </ul>
 <p>Given the tokens and window size, let’s create a function to create training samples for us.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:26,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675931,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e2dcd800-ce92-4da4-8aa7-f1115a165f62" data-execution_count="28">
+<div id="cell-57" class="cell" data-executioninfo="{&quot;elapsed&quot;:26,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675931,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="e2dcd800-ce92-4da4-8aa7-f1115a165f62" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a><span class="co"># code source: https://muhark.github.io/python/ml/nlp/2021/10/21/word2vec-from-scratch.html</span></span>
 <span id="cb51-2"><a href="#cb51-2"></a><span class="kw">def</span> windowizer(row, wsize<span class="op">=</span><span class="dv">3</span>):</span>
 <span id="cb51-3"><a href="#cb51-3"></a>    <span class="co"># default 'window size' (wsize) is three</span></span>
@@ -1212,7 +1192,7 @@ amp ---&gt; 4
 </div>
 </div>
 <p>Let’s check a sample tweet with generated training samples.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:23,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675931,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2dd79388-84f6-48f0-a044-1ce98da4a104" data-execution_count="29">
+<div id="cell-59" class="cell" data-executioninfo="{&quot;elapsed&quot;:23,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675931,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="2dd79388-84f6-48f0-a044-1ce98da4a104" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a><span class="co"># note that we have used skip-gram window size=3</span></span>
 <span id="cb53-2"><a href="#cb53-2"></a>train_ds_tokens[<span class="dv">12</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="29">
@@ -1242,7 +1222,7 @@ amp ---&gt; 4
 <li><code>torch.utils.data.Dataset</code> stores the samples and their corresponding labels</li>
 <li><code>torch.utils.data.DataLoader</code> wraps an iterable around the Dataset to enable easy access to the samples.</li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:18,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675932,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="30">
+<div id="cell-61" class="cell" data-executioninfo="{&quot;elapsed&quot;:18,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327675932,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1"></a><span class="co"># source: https://muhark.github.io/python/ml/nlp/2021/10/21/word2vec-from-scratch.html</span></span>
 <span id="cb55-2"><a href="#cb55-2"></a><span class="co"># Helper class to make our data compatible with PyTorch Dataset</span></span>
 <span id="cb55-3"><a href="#cb55-3"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset</span>
@@ -1259,7 +1239,7 @@ amp ---&gt; 4
 <span id="cb55-14"><a href="#cb55-14"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, idx):</span>
 <span id="cb55-15"><a href="#cb55-15"></a>        <span class="cf">return</span> <span class="va">self</span>.data[idx]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:3554,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327679470,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6ae75b90-0a0d-4e0e-b1f6-75516c33ad86" data-execution_count="31">
+<div id="cell-62" class="cell" data-executioninfo="{&quot;elapsed&quot;:3554,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327679470,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6ae75b90-0a0d-4e0e-b1f6-75516c33ad86" data-execution_count="31">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1"></a>vb_size <span class="op">=</span> <span class="bu">len</span>(vb)</span>
 <span id="cb56-2"><a href="#cb56-2"></a></span>
 <span id="cb56-3"><a href="#cb56-3"></a>word2vec_ds <span class="op">=</span> Word2VecDataset(train_ds_tokens, vocab_size<span class="op">=</span>vb_size)</span>
@@ -1274,7 +1254,7 @@ number of word2vec_ds entries: 761044</code></pre>
 </div>
 </div>
 <p><code>word2vec_ds</code> is our training dataset, and a single entry from it is of shape <code>(input, label)</code>. Notice that there are many entries (or training samples) in <code>word2vec_ds</code>, and these samples represent all of the tweets tokens. For training, we need to create batches from them for faster processing. So let’s do that next.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:9,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327679471,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="60244f48-959c-4a7e-9cb5-dfdf8315107a" data-execution_count="32">
+<div id="cell-64" class="cell" data-executioninfo="{&quot;elapsed&quot;:9,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327679471,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="60244f48-959c-4a7e-9cb5-dfdf8315107a" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb58-2"><a href="#cb58-2"></a></span>
 <span id="cb58-3"><a href="#cb58-3"></a>BATCH_SIZE <span class="op">=</span> <span class="dv">2</span> <span class="op">**</span> <span class="dv">14</span></span>
@@ -1293,7 +1273,7 @@ number of word2vec_ds entries: 761044</code></pre>
   warnings.warn(_create_warning_msg(</code></pre>
 </div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:2187,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327681651,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fda7bb7f-553c-4d24-ae83-992e9730e252" data-execution_count="33">
+<div id="cell-65" class="cell" data-executioninfo="{&quot;elapsed&quot;:2187,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327681651,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="fda7bb7f-553c-4d24-ae83-992e9730e252" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1"></a>tmp <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(dataloader))</span>
 <span id="cb61-2"><a href="#cb61-2"></a>tmp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="33">
@@ -1316,7 +1296,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <p>We are trying to train a model that can predict the surrounding words of a given input. And this is how we have designed our training data too. Each training sample has <code>(input, label)</code>. Where <code>input</code> is the given token, and <code>label</code> is some nearby token. It is like forcing the model to predict the context of an input word.</p>
 <p><strong>How can such a model be helpful to us?</strong></p>
 <p>Such a model that can predict the context of a word is not helpful to us in any actual scenario. So we are not going to use it. Instead, we are only interested in the learned weights of such a model, and we call them <code>word embedding</code>. It is like faking a problem (creating a pseudo-problem), training a model, and then using the learned weights for other tasks.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:11,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327681652,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="34">
+<div id="cell-68" class="cell" data-executioninfo="{&quot;elapsed&quot;:11,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327681652,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1"></a><span class="co"># source: https://muhark.github.io/python/ml/nlp/2021/10/21/word2vec-from-scratch.html</span></span>
 <span id="cb63-2"><a href="#cb63-2"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb63-3"><a href="#cb63-3"></a></span>
@@ -1334,7 +1314,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <span id="cb63-15"><a href="#cb63-15"></a>        <span class="cf">return</span> logits</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Notice that in the model configuration, the size of the output layer (nn.Linear) is equal to our vocabulary size. So, our model is configured for a multi-classification problem.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:3241,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327684884,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="31a39ef4-fa97-4536-9183-c0c2e137138e" data-execution_count="35">
+<div id="cell-70" class="cell" data-executioninfo="{&quot;elapsed&quot;:3241,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327684884,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="31a39ef4-fa97-4536-9183-c0c2e137138e" data-execution_count="35">
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1"></a>EMBED_SIZE <span class="op">=</span> <span class="dv">100</span></span>
 <span id="cb64-2"><a href="#cb64-2"></a>model <span class="op">=</span> Word2Vec(vb_size, EMBED_SIZE)</span>
 <span id="cb64-3"><a href="#cb64-3"></a></span>
@@ -1354,7 +1334,7 @@ number of word2vec_ds entries: 761044</code></pre>
 </div>
 </div>
 <p>Now configure the loss function and a training optimizer.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:15,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327684885,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="36">
+<div id="cell-72" class="cell" data-executioninfo="{&quot;elapsed&quot;:15,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670327684885,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="36">
 <div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1"></a><span class="im">import</span> torch</span>
 <span id="cb67-2"><a href="#cb67-2"></a></span>
 <span id="cb67-3"><a href="#cb67-3"></a>LR <span class="op">=</span> <span class="fl">3e-4</span>  <span class="co"># learning rate</span></span>
@@ -1365,7 +1345,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <section id="model-training" class="level2">
 <h2 class="anchored" data-anchor-id="model-training">Model Training</h2>
 <p>In this section we are going to train our model for 100 epochs.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:359323,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044195,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="d08cc511-af3d-4865-cfac-970136f99685" data-execution_count="37">
+<div id="cell-74" class="cell" data-executioninfo="{&quot;elapsed&quot;:359323,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044195,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="d08cc511-af3d-4865-cfac-970136f99685" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1"></a><span class="co"># source: https://muhark.github.io/python/ml/nlp/2021/10/21/word2vec-from-scratch.html</span></span>
 <span id="cb68-2"><a href="#cb68-2"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm  <span class="co"># For progress bar. https://github.com/tqdm/tqdm</span></span>
 <span id="cb68-3"><a href="#cb68-3"></a></span>
@@ -1393,11 +1373,15 @@ number of word2vec_ds entries: 761044</code></pre>
 </div>
 </div>
 <p>Let’s plot the training loss.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:50,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044200,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6f41f22b-b0bc-4aa4-db2b-38a71670ceeb" data-execution_count="38">
+<div id="cell-76" class="cell" data-executioninfo="{&quot;elapsed&quot;:50,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044200,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6f41f22b-b0bc-4aa4-db2b-38a71670ceeb" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb70-2"><a href="#cb70-2"></a>plt.plot(running_loss)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2022-12-02-pytorch-word2vec-embedding_files/figure-html/cell-39-output-1.png" class="img-fluid"></p>
+<div>
+<figure class="figure">
+<p><img src="2022-12-02-pytorch-word2vec-embedding_files/figure-html/cell-39-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -1410,7 +1394,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <li>Embeddings from the layer closer to the output layer give better results. In our case, it is the Linear layer. Our linear layer has the same dimensions as the embedding layer, and we will use weights from this layer.</li>
 <li>If the dimensions of the layers closer to the output layer are different than the Embedding layer, then we should stick to the embedding layer. Sometimes, people prefer to concatenate weights from multiple layers to create the final output.</li>
 </ul>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044200,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="9549b15f-6def-4198-e198-19ed217c0e78" data-execution_count="39">
+<div id="cell-78" class="cell" data-executioninfo="{&quot;elapsed&quot;:40,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044200,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="9549b15f-6def-4198-e198-19ed217c0e78" data-execution_count="39">
 <div class="sourceCode cell-code" id="cb71"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1"></a><span class="co"># embedding = model.embed.weight.cpu().detach().numpy()</span></span>
 <span id="cb71-2"><a href="#cb71-2"></a>embedding <span class="op">=</span> model.expand.weight.cpu().detach().numpy()</span>
 <span id="cb71-3"><a href="#cb71-3"></a>embedding.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1419,7 +1403,7 @@ number of word2vec_ds entries: 761044</code></pre>
 </div>
 </div>
 <p>Next, I have created some functions to calculate the distance between these word vectors. We are doing this to find a word similarity score with other words (cosine similarity). A smaller distance between two vectors means that these words are often used in similar contexts.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:34,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044201,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="40">
+<div id="cell-80" class="cell" data-executioninfo="{&quot;elapsed&quot;:34,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044201,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="40">
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1"></a><span class="co"># source: https://muhark.github.io/python/ml/nlp/2021/10/21/word2vec-from-scratch.html</span></span>
 <span id="cb73-2"><a href="#cb73-2"></a><span class="im">from</span> scipy.spatial <span class="im">import</span> distance</span>
 <span id="cb73-3"><a href="#cb73-3"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -1437,7 +1421,7 @@ number of word2vec_ds entries: 761044</code></pre>
 <span id="cb73-15"><a href="#cb73-15"></a>    out <span class="op">=</span> [(i, vb.lookup_token(i), dists[i]) <span class="cf">for</span> i <span class="kw">in</span> ind]</span>
 <span id="cb73-16"><a href="#cb73-16"></a>    <span class="cf">return</span> out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:805,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044973,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1c7723ae-ade8-4503-c76d-fd913cc2423e" data-execution_count="41">
+<div id="cell-81" class="cell" data-executioninfo="{&quot;elapsed&quot;:805,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044973,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="1c7723ae-ade8-4503-c76d-fd913cc2423e" data-execution_count="41">
 <div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1"></a><span class="co"># calculate 2d distance matrix</span></span>
 <span id="cb74-2"><a href="#cb74-2"></a>dmat <span class="op">=</span> get_distance_matrix(embedding, <span class="st">"cosine"</span>)</span>
 <span id="cb74-3"><a href="#cb74-3"></a>dmat.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1446,13 +1430,13 @@ number of word2vec_ds entries: 761044</code></pre>
 </div>
 </div>
 <p>Another helper function is to print similar words identified based on their distance.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:22,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044974,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="42">
+<div id="cell-83" class="cell" data-executioninfo="{&quot;elapsed&quot;:22,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044974,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="42">
 <div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1"></a><span class="kw">def</span> similar_words(tokens):</span>
 <span id="cb76-2"><a href="#cb76-2"></a>    <span class="cf">for</span> word <span class="kw">in</span> tokens:</span>
 <span id="cb76-3"><a href="#cb76-3"></a>        <span class="bu">print</span>(word, [t[<span class="dv">1</span>] <span class="cf">for</span> t <span class="kw">in</span> get_k_similar_words(word, dmat)], <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, I selected some tokens and used embeddings to find words most similar to them.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:23,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044975,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b5d256af-d190-4645-b458-3ddb3bb4e32e" data-execution_count="43">
+<div id="cell-85" class="cell" data-executioninfo="{&quot;elapsed&quot;:23,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044975,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="b5d256af-d190-4645-b458-3ddb3bb4e32e" data-execution_count="43">
 <div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1"></a>tokens <span class="op">=</span> [<span class="st">"father"</span>, <span class="st">"mother"</span>, <span class="st">"boy"</span>, <span class="st">"girl"</span>]  <span class="co"># tokens for relations</span></span>
 <span id="cb77-2"><a href="#cb77-2"></a>tokens <span class="op">+=</span> [<span class="st">"job"</span>, <span class="st">"sad"</span>, <span class="st">"happy"</span>, <span class="st">"hate"</span>]  <span class="co"># for emotions</span></span>
 <span id="cb77-3"><a href="#cb77-3"></a>tokens <span class="op">+=</span> [<span class="st">"america"</span>, <span class="st">"england"</span>, <span class="st">"india"</span>]  <span class="co"># for regions</span></span>
@@ -1501,7 +1485,7 @@ fitness ['workout', 'gym', 'fit', 'food', 'running', 'run', 'yoga', 'health', 's
 <h3 class="anchored" data-anchor-id="visualize-embeddings">Visualize embeddings</h3>
 <p>We can also analyze the embeddings by visualizing them on a plot. Similar word vectors should appear closer in the plot. But each word vector has 300 dimensions, so how can we plot them on a 2D surface? For this, we can take the help of the dimension reduction technique <code>t-SNE</code> to reduce the word vectors dimensions from 300 to 2. PCA can also be applied to achieve similar results.</p>
 <p>We need first to normalize the weights to get better results.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:19,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044976,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="cd5aa0b1-6b13-4c65-c482-564880993dde" data-execution_count="44">
+<div id="cell-87" class="cell" data-executioninfo="{&quot;elapsed&quot;:19,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328044976,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="cd5aa0b1-6b13-4c65-c482-564880993dde" data-execution_count="44">
 <div class="sourceCode cell-code" id="cb79"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1"></a><span class="co"># source: https://github.com/OlgaChernytska/word2vec-pytorch/blob/main/notebooks/Inference.ipynb</span></span>
 <span id="cb79-2"><a href="#cb79-2"></a><span class="co"># normalization of weights</span></span>
 <span id="cb79-3"><a href="#cb79-3"></a>norms <span class="op">=</span> (embedding <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>) <span class="op">**</span> (<span class="dv">1</span> <span class="op">/</span> <span class="dv">2</span>)</span>
@@ -1514,7 +1498,7 @@ fitness ['workout', 'gym', 'fit', 'food', 'running', 'run', 'yoga', 'health', 's
 </div>
 </div>
 <p>Now apply t-distributed Stochastic Neighbor Embedding (<a href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">t-SNE</a>) to reduce the dimensions of our embedding.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:29761,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328074723,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6c1a1cfa-45cf-4b87-fc22-62bb04cd1164" data-execution_count="45">
+<div id="cell-89" class="cell" data-executioninfo="{&quot;elapsed&quot;:29761,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328074723,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="6c1a1cfa-45cf-4b87-fc22-62bb04cd1164" data-execution_count="45">
 <div class="sourceCode cell-code" id="cb81"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1"></a><span class="co"># source: https://github.com/OlgaChernytska/word2vec-pytorch/blob/main/notebooks/Inference.ipynb</span></span>
 <span id="cb81-2"><a href="#cb81-2"></a><span class="im">from</span> sklearn.manifold <span class="im">import</span> TSNE</span>
 <span id="cb81-3"><a href="#cb81-3"></a></span>
@@ -1534,7 +1518,7 @@ fitness ['workout', 'gym', 'fit', 'food', 'running', 'run', 'yoga', 'health', 's
 </div>
 </div>
 <p>We have some tokens selected in the last section. Let’s highlight them in the plot to locate them easily. For this, I have created a color coding for their indices.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:27,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328074724,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="46">
+<div id="cell-91" class="cell" data-executioninfo="{&quot;elapsed&quot;:27,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328074724,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-execution_count="46">
 <div class="sourceCode cell-code" id="cb83"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1"></a><span class="co"># get token order</span></span>
 <span id="cb83-2"><a href="#cb83-2"></a>embedding_df_trans.index <span class="op">=</span> vb.get_itos()</span>
 <span id="cb83-3"><a href="#cb83-3"></a></span>
@@ -1547,7 +1531,7 @@ fitness ['workout', 'gym', 'fit', 'food', 'running', 'run', 'yoga', 'health', 's
 <span id="cb83-10"><a href="#cb83-10"></a>        color_codes.append(<span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now create a scatter plot of these embeddings using <a href="https://plotly.com/python-api-reference/generated/plotly.graph_objects.Scatter.html">Plotly</a>.</p>
-<div class="cell" data-executioninfo="{&quot;elapsed&quot;:28,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328074726,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="0577001b-6040-472f-c88d-6a4f364f2d70">
+<div id="cell-93" class="cell" data-executioninfo="{&quot;elapsed&quot;:28,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1670328074726,&quot;user&quot;:{&quot;displayName&quot;:&quot;Hassaan Bin Aslam&quot;,&quot;userId&quot;:&quot;13411116435427293553&quot;},&quot;user_tz&quot;:-300}" data-outputid="0577001b-6040-472f-c88d-6a4f364f2d70">
 <div class="sourceCode cell-code" id="cb84"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1"></a><span class="co"># source: https://github.com/OlgaChernytska/word2vec-pytorch/blob/main/notebooks/Inference.ipynb</span></span>
 <span id="cb84-2"><a href="#cb84-2"></a><span class="im">import</span> plotly.graph_objects <span class="im">as</span> go</span>
 <span id="cb84-3"><a href="#cb84-3"></a></span>
@@ -1599,121 +1583,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -1721,12 +1590,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1758,11 +1630,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1772,8 +1681,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1785,9 +1703,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -1830,6 +1983,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 

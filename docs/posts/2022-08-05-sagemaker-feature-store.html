@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2022-08-05">
 <meta name="description" content="This notebook demonstrates how to build a central feature repository using Amazon SageMaker Feature Store. Feature Store is used to store, retrieve, and share machine learning features.">
 
-<title>Random Thoughts - Building a Feature Repository with SageMaker Feature Store</title>
+<title>Building a Feature Repository with SageMaker Feature Store – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,47 +49,17 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -136,16 +113,16 @@ gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Building a Feature Repository with SageMaker Feature Store">
+<meta property="og:title" content="Building a Feature Repository with SageMaker Feature Store – Random Thoughts">
 <meta property="og:description" content="This notebook demonstrates how to build a central feature repository using Amazon SageMaker Feature Store. Feature Store is used to store, retrieve, and share machine learning features.">
 <meta property="og:image" content="images/2022-08-05-sagemaker-feature-store.jpeg">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Building a Feature Repository with SageMaker Feature Store">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Building a Feature Repository with SageMaker Feature Store – Random Thoughts">
 <meta name="twitter:description" content="This notebook demonstrates how to build a central feature repository using Amazon SageMaker Feature Store. Feature Store is used to store, retrieve, and share machine learning features.">
 <meta name="twitter:image" content="images/2022-08-05-sagemaker-feature-store.jpeg">
 <meta name="twitter:card" content="summary_large_image">
@@ -155,45 +132,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -271,7 +247,9 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <p><img src="images/2022-08-05-sagemaker-feature-store.jpeg" class="img-fluid"></p>
 <section id="introduction" class="level1">
@@ -281,14 +259,14 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-08-05-sagemaker-feature-store/feature-store.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">feature-store.png</figcaption><p></p>
+<figcaption>feature-store.png</figcaption>
 </figure>
 </div>
 </section>
 <section id="environment" class="level1">
 <h1>Environment</h1>
 <p>This notebook is prepared using Amazon SageMaker studio using <code>Python 3 (Data Science)</code> kernel running on <code>ml.t3.medium</code> instance.</p>
-<div class="cell" data-execution_count="2">
+<div id="cell-4" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">!</span>aws <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>aws-cli/1.25.27 Python/3.7.10 Linux/4.14.281-212.502.amzn2.x86_64 botocore/1.27.27</code></pre>
@@ -336,19 +314,19 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <section id="load-and-explore-data" class="level1">
 <h1>Load and explore data</h1>
 <p>Let’s define a local directory <code>local_path</code> to keep all the files and artifacts related to this post.</p>
-<div class="cell" data-execution_count="3">
+<div id="cell-7" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">##</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="co"># local path will be the root directory for this post</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a>local_path <span class="op">=</span> <span class="st">"./datasets/2022-08-05-sagemaker-feature-store/"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s make sure that the local directory folder exists.</p>
-<div class="cell" data-execution_count="4">
+<div id="cell-9" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
 <span id="cb4-3"><a href="#cb4-3"></a>Path(local_path).mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now download the data file to the <code>local_path</code>.</p>
-<div class="cell" data-execution_count="5">
+<div id="cell-11" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="op">!</span>wget <span class="st">'https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip'</span> <span class="op">-</span>P {local_path}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>--2022-08-08 06:05:57--  https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip
@@ -365,7 +343,7 @@ bank-additional.zip 100%[===================&gt;] 434.15K  1.55MB/s    in 0.3s
 </div>
 </div>
 <p>Unzip the downloaded file.</p>
-<div class="cell" data-execution_count="6">
+<div id="cell-13" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="op">!</span>unzip <span class="op">-</span>o {local_path}bank<span class="op">-</span>additional.<span class="bu">zip</span> <span class="op">-</span>d {local_path}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Archive:  ./datasets/2022-08-05-sagemaker-feature-store/bank-additional.zip
@@ -382,7 +360,7 @@ bank-additional.zip 100%[===================&gt;] 434.15K  1.55MB/s    in 0.3s
 </div>
 </div>
 <p>Extracted files contains multiple datasets. We will use <code>bank-additional-full.csv</code> which has all the examples (41188) and 20 inputs, ordered by date.</p>
-<div class="cell" data-execution_count="7">
+<div id="cell-15" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">##</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="co"># define data file path</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a>local_data_file <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>local_path<span class="sc">}</span><span class="ss">bank-additional/bank-additional-full.csv"</span></span>
@@ -392,7 +370,7 @@ bank-additional.zip 100%[===================&gt;] 434.15K  1.55MB/s    in 0.3s
 </div>
 </div>
 <p>Let’s read the dataset and explore it.</p>
-<div class="cell" data-execution_count="8">
+<div id="cell-17" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb11-2"><a href="#cb11-2"></a></span>
 <span id="cb11-3"><a href="#cb11-3"></a>pd.set_option(<span class="st">"display.max_columns"</span>, <span class="dv">500</span>)</span>
@@ -406,159 +384,160 @@ bank-additional.zip 100%[===================&gt;] 434.15K  1.55MB/s    in 0.3s
 <pre><code>df.shape:  (41188, 21)</code></pre>
 </div>
 <div class="cell-output cell-output-display" data-execution_count="8">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>age</th>
-      <th>job</th>
-      <th>marital</th>
-      <th>education</th>
-      <th>default</th>
-      <th>housing</th>
-      <th>loan</th>
-      <th>contact</th>
-      <th>month</th>
-      <th>day_of_week</th>
-      <th>duration</th>
-      <th>campaign</th>
-      <th>pdays</th>
-      <th>previous</th>
-      <th>poutcome</th>
-      <th>emp.var.rate</th>
-      <th>cons.price.idx</th>
-      <th>cons.conf.idx</th>
-      <th>euribor3m</th>
-      <th>nr.employed</th>
-      <th>y</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>56</td>
-      <td>housemaid</td>
-      <td>married</td>
-      <td>basic.4y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>261</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>57</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>unknown</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>149</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>37</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>226</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>40</td>
-      <td>admin.</td>
-      <td>married</td>
-      <td>basic.6y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>151</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>56</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>307</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">job</th>
+<th data-quarto-table-cell-role="th">marital</th>
+<th data-quarto-table-cell-role="th">education</th>
+<th data-quarto-table-cell-role="th">default</th>
+<th data-quarto-table-cell-role="th">housing</th>
+<th data-quarto-table-cell-role="th">loan</th>
+<th data-quarto-table-cell-role="th">contact</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">day_of_week</th>
+<th data-quarto-table-cell-role="th">duration</th>
+<th data-quarto-table-cell-role="th">campaign</th>
+<th data-quarto-table-cell-role="th">pdays</th>
+<th data-quarto-table-cell-role="th">previous</th>
+<th data-quarto-table-cell-role="th">poutcome</th>
+<th data-quarto-table-cell-role="th">emp.var.rate</th>
+<th data-quarto-table-cell-role="th">cons.price.idx</th>
+<th data-quarto-table-cell-role="th">cons.conf.idx</th>
+<th data-quarto-table-cell-role="th">euribor3m</th>
+<th data-quarto-table-cell-role="th">nr.employed</th>
+<th data-quarto-table-cell-role="th">y</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>56</td>
+<td>housemaid</td>
+<td>married</td>
+<td>basic.4y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>261</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>57</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>unknown</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>149</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>37</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>yes</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>226</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>40</td>
+<td>admin.</td>
+<td>married</td>
+<td>basic.6y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>151</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>56</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>no</td>
+<td>yes</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>307</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
@@ -579,13 +558,13 @@ bank-additional.zip 100%[===================&gt;] 434.15K  1.55MB/s    in 0.3s
 </ul></li>
 </ul>
 <p>Our dataset does not have a feature that can uniquely identify each row. So let’s create one.</p>
-<div class="cell" data-execution_count="9">
+<div id="cell-19" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">##</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a><span class="co"># 'FS_id' defines unique id for each row</span></span>
 <span id="cb13-3"><a href="#cb13-3"></a>df[<span class="st">'FS_id'</span>] <span class="op">=</span> df.index</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Similarly, we also need to create an event time feature. For this, we will use string type with <code>yyyy-MM-dd'T'HH:mm:ss.SSSZ</code> pattern.</p>
-<div class="cell" data-execution_count="10">
+<div id="cell-21" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime, timezone, date</span>
 <span id="cb14-2"><a href="#cb14-2"></a></span>
 <span id="cb14-3"><a href="#cb14-3"></a><span class="kw">def</span> generate_event_timestamp():</span>
@@ -600,191 +579,192 @@ bank-additional.zip 100%[===================&gt;] 434.15K  1.55MB/s    in 0.3s
 <span id="cb14-12"><a href="#cb14-12"></a>    event_time <span class="op">=</span> event_time.replace(<span class="st">"+00:00"</span>, <span class="st">"Z"</span>)</span>
 <span id="cb14-13"><a href="#cb14-13"></a>    <span class="cf">return</span> event_time</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="11">
+<div id="cell-22" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>generate_event_timestamp()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>'2022-08-08T06:06:07.059Z'</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="12">
+<div id="cell-23" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">##</span></span>
 <span id="cb17-2"><a href="#cb17-2"></a><span class="co"># `FS_event_time` contains event timestamps</span></span>
 <span id="cb17-3"><a href="#cb17-3"></a>df[<span class="st">'FS_event_time'</span>] <span class="op">=</span> [generate_event_timestamp() <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(df))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s check our dataset with two new features.</p>
-<div class="cell" data-execution_count="13">
+<div id="cell-25" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>age</th>
-      <th>job</th>
-      <th>marital</th>
-      <th>education</th>
-      <th>default</th>
-      <th>housing</th>
-      <th>loan</th>
-      <th>contact</th>
-      <th>month</th>
-      <th>day_of_week</th>
-      <th>duration</th>
-      <th>campaign</th>
-      <th>pdays</th>
-      <th>previous</th>
-      <th>poutcome</th>
-      <th>emp.var.rate</th>
-      <th>cons.price.idx</th>
-      <th>cons.conf.idx</th>
-      <th>euribor3m</th>
-      <th>nr.employed</th>
-      <th>y</th>
-      <th>FS_id</th>
-      <th>FS_event_time</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>56</td>
-      <td>housemaid</td>
-      <td>married</td>
-      <td>basic.4y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>261</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>0</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>57</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>unknown</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>149</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>1</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>37</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>226</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>2</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>40</td>
-      <td>admin.</td>
-      <td>married</td>
-      <td>basic.6y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>151</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>3</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>56</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>307</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>4</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">job</th>
+<th data-quarto-table-cell-role="th">marital</th>
+<th data-quarto-table-cell-role="th">education</th>
+<th data-quarto-table-cell-role="th">default</th>
+<th data-quarto-table-cell-role="th">housing</th>
+<th data-quarto-table-cell-role="th">loan</th>
+<th data-quarto-table-cell-role="th">contact</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">day_of_week</th>
+<th data-quarto-table-cell-role="th">duration</th>
+<th data-quarto-table-cell-role="th">campaign</th>
+<th data-quarto-table-cell-role="th">pdays</th>
+<th data-quarto-table-cell-role="th">previous</th>
+<th data-quarto-table-cell-role="th">poutcome</th>
+<th data-quarto-table-cell-role="th">emp.var.rate</th>
+<th data-quarto-table-cell-role="th">cons.price.idx</th>
+<th data-quarto-table-cell-role="th">cons.conf.idx</th>
+<th data-quarto-table-cell-role="th">euribor3m</th>
+<th data-quarto-table-cell-role="th">nr.employed</th>
+<th data-quarto-table-cell-role="th">y</th>
+<th data-quarto-table-cell-role="th">FS_id</th>
+<th data-quarto-table-cell-role="th">FS_event_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>56</td>
+<td>housemaid</td>
+<td>married</td>
+<td>basic.4y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>261</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>0</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>57</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>unknown</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>149</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>1</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>37</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>yes</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>226</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>2</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>40</td>
+<td>admin.</td>
+<td>married</td>
+<td>basic.6y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>151</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>3</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>56</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>no</td>
+<td>yes</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>307</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>4</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
 <p>Initialize SageMaker session.</p>
-<div class="cell" data-execution_count="14">
+<div id="cell-27" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="im">import</span> sagemaker</span>
 <span id="cb19-2"><a href="#cb19-2"></a></span>
 <span id="cb19-3"><a href="#cb19-3"></a>session <span class="op">=</span> sagemaker.Session()</span>
@@ -805,13 +785,13 @@ Bucket:  sagemaker-us-east-1-801598032724
 Region:  us-east-1</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="15">
+<div id="cell-28" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># You may choose any other prefix for your bucket.</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="co"># All the data related to this post will be under this prefix.</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a>bucket_prefix <span class="op">=</span> <span class="st">"2022-08-05-sagemaker-feature-store"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Feature store requires an S3 location for storing the ingested data. Let’s define it as well.</p>
-<div class="cell" data-execution_count="16">
+<div id="cell-30" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a>fs_offline_bucket_studio <span class="op">=</span> <span class="ss">f"s3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/fs_offline/studio"</span></span>
 <span id="cb22-2"><a href="#cb22-2"></a>fs_offline_bucket_studio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
@@ -825,13 +805,13 @@ Region:  us-east-1</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-08-05-sagemaker-feature-store/create-feature-group.PNG" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">create-feature-group.PNG</figcaption><p></p>
+<figcaption>create-feature-group.PNG</figcaption>
 </figure>
 </div>
 <p>On the <code>create feature group</code> tab, define the following settings: - Feature group name : “bank-marketing-studio” - Description (optional) : “The data is related to direct marketing campaigns (phone calls) of a Portuguese banking institution.” - Feature group storage configurations - Enable online store : Check this box. Note that for the online store there is no S3 bucket requirement. - Enable offline store : Check this box too. - Enter S3 location from <code>fs_offline_bucket_studio</code> - IAM Role ARN : Default SageMaker role. - Enable Data Catalog for offline store - Select <code>continue</code></p>
 <p>On the next page, you will be asked to specify feature definitions. There are two ways to define them. - Using Table, and manually fill each feature and its type - Using JSON. We will use this option to define the features and their types.</p>
 <p>Remember that the feature group only supports three data types: string, integral, and fractional. So we need to create a mapping between Pandas Dataframe data types and that of a feature store. - “object” -&gt; “String” - “int64” -&gt; “Integral” - “float64” -&gt; “Fractional”</p>
-<div class="cell" data-execution_count="17">
+<div id="cell-32" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="co">##</span></span>
 <span id="cb24-2"><a href="#cb24-2"></a><span class="co"># map DataFrame types to feature group.</span></span>
 <span id="cb24-3"><a href="#cb24-3"></a><span class="kw">def</span> get_mapping(dt):</span>
@@ -844,7 +824,7 @@ Region:  us-east-1</code></pre>
 <span id="cb24-10"><a href="#cb24-10"></a></span>
 <span id="cb24-11"><a href="#cb24-11"></a>    <span class="cf">return</span> feature_store_dtype_mapping[<span class="bu">str</span>(dt)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="18">
+<div id="cell-33" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">##</span></span>
 <span id="cb25-2"><a href="#cb25-2"></a><span class="co"># DataFrame feature data types</span></span>
 <span id="cb25-3"><a href="#cb25-3"></a>df.dtypes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -875,20 +855,20 @@ FS_event_time      object
 dtype: object</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="19">
+<div id="cell-34" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a><span class="co">##</span></span>
 <span id="cb27-2"><a href="#cb27-2"></a><span class="co"># prepare list of feature names and correct data types</span></span>
 <span id="cb27-3"><a href="#cb27-3"></a>feature_names <span class="op">=</span> df.columns.tolist()</span>
 <span id="cb27-4"><a href="#cb27-4"></a>feature_types <span class="op">=</span> [get_mapping(dt) <span class="cf">for</span> dt <span class="kw">in</span> df.dtypes]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Feature names allow alphanumeric characters including dashes and underscores. So let’s remove the “.” character from the feature names.</p>
-<div class="cell" data-execution_count="20">
+<div id="cell-36" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">##</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a><span class="co"># fix feature names</span></span>
 <span id="cb28-3"><a href="#cb28-3"></a><span class="cf">for</span> indx <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(feature_names)):</span>
 <span id="cb28-4"><a href="#cb28-4"></a>    feature_names[indx] <span class="op">=</span> feature_names[indx].replace(<span class="st">"."</span>, <span class="st">"_"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="21">
+<div id="cell-37" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a><span class="co">##</span></span>
 <span id="cb29-2"><a href="#cb29-2"></a><span class="co"># corrected feature names</span></span>
 <span id="cb29-3"><a href="#cb29-3"></a>feature_names</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -926,7 +906,7 @@ dtype: object</code></pre>
     }
 ]</code></pre>
 <p>Let’s prepare it.</p>
-<div class="cell" data-execution_count="22">
+<div id="cell-39" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>df_features <span class="op">=</span> pd.DataFrame({<span class="st">"FeatureName"</span>: feature_names, <span class="st">"FeatureType"</span>: feature_types})</span>
 <span id="cb32-2"><a href="#cb32-2"></a></span>
 <span id="cb32-3"><a href="#cb32-3"></a><span class="bu">print</span>(df_features.to_json(orient<span class="op">=</span><span class="st">"records"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -938,7 +918,7 @@ dtype: object</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-08-05-sagemaker-feature-store/feature-definition.PNG" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">feature-definition.PNG</figcaption><p></p>
+<figcaption>feature-definition.PNG</figcaption>
 </figure>
 </div>
 <p>On the next page, it will ask for the required features. - record identifier feature name : select <code>FS_ID</code> - event type feature name : select <code>FS_event_time</code></p>
@@ -946,14 +926,14 @@ dtype: object</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-08-05-sagemaker-feature-store/feature-group-created.PNG" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">feature-group-created.PNG</figcaption><p></p>
+<figcaption>feature-group-created.PNG</figcaption>
 </figure>
 </div>
 </section>
 <section id="create-feature-group-from-sagemaker-sdk" class="level2">
 <h2 class="anchored" data-anchor-id="create-feature-group-from-sagemaker-sdk">Create feature group from SageMaker SDK</h2>
 <p>We have seen how we can create a feature group from SageMaker studio IDE. Let’s also see how to create it using SageMaker SDK.</p>
-<div class="cell" data-execution_count="23">
+<div id="cell-42" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">##</span></span>
 <span id="cb34-2"><a href="#cb34-2"></a><span class="co"># define a feature group</span></span>
 <span id="cb34-3"><a href="#cb34-3"></a><span class="im">from</span> sagemaker.feature_store.feature_group <span class="im">import</span> FeatureGroup</span>
@@ -984,20 +964,36 @@ dtype: object</code></pre>
 <p>That is * It loads feature definitions from a Pandas DataFrame * DataFrame column names are used as feature names * Feature types are inferred from the dtype of columns * Dtype int_, int8, int16, int32, int64, uint8, uint16, uint32 and uint64 are mapped to <code>Integral</code> feature type * Dtype float_, float16, float32 and float64 are mapped to <code>Fractional</code> feature type * Dtype string is mapped to <code>String</code> feature type * No feature definitions will be loaded if the given data_frame contains unsupported dtypes</p>
 <p>In the last section, we have seen that our dataframe has <code>object</code> data types that are not supported. For backward compatibility reasons, Pandas DataFrame infers columns with strings as <code>object</code> data type. With Pandas 1.0 onwards we can explicitly use <code>string</code> type for such columns.</p>
 <p>Let’s see what happens when we use unsupported data types for feature definition.</p>
-<div class="cell" data-execution_count="24">
+<div id="cell-44" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">##</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a><span class="co"># load unsupported feature definitions. This will generate an error.</span></span>
 <span id="cb36-3"><a href="#cb36-3"></a>feature_group.load_feature_definitions(data_frame<span class="op">=</span>df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
-<pre><code>ValueError: Failed to infer Feature type based on dtype object for column job.</code></pre>
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-24-f77a8abe3ce7&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg ansi-bold">      1</span> <span class="ansi-red-fg">##</span>
+<span class="ansi-green-fg ansi-bold">      2</span> <span class="ansi-red-fg"># load unsupported feature definitions. This will generate an error.</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>feature_group<span class="ansi-blue-fg">.</span>load_feature_definitions<span class="ansi-blue-fg">(</span>data_frame<span class="ansi-blue-fg">=</span>df<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/opt/conda/lib/python3.7/site-packages/sagemaker/feature_store/feature_group.py</span> in <span class="ansi-cyan-fg">load_feature_definitions</span><span class="ansi-blue-fg">(self, data_frame)</span>
+<span class="ansi-green-fg ansi-bold">    570</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg ansi-bold">    571</span>                 raise ValueError(
+<span class="ansi-green-fg">--&gt; 572</span><span class="ansi-red-fg">                     </span><span class="ansi-blue-fg">f"Failed to infer Feature type based on dtype {data_frame[column].dtype} "</span>
+<span class="ansi-green-fg ansi-bold">    573</span>                     <span class="ansi-blue-fg">f"for column {column}."</span>
+<span class="ansi-green-fg ansi-bold">    574</span>                 )
+
+<span class="ansi-red-fg">ValueError</span>: Failed to infer Feature type based on dtype object for column job.</pre>
+</div>
 </div>
 </div>
 <p>It throws an error, “ValueError: Failed to infer Feature type based on dtype object for column job.”</p>
 <p>Okay, let’s convet columns to proper data types.</p>
-<div class="cell" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="co">##</span></span>
-<span id="cb38-2"><a href="#cb38-2"></a><span class="co"># list of columns with `object` data type</span></span>
-<span id="cb38-3"><a href="#cb38-3"></a>df.select_dtypes(<span class="st">"object"</span>).columns.tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-46" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a><span class="co">##</span></span>
+<span id="cb37-2"><a href="#cb37-2"></a><span class="co"># list of columns with `object` data type</span></span>
+<span id="cb37-3"><a href="#cb37-3"></a>df.select_dtypes(<span class="st">"object"</span>).columns.tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="25">
 <pre><code>['job',
  'marital',
@@ -1013,15 +1009,15 @@ dtype: object</code></pre>
  'FS_event_time']</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co">##</span></span>
-<span id="cb40-2"><a href="#cb40-2"></a><span class="co"># covert `object` columns to `string` data type</span></span>
-<span id="cb40-3"><a href="#cb40-3"></a><span class="cf">for</span> col <span class="kw">in</span> df.select_dtypes(<span class="st">"object"</span>).columns.tolist():</span>
-<span id="cb40-4"><a href="#cb40-4"></a>    df[col] <span class="op">=</span> df[col].astype(<span class="st">"string"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-47" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a><span class="co">##</span></span>
+<span id="cb39-2"><a href="#cb39-2"></a><span class="co"># covert `object` columns to `string` data type</span></span>
+<span id="cb39-3"><a href="#cb39-3"></a><span class="cf">for</span> col <span class="kw">in</span> df.select_dtypes(<span class="st">"object"</span>).columns.tolist():</span>
+<span id="cb39-4"><a href="#cb39-4"></a>    df[col] <span class="op">=</span> df[col].astype(<span class="st">"string"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s verify the data types of all columns.</p>
-<div class="cell" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a>df.dtypes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-49" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a>df.dtypes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="27">
 <pre><code>age                 int64
 job                string
@@ -1049,180 +1045,181 @@ FS_event_time      string
 dtype: object</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-50" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="28">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>age</th>
-      <th>job</th>
-      <th>marital</th>
-      <th>education</th>
-      <th>default</th>
-      <th>housing</th>
-      <th>loan</th>
-      <th>contact</th>
-      <th>month</th>
-      <th>day_of_week</th>
-      <th>duration</th>
-      <th>campaign</th>
-      <th>pdays</th>
-      <th>previous</th>
-      <th>poutcome</th>
-      <th>emp.var.rate</th>
-      <th>cons.price.idx</th>
-      <th>cons.conf.idx</th>
-      <th>euribor3m</th>
-      <th>nr.employed</th>
-      <th>y</th>
-      <th>FS_id</th>
-      <th>FS_event_time</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>56</td>
-      <td>housemaid</td>
-      <td>married</td>
-      <td>basic.4y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>261</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>0</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>57</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>unknown</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>149</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>1</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>37</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>226</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>2</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>40</td>
-      <td>admin.</td>
-      <td>married</td>
-      <td>basic.6y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>151</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>3</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>56</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>307</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>4</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">job</th>
+<th data-quarto-table-cell-role="th">marital</th>
+<th data-quarto-table-cell-role="th">education</th>
+<th data-quarto-table-cell-role="th">default</th>
+<th data-quarto-table-cell-role="th">housing</th>
+<th data-quarto-table-cell-role="th">loan</th>
+<th data-quarto-table-cell-role="th">contact</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">day_of_week</th>
+<th data-quarto-table-cell-role="th">duration</th>
+<th data-quarto-table-cell-role="th">campaign</th>
+<th data-quarto-table-cell-role="th">pdays</th>
+<th data-quarto-table-cell-role="th">previous</th>
+<th data-quarto-table-cell-role="th">poutcome</th>
+<th data-quarto-table-cell-role="th">emp.var.rate</th>
+<th data-quarto-table-cell-role="th">cons.price.idx</th>
+<th data-quarto-table-cell-role="th">cons.conf.idx</th>
+<th data-quarto-table-cell-role="th">euribor3m</th>
+<th data-quarto-table-cell-role="th">nr.employed</th>
+<th data-quarto-table-cell-role="th">y</th>
+<th data-quarto-table-cell-role="th">FS_id</th>
+<th data-quarto-table-cell-role="th">FS_event_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>56</td>
+<td>housemaid</td>
+<td>married</td>
+<td>basic.4y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>261</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>0</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>57</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>unknown</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>149</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>1</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>37</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>yes</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>226</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>2</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>40</td>
+<td>admin.</td>
+<td>married</td>
+<td>basic.6y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>151</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>3</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>56</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>no</td>
+<td>yes</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>307</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>4</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
 <p>Let’s load the feature definitions again.</p>
-<div class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>feature_group.load_feature_definitions(data_frame<span class="op">=</span>df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-52" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>feature_group.load_feature_definitions(data_frame<span class="op">=</span>df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="29">
 <pre><code>[FeatureDefinition(feature_name='age', feature_type=&lt;FeatureTypeEnum.INTEGRAL: 'Integral'&gt;),
  FeatureDefinition(feature_name='job', feature_type=&lt;FeatureTypeEnum.STRING: 'String'&gt;),
@@ -1250,212 +1247,251 @@ dtype: object</code></pre>
 </div>
 </div>
 <p>We have defined our feature group and its feature definitions, but it has not been created. To create it we need to call <code>create</code> method on the feature group. For this let’s define s3 URI for our feature store offline data storage.</p>
-<div class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>fs_offline_bucket_sdk <span class="op">=</span> <span class="ss">f"s3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/fs_offline/sdk"</span></span>
-<span id="cb46-2"><a href="#cb46-2"></a>fs_offline_bucket_sdk</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-54" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>fs_offline_bucket_sdk <span class="op">=</span> <span class="ss">f"s3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/fs_offline/sdk"</span></span>
+<span id="cb45-2"><a href="#cb45-2"></a>fs_offline_bucket_sdk</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="30">
 <pre><code>'s3://sagemaker-us-east-1-801598032724/2022-08-05-sagemaker-feature-store/fs_offline/sdk'</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="31">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">##</span></span>
-<span id="cb48-2"><a href="#cb48-2"></a><span class="co"># Now create feature group</span></span>
-<span id="cb48-3"><a href="#cb48-3"></a>record_identifier_name <span class="op">=</span> <span class="st">"FS_id"</span></span>
-<span id="cb48-4"><a href="#cb48-4"></a>event_time_feature_name <span class="op">=</span> <span class="st">"FS_event_time"</span></span>
-<span id="cb48-5"><a href="#cb48-5"></a>description <span class="op">=</span> <span class="st">"The data is related with direct marketing campaigns (phone calls) of a Portuguese banking institution"</span></span>
-<span id="cb48-6"><a href="#cb48-6"></a></span>
-<span id="cb48-7"><a href="#cb48-7"></a>feature_group.create(</span>
-<span id="cb48-8"><a href="#cb48-8"></a>    record_identifier_name<span class="op">=</span>record_identifier_name,</span>
-<span id="cb48-9"><a href="#cb48-9"></a>    event_time_feature_name<span class="op">=</span>event_time_feature_name,</span>
-<span id="cb48-10"><a href="#cb48-10"></a>    enable_online_store<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb48-11"><a href="#cb48-11"></a>    s3_uri<span class="op">=</span>fs_offline_bucket_sdk,</span>
-<span id="cb48-12"><a href="#cb48-12"></a>    role_arn<span class="op">=</span>role,</span>
-<span id="cb48-13"><a href="#cb48-13"></a>    description<span class="op">=</span>description,</span>
-<span id="cb48-14"><a href="#cb48-14"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-55" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a><span class="co">##</span></span>
+<span id="cb47-2"><a href="#cb47-2"></a><span class="co"># Now create feature group</span></span>
+<span id="cb47-3"><a href="#cb47-3"></a>record_identifier_name <span class="op">=</span> <span class="st">"FS_id"</span></span>
+<span id="cb47-4"><a href="#cb47-4"></a>event_time_feature_name <span class="op">=</span> <span class="st">"FS_event_time"</span></span>
+<span id="cb47-5"><a href="#cb47-5"></a>description <span class="op">=</span> <span class="st">"The data is related with direct marketing campaigns (phone calls) of a Portuguese banking institution"</span></span>
+<span id="cb47-6"><a href="#cb47-6"></a></span>
+<span id="cb47-7"><a href="#cb47-7"></a>feature_group.create(</span>
+<span id="cb47-8"><a href="#cb47-8"></a>    record_identifier_name<span class="op">=</span>record_identifier_name,</span>
+<span id="cb47-9"><a href="#cb47-9"></a>    event_time_feature_name<span class="op">=</span>event_time_feature_name,</span>
+<span id="cb47-10"><a href="#cb47-10"></a>    enable_online_store<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb47-11"><a href="#cb47-11"></a>    s3_uri<span class="op">=</span>fs_offline_bucket_sdk,</span>
+<span id="cb47-12"><a href="#cb47-12"></a>    role_arn<span class="op">=</span>role,</span>
+<span id="cb47-13"><a href="#cb47-13"></a>    description<span class="op">=</span>description,</span>
+<span id="cb47-14"><a href="#cb47-14"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
-<pre><code>ClientError: An error occurred (ValidationException) when calling the CreateFeatureGroup operation: 4 validation errors detected: Value 'emp.var.rate' at 'featureDefinitions.16.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}; Value 'cons.price.idx' at 'featureDefinitions.17.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}; Value 'cons.conf.idx' at 'featureDefinitions.18.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}; Value 'nr.employed' at 'featureDefinitions.20.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}</code></pre>
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ClientError</span>                               Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-31-5459ca8fa447&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg ansi-bold">     11</span>     s3_uri<span class="ansi-blue-fg">=</span>fs_offline_bucket_sdk<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg ansi-bold">     12</span>     role_arn<span class="ansi-blue-fg">=</span>role<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">---&gt; 13</span><span class="ansi-red-fg">     </span>description<span class="ansi-blue-fg">=</span>description<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg ansi-bold">     14</span> )
+
+<span class="ansi-green-fg">/opt/conda/lib/python3.7/site-packages/sagemaker/feature_store/feature_group.py</span> in <span class="ansi-cyan-fg">create</span><span class="ansi-blue-fg">(self, s3_uri, record_identifier_name, event_time_feature_name, role_arn, online_store_kms_key_id, enable_online_store, offline_store_kms_key_id, disable_glue_table_creation, data_catalog_config, description, tags)</span>
+<span class="ansi-green-fg ansi-bold">    519</span>             )
+<span class="ansi-green-fg ansi-bold">    520</span> 
+<span class="ansi-green-fg">--&gt; 521</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>sagemaker_session<span class="ansi-blue-fg">.</span>create_feature_group<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>create_feature_store_args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg ansi-bold">    522</span> 
+<span class="ansi-green-fg ansi-bold">    523</span>     <span class="ansi-green-fg">def</span> delete<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/opt/conda/lib/python3.7/site-packages/sagemaker/session.py</span> in <span class="ansi-cyan-fg">create_feature_group</span><span class="ansi-blue-fg">(self, feature_group_name, record_identifier_name, event_time_feature_name, feature_definitions, role_arn, online_store_config, offline_store_config, description, tags)</span>
+<span class="ansi-green-fg ansi-bold">   4076</span>             Tags<span class="ansi-blue-fg">=</span>tags<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg ansi-bold">   4077</span>         )
+<span class="ansi-green-fg">-&gt; 4078</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>sagemaker_client<span class="ansi-blue-fg">.</span>create_feature_group<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg ansi-bold">   4079</span> 
+<span class="ansi-green-fg ansi-bold">   4080</span>     def describe_feature_group(
+
+<span class="ansi-green-fg">/opt/conda/lib/python3.7/site-packages/botocore/client.py</span> in <span class="ansi-cyan-fg">_api_call</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-green-fg ansi-bold">    506</span>                 )
+<span class="ansi-green-fg ansi-bold">    507</span>             <span class="ansi-red-fg"># The "self" in this scope is referring to the BaseClient.</span>
+<span class="ansi-green-fg">--&gt; 508</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_make_api_call<span class="ansi-blue-fg">(</span>operation_name<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg ansi-bold">    509</span> 
+<span class="ansi-green-fg ansi-bold">    510</span>         _api_call<span class="ansi-blue-fg">.</span>__name__ <span class="ansi-blue-fg">=</span> str<span class="ansi-blue-fg">(</span>py_operation_name<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/opt/conda/lib/python3.7/site-packages/botocore/client.py</span> in <span class="ansi-cyan-fg">_make_api_call</span><span class="ansi-blue-fg">(self, operation_name, api_params)</span>
+<span class="ansi-green-fg ansi-bold">    913</span>             error_code <span class="ansi-blue-fg">=</span> parsed_response<span class="ansi-blue-fg">.</span>get<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">"Error"</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">{</span><span class="ansi-blue-fg">}</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>get<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">"Code"</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg ansi-bold">    914</span>             error_class <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>exceptions<span class="ansi-blue-fg">.</span>from_code<span class="ansi-blue-fg">(</span>error_code<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 915</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">raise</span> error_class<span class="ansi-blue-fg">(</span>parsed_response<span class="ansi-blue-fg">,</span> operation_name<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg ansi-bold">    916</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg ansi-bold">    917</span>             <span class="ansi-green-fg">return</span> parsed_response
+
+<span class="ansi-red-fg">ClientError</span>: An error occurred (ValidationException) when calling the CreateFeatureGroup operation: 4 validation errors detected: Value 'emp.var.rate' at 'featureDefinitions.16.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}; Value 'cons.price.idx' at 'featureDefinitions.17.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}; Value 'cons.conf.idx' at 'featureDefinitions.18.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}; Value 'nr.employed' at 'featureDefinitions.20.member.featureName' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}</pre>
+</div>
 </div>
 </div>
 <p>We got an error as we have not fixed feature names. Error is saying that the feature name should satisfy the regular expression pattern: <code>^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}</code>. Let’s fix our column names.</p>
-<div class="cell" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>col_names <span class="op">=</span> df.columns.tolist()</span>
-<span id="cb50-2"><a href="#cb50-2"></a><span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(col_names)):</span>
-<span id="cb50-3"><a href="#cb50-3"></a>    col_names[idx] <span class="op">=</span> col_names[idx].replace(<span class="st">"."</span>, <span class="st">"_"</span>)</span>
-<span id="cb50-4"><a href="#cb50-4"></a></span>
-<span id="cb50-5"><a href="#cb50-5"></a>df.columns <span class="op">=</span> col_names</span>
-<span id="cb50-6"><a href="#cb50-6"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-57" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>col_names <span class="op">=</span> df.columns.tolist()</span>
+<span id="cb48-2"><a href="#cb48-2"></a><span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(col_names)):</span>
+<span id="cb48-3"><a href="#cb48-3"></a>    col_names[idx] <span class="op">=</span> col_names[idx].replace(<span class="st">"."</span>, <span class="st">"_"</span>)</span>
+<span id="cb48-4"><a href="#cb48-4"></a></span>
+<span id="cb48-5"><a href="#cb48-5"></a>df.columns <span class="op">=</span> col_names</span>
+<span id="cb48-6"><a href="#cb48-6"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="32">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>age</th>
-      <th>job</th>
-      <th>marital</th>
-      <th>education</th>
-      <th>default</th>
-      <th>housing</th>
-      <th>loan</th>
-      <th>contact</th>
-      <th>month</th>
-      <th>day_of_week</th>
-      <th>duration</th>
-      <th>campaign</th>
-      <th>pdays</th>
-      <th>previous</th>
-      <th>poutcome</th>
-      <th>emp_var_rate</th>
-      <th>cons_price_idx</th>
-      <th>cons_conf_idx</th>
-      <th>euribor3m</th>
-      <th>nr_employed</th>
-      <th>y</th>
-      <th>FS_id</th>
-      <th>FS_event_time</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>56</td>
-      <td>housemaid</td>
-      <td>married</td>
-      <td>basic.4y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>261</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>0</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>57</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>unknown</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>149</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>1</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>37</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>226</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>2</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>40</td>
-      <td>admin.</td>
-      <td>married</td>
-      <td>basic.6y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>151</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>3</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>56</td>
-      <td>services</td>
-      <td>married</td>
-      <td>high.school</td>
-      <td>no</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>307</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>1.1</td>
-      <td>93.994</td>
-      <td>-36.4</td>
-      <td>4.857</td>
-      <td>5191.0</td>
-      <td>no</td>
-      <td>4</td>
-      <td>2022-08-08T06:06:07.524Z</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">job</th>
+<th data-quarto-table-cell-role="th">marital</th>
+<th data-quarto-table-cell-role="th">education</th>
+<th data-quarto-table-cell-role="th">default</th>
+<th data-quarto-table-cell-role="th">housing</th>
+<th data-quarto-table-cell-role="th">loan</th>
+<th data-quarto-table-cell-role="th">contact</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">day_of_week</th>
+<th data-quarto-table-cell-role="th">duration</th>
+<th data-quarto-table-cell-role="th">campaign</th>
+<th data-quarto-table-cell-role="th">pdays</th>
+<th data-quarto-table-cell-role="th">previous</th>
+<th data-quarto-table-cell-role="th">poutcome</th>
+<th data-quarto-table-cell-role="th">emp_var_rate</th>
+<th data-quarto-table-cell-role="th">cons_price_idx</th>
+<th data-quarto-table-cell-role="th">cons_conf_idx</th>
+<th data-quarto-table-cell-role="th">euribor3m</th>
+<th data-quarto-table-cell-role="th">nr_employed</th>
+<th data-quarto-table-cell-role="th">y</th>
+<th data-quarto-table-cell-role="th">FS_id</th>
+<th data-quarto-table-cell-role="th">FS_event_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>56</td>
+<td>housemaid</td>
+<td>married</td>
+<td>basic.4y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>261</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>0</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>57</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>unknown</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>149</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>1</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>37</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>yes</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>226</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>2</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>40</td>
+<td>admin.</td>
+<td>married</td>
+<td>basic.6y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>151</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>3</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>56</td>
+<td>services</td>
+<td>married</td>
+<td>high.school</td>
+<td>no</td>
+<td>no</td>
+<td>yes</td>
+<td>telephone</td>
+<td>may</td>
+<td>mon</td>
+<td>307</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>1.1</td>
+<td>93.994</td>
+<td>-36.4</td>
+<td>4.857</td>
+<td>5191.0</td>
+<td>no</td>
+<td>4</td>
+<td>2022-08-08T06:06:07.524Z</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
 <p>After updating feature names, load the feature group definitions again.</p>
-<div class="cell" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a>feature_group.load_feature_definitions(data_frame<span class="op">=</span>df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-59" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>feature_group.load_feature_definitions(data_frame<span class="op">=</span>df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="33">
 <pre><code>[FeatureDefinition(feature_name='age', feature_type=&lt;FeatureTypeEnum.INTEGRAL: 'Integral'&gt;),
  FeatureDefinition(feature_name='job', feature_type=&lt;FeatureTypeEnum.STRING: 'String'&gt;),
@@ -1483,17 +1519,17 @@ dtype: object</code></pre>
 </div>
 </div>
 <p>Now create the feature group.</p>
-<div class="cell" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a><span class="co">##</span></span>
-<span id="cb53-2"><a href="#cb53-2"></a><span class="co"># create feature group</span></span>
-<span id="cb53-3"><a href="#cb53-3"></a>feature_group.create(</span>
-<span id="cb53-4"><a href="#cb53-4"></a>    record_identifier_name<span class="op">=</span>record_identifier_name,</span>
-<span id="cb53-5"><a href="#cb53-5"></a>    event_time_feature_name<span class="op">=</span>event_time_feature_name,</span>
-<span id="cb53-6"><a href="#cb53-6"></a>    enable_online_store<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb53-7"><a href="#cb53-7"></a>    s3_uri<span class="op">=</span>fs_offline_bucket_sdk,</span>
-<span id="cb53-8"><a href="#cb53-8"></a>    role_arn<span class="op">=</span>role,</span>
-<span id="cb53-9"><a href="#cb53-9"></a>    description<span class="op">=</span>description,</span>
-<span id="cb53-10"><a href="#cb53-10"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-61" class="cell" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a><span class="co">##</span></span>
+<span id="cb51-2"><a href="#cb51-2"></a><span class="co"># create feature group</span></span>
+<span id="cb51-3"><a href="#cb51-3"></a>feature_group.create(</span>
+<span id="cb51-4"><a href="#cb51-4"></a>    record_identifier_name<span class="op">=</span>record_identifier_name,</span>
+<span id="cb51-5"><a href="#cb51-5"></a>    event_time_feature_name<span class="op">=</span>event_time_feature_name,</span>
+<span id="cb51-6"><a href="#cb51-6"></a>    enable_online_store<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb51-7"><a href="#cb51-7"></a>    s3_uri<span class="op">=</span>fs_offline_bucket_sdk,</span>
+<span id="cb51-8"><a href="#cb51-8"></a>    role_arn<span class="op">=</span>role,</span>
+<span id="cb51-9"><a href="#cb51-9"></a>    description<span class="op">=</span>description,</span>
+<span id="cb51-10"><a href="#cb51-10"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="34">
 <pre><code>{'FeatureGroupArn': 'arn:aws:sagemaker:us-east-1:801598032724:feature-group/bank-marketing-sdk',
  'ResponseMetadata': {'RequestId': '5c2afeb1-fa03-442b-a3ee-80b1b0ae1069',
@@ -1506,28 +1542,28 @@ dtype: object</code></pre>
 </div>
 </div>
 <p>Feature group creation is an async method, and you need to wait for its creation before ingesting any data into it. For this you can use <code>feature_group.describe</code> method to get feature store creation status.</p>
-<div class="cell" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1"></a>feature_group.describe().get(<span class="st">'FeatureGroupStatus'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-63" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a>feature_group.describe().get(<span class="st">'FeatureGroupStatus'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="35">
 <pre><code>'Creating'</code></pre>
 </div>
 </div>
 <p>We can create a wrapper function around this method to wait till the feature group is ready.</p>
-<div class="cell" data-execution_count="36">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1"></a><span class="im">import</span> time</span>
-<span id="cb57-2"><a href="#cb57-2"></a></span>
-<span id="cb57-3"><a href="#cb57-3"></a><span class="kw">def</span> wait_for_feature_group_creation_complete(feature_group):</span>
-<span id="cb57-4"><a href="#cb57-4"></a>    status <span class="op">=</span> feature_group.describe().get(<span class="st">"FeatureGroupStatus"</span>)</span>
-<span id="cb57-5"><a href="#cb57-5"></a>    <span class="bu">print</span>(<span class="ss">f"Initial status: </span><span class="sc">{</span>status<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb57-6"><a href="#cb57-6"></a>    <span class="cf">while</span> status <span class="op">==</span> <span class="st">"Creating"</span>:</span>
-<span id="cb57-7"><a href="#cb57-7"></a>        <span class="bu">print</span>(<span class="ss">f"Waiting for feature group: </span><span class="sc">{</span>feature_group<span class="sc">.</span>name<span class="sc">}</span><span class="ss"> to be created ..."</span>)</span>
-<span id="cb57-8"><a href="#cb57-8"></a>        time.sleep(<span class="dv">5</span>)</span>
-<span id="cb57-9"><a href="#cb57-9"></a>        status <span class="op">=</span> feature_group.describe().get(<span class="st">"FeatureGroupStatus"</span>)</span>
-<span id="cb57-10"><a href="#cb57-10"></a></span>
-<span id="cb57-11"><a href="#cb57-11"></a>    <span class="bu">print</span>(<span class="ss">f"FeatureGroup </span><span class="sc">{</span>feature_group<span class="sc">.</span>name<span class="sc">}</span><span class="ss"> was successfully created."</span>)</span>
-<span id="cb57-12"><a href="#cb57-12"></a></span>
-<span id="cb57-13"><a href="#cb57-13"></a></span>
-<span id="cb57-14"><a href="#cb57-14"></a>wait_for_feature_group_creation_complete(feature_group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-65" class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1"></a><span class="im">import</span> time</span>
+<span id="cb55-2"><a href="#cb55-2"></a></span>
+<span id="cb55-3"><a href="#cb55-3"></a><span class="kw">def</span> wait_for_feature_group_creation_complete(feature_group):</span>
+<span id="cb55-4"><a href="#cb55-4"></a>    status <span class="op">=</span> feature_group.describe().get(<span class="st">"FeatureGroupStatus"</span>)</span>
+<span id="cb55-5"><a href="#cb55-5"></a>    <span class="bu">print</span>(<span class="ss">f"Initial status: </span><span class="sc">{</span>status<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb55-6"><a href="#cb55-6"></a>    <span class="cf">while</span> status <span class="op">==</span> <span class="st">"Creating"</span>:</span>
+<span id="cb55-7"><a href="#cb55-7"></a>        <span class="bu">print</span>(<span class="ss">f"Waiting for feature group: </span><span class="sc">{</span>feature_group<span class="sc">.</span>name<span class="sc">}</span><span class="ss"> to be created ..."</span>)</span>
+<span id="cb55-8"><a href="#cb55-8"></a>        time.sleep(<span class="dv">5</span>)</span>
+<span id="cb55-9"><a href="#cb55-9"></a>        status <span class="op">=</span> feature_group.describe().get(<span class="st">"FeatureGroupStatus"</span>)</span>
+<span id="cb55-10"><a href="#cb55-10"></a></span>
+<span id="cb55-11"><a href="#cb55-11"></a>    <span class="bu">print</span>(<span class="ss">f"FeatureGroup </span><span class="sc">{</span>feature_group<span class="sc">.</span>name<span class="sc">}</span><span class="ss"> was successfully created."</span>)</span>
+<span id="cb55-12"><a href="#cb55-12"></a></span>
+<span id="cb55-13"><a href="#cb55-13"></a></span>
+<span id="cb55-14"><a href="#cb55-14"></a>wait_for_feature_group_creation_complete(feature_group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Initial status: Creating
 Waiting for feature group: bank-marketing-sdk to be created ...
@@ -1542,8 +1578,8 @@ FeatureGroup bank-marketing-sdk was successfully created.</code></pre>
 <section id="ingest-data-to-feature-group" class="level1">
 <h1>Ingest data to feature group</h1>
 <p>Let’s ingest our data frame into this feature group.</p>
-<div class="cell" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1"></a>feature_group.ingest(data_frame<span class="op">=</span>df, max_workers<span class="op">=</span><span class="dv">5</span>, max_processes <span class="op">=</span> <span class="dv">1</span>, wait<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-67" class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1"></a>feature_group.ingest(data_frame<span class="op">=</span>df, max_workers<span class="op">=</span><span class="dv">5</span>, max_processes <span class="op">=</span> <span class="dv">1</span>, wait<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="37">
 <pre><code>IngestionManagerPandas(feature_group_name='bank-marketing-sdk', sagemaker_fs_runtime_client_config=&lt;botocore.config.Config object at 0x7fb406ab9450&gt;, max_workers=5, max_processes=1, profile_name=None, _async_result=&lt;multiprocess.pool.MapResult object at 0x7fb405669810&gt;, _processing_pool=&lt;pool ProcessPool(ncpus=1)&gt;, _failed_indices=[])</code></pre>
 </div>
@@ -1568,36 +1604,36 @@ FeatureGroup bank-marketing-sdk was successfully created.</code></pre>
 <li>put_record()</li>
 </ul>
 <p>To read more about them use <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-featurestore-runtime.html">Boto3 SageMakerFeatureStoreRuntime</a> documentation.</p>
-<div class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1"></a>featurestore_runtime_client <span class="op">=</span> session.boto_session.client(</span>
-<span id="cb61-2"><a href="#cb61-2"></a>    <span class="st">"sagemaker-featurestore-runtime"</span>, region_name<span class="op">=</span>region</span>
-<span id="cb61-3"><a href="#cb61-3"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-69" class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1"></a>featurestore_runtime_client <span class="op">=</span> session.boto_session.client(</span>
+<span id="cb59-2"><a href="#cb59-2"></a>    <span class="st">"sagemaker-featurestore-runtime"</span>, region_name<span class="op">=</span>region</span>
+<span id="cb59-3"><a href="#cb59-3"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="39">
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1"></a><span class="co">##</span></span>
-<span id="cb62-2"><a href="#cb62-2"></a><span class="co"># select any random id to query online store</span></span>
-<span id="cb62-3"><a href="#cb62-3"></a>sample_feature_id <span class="op">=</span> <span class="bu">str</span>(df.sample().index.values[<span class="dv">0</span>])</span>
-<span id="cb62-4"><a href="#cb62-4"></a>sample_feature_id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-70" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1"></a><span class="co">##</span></span>
+<span id="cb60-2"><a href="#cb60-2"></a><span class="co"># select any random id to query online store</span></span>
+<span id="cb60-3"><a href="#cb60-3"></a>sample_feature_id <span class="op">=</span> <span class="bu">str</span>(df.sample().index.values[<span class="dv">0</span>])</span>
+<span id="cb60-4"><a href="#cb60-4"></a>sample_feature_id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="39">
 <pre><code>'37156'</code></pre>
 </div>
 </div>
 <p>Now query the online store.</p>
-<div class="cell" data-execution_count="40">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1"></a><span class="op">%%</span>timeit</span>
-<span id="cb64-2"><a href="#cb64-2"></a></span>
-<span id="cb64-3"><a href="#cb64-3"></a>featurestore_runtime_client.get_record(FeatureGroupName<span class="op">=</span>feature_group_name, </span>
-<span id="cb64-4"><a href="#cb64-4"></a>                                                        RecordIdentifierValueAsString<span class="op">=</span>sample_feature_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-72" class="cell" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1"></a><span class="op">%%</span>timeit</span>
+<span id="cb62-2"><a href="#cb62-2"></a></span>
+<span id="cb62-3"><a href="#cb62-3"></a>featurestore_runtime_client.get_record(FeatureGroupName<span class="op">=</span>feature_group_name, </span>
+<span id="cb62-4"><a href="#cb62-4"></a>                                                        RecordIdentifierValueAsString<span class="op">=</span>sample_feature_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>8.37 ms ± 238 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="41">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1"></a>feature_record <span class="op">=</span> featurestore_runtime_client.get_record(</span>
-<span id="cb66-2"><a href="#cb66-2"></a>    FeatureGroupName<span class="op">=</span>feature_group_name, RecordIdentifierValueAsString<span class="op">=</span>sample_feature_id</span>
-<span id="cb66-3"><a href="#cb66-3"></a>)</span>
-<span id="cb66-4"><a href="#cb66-4"></a></span>
-<span id="cb66-5"><a href="#cb66-5"></a>feature_record</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-73" class="cell" data-execution_count="41">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1"></a>feature_record <span class="op">=</span> featurestore_runtime_client.get_record(</span>
+<span id="cb64-2"><a href="#cb64-2"></a>    FeatureGroupName<span class="op">=</span>feature_group_name, RecordIdentifierValueAsString<span class="op">=</span>sample_feature_id</span>
+<span id="cb64-3"><a href="#cb64-3"></a>)</span>
+<span id="cb64-4"><a href="#cb64-4"></a></span>
+<span id="cb64-5"><a href="#cb64-5"></a>feature_record</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="41">
 <pre><code>{'ResponseMetadata': {'RequestId': '946376b7-7745-4b25-9885-e93ba7a284a5',
   'HTTPStatusCode': 200,
@@ -1636,159 +1672,161 @@ FeatureGroup bank-marketing-sdk was successfully created.</code></pre>
 <section id="accessing-offline-feature-store-from-sdk" class="level2">
 <h2 class="anchored" data-anchor-id="accessing-offline-feature-store-from-sdk">Accessing offline feature store from SDK</h2>
 <p>Let’s query the offline store to get the same data. For offline feature storage, SageMaker stages the data in S3 bucket and creates AWS Data Catalog on it. This catalog is registered in AWS Athena and we can use Athena APIs to query offline store.</p>
-<div class="cell" data-execution_count="42">
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1"></a>query <span class="op">=</span> feature_group.athena_query()</span>
-<span id="cb68-2"><a href="#cb68-2"></a>query</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-75" class="cell" data-execution_count="42">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1"></a>query <span class="op">=</span> feature_group.athena_query()</span>
+<span id="cb66-2"><a href="#cb66-2"></a>query</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="42">
 <pre><code>AthenaQuery(catalog='AwsDataCatalog', database='sagemaker_featurestore', table_name='bank-marketing-sdk-1659938792', sagemaker_session=&lt;sagemaker.session.Session object at 0x7fb40934c890&gt;, _current_query_execution_id=None, _result_bucket=None, _result_file_prefix=None)</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="43">
-<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1"></a>table_name <span class="op">=</span> query.table_name</span>
-<span id="cb70-2"><a href="#cb70-2"></a>table_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-76" class="cell" data-execution_count="43">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1"></a>table_name <span class="op">=</span> query.table_name</span>
+<span id="cb68-2"><a href="#cb68-2"></a>table_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="43">
 <pre><code>'bank-marketing-sdk-1659938792'</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="44">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1"></a>query_string <span class="op">=</span> <span class="ss">f'SELECT * FROM "</span><span class="sc">{</span>table_name<span class="sc">}</span><span class="ss">" WHERE FS_id = </span><span class="sc">{</span>sample_feature_id<span class="sc">}</span><span class="ss">'</span></span>
-<span id="cb72-2"><a href="#cb72-2"></a>query_string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-77" class="cell" data-execution_count="44">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1"></a>query_string <span class="op">=</span> <span class="ss">f'SELECT * FROM "</span><span class="sc">{</span>table_name<span class="sc">}</span><span class="ss">" WHERE FS_id = </span><span class="sc">{</span>sample_feature_id<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb70-2"><a href="#cb70-2"></a>query_string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="44">
 <pre><code>'SELECT * FROM "bank-marketing-sdk-1659938792" WHERE FS_id = 37156'</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="45">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1"></a><span class="op">%%</span>timeit</span>
-<span id="cb74-2"><a href="#cb74-2"></a>query.run(query_string<span class="op">=</span>query_string,output_location<span class="op">=</span><span class="ss">f's3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/query_results/'</span>)</span>
-<span id="cb74-3"><a href="#cb74-3"></a>query.wait()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-78" class="cell" data-execution_count="45">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1"></a><span class="op">%%</span>timeit</span>
+<span id="cb72-2"><a href="#cb72-2"></a>query.run(query_string<span class="op">=</span>query_string,output_location<span class="op">=</span><span class="ss">f's3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/query_results/'</span>)</span>
+<span id="cb72-3"><a href="#cb72-3"></a>query.wait()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>5.21 s ± 29.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</code></pre>
 </div>
 </div>
 <p>Notice that the offline store has taken a much longer time to return the results compared to the online store.</p>
-<div class="cell" data-execution_count="46">
-<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1"></a>dataset <span class="op">=</span> query.as_dataframe()</span>
-<span id="cb76-2"><a href="#cb76-2"></a>dataset.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-80" class="cell" data-execution_count="46">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1"></a>dataset <span class="op">=</span> query.as_dataframe()</span>
+<span id="cb74-2"><a href="#cb74-2"></a>dataset.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="46">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>age</th>
-      <th>job</th>
-      <th>marital</th>
-      <th>education</th>
-      <th>default</th>
-      <th>housing</th>
-      <th>loan</th>
-      <th>contact</th>
-      <th>month</th>
-      <th>day_of_week</th>
-      <th>duration</th>
-      <th>campaign</th>
-      <th>pdays</th>
-      <th>previous</th>
-      <th>poutcome</th>
-      <th>emp_var_rate</th>
-      <th>cons_price_idx</th>
-      <th>cons_conf_idx</th>
-      <th>euribor3m</th>
-      <th>nr_employed</th>
-      <th>y</th>
-      <th>fs_id</th>
-      <th>fs_event_time</th>
-      <th>write_time</th>
-      <th>api_invocation_time</th>
-      <th>is_deleted</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">job</th>
+<th data-quarto-table-cell-role="th">marital</th>
+<th data-quarto-table-cell-role="th">education</th>
+<th data-quarto-table-cell-role="th">default</th>
+<th data-quarto-table-cell-role="th">housing</th>
+<th data-quarto-table-cell-role="th">loan</th>
+<th data-quarto-table-cell-role="th">contact</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">day_of_week</th>
+<th data-quarto-table-cell-role="th">duration</th>
+<th data-quarto-table-cell-role="th">campaign</th>
+<th data-quarto-table-cell-role="th">pdays</th>
+<th data-quarto-table-cell-role="th">previous</th>
+<th data-quarto-table-cell-role="th">poutcome</th>
+<th data-quarto-table-cell-role="th">emp_var_rate</th>
+<th data-quarto-table-cell-role="th">cons_price_idx</th>
+<th data-quarto-table-cell-role="th">cons_conf_idx</th>
+<th data-quarto-table-cell-role="th">euribor3m</th>
+<th data-quarto-table-cell-role="th">nr_employed</th>
+<th data-quarto-table-cell-role="th">y</th>
+<th data-quarto-table-cell-role="th">fs_id</th>
+<th data-quarto-table-cell-role="th">fs_event_time</th>
+<th data-quarto-table-cell-role="th">write_time</th>
+<th data-quarto-table-cell-role="th">api_invocation_time</th>
+<th data-quarto-table-cell-role="th">is_deleted</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
 <p>Data in an online store becomes available immediately but it can take a few minutes to become available in an offline store. That is why we have not received any data in the last cell. Let’s run the same query again after a few minutes.</p>
-<div class="cell" data-execution_count="47">
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1"></a><span class="co">##</span></span>
-<span id="cb77-2"><a href="#cb77-2"></a><span class="co"># run query again</span></span>
-<span id="cb77-3"><a href="#cb77-3"></a>query.run(query_string<span class="op">=</span>query_string,output_location<span class="op">=</span><span class="ss">f's3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/query_results/'</span>)</span>
-<span id="cb77-4"><a href="#cb77-4"></a>query.wait()</span>
-<span id="cb77-5"><a href="#cb77-5"></a></span>
-<span id="cb77-6"><a href="#cb77-6"></a><span class="co"># get query response</span></span>
-<span id="cb77-7"><a href="#cb77-7"></a>dataset <span class="op">=</span> query.as_dataframe()</span>
-<span id="cb77-8"><a href="#cb77-8"></a>dataset.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-82" class="cell" data-execution_count="47">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1"></a><span class="co">##</span></span>
+<span id="cb75-2"><a href="#cb75-2"></a><span class="co"># run query again</span></span>
+<span id="cb75-3"><a href="#cb75-3"></a>query.run(query_string<span class="op">=</span>query_string,output_location<span class="op">=</span><span class="ss">f's3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/query_results/'</span>)</span>
+<span id="cb75-4"><a href="#cb75-4"></a>query.wait()</span>
+<span id="cb75-5"><a href="#cb75-5"></a></span>
+<span id="cb75-6"><a href="#cb75-6"></a><span class="co"># get query response</span></span>
+<span id="cb75-7"><a href="#cb75-7"></a>dataset <span class="op">=</span> query.as_dataframe()</span>
+<span id="cb75-8"><a href="#cb75-8"></a>dataset.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="47">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>age</th>
-      <th>job</th>
-      <th>marital</th>
-      <th>education</th>
-      <th>default</th>
-      <th>housing</th>
-      <th>loan</th>
-      <th>contact</th>
-      <th>month</th>
-      <th>day_of_week</th>
-      <th>duration</th>
-      <th>campaign</th>
-      <th>pdays</th>
-      <th>previous</th>
-      <th>poutcome</th>
-      <th>emp_var_rate</th>
-      <th>cons_price_idx</th>
-      <th>cons_conf_idx</th>
-      <th>euribor3m</th>
-      <th>nr_employed</th>
-      <th>y</th>
-      <th>fs_id</th>
-      <th>fs_event_time</th>
-      <th>write_time</th>
-      <th>api_invocation_time</th>
-      <th>is_deleted</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>39</td>
-      <td>blue-collar</td>
-      <td>married</td>
-      <td>basic.9y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>cellular</td>
-      <td>aug</td>
-      <td>wed</td>
-      <td>394</td>
-      <td>1</td>
-      <td>999</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>-2.9</td>
-      <td>92.201</td>
-      <td>-31.4</td>
-      <td>0.884</td>
-      <td>5076.2</td>
-      <td>yes</td>
-      <td>37156</td>
-      <td>2022-08-08T06:06:07.834Z</td>
-      <td>2022-08-08 06:13:03.665</td>
-      <td>2022-08-08 06:07:43.000</td>
-      <td>False</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">job</th>
+<th data-quarto-table-cell-role="th">marital</th>
+<th data-quarto-table-cell-role="th">education</th>
+<th data-quarto-table-cell-role="th">default</th>
+<th data-quarto-table-cell-role="th">housing</th>
+<th data-quarto-table-cell-role="th">loan</th>
+<th data-quarto-table-cell-role="th">contact</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">day_of_week</th>
+<th data-quarto-table-cell-role="th">duration</th>
+<th data-quarto-table-cell-role="th">campaign</th>
+<th data-quarto-table-cell-role="th">pdays</th>
+<th data-quarto-table-cell-role="th">previous</th>
+<th data-quarto-table-cell-role="th">poutcome</th>
+<th data-quarto-table-cell-role="th">emp_var_rate</th>
+<th data-quarto-table-cell-role="th">cons_price_idx</th>
+<th data-quarto-table-cell-role="th">cons_conf_idx</th>
+<th data-quarto-table-cell-role="th">euribor3m</th>
+<th data-quarto-table-cell-role="th">nr_employed</th>
+<th data-quarto-table-cell-role="th">y</th>
+<th data-quarto-table-cell-role="th">fs_id</th>
+<th data-quarto-table-cell-role="th">fs_event_time</th>
+<th data-quarto-table-cell-role="th">write_time</th>
+<th data-quarto-table-cell-role="th">api_invocation_time</th>
+<th data-quarto-table-cell-role="th">is_deleted</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>39</td>
+<td>blue-collar</td>
+<td>married</td>
+<td>basic.9y</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>cellular</td>
+<td>aug</td>
+<td>wed</td>
+<td>394</td>
+<td>1</td>
+<td>999</td>
+<td>0</td>
+<td>nonexistent</td>
+<td>-2.9</td>
+<td>92.201</td>
+<td>-31.4</td>
+<td>0.884</td>
+<td>5076.2</td>
+<td>yes</td>
+<td>37156</td>
+<td>2022-08-08T06:06:07.834Z</td>
+<td>2022-08-08 06:13:03.665</td>
+<td>2022-08-08 06:07:43.000</td>
+<td>False</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
@@ -1799,7 +1837,7 @@ FeatureGroup bank-marketing-sdk was successfully created.</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-08-05-sagemaker-feature-store/feature_store_athena.PNG" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">feature_store_athena.PNG</figcaption><p></p>
+<figcaption>feature_store_athena.PNG</figcaption>
 </figure>
 </div>
 </section>
@@ -1807,8 +1845,8 @@ FeatureGroup bank-marketing-sdk was successfully created.</code></pre>
 <section id="clean-up" class="level1">
 <h1>Clean up</h1>
 <p>Run the last cell to delete the feature store if no longer needed.</p>
-<div class="cell" data-execution_count="48">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1"></a>feature_group.delete()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-87" class="cell" data-execution_count="48">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1"></a>feature_group.delete()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
@@ -1835,121 +1873,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -1957,12 +1880,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1994,11 +1920,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -2008,8 +1971,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -2021,9 +1993,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -2066,6 +2273,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 

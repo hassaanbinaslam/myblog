@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.6.40">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2022-06-08">
 <meta name="description" content="How to build, train, and deploy a machine learning model with Amazon SageMaker.">
 
-<title>Random Thoughts - Demystifying Amazon SageMaker Training for scikit-learn Lovers</title>
+<title>Demystifying Amazon SageMaker Training for scikit-learn Lovers – Random Thoughts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,11 +19,12 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -48,47 +49,17 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -101,19 +72,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -122,8 +97,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
@@ -136,16 +113,16 @@ gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Random Thoughts - Demystifying Amazon SageMaker Training for scikit-learn Lovers">
+<meta property="og:title" content="Demystifying Amazon SageMaker Training for scikit-learn Lovers – Random Thoughts">
 <meta property="og:description" content="How to build, train, and deploy a machine learning model with Amazon SageMaker.">
 <meta property="og:image" content="images/2022-06-08-sagemaker-training-overview.jpeg">
-<meta property="og:site-name" content="Random Thoughts">
-<meta name="twitter:title" content="Random Thoughts - Demystifying Amazon SageMaker Training for scikit-learn Lovers">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Demystifying Amazon SageMaker Training for scikit-learn Lovers – Random Thoughts">
 <meta name="twitter:description" content="How to build, train, and deploy a machine learning model with Amazon SageMaker.">
 <meta name="twitter:image" content="images/2022-06-08-sagemaker-training-overview.jpeg">
 <meta name="twitter:card" content="summary_large_image">
@@ -155,45 +132,44 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../about.html">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/hassaanbinaslam/"><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-              <div class="quarto-toggle-container">
-                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
-              </div>
-              <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -260,7 +236,9 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
+
 
 <p><img src="images/2022-06-08-sagemaker-training-overview.jpeg" class="img-fluid"></p>
 <section id="enviornment" class="level1">
@@ -280,7 +258,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <section id="reading-and-checking-the-data" class="level2">
 <h2 class="anchored" data-anchor-id="reading-and-checking-the-data">Reading and Checking the Data</h2>
 <p>In this post, we will be using <a href="https://www.kaggle.com/c/boston-housing">Boston Housing Dataset</a>. This is a small dataset with 506 rows and 14 columns. <code>medv</code> is the target variable which means <code>median value of owner-occupied homes in $1000s</code>. This dataset is also available with this notebook. Let’s read it and see how it looks.</p>
-<div class="cell" data-execution_count="3">
+<div id="cell-5" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3"></a></span>
@@ -289,116 +267,117 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <span id="cb1-6"><a href="#cb1-6"></a>df <span class="op">=</span> pd.read_csv(data_location <span class="op">+</span> <span class="st">'housing.csv'</span>)</span>
 <span id="cb1-7"><a href="#cb1-7"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>crim</th>
-      <th>zn</th>
-      <th>indus</th>
-      <th>chas</th>
-      <th>nox</th>
-      <th>age</th>
-      <th>rm</th>
-      <th>dis</th>
-      <th>rad</th>
-      <th>tax</th>
-      <th>ptratio</th>
-      <th>lstat</th>
-      <th>medv</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0.00632</td>
-      <td>18.0</td>
-      <td>2.31</td>
-      <td>0</td>
-      <td>0.538</td>
-      <td>6.575</td>
-      <td>65.2</td>
-      <td>4.0900</td>
-      <td>1</td>
-      <td>296.0</td>
-      <td>15.3</td>
-      <td>4.98</td>
-      <td>24.0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>0.02731</td>
-      <td>0.0</td>
-      <td>7.07</td>
-      <td>0</td>
-      <td>0.469</td>
-      <td>6.421</td>
-      <td>78.9</td>
-      <td>4.9671</td>
-      <td>2</td>
-      <td>242.0</td>
-      <td>17.8</td>
-      <td>9.14</td>
-      <td>21.6</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>0.02729</td>
-      <td>0.0</td>
-      <td>7.07</td>
-      <td>0</td>
-      <td>0.469</td>
-      <td>7.185</td>
-      <td>61.1</td>
-      <td>4.9671</td>
-      <td>2</td>
-      <td>242.0</td>
-      <td>17.8</td>
-      <td>4.03</td>
-      <td>34.7</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>0.03237</td>
-      <td>0.0</td>
-      <td>2.18</td>
-      <td>0</td>
-      <td>0.458</td>
-      <td>6.998</td>
-      <td>45.8</td>
-      <td>6.0622</td>
-      <td>3</td>
-      <td>222.0</td>
-      <td>18.7</td>
-      <td>2.94</td>
-      <td>33.4</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>0.06905</td>
-      <td>0.0</td>
-      <td>2.18</td>
-      <td>0</td>
-      <td>0.458</td>
-      <td>7.147</td>
-      <td>54.2</td>
-      <td>6.0622</td>
-      <td>3</td>
-      <td>222.0</td>
-      <td>18.7</td>
-      <td>5.33</td>
-      <td>36.2</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">crim</th>
+<th data-quarto-table-cell-role="th">zn</th>
+<th data-quarto-table-cell-role="th">indus</th>
+<th data-quarto-table-cell-role="th">chas</th>
+<th data-quarto-table-cell-role="th">nox</th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">rm</th>
+<th data-quarto-table-cell-role="th">dis</th>
+<th data-quarto-table-cell-role="th">rad</th>
+<th data-quarto-table-cell-role="th">tax</th>
+<th data-quarto-table-cell-role="th">ptratio</th>
+<th data-quarto-table-cell-role="th">lstat</th>
+<th data-quarto-table-cell-role="th">medv</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0.00632</td>
+<td>18.0</td>
+<td>2.31</td>
+<td>0</td>
+<td>0.538</td>
+<td>6.575</td>
+<td>65.2</td>
+<td>4.0900</td>
+<td>1</td>
+<td>296.0</td>
+<td>15.3</td>
+<td>4.98</td>
+<td>24.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0.02731</td>
+<td>0.0</td>
+<td>7.07</td>
+<td>0</td>
+<td>0.469</td>
+<td>6.421</td>
+<td>78.9</td>
+<td>4.9671</td>
+<td>2</td>
+<td>242.0</td>
+<td>17.8</td>
+<td>9.14</td>
+<td>21.6</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>0.02729</td>
+<td>0.0</td>
+<td>7.07</td>
+<td>0</td>
+<td>0.469</td>
+<td>7.185</td>
+<td>61.1</td>
+<td>4.9671</td>
+<td>2</td>
+<td>242.0</td>
+<td>17.8</td>
+<td>4.03</td>
+<td>34.7</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>0.03237</td>
+<td>0.0</td>
+<td>2.18</td>
+<td>0</td>
+<td>0.458</td>
+<td>6.998</td>
+<td>45.8</td>
+<td>6.0622</td>
+<td>3</td>
+<td>222.0</td>
+<td>18.7</td>
+<td>2.94</td>
+<td>33.4</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>0.06905</td>
+<td>0.0</td>
+<td>2.18</td>
+<td>0</td>
+<td>0.458</td>
+<td>7.147</td>
+<td>54.2</td>
+<td>6.0622</td>
+<td>3</td>
+<td>222.0</td>
+<td>18.7</td>
+<td>5.33</td>
+<td>36.2</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
 <p>let’s quickly check the dimensions of our loaded dataset.</p>
-<div class="cell" data-execution_count="4">
+<div id="cell-7" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a>df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>(506, 13)</code></pre>
@@ -406,7 +385,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p>The good thing about this dataset is that it does not require any preprocessing as all the features are already in numerical format (no categorical features), and also there are no missing values. We can quickly verify these assumptions.</p>
 <p>Check the feature data types.</p>
-<div class="cell" data-execution_count="5">
+<div id="cell-9" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>df.dtypes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>crim       float64
@@ -426,7 +405,7 @@ dtype: object</code></pre>
 </div>
 </div>
 <p>Check if there are any missing values in our dataset.</p>
-<div class="cell" data-execution_count="6">
+<div id="cell-11" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>df.isnull().values.<span class="bu">any</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>False</code></pre>
@@ -438,116 +417,117 @@ dtype: object</code></pre>
 <p>At this point, our data is ready to be used for training but we also need to check the algorithm we want to use for any specific requirements. We have selected Linear Learner so let’s check its documentation: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/linear-learner.html">Linear Learner Algorithm</a></p>
 <p>In the documentation it says &gt;For training, the linear learner algorithm supports both recordIO-wrapped protobuf and CSV formats. For the application/x-recordio-protobuf input type, only Float32 tensors are supported. For the text/csv input type, the first column is assumed to be the label, which is the target variable for prediction. You can use either File mode or Pipe mode to train linear learner models on data that is formatted as recordIO-wrapped-protobuf or as CSV.</p>
 <p>It means that we can use CSV format for our training data. It also mentions that the first column in the training dataset should be the target label. So let’s move our target label <code>medv</code> to the first column.</p>
-<div class="cell" data-execution_count="7">
+<div id="cell-13" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>df <span class="op">=</span> pd.concat([df[<span class="st">'medv'</span>], df.drop(<span class="st">'medv'</span>, axis<span class="op">=</span><span class="st">'columns'</span>)], axis<span class="op">=</span><span class="st">'columns'</span>)</span>
 <span id="cb8-2"><a href="#cb8-2"></a></span>
 <span id="cb8-3"><a href="#cb8-3"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
-
 <div>
 
-<table class="dataframe table table-sm table-striped">
-  <thead>
-    <tr>
-      <th></th>
-      <th>medv</th>
-      <th>crim</th>
-      <th>zn</th>
-      <th>indus</th>
-      <th>chas</th>
-      <th>nox</th>
-      <th>age</th>
-      <th>rm</th>
-      <th>dis</th>
-      <th>rad</th>
-      <th>tax</th>
-      <th>ptratio</th>
-      <th>lstat</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>24.0</td>
-      <td>0.00632</td>
-      <td>18.0</td>
-      <td>2.31</td>
-      <td>0</td>
-      <td>0.538</td>
-      <td>6.575</td>
-      <td>65.2</td>
-      <td>4.0900</td>
-      <td>1</td>
-      <td>296.0</td>
-      <td>15.3</td>
-      <td>4.98</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>21.6</td>
-      <td>0.02731</td>
-      <td>0.0</td>
-      <td>7.07</td>
-      <td>0</td>
-      <td>0.469</td>
-      <td>6.421</td>
-      <td>78.9</td>
-      <td>4.9671</td>
-      <td>2</td>
-      <td>242.0</td>
-      <td>17.8</td>
-      <td>9.14</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>34.7</td>
-      <td>0.02729</td>
-      <td>0.0</td>
-      <td>7.07</td>
-      <td>0</td>
-      <td>0.469</td>
-      <td>7.185</td>
-      <td>61.1</td>
-      <td>4.9671</td>
-      <td>2</td>
-      <td>242.0</td>
-      <td>17.8</td>
-      <td>4.03</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>33.4</td>
-      <td>0.03237</td>
-      <td>0.0</td>
-      <td>2.18</td>
-      <td>0</td>
-      <td>0.458</td>
-      <td>6.998</td>
-      <td>45.8</td>
-      <td>6.0622</td>
-      <td>3</td>
-      <td>222.0</td>
-      <td>18.7</td>
-      <td>2.94</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>36.2</td>
-      <td>0.06905</td>
-      <td>0.0</td>
-      <td>2.18</td>
-      <td>0</td>
-      <td>0.458</td>
-      <td>7.147</td>
-      <td>54.2</td>
-      <td>6.0622</td>
-      <td>3</td>
-      <td>222.0</td>
-      <td>18.7</td>
-      <td>5.33</td>
-    </tr>
-  </tbody>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">medv</th>
+<th data-quarto-table-cell-role="th">crim</th>
+<th data-quarto-table-cell-role="th">zn</th>
+<th data-quarto-table-cell-role="th">indus</th>
+<th data-quarto-table-cell-role="th">chas</th>
+<th data-quarto-table-cell-role="th">nox</th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">rm</th>
+<th data-quarto-table-cell-role="th">dis</th>
+<th data-quarto-table-cell-role="th">rad</th>
+<th data-quarto-table-cell-role="th">tax</th>
+<th data-quarto-table-cell-role="th">ptratio</th>
+<th data-quarto-table-cell-role="th">lstat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>24.0</td>
+<td>0.00632</td>
+<td>18.0</td>
+<td>2.31</td>
+<td>0</td>
+<td>0.538</td>
+<td>6.575</td>
+<td>65.2</td>
+<td>4.0900</td>
+<td>1</td>
+<td>296.0</td>
+<td>15.3</td>
+<td>4.98</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>21.6</td>
+<td>0.02731</td>
+<td>0.0</td>
+<td>7.07</td>
+<td>0</td>
+<td>0.469</td>
+<td>6.421</td>
+<td>78.9</td>
+<td>4.9671</td>
+<td>2</td>
+<td>242.0</td>
+<td>17.8</td>
+<td>9.14</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>34.7</td>
+<td>0.02729</td>
+<td>0.0</td>
+<td>7.07</td>
+<td>0</td>
+<td>0.469</td>
+<td>7.185</td>
+<td>61.1</td>
+<td>4.9671</td>
+<td>2</td>
+<td>242.0</td>
+<td>17.8</td>
+<td>4.03</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>33.4</td>
+<td>0.03237</td>
+<td>0.0</td>
+<td>2.18</td>
+<td>0</td>
+<td>0.458</td>
+<td>6.998</td>
+<td>45.8</td>
+<td>6.0622</td>
+<td>3</td>
+<td>222.0</td>
+<td>18.7</td>
+<td>2.94</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>36.2</td>
+<td>0.06905</td>
+<td>0.0</td>
+<td>2.18</td>
+<td>0</td>
+<td>0.458</td>
+<td>7.147</td>
+<td>54.2</td>
+<td>6.0622</td>
+<td>3</td>
+<td>222.0</td>
+<td>18.7</td>
+<td>5.33</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
 </div>
@@ -556,7 +536,7 @@ dtype: object</code></pre>
 <p>To use data in CSV format for training, in the input data channel specification, specify text/csv as the ContentType. Amazon SageMaker requires that a CSV file does not have a header record and that the target variable is in the first column.</p>
 </blockquote>
 <p>We have already moved our target label to the first column, and while exporting our dataframe to CSV format we should omit column headers as well.</p>
-<div class="cell" data-execution_count="8">
+<div id="cell-15" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
 <span id="cb9-2"><a href="#cb9-2"></a></span>
 <span id="cb9-3"><a href="#cb9-3"></a><span class="co"># out data size is very small so we will use a small test set</span></span>
@@ -579,7 +559,7 @@ dtype: object</code></pre>
 <li><a href="https://sagemaker.readthedocs.io/en/stable/api/training/estimators.html#sagemaker.estimator.Estimator">A generic Estimator to train using any supplied algorithm</a></li>
 </ul>
 <p>Since we are already running this notebook from SageMaker environment, we don’t need to care about credentials and permissions. We can simply start our new session with SageMaker environment using its SDK.</p>
-<div class="cell" data-execution_count="9">
+<div id="cell-17" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">import</span> sagemaker</span>
 <span id="cb10-2"><a href="#cb10-2"></a></span>
 <span id="cb10-3"><a href="#cb10-3"></a>session <span class="op">=</span> sagemaker.Session()</span>
@@ -602,13 +582,13 @@ Region: us-east-1</code></pre>
 </div>
 <p>What we have done is * imported the SageMaker Python SDK into our runtime * get a session to work with SageMaker API and other AWS services * get the execution role associated with the user profile. It is the same profile that is available to the user to work from console UI and has <code>AmazonSageMakerFullAccess</code> policy attached to it. * create or get a default bucket to use and return its name. Default bucket name has the format <code>sagemaker-{region}-{account_id}</code>. If it doesn’t exist then our session will automatically create it. You may also use any other bucket in its place given that you have enough permission for reading and writing. * get the region name attached to our session</p>
 <p>Next, we will use this session to upload data to our default bucket.</p>
-<div class="cell" data-execution_count="10">
+<div id="cell-19" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a><span class="co"># You may choose any other prefix for your bucket. All the data related to this post will be under this prefix.</span></span>
 <span id="cb12-3"><a href="#cb12-3"></a>bucket_prefix <span class="op">=</span> <span class="st">'2022-06-08-sagemaker-training-overview'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s upload our training data first. In the output, we will get the complete path (S3 URI) for our uploaded data.</p>
-<div class="cell" data-execution_count="11">
+<div id="cell-21" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>s3_train_data_path <span class="op">=</span> session.upload_data(</span>
 <span id="cb13-2"><a href="#cb13-2"></a>    path<span class="op">=</span>data_location <span class="op">+</span> <span class="st">"training_data.csv"</span>,</span>
 <span id="cb13-3"><a href="#cb13-3"></a>    bucket<span class="op">=</span>bucket,</span>
@@ -621,7 +601,7 @@ Region: us-east-1</code></pre>
 </div>
 </div>
 <p>Let’s do the same for our validation data.</p>
-<div class="cell" data-execution_count="12">
+<div id="cell-23" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>s3_validation_data_path <span class="op">=</span>  session.upload_data(</span>
 <span id="cb15-2"><a href="#cb15-2"></a>    path<span class="op">=</span>data_location <span class="op">+</span> <span class="st">"validation_data.csv"</span>,</span>
 <span id="cb15-3"><a href="#cb15-3"></a>    bucket<span class="op">=</span>bucket,</span>
@@ -645,11 +625,11 @@ Region: us-east-1</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-06-08-sagemaker-training-overview/linear-learner-framework-name.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">linear-learner-framework-name</figcaption><p></p>
+<figcaption>linear-learner-framework-name</figcaption>
 </figure>
 </div>
 <p>So let’s use the provided sample code to get the container URI for our linear learner algorithm.</p>
-<div class="cell" data-execution_count="13">
+<div id="cell-26" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris</span>
 <span id="cb17-2"><a href="#cb17-2"></a></span>
 <span id="cb17-3"><a href="#cb17-3"></a>image_uri <span class="op">=</span> image_uris.retrieve(framework<span class="op">=</span><span class="st">'linear-learner'</span>,region<span class="op">=</span>region)</span>
@@ -664,7 +644,7 @@ Region: us-east-1</code></pre>
 <h2 class="anchored" data-anchor-id="configure-the-estimator-object">Configure the Estimator Object</h2>
 <p>To configure our estimator we need to fulfill the following requirements. * <strong>output path</strong> Define the output path where we want to store the trained model artifacts * <strong>instance type</strong> Since we have a small dataset and not so complex model so a small machine should suffice. ‘ml.m5.large’ will do. It is a general purpose instance with 2vCPU and 8GiB RAM. * <strong>hyperparameters</strong> For the hyperparameters check the <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/ll_hyperparameters.html">Linear Learner model documentaion</a>. From the documentation, we find that the most important parameters for our problem are * <code>predictor_type</code>: which should be ‘regressor’ in our case * <code>mini_batch_size</code>: default is 1000 which is too large for our small dataset. Let’s use 30 instead.</p>
 <p>It is also important to note that the Estimator class will automatically provision a separate <code>ml.m5.large</code> machine to start the training run. This machine will be different from the one on which we are running this Jupyter notebook. Once training is complete this new machine will be terminated and we will be billed for only the time we have used it. This approach makes SageMaker very cost effective. We can keep using small less powerful machines for running Jupyter notebooks, and for training and other heavy workloads, we can provision separate machines for short durations and avoid any unnecessary bills.</p>
-<div class="cell" data-execution_count="14">
+<div id="cell-28" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
 <span id="cb19-2"><a href="#cb19-2"></a><span class="co"># define the output path to store trained model artifacts</span></span>
 <span id="cb19-3"><a href="#cb19-3"></a>s3_output_path <span class="op">=</span> <span class="ss">f"s3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/output/"</span></span>
@@ -674,7 +654,7 @@ Region: us-east-1</code></pre>
 <pre><code>s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="15">
+<div id="cell-29" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="im">from</span> sagemaker.estimator <span class="im">import</span> Estimator</span>
 <span id="cb21-2"><a href="#cb21-2"></a></span>
 <span id="cb21-3"><a href="#cb21-3"></a>ll_estimator <span class="op">=</span> Estimator(</span>
@@ -703,7 +683,7 @@ Region: us-east-1</code></pre>
 <section id="launch-training-job" class="level1">
 <h1>Launch Training Job</h1>
 <p>To start our training run we need to associate our Estimator object with the training data. Our data is available on S3 bucket but we also need to tell our Estimator object in which format this data is provided. Is it in CSV format? Is it compressed or not? For these data format issues, we can use <code>Input Channels</code>. An input channel is configurations for S3 and file system data sources for AWS SageMaker (<a href="https://sagemaker.readthedocs.io/en/stable/api/utility/inputs.html">check the input docs</a>). All SageMaker built-in algorithms require at least one training input channel, and more can be passed for validation and testing. In our case, we have two channels and both are in CSV format. Let’s configure them.</p>
-<div class="cell" data-execution_count="16">
+<div id="cell-32" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">from</span> sagemaker.session <span class="im">import</span> TrainingInput</span>
 <span id="cb24-2"><a href="#cb24-2"></a></span>
 <span id="cb24-3"><a href="#cb24-3"></a>train_input <span class="op">=</span> TrainingInput(s3_train_data_path, content_type<span class="op">=</span><span class="st">"text/csv"</span>)</span>
@@ -718,7 +698,7 @@ Region: us-east-1</code></pre>
 <p>Make sure that you use content_type <code>text/csv</code>. Only providing <code>csv</code> will not work and you will get the exception</p>
 <pre><code>Error for Training job linear-learner-2022-06-15-07-58-01-908: Failed. Reason: ClientError: No iterator has been registered for ContentType ('csv', '1.0'), exit code: 2</code></pre>
 <p>Alright, we are ready. To start the training run call estimator <code>fit</code> function and pass the data input channels. You can read more about <code>fit</code> call from docs <a href="https://sagemaker.readthedocs.io/en/stable/api/training/estimators.html#sagemaker.estimator.Estimator.fit">sagemaker.estimator.Estimator.fit</a></p>
-<div class="cell" data-execution_count="17">
+<div id="cell-35" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>ll_estimator.fit(ll_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1820,7 +1800,7 @@ Training seconds: 132
 Billable seconds: 132</code></pre>
 <p>In our case, the billable seconds are 132. This billable time is for the <code>ml.m5.large</code> instance that we have configured for our training run. To find the billable amount we first need to find the price rate for our selected machine. For this go to the SageMaker pricing link <a href="https://aws.amazon.com/sagemaker/pricing/">https://aws.amazon.com/sagemaker/pricing/</a> and select <code>On Demand Pricing</code>. From the given tabs click on the <strong>Training tab</strong>. Select your region <code>US East (N. Virginia)</code>. This will show you the pricing of different training instances. This page can also be used to find the available training instance types in your region. From this page, we can find that the price for our instance type <code>ml.m5.large</code> is <code>$0.115</code>. This price rate is per hour so we need to convert our billable time to per hour before multiplying it. i.e.&nbsp;(132/3600) * 0.115 = $0.0042 which is less than a penny for our training job.</p>
 <p>We can also use Estimator object to get important information related to our training run.</p>
-<div class="cell" data-execution_count="18">
+<div id="cell-38" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a><span class="co">##</span></span>
 <span id="cb31-2"><a href="#cb31-2"></a><span class="co"># to get the output path where the trained model artifacts are stored</span></span>
 <span id="cb31-3"><a href="#cb31-3"></a>ll_estimator.output_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1828,7 +1808,7 @@ Billable seconds: 132</code></pre>
 <pre><code>'s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/'</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="19">
+<div id="cell-39" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co">##</span></span>
 <span id="cb33-2"><a href="#cb33-2"></a><span class="co"># to get the training job name</span></span>
 <span id="cb33-3"><a href="#cb33-3"></a>ll_estimator.latest_training_job.job_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1836,7 +1816,7 @@ Billable seconds: 132</code></pre>
 <pre><code>'linear-learner-2022-06-16-09-04-57-576'</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="20">
+<div id="cell-40" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="co">##</span></span>
 <span id="cb35-2"><a href="#cb35-2"></a><span class="co"># to get the trained model location</span></span>
 <span id="cb35-3"><a href="#cb35-3"></a>ll_estimator.model_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1844,7 +1824,7 @@ Billable seconds: 132</code></pre>
 <pre><code>'s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/linear-learner-2022-06-16-09-04-57-576/output/model.tar.gz'</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="21">
+<div id="cell-41" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb37-2"><a href="#cb37-2"></a><span class="co"># to get all the configuration information for our training run</span></span>
 <span id="cb37-3"><a href="#cb37-3"></a>ll_estimator.latest_training_job.describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1998,7 +1978,7 @@ Billable seconds: 132</code></pre>
 <p>In the deployment call we are required to provide * <strong>instance type</strong> this is the machine type on which we want to deploy our model * <strong>instance count</strong> number of instances we want to provision for our machine. If more than one instance is provisioned then SageMaker EndPoint will automatically load balance between them * <strong>endpoint_name</strong> a unique identifier for your endpoint. If it is not provided then it will default to your training job name.</p>
 <p>It is important to note that endpoints are scoped to an individual AWS account, and are not public. The URL does not contain the account ID, but SageMaker determines the account ID from the authentication token that is supplied by the caller. We will discuss in a separate post on how to use AWS Lambda and API Gateway to set up and deploy your inference endpoint for public access.</p>
 <p>Read more about deployment from the documentation <a href="https://sagemaker.readthedocs.io/en/stable/api/training/estimators.html#sagemaker.estimator.Estimator.deploy">sagemaker.estimator.Estimator.deploy</a></p>
-<div class="cell" data-execution_count="27">
+<div id="cell-44" class="cell" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a><span class="co">##</span></span>
 <span id="cb39-2"><a href="#cb39-2"></a><span class="co"># define the endpoint. can be any unique string</span></span>
 <span id="cb39-3"><a href="#cb39-3"></a>endpoint_name <span class="op">=</span> ll_estimator.latest_training_job.job_name</span>
@@ -2008,7 +1988,7 @@ Billable seconds: 132</code></pre>
 <pre><code>linear-learner-2022-06-16-09-04-57-576</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="23">
+<div id="cell-45" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="co">##</span></span>
 <span id="cb41-2"><a href="#cb41-2"></a><span class="co"># deploy the model</span></span>
 <span id="cb41-3"><a href="#cb41-3"></a>ll_predictor <span class="op">=</span> ll_estimator.deploy(</span>
@@ -2024,16 +2004,16 @@ Billable seconds: 132</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2022-06-08-sagemaker-training-overview/model-endpoint-sagemaker.PNG" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">model-endpoint-sagemaker</figcaption><p></p>
+<figcaption>model-endpoint-sagemaker</figcaption>
 </figure>
 </div>
-<div class="cell" data-execution_count="24">
+<div id="cell-47" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="co">##</span></span>
 <span id="cb43-2"><a href="#cb43-2"></a><span class="co"># a test sample to get live inference from our model</span></span>
 <span id="cb43-3"><a href="#cb43-3"></a>test_sample <span class="op">=</span> <span class="st">'0.00632,18.00,2.310,0,0.5380,6.5750,65.20,4.0900,1,296.0,15.30,4.98'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Similar to data input channels that tell the Estimator object on how to read the data from S3 bucket, we need to tell our <code>predictor</code> object on how to receive (encode) input and return (decode) data during inference. For this we will use <a href="https://sagemaker.readthedocs.io/en/stable/api/inference/serializers.html#sagemaker.serializers.CSVSerializer">sagemaker.serializers.CSVSerializer</a> object to serialize data of various formats to a CSV-formatted string.</p>
-<div class="cell" data-execution_count="25">
+<div id="cell-49" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="im">from</span> sagemaker.serializers <span class="im">import</span> CSVSerializer</span>
 <span id="cb44-2"><a href="#cb44-2"></a><span class="im">from</span> sagemaker.deserializers <span class="im">import</span> CSVDeserializer</span>
 <span id="cb44-3"><a href="#cb44-3"></a></span>
@@ -2048,7 +2028,7 @@ Billable seconds: 132</code></pre>
 <span id="cb45-5"><a href="#cb45-5"></a>    serializer <span class="op">=</span> CSVSerializer(),</span>
 <span id="cb45-6"><a href="#cb45-6"></a>    deserializer <span class="op">=</span> CSVDeserializer()</span>
 <span id="cb45-7"><a href="#cb45-7"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell" data-execution_count="37">
+<div id="cell-51" class="cell" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="co">##</span></span>
 <span id="cb46-2"><a href="#cb46-2"></a><span class="co"># call the endpoint for live inference</span></span>
 <span id="cb46-3"><a href="#cb46-3"></a>ll_predictor.predict(test_sample)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -2058,7 +2038,7 @@ Billable seconds: 132</code></pre>
 </div>
 <p>The prediction output tells us that this house will cost $29986.</p>
 <p>When we called the <code>estimator.deploy()</code> it has returned us <code>sagemaker.Predictor</code> object. If we want to call endpoint from a separate code then we can use the same ‘Predictor’ object to call it. You can read more about this class here <a href="https://sagemaker.readthedocs.io/en/stable/api/inference/predictors.html#sagemaker.predictor.Predictor">sagemaker.predictor.Predictor</a></p>
-<div class="cell" data-execution_count="34">
+<div id="cell-53" class="cell" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="im">from</span> sagemaker.predictor <span class="im">import</span> Predictor</span>
 <span id="cb48-2"><a href="#cb48-2"></a></span>
 <span id="cb48-3"><a href="#cb48-3"></a>ll_predictor_2 <span class="op">=</span> Predictor(</span>
@@ -2068,7 +2048,7 @@ Billable seconds: 132</code></pre>
 <span id="cb48-7"><a href="#cb48-7"></a>    CSVDeserializer()</span>
 <span id="cb48-8"><a href="#cb48-8"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="36">
+<div id="cell-54" class="cell" data-execution_count="36">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>ll_predictor_2.predict(test_sample)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="36">
 <pre><code>[['29.98671531677246']]</code></pre>
@@ -2079,7 +2059,7 @@ Billable seconds: 132</code></pre>
 <h1>Clean Up</h1>
 <p>Remember that the inference machine will remain in use until you take it down yourself. This is unlike training where provisioning and decommissioning of machines are done automatically. We have used <code>ml.t2.medium</code> for hosting our model which costs around <code>$0.056</code> per hour. This is not much but still, do clean up your environment once you are done experimenting to avoid unnecessary bills.</p>
 <p>You can remove the endpoint with a single call.</p>
-<div class="cell" data-execution_count="38">
+<div id="cell-56" class="cell" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a><span class="co">##</span></span>
 <span id="cb51-2"><a href="#cb51-2"></a><span class="co"># ll_predictor_2 will work too</span></span>
 <span id="cb51-3"><a href="#cb51-3"></a></span>
@@ -2114,121 +2094,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const disableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'prefetch';
-    }
-  }
-  const enableStylesheet = (stylesheets) => {
-    for (let i=0; i < stylesheets.length; i++) {
-      const stylesheet = stylesheets[i];
-      stylesheet.rel = 'stylesheet';
-    }
-  }
-  const manageTransitions = (selector, allowTransitions) => {
-    const els = window.document.querySelectorAll(selector);
-    for (let i=0; i < els.length; i++) {
-      const el = els[i];
-      if (allowTransitions) {
-        el.classList.remove('notransition');
-      } else {
-        el.classList.add('notransition');
-      }
-    }
-  }
-  const toggleColorMode = (alternate) => {
-    // Switch the stylesheets
-    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-    manageTransitions('#quarto-margin-sidebar .nav-link', false);
-    if (alternate) {
-      enableStylesheet(alternateStylesheets);
-      for (const sheetNode of alternateStylesheets) {
-        if (sheetNode.id === "quarto-bootstrap") {
-          toggleBodyColorMode(sheetNode);
-        }
-      }
-    } else {
-      disableStylesheet(alternateStylesheets);
-      toggleBodyColorPrimary();
-    }
-    manageTransitions('#quarto-margin-sidebar .nav-link', true);
-    // Switch the toggles
-    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-    for (let i=0; i < toggles.length; i++) {
-      const toggle = toggles[i];
-      if (toggle) {
-        if (alternate) {
-          toggle.classList.add("alternate");     
-        } else {
-          toggle.classList.remove("alternate");
-        }
-      }
-    }
-    // Hack to workaround the fact that safari doesn't
-    // properly recolor the scrollbar when toggling (#1455)
-    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-      manageTransitions("body", false);
-      window.scrollTo(0, 1);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        manageTransitions("body", true);
-      }, 40);  
-    }
-  }
-  const isFileUrl = () => { 
-    return window.location.protocol === 'file:';
-  }
-  const hasAlternateSentinel = () => {  
-    let styleSentinel = getColorSchemeSentinel();
-    if (styleSentinel !== null) {
-      return styleSentinel === "alternate";
-    } else {
-      return false;
-    }
-  }
-  const setStyleSentinel = (alternate) => {
-    const value = alternate ? "alternate" : "default";
-    if (!isFileUrl()) {
-      window.localStorage.setItem("quarto-color-scheme", value);
-    } else {
-      localAlternateSentinel = value;
-    }
-  }
-  const getColorSchemeSentinel = () => {
-    if (!isFileUrl()) {
-      const storageValue = window.localStorage.getItem("quarto-color-scheme");
-      return storageValue != null ? storageValue : localAlternateSentinel;
-    } else {
-      return localAlternateSentinel;
-    }
-  }
-  let localAlternateSentinel = 'default';
-  // Dark / light mode switch
-  window.quartoToggleColorScheme = () => {
-    // Read the current dark / light value 
-    let toAlternate = !hasAlternateSentinel();
-    toggleColorMode(toAlternate);
-    setStyleSentinel(toAlternate);
-  };
-  // Ensure there is a toggle, if there isn't float one in the top right
-  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-    const a = window.document.createElement('a');
-    a.classList.add('top-right');
-    a.classList.add('quarto-color-scheme-toggle');
-    a.href = "";
-    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-    const i = window.document.createElement("i");
-    i.classList.add('bi');
-    a.appendChild(i);
-    window.document.body.appendChild(a);
-  }
-  // Switch to dark mode if need be
-  if (hasAlternateSentinel()) {
-    toggleColorMode(true);
-  } else {
-    toggleColorMode(false);
-  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -2236,12 +2101,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
     }
-  });
-  clipboard.on('success', function(e) {
+    return false;
+  }
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -2273,11 +2141,48 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -2287,8 +2192,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -2300,9 +2214,244 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -2345,6 +2494,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+
 
 
 
