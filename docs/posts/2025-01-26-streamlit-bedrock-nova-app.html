@@ -76,6 +76,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -185,6 +188,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#introducing-amazon-nova-canvas" id="toc-introducing-amazon-nova-canvas" class="nav-link" data-scroll-target="#introducing-amazon-nova-canvas">Introducing Amazon Nova Canvas</a></li>
   <li><a href="#the-rapid-prototyping-app-a-hands-on-playground" id="toc-the-rapid-prototyping-app-a-hands-on-playground" class="nav-link" data-scroll-target="#the-rapid-prototyping-app-a-hands-on-playground">The Rapid Prototyping App: A Hands-On Playground</a></li>
+  <li><a href="#text-to-image" id="toc-text-to-image" class="nav-link" data-scroll-target="#text-to-image">Text to Image</a></li>
   </ul>
 </nav>
     </div>
@@ -228,12 +232,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2025-01-26-streamlit-bedrock-nova-app.jpg" class="img-fluid figure-img"></p>
-<figcaption>image source: Amazon Nova Canvas</figcaption>
+<figcaption>image source: Amazon Nova Canvas. (Prompt: Giant mushroom, stanley artgerm, pointillism, bokeh, sparkles, magic, trees, mountains, lake, thomas kinkaid, norman rockwell)</figcaption>
 </figure>
 </div>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Amazon’s Nova Canvas is a state-of-the-art foundation model that promises to democratize high-quality image generation. However, the complexities of these models can often be a barrier to entry. This post presents a practical solution: a Streamlit-based application that makes experimenting with Nova Canvas accessible to everyone. I will walk you through the features of this rapid prototype, which includes five powerful tools, encompassing text-to-image generation, conditional generation, background removal, inpainting, and outpainting. You can seamlessly explore the diverse capabilities of this potent technology and bring your creative visions to life.</p>
+<p><a href="https://aws.amazon.com/ai/generative-ai/nova/creative/">Amazon’s Nova Canvas</a> is a state-of-the-art foundation model that promises to democratize high-quality image generation. However, the complexities of these models can often be a barrier to entry. This post presents a practical solution: a <a href="https://streamlit.io/">Streamlit-based</a> application that makes experimenting with Nova Canvas accessible to everyone. I will walk you through the features of this rapid prototype, which includes five powerful tools, encompassing text-to-image generation, conditional generation, background removal, inpainting, and outpainting. You can seamlessly explore the diverse capabilities of this potent technology and bring your creative visions to life.</p>
 <section id="environment-details" class="level3">
 <h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
 <div id="cell-4" class="cell" data-execution_count="1">
@@ -267,13 +271,281 @@ Code Samples
 </section>
 <section id="introducing-amazon-nova-canvas" class="level2">
 <h2 class="anchored" data-anchor-id="introducing-amazon-nova-canvas">Introducing Amazon Nova Canvas</h2>
-<p>At the heart of our rapid prototyping app lies the power of Amazon Nova Canvas, a state-of-the-art foundation model designed for professional-grade image generation. Nova Canvas stands out for its ability to create high-fidelity images from both text prompts and existing images, enabling users to seamlessly translate their creative concepts into stunning visuals. This powerful model isn’t just about generating images; it also provides sophisticated editing capabilities, allowing for precise modifications using text-based instructions. Furthermore, Nova Canvas is built with responsible AI practices in mind, incorporating built-in controls to support safe and ethical use of the technology. Whether you’re looking to explore text-to-image generation, image editing, or various other image manipulations, Nova Canvas provides a versatile and powerful platform to do so.</p>
+<p>At the heart of my rapid prototyping app is Amazon Nova Canvas, a state-of-the-art foundation model that I’m using to generate realistic, studio-quality images from text prompts. This model is a versatile tool for both text-to-image generation and advanced image editing. Nova Canvas excels at creating images that capture the concepts described in your text prompts.</p>
+<p>Beyond <code>text-to-image</code> (T2I), I’m also leveraging its image editing capabilities, which include <code>inpainting</code>, <code>outpainting</code>, generating variations, and automatic editing without masks. <strong>Inpainting</strong> allows you to reconstruct masked regions in an image. <strong>Outpainting</strong> lets you seamlessly extend an image beyond its original boundaries, and you can guide this with masks or let the model determine it. The model also supports <strong>image conditioning</strong>, which uses a reference image to guide generation, and it also supports subject consistency to preserve a chosen subject like a pet or a shoe in your generated images. Furthermore, you can guide the model with colors to incorporate specific color palettes in your image, and automatically <strong>remove backgrounds</strong> from an image, making the background transparent. Finally, Amazon Nova Canvas also offers content provenance, allowing you to verify if the images are AI generated.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Amazon Nova Canvas Official Documentation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Nova Canvas model id used in this post is <code>amazon.nova-canvas-v1:0</code>.</p>
+<p>You can read more about Nova Canvas features from its official documentation page. <a href="https://docs.aws.amazon.com/nova/latest/userguide/image-generation.html">Link Here</a></p>
+</div>
+</div>
 </section>
 <section id="the-rapid-prototyping-app-a-hands-on-playground" class="level2">
 <h2 class="anchored" data-anchor-id="the-rapid-prototyping-app-a-hands-on-playground">The Rapid Prototyping App: A Hands-On Playground</h2>
-<p>To make exploring the power of Amazon Nova Canvas as easy and accessible as possible, I decided to build a rapid prototyping application using Streamlit. I chose Streamlit because it’s incredibly efficient for quickly creating interactive web apps with minimal coding, making it the perfect tool for this project. My goal was to create a hands-on playground where you could directly experiment with Nova Canvas’s capabilities, transforming your creative ideas into visual reality. This app isn’t just for tech enthusiasts; I wanted it to be user-friendly, allowing anyone to explore AI-powered image generation and editing. The best part is that it’s designed for easy sharing and deployment, so you can effortlessly share your experiments with your friends, or even deploy the app for wider access.</p>
+<p>To make exploring the power of Amazon Nova Canvas as easy and accessible as possible, I decided to build a rapid prototyping application using Streamlit. I chose Streamlit because it’s incredibly efficient for quickly creating interactive web apps with minimal coding, making it the perfect tool for this project. My goal was to create a hands-on playground where you could directly experiment with Nova Canvas’s capabilities, transforming your creative ideas into visual reality.</p>
+<p><strong>This app isn’t just for tech enthusiasts; I wanted it to be user-friendly, allowing anyone to explore AI-powered image generation and editing</strong>. The best part is that it’s designed for easy sharing and deployment, so you can effortlessly share your experiments with your friends, or even deploy the app for wider access. I have included some of the app’s screenshots below, so you can have a quick overview.</p>
+<p>You’ll see a simple login page where you can enter your credentials (or bypass authentication during local testing). After logging in, you are presented with a user-friendly interface, with a sidebar that lets you navigate to each of the five image processing tools. The welcome page gives you a quick overview of each of the tools and how to use them. Each tool provides an intuitive interface with controls to configure the parameters and get the most out of the capabilities of the Amazon Nova Canvas model.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Login Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="img-fluid figure-img" alt="Login Page"></a></p>
+<figcaption>Login Page</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/welcome.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Welcome Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/welcome.png" class="img-fluid figure-img" alt="Welcome Page"></a></p>
+<figcaption>Welcome Page</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/text-2-image.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Text to Image Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/text-2-image.png" class="img-fluid figure-img" alt="Text to Image Page"></a></p>
+<figcaption>Text to Image Page</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Text to Image with Condition"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Text to Image with Condition"></a></p>
+<figcaption>Text to Image with Condition</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Remove Image Background"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Remove Image Background"></a></p>
+<figcaption>Remove Image Background</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Image Inpainting"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="img-fluid figure-img" alt="Image Inpainting"></a></p>
+<figcaption>Image Inpainting</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Image Outpainting"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="img-fluid figure-img" alt="Image Outpainting"></a></p>
+<figcaption>Image Outpainting</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>We’ll dive into each of these pages in more detail in the following sections, but this overview should give you a good initial feel of what the app looks and feels like.</p>
+</section>
+<section id="text-to-image" class="level2">
+<h2 class="anchored" data-anchor-id="text-to-image">Text to Image</h2>
+<p>The first tool in our arsenal is the “Text to Image” generator. This is where the magic begins: I’ve designed this tool to let you turn your imagination into stunning visuals with just a few words. By harnessing the advanced capabilities of Amazon Bedrock - Nova Canvas, you can generate high-quality images tailored to your specific prompts.</p>
+<section id="how-to-use-it" class="level4">
+<h4 class="anchored" data-anchor-id="how-to-use-it">How to use it:</h4>
+<ul>
+<li>Use the controls on the page to configure the text-to-image generation process. You can select the number of images you want, the size of each image (with a variety of preset options), and fine-tune the cfgScale parameter.</li>
+<li>The <code>cfgScale</code> parameter lets you specify how strongly the generated image should adhere to the prompt. A lower value introduces more randomness, while a higher value will stick more closely to the prompt.</li>
+<li>Enter a positive prompt – this is where you describe the image you want to generate. Be as specific as possible to get the best results.</li>
+<li>Optionally, you can also enter a negative prompt. This is a way to tell the model what you don’t want to see in the image, further refining the output.</li>
+</ul>
+<p>Once you are happy with the parameters you have selected, simply click the “Generate Image” button to start the process. The generated images will be displayed below the button.</p>
+<p>Below is an example of what the app looks like after generating two images. I used the prompt “Fantastic celestial night sky with shining stars. Amazing John Dyer art.” using the following settings.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/txt2img-with-results.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/txt2img-with-results.png" class="img-fluid"></a></p>
+<p>I encourage you to experiment with different prompts and parameters to see the amazing results that you can create using this tool. I have provided more examples of the generated images with different prompts below to demonstrate the versatility of the tool.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-1.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="A serene forest where the trees are made of glass, sunlight refracting into rainbow colors, with a mystical glowing lake in the center. Style: fantasy realism."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-1.jpg" class="img-fluid figure-img" alt="A serene forest where the trees are made of glass, sunlight refracting into rainbow colors, with a mystical glowing lake in the center. Style: fantasy realism."></a></p>
+<figcaption>A serene forest where the trees are made of glass, sunlight refracting into rainbow colors, with a mystical glowing lake in the center. Style: fantasy realism.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-2.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="A giant clock tower covered in vines, standing in the middle of a desert, with time flowing like water around it. Style: surreal art, soft light"><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-2.jpg" class="img-fluid figure-img" alt="A giant clock tower covered in vines, standing in the middle of a desert, with time flowing like water around it. Style: surreal art, soft light"></a></p>
+<figcaption>A giant clock tower covered in vines, standing in the middle of a desert, with time flowing like water around it. Style: surreal art, soft light</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-3.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="A massive volcanic mountain surrounded by a swirling galaxy in the night sky, with rivers of lava glowing in the dark. Style: cinematic and dramatic."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-3.jpg" class="img-fluid figure-img" alt="A massive volcanic mountain surrounded by a swirling galaxy in the night sky, with rivers of lava glowing in the dark. Style: cinematic and dramatic."></a></p>
+<figcaption>A massive volcanic mountain surrounded by a swirling galaxy in the night sky, with rivers of lava glowing in the dark. Style: cinematic and dramatic.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-4.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="An underwater city glowing with bioluminescent plants and creatures, built into a coral reef, with massive whales swimming above. Style: fantasy underwater."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-4.jpg" class="img-fluid figure-img" alt="An underwater city glowing with bioluminescent plants and creatures, built into a coral reef, with massive whales swimming above. Style: fantasy underwater."></a></p>
+<figcaption>An underwater city glowing with bioluminescent plants and creatures, built into a coral reef, with massive whales swimming above. Style: fantasy underwater.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-5.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-13" title="A futuristic Mars colony with advanced architecture, glowing biodomes, and red dunes stretching to the horizon. Style: sci-fi realism."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-5.jpg" class="img-fluid figure-img" alt="A futuristic Mars colony with advanced architecture, glowing biodomes, and red dunes stretching to the horizon. Style: sci-fi realism."></a></p>
+<figcaption>A futuristic Mars colony with advanced architecture, glowing biodomes, and red dunes stretching to the horizon. Style: sci-fi realism.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-6.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="A warrior elf with glowing silver armor, holding a sword that emits blue flames, standing in an enchanted forest. Style: hyper-detailed fantasy art."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-6.jpg" class="img-fluid figure-img" alt="A warrior elf with glowing silver armor, holding a sword that emits blue flames, standing in an enchanted forest. Style: hyper-detailed fantasy art."></a></p>
+<figcaption>A warrior elf with glowing silver armor, holding a sword that emits blue flames, standing in an enchanted forest. Style: hyper-detailed fantasy art.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-7.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="A steampunk inventor with mechanical goggles, surrounded by intricate clockwork machines, in a smoky Victorian-era workshop. Style: steampunk, warm tones."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-7.jpg" class="img-fluid figure-img" alt="A steampunk inventor with mechanical goggles, surrounded by intricate clockwork machines, in a smoky Victorian-era workshop. Style: steampunk, warm tones."></a></p>
+<figcaption>A steampunk inventor with mechanical goggles, surrounded by intricate clockwork machines, in a smoky Victorian-era workshop. Style: steampunk, warm tones.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-8.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-16" title="A robotic wolf with glowing red eyes, prowling through a futuristic cityscape at night. Style: cyberpunk, metallic textures."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-8.jpg" class="img-fluid figure-img" alt="A robotic wolf with glowing red eyes, prowling through a futuristic cityscape at night. Style: cyberpunk, metallic textures."></a></p>
+<figcaption>A robotic wolf with glowing red eyes, prowling through a futuristic cityscape at night. Style: cyberpunk, metallic textures.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-9.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-17" title="A giant turtle with a miniature forest growing on its back, walking through the ocean at sunrise. Style: serene, magical realism."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-9.jpg" class="img-fluid figure-img" alt="A giant turtle with a miniature forest growing on its back, walking through the ocean at sunrise. Style: serene, magical realism."></a></p>
+<figcaption>A giant turtle with a miniature forest growing on its back, walking through the ocean at sunrise. Style: serene, magical realism.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-10.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-18" title="A massive spaceship docked on a floating platform above a gas giant, with bright auroras in the sky. Style: sci-fi cinematic."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-10.jpg" class="img-fluid figure-img" alt="A massive spaceship docked on a floating platform above a gas giant, with bright auroras in the sky. Style: sci-fi cinematic."></a></p>
+<figcaption>A massive spaceship docked on a floating platform above a gas giant, with bright auroras in the sky. Style: sci-fi cinematic.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-11.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-19" title="A futuristic AI core glowing in the center of a high-tech laboratory, surrounded by floating holograms and robotic arms. Style: sleek and ultra-modern."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-11.jpg" class="img-fluid figure-img" alt="A futuristic AI core glowing in the center of a high-tech laboratory, surrounded by floating holograms and robotic arms. Style: sleek and ultra-modern."></a></p>
+<figcaption>A futuristic AI core glowing in the center of a high-tech laboratory, surrounded by floating holograms and robotic arms. Style: sleek and ultra-modern.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-12.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-20" title="An explosion of colors forming a human face, with geometric patterns and abstract swirls blending into the background. Style: modern art."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-12.jpg" class="img-fluid figure-img" alt="An explosion of colors forming a human face, with geometric patterns and abstract swirls blending into the background. Style: modern art."></a></p>
+<figcaption>An explosion of colors forming a human face, with geometric patterns and abstract swirls blending into the background. Style: modern art.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-13.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-21" title="A dream-like landscape where the sky is made of water and the ground is a glowing galaxy, with floating islands in between. Style: surreal fantasy."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-13.jpg" class="img-fluid figure-img" alt="A dream-like landscape where the sky is made of water and the ground is a glowing galaxy, with floating islands in between. Style: surreal fantasy."></a></p>
+<figcaption>A dream-like landscape where the sky is made of water and the ground is a glowing galaxy, with floating islands in between. Style: surreal fantasy.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-14.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-22" title="A haunted Victorian mansion on a cliffside, illuminated by lightning strikes, with ghostly figures in the windows. Style: gothic horror."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-14.jpg" class="img-fluid figure-img" alt="A haunted Victorian mansion on a cliffside, illuminated by lightning strikes, with ghostly figures in the windows. Style: gothic horror."></a></p>
+<figcaption>A haunted Victorian mansion on a cliffside, illuminated by lightning strikes, with ghostly figures in the windows. Style: gothic horror.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-15.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-23" title="A dark angel with tattered black wings, standing in a crumbling cathedral, with glowing red eyes and a flaming sword. Style: dark fantasy."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-15.jpg" class="img-fluid figure-img" alt="A dark angel with tattered black wings, standing in a crumbling cathedral, with glowing red eyes and a flaming sword. Style: dark fantasy."></a></p>
+<figcaption>A dark angel with tattered black wings, standing in a crumbling cathedral, with glowing red eyes and a flaming sword. Style: dark fantasy.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-16.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-24" title="A cursed forest with twisted trees, glowing red mushrooms, and a shadowy figure lurking in the fog. Style: eerie and atmospheric."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-16.jpg" class="img-fluid figure-img" alt="A cursed forest with twisted trees, glowing red mushrooms, and a shadowy figure lurking in the fog. Style: eerie and atmospheric."></a></p>
+<figcaption>A cursed forest with twisted trees, glowing red mushrooms, and a shadowy figure lurking in the fog. Style: eerie and atmospheric.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -697,6 +969,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
 </script>
 </div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 
