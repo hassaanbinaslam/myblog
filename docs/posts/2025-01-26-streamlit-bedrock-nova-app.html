@@ -189,6 +189,10 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#introducing-amazon-nova-canvas" id="toc-introducing-amazon-nova-canvas" class="nav-link" data-scroll-target="#introducing-amazon-nova-canvas">Introducing Amazon Nova Canvas</a></li>
   <li><a href="#the-rapid-prototyping-app-a-hands-on-playground" id="toc-the-rapid-prototyping-app-a-hands-on-playground" class="nav-link" data-scroll-target="#the-rapid-prototyping-app-a-hands-on-playground">The Rapid Prototyping App: A Hands-On Playground</a></li>
   <li><a href="#text-to-image" id="toc-text-to-image" class="nav-link" data-scroll-target="#text-to-image">Text to Image</a></li>
+  <li><a href="#text-to-image-with-condition" id="toc-text-to-image-with-condition" class="nav-link" data-scroll-target="#text-to-image-with-condition">Text to Image with Condition</a>
+  <ul class="collapse">
+  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features:</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -543,8 +547,175 @@ Amazon Nova Canvas Official Documentation
 </div>
 </div>
 </div>
+</section>
+</section>
+<section id="text-to-image-with-condition" class="level2">
+<h2 class="anchored" data-anchor-id="text-to-image-with-condition">Text to Image with Condition</h2>
+<p>Taking image generation to the next level, my “Text to Image with Condition” tool lets you shape your creations with precision and intention. It goes beyond simple text prompts by using a reference image to guide the generation process, helping you achieve the exact look and feel you desire. This tool uses advanced image conditioning features, offering two powerful methods: Canny Edge Detection and Segmentation Maps.</p>
+<section id="features" class="level3">
+<h3 class="anchored" data-anchor-id="features">Features:</h3>
+<ul>
+<li><strong>Canny Edge Detection</strong>: By extracting the edges from your reference image, I’ve built this feature to provide a foundational structure for the generated image. The output will inherit the structural layout of the reference image.</li>
+<li><strong>Segmentation Maps</strong>: This allows you to define and control specific areas or objects in the reference image. The model will then use this information to render precise outputs and allow you to manipulate individual objects in the image.</li>
+</ul>
+<section id="how-to-use-it-1" class="level4">
+<h4 class="anchored" data-anchor-id="how-to-use-it-1">How to Use It:</h4>
+<ul>
+<li>First, upload the reference image that you want to use to guide the generation. For best results, ensure the reference image is clear and appropriately sized.</li>
+<li>Next, select the conditioning method that you want to use: Canny Edge or Segmentation Map from the “Control Mode” dropdown.</li>
+<li>You can adjust the “Control Strength” parameter to determine how closely the generated image adheres to the reference image. Use a lower value to introduce more randomness in the generation.</li>
+<li>Then, enter a text prompt describing the image you want to generate, keeping in mind the selected conditioning method.</li>
+<li>Optionally, you can also enter a negative prompt to further refine the image.</li>
+<li>Configure other options, such as the number of images, image size and the cfgScale parameter, just like you did in the Text to Image page.</li>
+<li>Click on the “Generate Image” button to view the results. The generated images will be displayed below the button along with the original image used for conditioning.</li>
+</ul>
+<p>Below is an example of what the app looks like after generating two images using the Canny Edge option. I used the reference image shown in the “Uploaded Image” section and the prompt “Reimagine this person in a cyberpunk cityscape with glowing neon lights.” The other options were set to the default value.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/image-condition-result.png" class="lightbox" data-gallery="quarto-lightbox-gallery-25"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/image-condition-result.png" class="img-fluid"></a></p>
+<p>This tool allows you to take full control of the image generation process and unleash your creative possibilities. I will share some examples of the generated images with different prompts and the input image used for the condition.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-26" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-1.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-27" title="Transform this wizard into a celestial guardian with a starry cloak, glowing golden staff, and galaxies swirling in his beard. Style: ethereal fantasy."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-1.jpg" class="img-fluid figure-img" alt="Transform this wizard into a celestial guardian with a starry cloak, glowing golden staff, and galaxies swirling in his beard. Style: ethereal fantasy."></a></p>
+<figcaption>Transform this wizard into a celestial guardian with a starry cloak, glowing golden staff, and galaxies swirling in his beard. Style: ethereal fantasy.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Some more examples.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-28" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-2.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-29" title="Transform him into a robotic AI wizard with a metallic body, LED lights in his eyes, and a holographic spellbook floating in front of him."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-2.jpg" class="img-fluid figure-img" alt="Transform him into a robotic AI wizard with a metallic body, LED lights in his eyes, and a holographic spellbook floating in front of him."></a></p>
+<figcaption>Transform him into a robotic AI wizard with a metallic body, LED lights in his eyes, and a holographic spellbook floating in front of him.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-3.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-30" title="Turn him into a dark necromancer with a tattered black cloak, glowing green skulls floating around him, and a staff topped with a glowing crystal skull."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-3.jpg" class="img-fluid figure-img" alt="Turn him into a dark necromancer with a tattered black cloak, glowing green skulls floating around him, and a staff topped with a glowing crystal skull."></a></p>
+<figcaption>Turn him into a dark necromancer with a tattered black cloak, glowing green skulls floating around him, and a staff topped with a glowing crystal skull.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-4.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-31" title="Make him an ice wizard with a robe made of frost and snowflakes, a frozen staff, and icy blue magic swirling around his hands."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-4.jpg" class="img-fluid figure-img" alt="Make him an ice wizard with a robe made of frost and snowflakes, a frozen staff, and icy blue magic swirling around his hands."></a></p>
+<figcaption>Make him an ice wizard with a robe made of frost and snowflakes, a frozen staff, and icy blue magic swirling around his hands.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/forrest-scene.png" class="lightbox" data-gallery="quarto-lightbox-gallery-32" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/forrest-scene.png" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-5.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-33" title="Enhance this forest with floating lanterns and mystical creatres like fairies and glowing butterflies."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-5.jpg" class="img-fluid figure-img" alt="Enhance this forest with floating lanterns and mystical creatres like fairies and glowing butterflies."></a></p>
+<figcaption>Enhance this forest with floating lanterns and mystical creatres like fairies and glowing butterflies.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-6.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-34" title="Turn this forest into a futuristic biome with glass domes and flying drones."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-6.jpg" class="img-fluid figure-img" alt="Turn this forest into a futuristic biome with glass domes and flying drones."></a></p>
+<figcaption>Turn this forest into a futuristic biome with glass domes and flying drones.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-7.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-35" title="Add a hidden magical portal surrounded by glowing mushrooms and ancient runes."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-7.jpg" class="img-fluid figure-img" alt="Add a hidden magical portal surrounded by glowing mushrooms and ancient runes."></a></p>
+<figcaption>Add a hidden magical portal surrounded by glowing mushrooms and ancient runes.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/cat.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-36" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/cat.jpg" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-8.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-37" title="Turn this cat into a futuristic robot with glowing eyes and metal plating."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-8.jpg" class="img-fluid figure-img" alt="Turn this cat into a futuristic robot with glowing eyes and metal plating."></a></p>
+<figcaption>Turn this cat into a futuristic robot with glowing eyes and metal plating.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-9.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-38" title="Make this cat appear as a royal king with a golden crown and cape."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-9.jpg" class="img-fluid figure-img" alt="Make this cat appear as a royal king with a golden crown and cape."></a></p>
+<figcaption>Make this cat appear as a royal king with a golden crown and cape.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-10.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-39" title="Reimagine this cat as a mythical fire spirit surrounded by flames."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-10.jpg" class="img-fluid figure-img" alt="Reimagine this cat as a mythical fire spirit surrounded by flames."></a></p>
+<figcaption>Reimagine this cat as a mythical fire spirit surrounded by flames.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
 
 
+</section>
 </section>
 </section>
 
