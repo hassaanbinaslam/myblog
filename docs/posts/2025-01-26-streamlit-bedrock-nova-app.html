@@ -199,6 +199,17 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#code" id="toc-code" class="nav-link" data-scroll-target="#code">Code</a></li>
   <li><a href="#running-the-app" id="toc-running-the-app" class="nav-link" data-scroll-target="#running-the-app">Running the App</a></li>
   </ul></li>
+  <li><a href="#deployment" id="toc-deployment" class="nav-link" data-scroll-target="#deployment">Deployment</a>
+  <ul class="collapse">
+  <li><a href="#create-an-ecr-repository" id="toc-create-an-ecr-repository" class="nav-link" data-scroll-target="#create-an-ecr-repository">1. Create an ECR Repository</a></li>
+  <li><a href="#build-and-push-the-docker-image" id="toc-build-and-push-the-docker-image" class="nav-link" data-scroll-target="#build-and-push-the-docker-image">2. Build and Push the Docker Image</a></li>
+  <li><a href="#create-a-lightsail-container-service" id="toc-create-a-lightsail-container-service" class="nav-link" data-scroll-target="#create-a-lightsail-container-service">3. Create a Lightsail Container Service</a></li>
+  <li><a href="#give-lightsail-access-to-ecr" id="toc-give-lightsail-access-to-ecr" class="nav-link" data-scroll-target="#give-lightsail-access-to-ecr">4. Give Lightsail Access to ECR</a></li>
+  <li><a href="#configure-iam-user-permissions" id="toc-configure-iam-user-permissions" class="nav-link" data-scroll-target="#configure-iam-user-permissions">5. Configure IAM User Permissions</a></li>
+  <li><a href="#configure-cognito-user-pool-if-needed" id="toc-configure-cognito-user-pool-if-needed" class="nav-link" data-scroll-target="#configure-cognito-user-pool-if-needed">6. Configure Cognito User Pool (If Needed)</a></li>
+  <li><a href="#deploy-the-container" id="toc-deploy-the-container" class="nav-link" data-scroll-target="#deploy-the-container">7. Deploy the Container</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -1208,9 +1219,104 @@ Tip
 </ul>
 <p><a href="images/2025-01-26-streamlit-bedrock-nova-app/local-run-app.png" class="lightbox" data-gallery="quarto-lightbox-gallery-74"><img src="images/2025-01-26-streamlit-bedrock-nova-app/local-run-app.png" class="img-fluid"></a></p>
 <p>Open your web browser and visit the URL shown in the output (http://localhost:8501) to access the app.</p>
-
-
 </section>
+</section>
+<section id="deployment" class="level2">
+<h2 class="anchored" data-anchor-id="deployment">Deployment</h2>
+<p>Now that you’ve experimented with the app locally, it’s time to deploy it to the cloud. I’ll be focusing on using AWS Lightsail, which is a cost-effective and easy-to-use service for deploying containerized applications. Here’s a step-by-step guide to deploying your Streamlit app:</p>
+<section id="create-an-ecr-repository" class="level3">
+<h3 class="anchored" data-anchor-id="create-an-ecr-repository">1. Create an ECR Repository</h3>
+<p>Head over to your AWS console and create a new Elastic Container Repository (ECR). This repository will be used to store your application’s Docker container image. I would recommend that you use a descriptive name for your repo, such as streamlit/bedrock-nova-app.</p>
+<p>Make sure you create the repository in the same AWS region where you have access to the Amazon Bedrock models.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-repo.png" class="lightbox" data-gallery="quarto-lightbox-gallery-75"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-repo.png" class="img-fluid"></a></p>
+</section>
+<section id="build-and-push-the-docker-image" class="level3">
+<h3 class="anchored" data-anchor-id="build-and-push-the-docker-image">2. Build and Push the Docker Image</h3>
+<p>On your local machine, build the Docker container image and then push it to your newly created ECR repository. Use the commands provided by AWS for your specific account and repository. Here is an example of the commands, specific to my account. Remember that the command provided by AWS in the console is very specific to your account and you should use that only:</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-push-commands.png" class="lightbox" data-gallery="quarto-lightbox-gallery-76"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-push-commands.png" class="img-fluid"></a></p>
+</section>
+<section id="create-a-lightsail-container-service" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-lightsail-container-service">3. Create a Lightsail Container Service</h3>
+<p>Navigate to the AWS Lightsail service in your console. We’ll be using Lightsail container service.</p>
+<p>Lightsail’s interface is very intuitive. Follow the guided steps to create the container service, making sure you select the same region where your ECR repository is located. For a simple Streamlit app, a Nano compute power <code>(512MB RAM, 0.25 vCPU)</code> will be sufficient.</p>
+</section>
+<section id="give-lightsail-access-to-ecr" class="level3">
+<h3 class="anchored" data-anchor-id="give-lightsail-access-to-ecr">4. Give Lightsail Access to ECR</h3>
+<p>In the “Images” tab of your Lightsail container service, select the correct ECR repository and grant Lightsail access to it. This allows Lightsail to pull the container image from your repository.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-ecr-access.png" class="lightbox" data-gallery="quarto-lightbox-gallery-77"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-ecr-access.png" class="img-fluid"></a></p>
+</section>
+<section id="configure-iam-user-permissions" class="level3">
+<h3 class="anchored" data-anchor-id="configure-iam-user-permissions">5. Configure IAM User Permissions</h3>
+<p>To enable your Lightsail container to access Bedrock models, you’ll need to create a new IAM user.</p>
+<ul>
+<li>Assign the <code>bedrock:InvokeModel</code> policy to this user.</li>
+<li>Create an access key for the user and save the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for later use.</li>
+</ul>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/iam-app-user.png" class="lightbox" data-gallery="quarto-lightbox-gallery-78"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/iam-app-user.png" class="img-fluid"></a></p>
+<p>Important Note: Do not share your AWS access key ID or secret access key publicly, and keep them secure.</p>
+</section>
+<section id="configure-cognito-user-pool-if-needed" class="level3">
+<h3 class="anchored" data-anchor-id="configure-cognito-user-pool-if-needed">6. Configure Cognito User Pool (If Needed)</h3>
+<p>If you have enabled user authentication (LOGIN_REQUIRED = True) in your config.py file, you’ll need to set up a Cognito User Pool.</p>
+<p>Create a Cognito User Pool and get the POOL_ID, APP_CLIENT_ID, and APP_CLIENT_SECRET.</p>
+<p>Important Note: Do not share your app client secret publicly and keep it secure.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user-pool.png" class="lightbox" data-gallery="quarto-lightbox-gallery-79"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user-pool.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-pool-id.png" class="lightbox" data-gallery="quarto-lightbox-gallery-80"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-pool-id.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-client-config.png" class="lightbox" data-gallery="quarto-lightbox-gallery-81"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-client-config.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="deploy-the-container" class="level3">
+<h3 class="anchored" data-anchor-id="deploy-the-container">7. Deploy the Container</h3>
+<p>In the “Deployments” tab of your Lightsail container service, provide the following environment variables:</p>
+<ul>
+<li>AWS_ACCESS_KEY_ID</li>
+<li>AWS_SECRET_ACCESS_KEY</li>
+</ul>
+<p>If Cognito is enabled</p>
+<ul>
+<li>POOL_ID</li>
+<li>APP_CLIENT_ID</li>
+<li>APP_CLIENT_SECRET</li>
+</ul>
+<p>Set the container port to 8501 and the protocol to HTTP.</p>
+<p>Click the “Deploy” button.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-deployment.png" class="lightbox" data-gallery="quarto-lightbox-gallery-82"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-deployment.png" class="img-fluid"></a></p>
+<p>Your app should now be deployed and accessible via the public domain URL provided by Lightsail! For login you will be required to create a <code>verified cognito user</code>.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user.png" class="lightbox" data-gallery="quarto-lightbox-gallery-83"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="lightbox" data-gallery="quarto-lightbox-gallery-84"><img src="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>In this post, I’ve shared my journey of creating an application using Streamlit and the powerful Amazon Nova Canvas model. From generating images from text to performing advanced editing operations like inpainting and outpainting, this app offers a hands-on experience with some of the latest advancements in AI-powered image processing.</p>
+<p>I’ve shown you how to get started by running the app locally, and I’ve also provided a detailed guide on deploying the application to AWS using Lightsail. Now, you can easily create amazing visuals using the different tools that I have developed and even share it with your friends.</p>
+<p>I encourage you to explore the app, experiment with different prompts and parameters, and unleash your creativity. This is a starting point, and I’m excited to see what you create with these tools. I’d also love to hear your feedback and any ideas you have for future enhancements!</p>
+<p>Thank you for joining me on this journey. I hope this app inspires your creative projects and helps you discover the exciting possibilities of AI-powered image generation.</p>
+
+
 </section>
 
 </main> <!-- /main -->
