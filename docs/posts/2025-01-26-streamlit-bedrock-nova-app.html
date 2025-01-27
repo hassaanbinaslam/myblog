@@ -192,6 +192,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#text-to-image-with-condition" id="toc-text-to-image-with-condition" class="nav-link" data-scroll-target="#text-to-image-with-condition">Text to Image with Condition</a></li>
   <li><a href="#background-removal-tool" id="toc-background-removal-tool" class="nav-link" data-scroll-target="#background-removal-tool">Background Removal Tool</a></li>
   <li><a href="#image-inpainting-tool" id="toc-image-inpainting-tool" class="nav-link" data-scroll-target="#image-inpainting-tool">Image Inpainting Tool</a></li>
+  <li><a href="#image-outpainting-tool" id="toc-image-outpainting-tool" class="nav-link" data-scroll-target="#image-outpainting-tool">Image Outpainting Tool</a></li>
   </ul>
 </nav>
     </div>
@@ -938,6 +939,152 @@ Amazon Nova Canvas Official Documentation
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-stain-removed.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-59" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-stain-removed.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="image-outpainting-tool" class="level2">
+<h2 class="anchored" data-anchor-id="image-outpainting-tool">Image Outpainting Tool</h2>
+<p>My final tool in this application is the “Image Outpainting Tool.” This tool lets you expand your images beyond their original boundaries, creating seamless extensions that match the original content. Whether you want to extend landscapes, complete partial scenes, or create panoramic views, this tool helps you achieve natural-looking results.</p>
+<section id="how-it-works-1" class="level4">
+<h4 class="anchored" data-anchor-id="how-it-works-1">How It Works:</h4>
+<ul>
+<li><strong>Upload Image</strong>: Start by uploading your image using the uploader. The app can handle different image formats.</li>
+<li><strong>Select Mask Type</strong>:
+<ul>
+<li><strong>Prompt</strong>: Use text to define the mask area to preserve. You can use a text prompt to specify what part of the image you want to keep unchanged and the model will generate a mask for you.</li>
+<li><strong>Image</strong>: Automatically mask the image area to keep unchanged. The model will mask the entire image as the area to preserve.</li>
+</ul></li>
+<li>Set Expanded Size: Choose the new image size: <code>512x512</code> or <code>1024x1024</code> using the dropdown.</li>
+<li>Adjust Position: Use the “Image Horizontal Position” and “Image Vertical Position” controls to place your image within the expanded canvas. You can use values between 0 and 1.</li>
+<li><strong>Add a Prompt</strong>: Describe how the extended areas should look. Be as specific as possible to get desired results.</li>
+<li><strong>Generate Results</strong>: Click on the “Generate Image” button to create and refine your expanded image. The expanded image and the expanded image mask will be displayed below the image and controls. The output will be displayed below that.</li>
+</ul>
+<p>Below is an example of what the app looks like after outpainting an uploaded image. Here I have used the “Image” mask type and the prompt “forest setting in the background with animals and plants.” I have kept the other options at their default value.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/img_outpainting-results.png" class="lightbox" data-gallery="quarto-lightbox-gallery-60"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/img_outpainting-results.png" class="img-fluid"></a></p>
+<p>With this tool, you can easily bring your creative visions to life by expanding images beyond their boundaries!I have provided below more examples of the creative possibilities of this tool.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-61" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda_expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-62" title="Expanded Image. Prompt: forest setting in the background with animals and plants. Mask Prompt: a panda"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda_expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: forest setting in the background with animals and plants. Mask Prompt: a panda"></a></p>
+<figcaption>Expanded Image. Prompt: forest setting in the background with animals and plants. Mask Prompt: a panda</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-63" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-64" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-65" title="Expanded Image. Prompt: The cat is surrounded by toys. Mask Prompt: a cat"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: The cat is surrounded by toys. Mask Prompt: a cat"></a></p>
+<figcaption>Expanded Image. Prompt: The cat is surrounded by toys. Mask Prompt: a cat</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-66" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-67" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-68" title="Expanded Image. Prompt: The chair is placed in a luxury home. Mask Prompt: a chair"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: The chair is placed in a luxury home. Mask Prompt: a chair"></a></p>
+<figcaption>Expanded Image. Prompt: The chair is placed in a luxury home. Mask Prompt: a chair</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-69" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-70" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-71" title="Expanded Image. Prompt: The car is sitting on the road with trees, houses, shops. and people walking in the background. Mask Prompt: a car"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: The car is sitting on the road with trees, houses, shops. and people walking in the background. Mask Prompt: a car"></a></p>
+<figcaption>Expanded Image. Prompt: The car is sitting on the road with trees, houses, shops. and people walking in the background. Mask Prompt: a car</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-72" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
 <figcaption>Output Image</figcaption>
 </figure>
 </div>
