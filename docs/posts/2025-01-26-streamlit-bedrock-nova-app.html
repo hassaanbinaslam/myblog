@@ -201,7 +201,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#deployment" id="toc-deployment" class="nav-link" data-scroll-target="#deployment">Deployment</a>
   <ul class="collapse">
-  <li><a href="#create-an-ecr-repository" id="toc-create-an-ecr-repository" class="nav-link" data-scroll-target="#create-an-ecr-repository">1. Create an ECR Repository</a></li>
+  <li><a href="#create-an-elastic-container-registry-repository" id="toc-create-an-elastic-container-registry-repository" class="nav-link" data-scroll-target="#create-an-elastic-container-registry-repository">1. Create an Elastic Container Registry Repository</a></li>
   <li><a href="#build-and-push-the-docker-image" id="toc-build-and-push-the-docker-image" class="nav-link" data-scroll-target="#build-and-push-the-docker-image">2. Build and Push the Docker Image</a></li>
   <li><a href="#create-a-lightsail-container-service" id="toc-create-a-lightsail-container-service" class="nav-link" data-scroll-target="#create-a-lightsail-container-service">3. Create a Lightsail Container Service</a></li>
   <li><a href="#give-lightsail-access-to-ecr" id="toc-give-lightsail-access-to-ecr" class="nav-link" data-scroll-target="#give-lightsail-access-to-ecr">4. Give Lightsail Access to ECR</a></li>
@@ -258,7 +258,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p><a href="https://aws.amazon.com/ai/generative-ai/nova/creative/">Amazon’s Nova Canvas</a> is a state-of-the-art foundation model that promises to democratize high-quality image generation. However, the complexities of these models can often be a barrier to entry. This post presents a practical solution: a <a href="https://streamlit.io/">Streamlit-based</a> application that makes experimenting with Nova Canvas accessible to everyone. I will walk you through the features of this rapid prototype, which includes five powerful tools, encompassing text-to-image generation, conditional generation, background removal, inpainting, and outpainting. You can seamlessly explore the diverse capabilities of this potent technology and bring your creative visions to life.</p>
+<p><a href="https://aws.amazon.com/ai/generative-ai/nova/creative/">Amazon’s Nova Canvas</a> is a state-of-the-art Amazon foundation model that promises to democratize high-quality image generation. However, the complexities of these models can often be a barrier to entry. This post presents a practical solution: a <a href="https://streamlit.io/">Streamlit-based</a> application that makes experimenting with Nova Canvas accessible to everyone. I will walk you through the features of this app, which includes five powerful tools, encompassing text-to-image generation, conditional generation, background removal, inpainting, and outpainting. You can seamlessly explore the diverse capabilities of this potent technology and bring your creative visions to life.</p>
 <section id="environment-details" class="level3">
 <h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
 <div id="cell-4" class="cell" data-execution_count="1">
@@ -285,14 +285,14 @@ Code Samples
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>All the code examples used in this post can be found on the GitHub repo <a href="https://github.com/hassaanbinaslam/2025-01-21-streamlit-deployment-aws">2025-01-21-streamlit-deployment-aws</a></p>
+<p>All the code examples used in this post can be found on the GitHub repo <a href="https://github.com/hassaanbinaslam/2025-01-26-streamlit-bedrock-nova-app">2025-01-26-streamlit-bedrock-nova-app</a></p>
 </div>
 </div>
 </section>
 </section>
 <section id="introducing-amazon-nova-canvas" class="level2">
 <h2 class="anchored" data-anchor-id="introducing-amazon-nova-canvas">Introducing Amazon Nova Canvas</h2>
-<p>At the heart of my rapid prototyping app is Amazon Nova Canvas, a latest foundation model that I’m using to generate realistic, studio-quality images from text prompts. This model is a versatile tool for both text-to-image generation and advanced image editing. Nova Canvas excels at creating images that capture the concepts described in your text prompts.</p>
+<p>At the heart of my app is Amazon Nova Canvas, a latest foundation model that I’m using to generate realistic, studio-quality images from text prompts. This model is a versatile tool for both text-to-image generation and advanced image editing. Nova Canvas excels at creating images that capture the concepts described in your text prompts.</p>
 <p>Beyond <code>text-to-image</code> (T2I), I’m also leveraging its image editing capabilities, which include <code>inpainting</code>, <code>outpainting</code>, generating variations, and automatic editing without masks. <strong>Inpainting</strong> allows you to reconstruct masked regions in an image. <strong>Outpainting</strong> lets you seamlessly extend an image beyond its original boundaries, and you can guide this with masks or let the model determine it. The model also supports <strong>image conditioning</strong>, which uses a reference image to guide generation, and it also supports subject consistency to preserve a chosen subject like a pet or a shoe in your generated images. It can also automatically <code>remove backgrounds</code> from an image, making the background transparent.</p>
 <p>Overall, this model provides me with a powerful and diverse set of tools to unleash creative possibilities.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
@@ -312,7 +312,7 @@ Amazon Nova Canvas Official Documentation
 </section>
 <section id="the-rapid-prototyping-app-a-hands-on-playground" class="level2">
 <h2 class="anchored" data-anchor-id="the-rapid-prototyping-app-a-hands-on-playground">The Rapid Prototyping App: A Hands-On Playground</h2>
-<p>To make exploring the power of Amazon Nova Canvas as easy and accessible as possible, I decided to build an application using Streamlit. I chose Streamlit because it is incredibly efficient for quickly creating interactive web apps with minimal coding, making it the perfect tool for this project. My goal was to create a hands-on playground where you could directly experiment with Nova Canvas’s capabilities, transforming your creative ideas into visual reality.</p>
+<p>To make exploring the power of Amazon Nova Canvas as easy and accessible as possible, I decided to build an application using <a href="https://streamlit.io/">Streamlit</a>. I chose Streamlit because it is incredibly efficient for quickly creating interactive web apps with minimal coding, making it the perfect tool for this project. My goal was to create a hands-on playground where you could directly experiment with Nova Canvas’s capabilities, transforming your creative ideas into visual reality.</p>
 <p><strong>This app isn’t just for tech enthusiasts; I wanted it to be user-friendly, allowing anyone to explore AI-powered image generation and editing</strong>. The best part is that it’s designed for easy sharing and deployment, so you can effortlessly share your experiments with your friends, or even deploy the app for wider access. I have included some of the app’s screenshots below, so you can have a quick overview.</p>
 <p>You’ll see a simple login page where you can enter your credentials (or bypass authentication during local testing). After logging in, you are presented with a user-friendly interface, with a sidebar that lets you navigate to each of the five image processing tools. The welcome page gives you a quick overview of each of the tools and how to use them. Each tool provides an intuitive interface with controls to configure the parameters and get the most out of the capabilities of the Amazon Nova Canvas model.</p>
 <div>
@@ -354,24 +354,24 @@ Amazon Nova Canvas Official Documentation
 <div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Text to Image with Condition"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Text to Image with Condition"></a></p>
-<figcaption>Text to Image with Condition</figcaption>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Text to Image with Condition Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Text to Image with Condition Page"></a></p>
+<figcaption>Text to Image with Condition Page</figcaption>
 </figure>
 </div>
 </div>
 <div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Remove Image Background"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Remove Image Background"></a></p>
-<figcaption>Remove Image Background</figcaption>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Remove Image Background Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Remove Image Background Page"></a></p>
+<figcaption>Remove Image Background Page</figcaption>
 </figure>
 </div>
 </div>
 <div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Image Inpainting"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="img-fluid figure-img" alt="Image Inpainting"></a></p>
-<figcaption>Image Inpainting</figcaption>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Image Inpainting Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="img-fluid figure-img" alt="Image Inpainting Page"></a></p>
+<figcaption>Image Inpainting Page</figcaption>
 </figure>
 </div>
 </div>
@@ -385,8 +385,8 @@ Amazon Nova Canvas Official Documentation
 <div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Image Outpainting"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="img-fluid figure-img" alt="Image Outpainting"></a></p>
-<figcaption>Image Outpainting</figcaption>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Image Outpainting Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="img-fluid figure-img" alt="Image Outpainting Page"></a></p>
+<figcaption>Image Outpainting Page</figcaption>
 </figure>
 </div>
 </div>
@@ -396,7 +396,7 @@ Amazon Nova Canvas Official Documentation
 </section>
 <section id="text-to-image" class="level2">
 <h2 class="anchored" data-anchor-id="text-to-image">Text to Image</h2>
-<p>The first tool in our arsenal is the “Text to Image” generator. This is where the magic begins: I’ve designed this tool to let you turn your imagination into stunning visuals with just a few words. By harnessing the advanced capabilities of Amazon Bedrock - Nova Canvas, you can generate high-quality images tailored to your specific prompts.</p>
+<p>The first tool in our arsenal is the “Text to Image” generator. This is where the magic begins: It let’s you turn your imagination into stunning visuals with just a few words. By harnessing the advanced capabilities of Nova Canvas, you can generate high-quality images tailored to your specific prompts.</p>
 <section id="how-to-use-it" class="level4">
 <h4 class="anchored" data-anchor-id="how-to-use-it">How to use it:</h4>
 <ul>
@@ -419,7 +419,7 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Click on an image to expand it and view in higher resolution.</p>
+<p>Click on an image to expand it, and view in a higher resolution.</p>
 </div>
 </div>
 <div>
@@ -758,7 +758,7 @@ Tip
 <li>Once uploaded, the app automatically processes the image using Amazon Bedrock to remove the background.</li>
 <li>The processed image, with the background removed, will then be displayed below the uploader.</li>
 </ul>
-<p>It’s that simple! With this tool, you can unleash your creativity and transform your images with ease. I’ll share some examples of the before and after results of the processed images.</p>
+<p>It’s that simple! With this tool, you can transform your images with ease. I’ll share some examples of the before and after results of the processed images.</p>
 <p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/remove-img-backgroud-results.png" class="lightbox" data-gallery="quarto-lightbox-gallery-40"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/remove-img-backgroud-results.png" class="img-fluid"></a></p>
 <p>Some more examples.</p>
 <div>
@@ -1223,43 +1223,112 @@ Tip
 </section>
 <section id="deployment" class="level2">
 <h2 class="anchored" data-anchor-id="deployment">Deployment</h2>
-<p>Now that you’ve experimented with the app locally, it’s time to deploy it to the cloud. I’ll be focusing on using AWS Lightsail, which is a cost-effective and easy-to-use service for deploying containerized applications. Here’s a step-by-step guide to deploying your Streamlit app:</p>
-<section id="create-an-ecr-repository" class="level3">
-<h3 class="anchored" data-anchor-id="create-an-ecr-repository">1. Create an ECR Repository</h3>
-<p>Head over to your AWS console and create a new Elastic Container Repository (ECR). This repository will be used to store your application’s Docker container image. I would recommend that you use a descriptive name for your repo, such as streamlit/bedrock-nova-app.</p>
-<p>Make sure you create the repository in the same AWS region where you have access to the Amazon Bedrock models.</p>
+<p>Now that you’ve experimented with the app locally, it’s time to deploy it to the cloud. I’ll be focusing on using <a href="https://docs.aws.amazon.com/lightsail/latest/userguide/what-is-amazon-lightsail.html">Amazon Lightsail</a>, which is a cost-effective and easy-to-use service for deploying containerized applications.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Alternatives to Lightsail?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Alternatives to Lightsail?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>If you are interested in learning about the alternative approaches in deploying this app, then</p>
+<ul>
+<li>Refer to my other post where I have explained some of the alternative: <a href="https://hassaanbinaslam.github.io/myblog/posts/2025-01-21-streamlit-deployment-aws.html">2025-01-21-streamlit-deployment-aws</a></li>
+<li>Refer to the AWS blog post for deploying the Streamlit app with AWS CDK: <a href="https://aws.amazon.com/blogs/machine-learning/build-and-deploy-a-ui-for-your-generative-ai-applications-with-aws-and-python/">build-and-deploy-a-ui-for-your-generative-ai-applications-with-aws-and-python</a></li>
+</ul>
+</div>
+</div>
+</div>
+<p>Here’s a step-by-step guide for deploying your Streamlit app on Amazon Lightsail:</p>
+<section id="create-an-elastic-container-registry-repository" class="level3">
+<h3 class="anchored" data-anchor-id="create-an-elastic-container-registry-repository">1. Create an Elastic Container Registry Repository</h3>
+<p>Head over to your AWS console and create a new <a href="https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html">Elastic Container Registry (ECR)</a> repository. This repository will be used to store your application’s Docker container image. I would recommend that you use a descriptive name for your repo, such as <code>streamlit/bedrock-nova-app</code>.</p>
+<p>Make sure you create the ECR in the same AWS region where you have access to the Amazon Bedrock models.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Can I use a public repo like Docker Hub?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Can I use a public repo like Docker Hub?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>I have used AWS private ECR repo in the above step. But you are open to use any other public service of your choice like <a href="https://hub.docker.com/">Docker Hub</a>.</p>
+</div>
+</div>
+</div>
 <p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-repo.png" class="lightbox" data-gallery="quarto-lightbox-gallery-75"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-repo.png" class="img-fluid"></a></p>
 </section>
 <section id="build-and-push-the-docker-image" class="level3">
 <h3 class="anchored" data-anchor-id="build-and-push-the-docker-image">2. Build and Push the Docker Image</h3>
-<p>On your local machine, build the Docker container image and then push it to your newly created ECR repository. Use the commands provided by AWS for your specific account and repository. Here is an example of the commands, specific to my account. Remember that the command provided by AWS in the console is very specific to your account and you should use that only:</p>
+<p>On your local machine, build the Docker container image and then push it to your newly created ECR. Use the commands provided by AWS for your specific account and registry. Here is an example of the commands, specific to my account. Remember that the command provided by AWS in the console is very specific to your account and you should use that only:</p>
 <p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-push-commands.png" class="lightbox" data-gallery="quarto-lightbox-gallery-76"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-push-commands.png" class="img-fluid"></a></p>
 </section>
 <section id="create-a-lightsail-container-service" class="level3">
 <h3 class="anchored" data-anchor-id="create-a-lightsail-container-service">3. Create a Lightsail Container Service</h3>
-<p>Navigate to the AWS Lightsail service in your console. We’ll be using Lightsail container service.</p>
+<p>Navigate to the AWS Lightsail service in your console. We’ll be using <a href="https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-container-services.html">Lightsail container service</a>.</p>
 <p>Lightsail’s interface is very intuitive. Follow the guided steps to create the container service, making sure you select the same region where your ECR repository is located. For a simple Streamlit app, a Nano compute power <code>(512MB RAM, 0.25 vCPU)</code> will be sufficient.</p>
 </section>
 <section id="give-lightsail-access-to-ecr" class="level3">
 <h3 class="anchored" data-anchor-id="give-lightsail-access-to-ecr">4. Give Lightsail Access to ECR</h3>
 <p>In the “Images” tab of your Lightsail container service, select the correct ECR repository and grant Lightsail access to it. This allows Lightsail to pull the container image from your repository.</p>
 <p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-ecr-access.png" class="lightbox" data-gallery="quarto-lightbox-gallery-77"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-ecr-access.png" class="img-fluid"></a></p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Containers on AWS — Amazon Lightsail Containers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Containers on AWS — Amazon Lightsail Containers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Here is a link to other post that explain the similar step in a very detailed manner: <a href="https://dev.to/aws-builders/containers-on-aws-amazon-lightsail-containers-4eco">containers-on-aws-amazon-lightsail</a></p>
+</div>
+</div>
+</div>
 </section>
 <section id="configure-iam-user-permissions" class="level3">
 <h3 class="anchored" data-anchor-id="configure-iam-user-permissions">5. Configure IAM User Permissions</h3>
 <p>To enable your Lightsail container to access Bedrock models, you’ll need to create a new IAM user.</p>
 <ul>
 <li>Assign the <code>bedrock:InvokeModel</code> policy to this user.</li>
-<li>Create an access key for the user and save the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for later use.</li>
+<li>Create an access key for the user and save the <code>AWS_ACCESS_KEY_ID</code> and <code>AWS_SECRET_ACCESS_KEY</code> for later use.</li>
 </ul>
+<p>Amazon Lightsail is a special service and you cannot assign IAM roles/permissions to it like you do for other services. Similarly Lightsail cannot access <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html">AWS Secrets Manager</a> to keep the credentails. So we will create a new IAM user with the required persmissions, and assign it to our app.</p>
 <p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/iam-app-user.png" class="lightbox" data-gallery="quarto-lightbox-gallery-78"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/iam-app-user.png" class="img-fluid"></a></p>
-<p>Important Note: Do not share your AWS access key ID or secret access key publicly, and keep them secure.</p>
+<div class="callout callout-style-default callout-caution callout-titled" title="Keep your IAM access and secret key secure!">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Keep your IAM access and secret key secure!
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Do not share your AWS access key ID or secret access key publicly, and keep them secure.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="configure-cognito-user-pool-if-needed" class="level3">
 <h3 class="anchored" data-anchor-id="configure-cognito-user-pool-if-needed">6. Configure Cognito User Pool (If Needed)</h3>
-<p>If you have enabled user authentication (LOGIN_REQUIRED = True) in your config.py file, you’ll need to set up a Cognito User Pool.</p>
-<p>Create a Cognito User Pool and get the POOL_ID, APP_CLIENT_ID, and APP_CLIENT_SECRET.</p>
-<p>Important Note: Do not share your app client secret publicly and keep it secure.</p>
+<p>If you have enabled user authentication (<code>LOGIN_REQUIRED = True</code>) in your <code>config.py</code> file, you’ll need to set up a Cognito User Pool.</p>
+<p>Create a Cognito User Pool and get the <code>POOL_ID</code>, <code>APP_CLIENT_ID</code>, and <code>APP_CLIENT_SECRET</code>.</p>
+<p>Note: Do not share your app client secret publicly and keep it secure!</p>
 <div>
 
 </div>
