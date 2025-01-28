@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-01-26">
+<meta name="description" content="Explore the power of Amazon Nova Canvas with a hands-on Streamlit app. This rapid prototyping tool offers five powerful image processing features, including text-to-image, inpainting, and outpainting. Unleash your creativity and transform your ideas into stunning visuals.">
+
+<title>Unleash Your Creativity: A Rapid Prototyping App with Amazon Nova Canvas – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Unleash Your Creativity: A Rapid Prototyping App with Amazon Nova Canvas – Random Thoughts">
+<meta property="og:description" content="Explore the power of Amazon Nova Canvas with a hands-on Streamlit app. This rapid prototyping tool offers five powerful image processing features, including text-to-image, inpainting, and outpainting. Unleash your creativity and transform your ideas into stunning visuals.">
+<meta property="og:image" content="images/2025-01-26-streamlit-bedrock-nova-app.jpg">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Unleash Your Creativity: A Rapid Prototyping App with Amazon Nova Canvas – Random Thoughts">
+<meta name="twitter:description" content="Explore the power of Amazon Nova Canvas with a hands-on Streamlit app. This rapid prototyping tool offers five powerful image processing features, including text-to-image, inpainting, and outpainting. Unleash your creativity and transform your ideas into stunning visuals.">
+<meta name="twitter:image" content="images/2025-01-26-streamlit-bedrock-nova-app.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  </ul></li>
+  <li><a href="#introducing-amazon-nova-canvas" id="toc-introducing-amazon-nova-canvas" class="nav-link" data-scroll-target="#introducing-amazon-nova-canvas">Introducing Amazon Nova Canvas</a></li>
+  <li><a href="#the-rapid-prototyping-app-a-hands-on-playground" id="toc-the-rapid-prototyping-app-a-hands-on-playground" class="nav-link" data-scroll-target="#the-rapid-prototyping-app-a-hands-on-playground">The Rapid Prototyping App: A Hands-On Playground</a></li>
+  <li><a href="#text-to-image" id="toc-text-to-image" class="nav-link" data-scroll-target="#text-to-image">Text to Image</a></li>
+  <li><a href="#text-to-image-with-condition" id="toc-text-to-image-with-condition" class="nav-link" data-scroll-target="#text-to-image-with-condition">Text to Image with Condition</a></li>
+  <li><a href="#background-removal" id="toc-background-removal" class="nav-link" data-scroll-target="#background-removal">Background Removal</a></li>
+  <li><a href="#image-inpainting" id="toc-image-inpainting" class="nav-link" data-scroll-target="#image-inpainting">Image Inpainting</a></li>
+  <li><a href="#image-outpainting" id="toc-image-outpainting" class="nav-link" data-scroll-target="#image-outpainting">Image Outpainting</a></li>
+  <li><a href="#running-the-app-locally" id="toc-running-the-app-locally" class="nav-link" data-scroll-target="#running-the-app-locally">Running the App Locally</a>
+  <ul class="collapse">
+  <li><a href="#prerequisites" id="toc-prerequisites" class="nav-link" data-scroll-target="#prerequisites">Prerequisites</a></li>
+  <li><a href="#code" id="toc-code" class="nav-link" data-scroll-target="#code">Code</a></li>
+  <li><a href="#running-the-app" id="toc-running-the-app" class="nav-link" data-scroll-target="#running-the-app">Running the App</a></li>
+  </ul></li>
+  <li><a href="#deployment" id="toc-deployment" class="nav-link" data-scroll-target="#deployment">Deployment</a>
+  <ul class="collapse">
+  <li><a href="#create-an-elastic-container-registry-repository" id="toc-create-an-elastic-container-registry-repository" class="nav-link" data-scroll-target="#create-an-elastic-container-registry-repository">1. Create an Elastic Container Registry Repository</a></li>
+  <li><a href="#build-and-push-the-docker-image" id="toc-build-and-push-the-docker-image" class="nav-link" data-scroll-target="#build-and-push-the-docker-image">2. Build and Push the Docker Image</a></li>
+  <li><a href="#create-a-lightsail-container-service" id="toc-create-a-lightsail-container-service" class="nav-link" data-scroll-target="#create-a-lightsail-container-service">3. Create a Lightsail Container Service</a></li>
+  <li><a href="#give-lightsail-access-to-ecr" id="toc-give-lightsail-access-to-ecr" class="nav-link" data-scroll-target="#give-lightsail-access-to-ecr">4. Give Lightsail Access to ECR</a></li>
+  <li><a href="#configure-iam-user-permissions" id="toc-configure-iam-user-permissions" class="nav-link" data-scroll-target="#configure-iam-user-permissions">5. Configure IAM User Permissions</a></li>
+  <li><a href="#configure-cognito-user-pool-if-needed" id="toc-configure-cognito-user-pool-if-needed" class="nav-link" data-scroll-target="#configure-cognito-user-pool-if-needed">6. Configure Cognito User Pool (If Needed)</a></li>
+  <li><a href="#deploy-the-container" id="toc-deploy-the-container" class="nav-link" data-scroll-target="#deploy-the-container">7. Deploy the Container</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Unleash Your Creativity: A Rapid Prototyping App with Amazon Nova Canvas</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">python</div>
+    <div class="quarto-category">aws</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Explore the power of Amazon Nova Canvas with a hands-on Streamlit app. This rapid prototyping tool offers five powerful image processing features, including text-to-image, inpainting, and outpainting. Unleash your creativity and transform your ideas into stunning visuals.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 26, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-01-26-streamlit-bedrock-nova-app.jpg" class="img-fluid figure-img"></p>
+<figcaption>image source: Amazon Nova Canvas. (Prompt: Giant mushroom, stanley artgerm, pointillism, bokeh, sparkles, magic, trees, mountains, lake, thomas kinkaid, norman rockwell)</figcaption>
+</figure>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p><a href="https://aws.amazon.com/ai/generative-ai/nova/creative/">Amazon’s Nova Canvas</a> is a state-of-the-art Amazon foundation model that promises to democratize high-quality image generation. However, the complexities of these models can often be a barrier to entry. This post presents a practical solution: a <a href="https://streamlit.io/">Streamlit-based</a> application that makes experimenting with Nova Canvas accessible to everyone. I will walk you through the features of this app, which includes five powerful tools, encompassing text-to-image generation, conditional generation, background removal, inpainting, and outpainting. You can seamlessly explore the diverse capabilities of this potent technology and bring your creative visions to life.</p>
+<section id="environment-details" class="level3">
+<h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<div id="cell-4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> streamlit</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"streamlit=="</span> <span class="op">+</span> streamlit.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.12.8
+streamlit==1.41.1</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code Samples
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All the code examples used in this post can be found on the GitHub repo <a href="https://github.com/hassaanbinaslam/2025-01-26-streamlit-bedrock-nova-app">2025-01-26-streamlit-bedrock-nova-app</a></p>
+</div>
+</div>
+</section>
+</section>
+<section id="introducing-amazon-nova-canvas" class="level2">
+<h2 class="anchored" data-anchor-id="introducing-amazon-nova-canvas">Introducing Amazon Nova Canvas</h2>
+<p>At the heart of my app is Amazon Nova Canvas, a latest foundation model that I’m using to generate realistic, studio-quality images from text prompts. This model is a versatile tool for both text-to-image generation and advanced image editing. Nova Canvas excels at creating images that capture the concepts described in your text prompts.</p>
+<p>Beyond <code>text-to-image</code> (T2I), I’m also leveraging its image editing capabilities, which include <code>inpainting</code>, <code>outpainting</code>, generating variations, and automatic editing without masks. <strong>Inpainting</strong> allows you to reconstruct masked regions in an image. <strong>Outpainting</strong> lets you seamlessly extend an image beyond its original boundaries, and you can guide this with masks or let the model determine it. The model also supports <strong>image conditioning</strong>, which uses a reference image to guide generation, and it also supports subject consistency to preserve a chosen subject like a pet or a shoe in your generated images. It can also automatically <code>remove backgrounds</code> from an image, making the background transparent.</p>
+<p>Overall, this model provides me with a powerful and diverse set of tools to unleash creative possibilities.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Amazon Nova Canvas Official Documentation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Nova Canvas model id used in this post is <code>amazon.nova-canvas-v1:0</code>.</p>
+<p>You can read more about Nova Canvas features from its official documentation page. <a href="https://docs.aws.amazon.com/nova/latest/userguide/image-generation.html">Link Here</a></p>
+</div>
+</div>
+</section>
+<section id="the-rapid-prototyping-app-a-hands-on-playground" class="level2">
+<h2 class="anchored" data-anchor-id="the-rapid-prototyping-app-a-hands-on-playground">The Rapid Prototyping App: A Hands-On Playground</h2>
+<p>To make exploring the power of Amazon Nova Canvas as easy and accessible as possible, I decided to build an application using <a href="https://streamlit.io/">Streamlit</a>. I chose Streamlit because it is incredibly efficient for quickly creating interactive web apps with minimal coding, making it the perfect tool for this project. My goal was to create a hands-on playground where you could directly experiment with Nova Canvas’s capabilities, transforming your creative ideas into visual reality.</p>
+<p><strong>This app isn’t just for tech enthusiasts; I wanted it to be user-friendly, allowing anyone to explore AI-powered image generation and editing</strong>. The best part is that it’s designed for easy sharing and deployment, so you can effortlessly share your experiments with your friends, or even deploy the app for wider access. I have included some of the app’s screenshots below, so you can have a quick overview.</p>
+<p>You’ll see a simple login page where you can enter your credentials (or bypass authentication during local testing). After logging in, you are presented with a user-friendly interface, with a sidebar that lets you navigate to each of the five image processing tools. The welcome page gives you a quick overview of each of the tools and how to use them. Each tool provides an intuitive interface with controls to configure the parameters and get the most out of the capabilities of the Amazon Nova Canvas model.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Login Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="img-fluid figure-img" alt="Login Page"></a></p>
+<figcaption>Login Page</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/welcome.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Welcome Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/welcome.png" class="img-fluid figure-img" alt="Welcome Page"></a></p>
+<figcaption>Welcome Page</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/text-2-image.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Text to Image Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/text-2-image.png" class="img-fluid figure-img" alt="Text to Image Page"></a></p>
+<figcaption>Text to Image Page</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Text to Image with Condition Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Text to Image with Condition Page"></a></p>
+<figcaption>Text to Image with Condition Page</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Remove Image Background Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-conditioning.png" class="img-fluid figure-img" alt="Remove Image Background Page"></a></p>
+<figcaption>Remove Image Background Page</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Image Inpainting Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-inpainting.png" class="img-fluid figure-img" alt="Image Inpainting Page"></a></p>
+<figcaption>Image Inpainting Page</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Image Outpainting Page"><img src="images/2025-01-26-streamlit-bedrock-nova-app/image-outpainting.png" class="img-fluid figure-img" alt="Image Outpainting Page"></a></p>
+<figcaption>Image Outpainting Page</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>We’ll dive into each of these pages in more detail in the following sections, but this overview should give you a good initial feel of what the app looks and feels like.</p>
+</section>
+<section id="text-to-image" class="level2">
+<h2 class="anchored" data-anchor-id="text-to-image">Text to Image</h2>
+<p>The first tool in our arsenal is the “Text to Image” generator. This is where the magic begins: It let’s you turn your imagination into stunning visuals with just a few words. By harnessing the advanced capabilities of Nova Canvas, you can generate high-quality images tailored to your specific prompts.</p>
+<section id="how-to-use-it" class="level4">
+<h4 class="anchored" data-anchor-id="how-to-use-it">How to use it:</h4>
+<ul>
+<li>Use the controls on the page to configure the text-to-image generation process. You can select the number of images you want, the size of each image (with a variety of preset options), and fine-tune the cfgScale parameter.</li>
+<li>The <code>cfgScale</code> parameter lets you specify how strongly the generated image should adhere to the prompt. A lower value introduces more randomness, while a higher value will stick more closely to the prompt.</li>
+<li>Enter a positive prompt – this is where you describe the image you want to generate. Be as specific as possible to get the best results.</li>
+<li>Optionally, you can also enter a negative prompt. This is a way to tell the model what you don’t want to see in the image, further refining the output.</li>
+</ul>
+<p>Once you are happy with the parameters you have selected, simply click the “Generate Image” button to start the process. The generated images will be displayed below the button.</p>
+<p>Below is an example of what the app looks like after generating two images. I used the prompt <strong>Fantastic celestial night sky with shining stars. Amazing John Dyer art.</strong> using the following settings.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/txt2img-with-results.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/txt2img-with-results.png" class="img-fluid"></a></p>
+<p>I encourage you to experiment with different prompts and parameters to see the amazing results that you can create using this tool. I have provided below more examples of the generated images with different prompts to demonstrate the versatility of the tool.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Click on an image to expand it, and view in a higher resolution.</p>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-1.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="A serene forest where the trees are made of glass, sunlight refracting into rainbow colors, with a mystical glowing lake in the center. Style: fantasy realism."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-1.jpg" class="img-fluid figure-img" alt="A serene forest where the trees are made of glass, sunlight refracting into rainbow colors, with a mystical glowing lake in the center. Style: fantasy realism."></a></p>
+<figcaption>A serene forest where the trees are made of glass, sunlight refracting into rainbow colors, with a mystical glowing lake in the center. Style: fantasy realism.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-2.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="A giant clock tower covered in vines, standing in the middle of a desert, with time flowing like water around it. Style: surreal art, soft light"><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-2.jpg" class="img-fluid figure-img" alt="A giant clock tower covered in vines, standing in the middle of a desert, with time flowing like water around it. Style: surreal art, soft light"></a></p>
+<figcaption>A giant clock tower covered in vines, standing in the middle of a desert, with time flowing like water around it. Style: surreal art, soft light</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-3.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="A massive volcanic mountain surrounded by a swirling galaxy in the night sky, with rivers of lava glowing in the dark. Style: cinematic and dramatic."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-3.jpg" class="img-fluid figure-img" alt="A massive volcanic mountain surrounded by a swirling galaxy in the night sky, with rivers of lava glowing in the dark. Style: cinematic and dramatic."></a></p>
+<figcaption>A massive volcanic mountain surrounded by a swirling galaxy in the night sky, with rivers of lava glowing in the dark. Style: cinematic and dramatic.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-4.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="An underwater city glowing with bioluminescent plants and creatures, built into a coral reef, with massive whales swimming above. Style: fantasy underwater."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-4.jpg" class="img-fluid figure-img" alt="An underwater city glowing with bioluminescent plants and creatures, built into a coral reef, with massive whales swimming above. Style: fantasy underwater."></a></p>
+<figcaption>An underwater city glowing with bioluminescent plants and creatures, built into a coral reef, with massive whales swimming above. Style: fantasy underwater.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-5.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-13" title="A futuristic Mars colony with advanced architecture, glowing biodomes, and red dunes stretching to the horizon. Style: sci-fi realism."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-5.jpg" class="img-fluid figure-img" alt="A futuristic Mars colony with advanced architecture, glowing biodomes, and red dunes stretching to the horizon. Style: sci-fi realism."></a></p>
+<figcaption>A futuristic Mars colony with advanced architecture, glowing biodomes, and red dunes stretching to the horizon. Style: sci-fi realism.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-6.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="A warrior elf with glowing silver armor, holding a sword that emits blue flames, standing in an enchanted forest. Style: hyper-detailed fantasy art."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-6.jpg" class="img-fluid figure-img" alt="A warrior elf with glowing silver armor, holding a sword that emits blue flames, standing in an enchanted forest. Style: hyper-detailed fantasy art."></a></p>
+<figcaption>A warrior elf with glowing silver armor, holding a sword that emits blue flames, standing in an enchanted forest. Style: hyper-detailed fantasy art.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-7.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="A steampunk inventor with mechanical goggles, surrounded by intricate clockwork machines, in a smoky Victorian-era workshop. Style: steampunk, warm tones."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-7.jpg" class="img-fluid figure-img" alt="A steampunk inventor with mechanical goggles, surrounded by intricate clockwork machines, in a smoky Victorian-era workshop. Style: steampunk, warm tones."></a></p>
+<figcaption>A steampunk inventor with mechanical goggles, surrounded by intricate clockwork machines, in a smoky Victorian-era workshop. Style: steampunk, warm tones.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-8.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-16" title="A robotic wolf with glowing red eyes, prowling through a futuristic cityscape at night. Style: cyberpunk, metallic textures."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-8.jpg" class="img-fluid figure-img" alt="A robotic wolf with glowing red eyes, prowling through a futuristic cityscape at night. Style: cyberpunk, metallic textures."></a></p>
+<figcaption>A robotic wolf with glowing red eyes, prowling through a futuristic cityscape at night. Style: cyberpunk, metallic textures.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-9.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-17" title="A giant turtle with a miniature forest growing on its back, walking through the ocean at sunrise. Style: serene, magical realism."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-9.jpg" class="img-fluid figure-img" alt="A giant turtle with a miniature forest growing on its back, walking through the ocean at sunrise. Style: serene, magical realism."></a></p>
+<figcaption>A giant turtle with a miniature forest growing on its back, walking through the ocean at sunrise. Style: serene, magical realism.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-10.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-18" title="A massive spaceship docked on a floating platform above a gas giant, with bright auroras in the sky. Style: sci-fi cinematic."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-10.jpg" class="img-fluid figure-img" alt="A massive spaceship docked on a floating platform above a gas giant, with bright auroras in the sky. Style: sci-fi cinematic."></a></p>
+<figcaption>A massive spaceship docked on a floating platform above a gas giant, with bright auroras in the sky. Style: sci-fi cinematic.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-11.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-19" title="A futuristic AI core glowing in the center of a high-tech laboratory, surrounded by floating holograms and robotic arms. Style: sleek and ultra-modern."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-11.jpg" class="img-fluid figure-img" alt="A futuristic AI core glowing in the center of a high-tech laboratory, surrounded by floating holograms and robotic arms. Style: sleek and ultra-modern."></a></p>
+<figcaption>A futuristic AI core glowing in the center of a high-tech laboratory, surrounded by floating holograms and robotic arms. Style: sleek and ultra-modern.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-12.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-20" title="An explosion of colors forming a human face, with geometric patterns and abstract swirls blending into the background. Style: modern art."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-12.jpg" class="img-fluid figure-img" alt="An explosion of colors forming a human face, with geometric patterns and abstract swirls blending into the background. Style: modern art."></a></p>
+<figcaption>An explosion of colors forming a human face, with geometric patterns and abstract swirls blending into the background. Style: modern art.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-13.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-21" title="A dream-like landscape where the sky is made of water and the ground is a glowing galaxy, with floating islands in between. Style: surreal fantasy."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-13.jpg" class="img-fluid figure-img" alt="A dream-like landscape where the sky is made of water and the ground is a glowing galaxy, with floating islands in between. Style: surreal fantasy."></a></p>
+<figcaption>A dream-like landscape where the sky is made of water and the ground is a glowing galaxy, with floating islands in between. Style: surreal fantasy.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-14.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-22" title="A haunted Victorian mansion on a cliffside, illuminated by lightning strikes, with ghostly figures in the windows. Style: gothic horror."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-14.jpg" class="img-fluid figure-img" alt="A haunted Victorian mansion on a cliffside, illuminated by lightning strikes, with ghostly figures in the windows. Style: gothic horror."></a></p>
+<figcaption>A haunted Victorian mansion on a cliffside, illuminated by lightning strikes, with ghostly figures in the windows. Style: gothic horror.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-15.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-23" title="A dark angel with tattered black wings, standing in a crumbling cathedral, with glowing red eyes and a flaming sword. Style: dark fantasy."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-15.jpg" class="img-fluid figure-img" alt="A dark angel with tattered black wings, standing in a crumbling cathedral, with glowing red eyes and a flaming sword. Style: dark fantasy."></a></p>
+<figcaption>A dark angel with tattered black wings, standing in a crumbling cathedral, with glowing red eyes and a flaming sword. Style: dark fantasy.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-16.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-24" title="A cursed forest with twisted trees, glowing red mushrooms, and a shadowy figure lurking in the fog. Style: eerie and atmospheric."><img src="images/2025-01-26-streamlit-bedrock-nova-app/txt2img/prompt-16.jpg" class="img-fluid figure-img" alt="A cursed forest with twisted trees, glowing red mushrooms, and a shadowy figure lurking in the fog. Style: eerie and atmospheric."></a></p>
+<figcaption>A cursed forest with twisted trees, glowing red mushrooms, and a shadowy figure lurking in the fog. Style: eerie and atmospheric.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="text-to-image-with-condition" class="level2">
+<h2 class="anchored" data-anchor-id="text-to-image-with-condition">Text to Image with Condition</h2>
+<p>Taking image generation to the next level, my “Text to Image with Condition” tool lets you shape your creations with precision and intention. It goes beyond simple text prompts by using a reference image to guide the generation process, helping you achieve the exact look and feel you desire. This tool uses advanced image conditioning features, offering two powerful methods: Canny Edge Detection and Segmentation Maps.</p>
+<section id="features" class="level4">
+<h4 class="anchored" data-anchor-id="features">Features:</h4>
+<ul>
+<li><strong>Canny Edge Detection</strong>: By extracting the edges from your reference image. The output will inherit the structural layout of the reference image.</li>
+<li><strong>Segmentation Maps</strong>: This allows you to define and control specific areas or objects in the reference image. The model will then use this information to render precise outputs and allow you to manipulate individual objects in the image.</li>
+</ul>
+</section>
+<section id="how-to-use-it-1" class="level4">
+<h4 class="anchored" data-anchor-id="how-to-use-it-1">How to Use It:</h4>
+<ul>
+<li>First, upload the reference image that you want to use to guide the generation. For best results, ensure the reference image is clear and appropriately sized.</li>
+<li>Next, select the conditioning method that you want to use: Canny Edge or Segmentation Map from the “Control Mode” dropdown.</li>
+<li>You can adjust the “Control Strength” parameter to determine how closely the generated image adheres to the reference image. Use a lower value to introduce more randomness in the generation.</li>
+<li>Then, enter a text prompt describing the image you want to generate, keeping in mind the selected conditioning method.</li>
+<li>Optionally, you can also enter a negative prompt to further refine the image.</li>
+<li>Configure other options, such as the number of images, image size and the cfgScale parameter, just like you did in the Text to Image page.</li>
+<li>Click on the “Generate Image” button to view the results. The generated images will be displayed below the button along with the original image used for conditioning.</li>
+</ul>
+<p>Below is an example of what the app looks like after generating two images using the Canny Edge option. I used the reference image (Harry Potter/Daniel Radcliffe) shown in the “Uploaded Image” section and the prompt <strong>Reimagine this person in a cyberpunk cityscape with glowing neon lights.</strong> The other options were set to the default value.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/image-condition-result.png" class="lightbox" data-gallery="quarto-lightbox-gallery-25"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/image-condition-result.png" class="img-fluid"></a></p>
+<p>This tool allows you to take full control of the image generation process and unleash your creative possibilities. I have shared below some more examples of the generated images with different prompts, and the input image used for the condition.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-26" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-1.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-27" title="Transform this wizard into a celestial guardian with a starry cloak, glowing golden staff, and galaxies swirling in his beard. Style: ethereal fantasy."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-1.jpg" class="img-fluid figure-img" alt="Transform this wizard into a celestial guardian with a starry cloak, glowing golden staff, and galaxies swirling in his beard. Style: ethereal fantasy."></a></p>
+<figcaption>Transform this wizard into a celestial guardian with a starry cloak, glowing golden staff, and galaxies swirling in his beard. Style: ethereal fantasy.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Some more examples.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-28" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/Dumbledore.jpg" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-2.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-29" title="Transform him into a robotic AI wizard with a metallic body, LED lights in his eyes, and a holographic spellbook floating in front of him."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-2.jpg" class="img-fluid figure-img" alt="Transform him into a robotic AI wizard with a metallic body, LED lights in his eyes, and a holographic spellbook floating in front of him."></a></p>
+<figcaption>Transform him into a robotic AI wizard with a metallic body, LED lights in his eyes, and a holographic spellbook floating in front of him.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-3.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-30" title="Turn him into a dark necromancer with a tattered black cloak, glowing green skulls floating around him, and a staff topped with a glowing crystal skull."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-3.jpg" class="img-fluid figure-img" alt="Turn him into a dark necromancer with a tattered black cloak, glowing green skulls floating around him, and a staff topped with a glowing crystal skull."></a></p>
+<figcaption>Turn him into a dark necromancer with a tattered black cloak, glowing green skulls floating around him, and a staff topped with a glowing crystal skull.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-4.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-31" title="Make him an ice wizard with a robe made of frost and snowflakes, a frozen staff, and icy blue magic swirling around his hands."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-4.jpg" class="img-fluid figure-img" alt="Make him an ice wizard with a robe made of frost and snowflakes, a frozen staff, and icy blue magic swirling around his hands."></a></p>
+<figcaption>Make him an ice wizard with a robe made of frost and snowflakes, a frozen staff, and icy blue magic swirling around his hands.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/forrest-scene.png" class="lightbox" data-gallery="quarto-lightbox-gallery-32" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/forrest-scene.png" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-5.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-33" title="Enhance this forest with floating lanterns and mystical creatres like fairies and glowing butterflies."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-5.jpg" class="img-fluid figure-img" alt="Enhance this forest with floating lanterns and mystical creatres like fairies and glowing butterflies."></a></p>
+<figcaption>Enhance this forest with floating lanterns and mystical creatres like fairies and glowing butterflies.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-6.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-34" title="Turn this forest into a futuristic biome with glass domes and flying drones."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-6.jpg" class="img-fluid figure-img" alt="Turn this forest into a futuristic biome with glass domes and flying drones."></a></p>
+<figcaption>Turn this forest into a futuristic biome with glass domes and flying drones.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-7.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-35" title="Add a hidden magical portal surrounded by glowing mushrooms and ancient runes."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-7.jpg" class="img-fluid figure-img" alt="Add a hidden magical portal surrounded by glowing mushrooms and ancient runes."></a></p>
+<figcaption>Add a hidden magical portal surrounded by glowing mushrooms and ancient runes.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="4">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/cat.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-36" title="Input Condition Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/cat.jpg" class="img-fluid figure-img" alt="Input Condition Image"></a></p>
+<figcaption>Input Condition Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-8.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-37" title="Turn this cat into a futuristic robot with glowing eyes and metal plating."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-8.jpg" class="img-fluid figure-img" alt="Turn this cat into a futuristic robot with glowing eyes and metal plating."></a></p>
+<figcaption>Turn this cat into a futuristic robot with glowing eyes and metal plating.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-9.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-38" title="Make this cat appear as a royal king with a golden crown and cape."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-9.jpg" class="img-fluid figure-img" alt="Make this cat appear as a royal king with a golden crown and cape."></a></p>
+<figcaption>Make this cat appear as a royal king with a golden crown and cape.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-10.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-39" title="Reimagine this cat as a mythical fire spirit surrounded by flames."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-condition/prompt-10.jpg" class="img-fluid figure-img" alt="Reimagine this cat as a mythical fire spirit surrounded by flames."></a></p>
+<figcaption>Reimagine this cat as a mythical fire spirit surrounded by flames.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="background-removal" class="level2">
+<h2 class="anchored" data-anchor-id="background-removal">Background Removal</h2>
+<p>Sometimes, you need a clean subject without any background distractions. That’s where my “Background Removal Tool” comes in. This tool empowers your creative workflow by allowing you to effortlessly remove backgrounds from images in just one step. Whether you want to composite your subject onto a solid color background or seamlessly layer it over another scene, this tool provides a clean and accurate solution.</p>
+<p>Leveraging the power of Nova Canvas, the app intelligently detects and segments multiple foreground objects, ensuring even complex scenes with overlapping elements are isolated with precision.</p>
+<section id="how-to-use-it-2" class="level4">
+<h4 class="anchored" data-anchor-id="how-to-use-it-2">How to Use It:</h4>
+<ul>
+<li>Upload an image (PNG or JPG) using the uploader on the page. The app can handle different image formats for your convenience.</li>
+<li>Once uploaded, the app automatically processes the image using Amazon Bedrock to remove the background.</li>
+<li>The processed image, with the background removed, will then be displayed below the uploader.</li>
+</ul>
+<p>It’s that simple! With this tool, you can transform your images with ease. I’ll share some examples of the before and after results of the processed images.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/remove-img-backgroud-results.png" class="lightbox" data-gallery="quarto-lightbox-gallery-40"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/remove-img-backgroud-results.png" class="img-fluid"></a></p>
+<p>Some more examples.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/parrot.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-41" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/parrot.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/parrot-removed.png" class="lightbox" data-gallery="quarto-lightbox-gallery-42" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/parrot-removed.png" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/cybertruck.png" class="lightbox" data-gallery="quarto-lightbox-gallery-43" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/cybertruck.png" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/cybertruck-removed.png" class="lightbox" data-gallery="quarto-lightbox-gallery-44" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/cybertruck-removed.png" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/speaker.png" class="lightbox" data-gallery="quarto-lightbox-gallery-45" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/speaker.png" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/speaker-removed.png" class="lightbox" data-gallery="quarto-lightbox-gallery-46" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/background-remove/speaker-removed.png" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="image-inpainting" class="level2">
+<h2 class="anchored" data-anchor-id="image-inpainting">Image Inpainting</h2>
+<p>Sometimes, images have unwanted elements or imperfections. That’s when my “Image Inpainting Tool” becomes invaluable. This tool allows you to enhance, restore, or creatively modify images by masking specific areas and providing detailed prompts to guide the process. Whether you’re fixing imperfections or adding new elements, this tool empowers you with advanced inpainting features.</p>
+<section id="how-it-works" class="level4">
+<h4 class="anchored" data-anchor-id="how-it-works">How It Works:</h4>
+<ul>
+<li><strong>Upload an Image</strong>: Begin by uploading the image you wish to modify using the uploader. The app supports various image formats for your convenience.</li>
+<li><strong>Mask the Area</strong>: Use the integrated canvas tool to intuitively draw masks over the regions you want to change. You can adjust the “Canvas Stroke Width” to fine-tune the size of the brush for precise masking.</li>
+<li><strong>Provide a Prompt</strong>: Describe the changes you’d like to see (e.g., “replace the masked area with a sunset sky”). Be as specific as possible to guide the inpainting.</li>
+<li><strong>Generate Results</strong>: Once you are happy with the mask and the prompt, simply click the “Edit Image” button to start the process. The generated output will be displayed below along with the original image and the masked image.</li>
+</ul>
+<p>Below is an example of how to use this tool. I have uploaded an image and have masked a section of the image, and using the prompt “Replace the masked area with a honey bee” I was able to generate the image displayed below.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/inpainting-results.png" class="lightbox" data-gallery="quarto-lightbox-gallery-47"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/inpainting-results.png" class="img-fluid"></a></p>
+<p>This tool gives you a high degree of control over the modifications, allowing you to achieve seamless and natural-looking results. I’ll share below some more examples of how you can creatively use this tool.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/iguana.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-48" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/iguana.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/iguana-masked.png" class="lightbox" data-gallery="quarto-lightbox-gallery-49" title="Masked Image with Prompt: Replace the masked area with a honey bee."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/iguana-masked.png" class="img-fluid figure-img" alt="Masked Image with Prompt: Replace the masked area with a honey bee."></a></p>
+<figcaption>Masked Image with Prompt: Replace the masked area with a honey bee.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/iguana-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-50" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/iguana-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/cereal-cat.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-51" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/cereal-cat.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/cat-masked.png" class="lightbox" data-gallery="quarto-lightbox-gallery-52" title="Masked Image with Prompt: Replace the masked area with a dog."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/cat-masked.png" class="img-fluid figure-img" alt="Masked Image with Prompt: Replace the masked area with a dog."></a></p>
+<figcaption>Masked Image with Prompt: Replace the masked area with a dog.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/cereal-dog.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-53" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/cereal-dog.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/sunset-plane.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-54" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/sunset-plane.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/sunset-mask.png" class="lightbox" data-gallery="quarto-lightbox-gallery-55" title="Masked Image with Prompt: Remove from the scene."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/sunset-mask.png" class="img-fluid figure-img" alt="Masked Image with Prompt: Remove from the scene."></a></p>
+<figcaption>Masked Image with Prompt: Remove from the scene.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/sunset-plane-removed.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-56" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/sunset-plane-removed.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-spilled.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-57" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-spilled.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-mask.png" class="lightbox" data-gallery="quarto-lightbox-gallery-58" title="Masked Image with Prompt: Remove the tea stains from the masked area. Table cloth should be clean and tidy."><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-mask.png" class="img-fluid figure-img" alt="Masked Image with Prompt: Remove the tea stains from the masked area. Table cloth should be clean and tidy."></a></p>
+<figcaption>Masked Image with Prompt: Remove the tea stains from the masked area. Table cloth should be clean and tidy.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-stain-removed.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-59" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-inpainting/tea-stain-removed.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="image-outpainting" class="level2">
+<h2 class="anchored" data-anchor-id="image-outpainting">Image Outpainting</h2>
+<p>My final tool in this application is the “Image Outpainting Tool.” This tool lets you expand your images beyond their original boundaries, creating seamless extensions that match the original content. Whether you want to extend landscapes, complete partial scenes, or create panoramic views, this tool helps you achieve natural-looking results.</p>
+<section id="how-it-works-1" class="level4">
+<h4 class="anchored" data-anchor-id="how-it-works-1">How It Works:</h4>
+<ul>
+<li><strong>Upload Image</strong>: Start by uploading your image using the uploader. The app can handle different image formats.</li>
+<li><strong>Select Mask Type</strong>:
+<ul>
+<li><strong>Prompt</strong>: Use text to define the mask area to preserve. You can use a text prompt to specify what part of the image you want to keep unchanged and the model will generate a mask for you.</li>
+<li><strong>Image</strong>: Automatically mask the image area to keep unchanged. The model will mask the entire image as the area to preserve.</li>
+</ul></li>
+<li><strong>Set Expanded Size</strong>: Choose the new image size: <code>512x512</code> or <code>1024x1024</code> using the dropdown.</li>
+<li><strong>Adjust Position</strong>: Use the “Image Horizontal Position” and “Image Vertical Position” controls to place your image within the expanded canvas.</li>
+<li><strong>Add a Prompt</strong>: Describe how the extended areas should look. Be as specific as possible to get desired results.</li>
+<li><strong>Generate Results</strong>: Click on the “Edit Image” button to create and refine your expanded image. The expanded image and the expanded image mask will be displayed below the image and controls. The output will be displayed below that.</li>
+</ul>
+<p>Below is an example of what the app looks like after outpainting an uploaded image. Here I have used the “Image” mask type and the prompt “forest setting in the background with animals and plants.” I have kept the other options at their default value.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/img_outpainting-results.png" class="lightbox" data-gallery="quarto-lightbox-gallery-60"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/img_outpainting-results.png" class="img-fluid"></a></p>
+<p>With this tool, you can easily bring your creative visions to life by expanding images beyond their boundaries!I have provided below more examples of the creative possibilities of this tool.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-61" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda_expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-62" title="Expanded Image. Prompt: forest setting in the background with animals and plants. Mask Prompt: a panda"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda_expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: forest setting in the background with animals and plants. Mask Prompt: a panda"></a></p>
+<figcaption>Expanded Image. Prompt: forest setting in the background with animals and plants. Mask Prompt: a panda</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-63" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/panda-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-64" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-65" title="Expanded Image. Prompt: The cat is surrounded by toys. Mask Prompt: a cat"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: The cat is surrounded by toys. Mask Prompt: a cat"></a></p>
+<figcaption>Expanded Image. Prompt: The cat is surrounded by toys. Mask Prompt: a cat</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-66" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/cat-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-67" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-68" title="Expanded Image. Prompt: The chair is placed in a luxury home. Mask Prompt: a chair"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: The chair is placed in a luxury home. Mask Prompt: a chair"></a></p>
+<figcaption>Expanded Image. Prompt: The chair is placed in a luxury home. Mask Prompt: a chair</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-69" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/chair-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-70" title="Input Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car.jpg" class="img-fluid figure-img" alt="Input Image"></a></p>
+<figcaption>Input Image</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-expanded.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-71" title="Expanded Image. Prompt: The car is sitting on the road with trees, houses, shops. and people walking in the background. Mask Prompt: a car"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-expanded.jpg" class="img-fluid figure-img" alt="Expanded Image. Prompt: The car is sitting on the road with trees, houses, shops. and people walking in the background. Mask Prompt: a car"></a></p>
+<figcaption>Expanded Image. Prompt: The car is sitting on the road with trees, houses, shops. and people walking in the background. Mask Prompt: a car</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-output.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-72" title="Output Image"><img src="images/2025-01-26-streamlit-bedrock-nova-app/img-outpainting/car-output.jpg" class="img-fluid figure-img" alt="Output Image"></a></p>
+<figcaption>Output Image</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="running-the-app-locally" class="level2">
+<h2 class="anchored" data-anchor-id="running-the-app-locally">Running the App Locally</h2>
+<p>Before deploying the app, you might want to experiment with it on your local system. Here’s how you can quickly get the app up and running:</p>
+<section id="prerequisites" class="level3">
+<h3 class="anchored" data-anchor-id="prerequisites">Prerequisites</h3>
+<ul>
+<li><strong>Amazon Bedrock Access</strong>: You’ll need access to the Amazon Nova Canvas model. If you don’t have access already, visit the Model Catalog in Amazon Bedrock from your AWS account console and request access to the model (as shown below).
+<ul>
+<li><a href="images/2025-01-26-streamlit-bedrock-nova-app/nova-canvas-access.png" class="lightbox" data-gallery="quarto-lightbox-gallery-73"><img src="images/2025-01-26-streamlit-bedrock-nova-app/nova-canvas-access.png" class="img-fluid"></a></li>
+</ul></li>
+<li><strong>AWS CLI Configuration</strong>: Make sure you have the AWS CLI configured on your local system and that the user has the necessary permissions to invoke the Nova Canvas model.</li>
+</ul>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>IAM Policy</strong></pre>
+</div>
+<div class="sourceCode" id="cb3" data-filename="IAM Policy"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">{</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="at">    </span><span class="fu">"Version"</span><span class="kw">:</span><span class="at"> </span><span class="st">"2012-10-17"</span><span class="kw">,</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="at">    </span><span class="fu">"Statement"</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="at">        </span><span class="kw">{</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="at">            </span><span class="fu">"Sid"</span><span class="kw">:</span><span class="at"> </span><span class="st">"VisualEditor0"</span><span class="kw">,</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="at">            </span><span class="fu">"Effect"</span><span class="kw">:</span><span class="at"> </span><span class="st">"Allow"</span><span class="kw">,</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="at">            </span><span class="fu">"Action"</span><span class="kw">:</span><span class="at"> </span><span class="st">"bedrock:InvokeModel"</span><span class="kw">,</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="at">            </span><span class="fu">"Resource"</span><span class="kw">:</span><span class="at"> </span><span class="st">"*"</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="at">        </span><span class="kw">}</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="at">    </span><span class="kw">]</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="kw">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="code" class="level3">
+<h3 class="anchored" data-anchor-id="code">Code</h3>
+<ul>
+<li><strong>Code Download</strong>: Download the code from the GitHub repository: <a href="https://github.com/hassaanbinaslam/2025-01-26-streamlit-bedrock-nova-app">2025-01-26-streamlit-bedrock-nova-app</a>.</li>
+<li><strong>Code Structure</strong>: The code is organized as follows:</li>
+</ul>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Code Hierarchy</strong></pre>
+</div>
+<pre data-filename="Code Hierarchy"><code>├── home
+│   └── welcome.py
+├── llm
+│   ├── __init__.py
+│   └── utils.py
+├── tools
+│   ├── inpainting.py
+│   ├── outpainting.py
+│   ├── remove_background.py
+│   ├── text_to_image_condition.py
+│   ├── text_to_image.py
+│   └── __init__.py
+├── .gitignore
+├── app.py
+├── config.py
+├── Dockerfile
+├── README.md
+└── requirements.txt</code></pre>
+</div>
+<p>Here’s a brief explanation of the important files:</p>
+<p><strong>config.py</strong>: This file is used to set up important configurations for the app. Below is the snippet from the file to give you an overview.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>config.py</strong></pre>
+</div>
+<div class="sourceCode" id="cb5" data-filename="config.py"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">class</span> Config:</span>
+<span id="cb5-2"><a href="#cb5-2"></a>    <span class="co"># The name of the Bedrock model to use</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>    BEDROCK_MODEL <span class="op">=</span> {</span>
+<span id="cb5-4"><a href="#cb5-4"></a>        <span class="st">"id"</span>: <span class="st">"amazon.nova-canvas-v1:0"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5"></a>        <span class="st">"name"</span>: <span class="st">"Amazon Bedrock - Nova Canvas"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6"></a>    }</span>
+<span id="cb5-7"><a href="#cb5-7"></a></span>
+<span id="cb5-8"><a href="#cb5-8"></a>    <span class="co"># If Bedrock is not activated in us-east-1 in your account, set this value accordingly</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>    BEDROCK_REGION <span class="op">=</span> <span class="st">"us-east-1"</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a></span>
+<span id="cb5-11"><a href="#cb5-11"></a>    <span class="co"># User Auth?</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a>    LOGIN_REQUIRED <span class="op">=</span> <span class="va">False</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In this file, you can specify the Bedrock model ID and region. Make sure that the <code>BEDROCK_REGION</code> matches the region where you have access to the Nova Canvas model. You can also disable Cognito user authentication for local testing by setting <code>LOGIN_REQUIRED</code> to False.</p>
+<p><strong>requirements.txt</strong>: This file lists the required Python libraries for the app. Make sure these dependencies are installed in your local environment.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>requirements.txt</strong></pre>
+</div>
+<div class="sourceCode" id="cb6" data-filename="requirements.txt"><pre class="sourceCode numberSource txt number-lines code-with-copy"><code class="sourceCode default"><span id="cb6-1"><a href="#cb6-1"></a>streamlit==1.41.1</span>
+<span id="cb6-2"><a href="#cb6-2"></a>streamlit-drawable-canvas==0.8.0</span>
+<span id="cb6-3"><a href="#cb6-3"></a>streamlit-cognito-auth==1.3.1</span>
+<span id="cb6-4"><a href="#cb6-4"></a>pillow==11.1.0</span>
+<span id="cb6-5"><a href="#cb6-5"></a>boto3==1.35.97</span>
+<span id="cb6-6"><a href="#cb6-6"></a>numpy==2.2.1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="running-the-app" class="level3">
+<h3 class="anchored" data-anchor-id="running-the-app">Running the App</h3>
+<ul>
+<li><strong>app.py</strong>: This is the main file to run the Streamlit application.</li>
+<li>Open your terminal or command prompt.</li>
+<li>Navigate to the directory where you have downloaded the code.</li>
+<li>Run the command <code>streamlit run app.py</code>. You should see the following output in your terminal:</li>
+</ul>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/local-run-app.png" class="lightbox" data-gallery="quarto-lightbox-gallery-74"><img src="images/2025-01-26-streamlit-bedrock-nova-app/local-run-app.png" class="img-fluid"></a></p>
+<p>Open your web browser and visit the URL shown in the output (http://localhost:8501) to access the app.</p>
+</section>
+</section>
+<section id="deployment" class="level2">
+<h2 class="anchored" data-anchor-id="deployment">Deployment</h2>
+<p>Now that you’ve experimented with the app locally, it’s time to deploy it to the cloud. I’ll be focusing on using <a href="https://docs.aws.amazon.com/lightsail/latest/userguide/what-is-amazon-lightsail.html">Amazon Lightsail</a>, which is a cost-effective and easy-to-use service for deploying containerized applications.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Alternatives to Lightsail?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Alternatives to Lightsail?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>If you are interested in learning about the alternative approaches in deploying this app, then</p>
+<ul>
+<li>Refer to my other post where I have explained some of the alternative: <a href="https://hassaanbinaslam.github.io/myblog/posts/2025-01-21-streamlit-deployment-aws.html">2025-01-21-streamlit-deployment-aws</a></li>
+<li>Refer to the AWS blog post for deploying the Streamlit app with AWS CDK: <a href="https://aws.amazon.com/blogs/machine-learning/build-and-deploy-a-ui-for-your-generative-ai-applications-with-aws-and-python/">build-and-deploy-a-ui-for-your-generative-ai-applications-with-aws-and-python</a></li>
+</ul>
+</div>
+</div>
+</div>
+<p>Here’s a step-by-step guide for deploying your Streamlit app on Amazon Lightsail:</p>
+<section id="create-an-elastic-container-registry-repository" class="level3">
+<h3 class="anchored" data-anchor-id="create-an-elastic-container-registry-repository">1. Create an Elastic Container Registry Repository</h3>
+<p>Head over to your AWS console and create a new <a href="https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html">Elastic Container Registry (ECR)</a> repository. This repository will be used to store your application’s Docker container image. I would recommend that you use a descriptive name for your repo, such as <code>streamlit/bedrock-nova-app</code>.</p>
+<p>Make sure you create the ECR in the same AWS region where you have access to the Amazon Bedrock models.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Can I use a public repo like Docker Hub?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Can I use a public repo like Docker Hub?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>I have used AWS private ECR repo in the above step. But you are open to use any other public service of your choice like <a href="https://hub.docker.com/">Docker Hub</a>.</p>
+</div>
+</div>
+</div>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-repo.png" class="lightbox" data-gallery="quarto-lightbox-gallery-75"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-repo.png" class="img-fluid"></a></p>
+</section>
+<section id="build-and-push-the-docker-image" class="level3">
+<h3 class="anchored" data-anchor-id="build-and-push-the-docker-image">2. Build and Push the Docker Image</h3>
+<p>On your local machine, build the Docker container image and then push it to your newly created ECR. Use the commands provided by AWS for your specific account and registry. Here is an example of the commands, specific to my account. Remember that the command provided by AWS in the console is very specific to your account and you should use that only:</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-push-commands.png" class="lightbox" data-gallery="quarto-lightbox-gallery-76"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/ecr-push-commands.png" class="img-fluid"></a></p>
+</section>
+<section id="create-a-lightsail-container-service" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-lightsail-container-service">3. Create a Lightsail Container Service</h3>
+<p>Navigate to the AWS Lightsail service in your console. We’ll be using <a href="https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-container-services.html">Lightsail container service</a>.</p>
+<p>Lightsail’s interface is very intuitive. Follow the guided steps to create the container service, making sure you select the same region where your ECR repository is located. For a simple Streamlit app, a Nano compute power <code>(512MB RAM, 0.25 vCPU)</code> will be sufficient.</p>
+</section>
+<section id="give-lightsail-access-to-ecr" class="level3">
+<h3 class="anchored" data-anchor-id="give-lightsail-access-to-ecr">4. Give Lightsail Access to ECR</h3>
+<p>In the “Images” tab of your Lightsail container service, select the correct ECR repository and grant Lightsail access to it. This allows Lightsail to pull the container image from your repository.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-ecr-access.png" class="lightbox" data-gallery="quarto-lightbox-gallery-77"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-ecr-access.png" class="img-fluid"></a></p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Containers on AWS — Amazon Lightsail Containers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Containers on AWS — Amazon Lightsail Containers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Here is a link to other post that explain the similar step in a very detailed manner: <a href="https://dev.to/aws-builders/containers-on-aws-amazon-lightsail-containers-4eco">containers-on-aws-amazon-lightsail</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="configure-iam-user-permissions" class="level3">
+<h3 class="anchored" data-anchor-id="configure-iam-user-permissions">5. Configure IAM User Permissions</h3>
+<p>To enable your Lightsail container to access Bedrock models, you’ll need to create a new IAM user.</p>
+<ul>
+<li>Assign the <code>bedrock:InvokeModel</code> policy to this user.</li>
+<li>Create an access key for the user and save the <code>AWS_ACCESS_KEY_ID</code> and <code>AWS_SECRET_ACCESS_KEY</code> for later use.</li>
+</ul>
+<p>Amazon Lightsail is a special service and you cannot assign IAM roles/permissions to it like you do for other services. Similarly Lightsail cannot access <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html">AWS Secrets Manager</a> to keep the credentails. So we will create a new IAM user with the required persmissions, and assign it to our app.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/iam-app-user.png" class="lightbox" data-gallery="quarto-lightbox-gallery-78"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/iam-app-user.png" class="img-fluid"></a></p>
+<div class="callout callout-style-default callout-caution callout-titled" title="Keep your IAM access and secret key secure!">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Keep your IAM access and secret key secure!
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Do not share your AWS access key ID or secret access key publicly, and keep them secure.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="configure-cognito-user-pool-if-needed" class="level3">
+<h3 class="anchored" data-anchor-id="configure-cognito-user-pool-if-needed">6. Configure Cognito User Pool (If Needed)</h3>
+<p>If you have enabled user authentication (<code>LOGIN_REQUIRED = True</code>) in your <code>config.py</code> file, you’ll need to set up a Cognito User Pool.</p>
+<p>Create a Cognito User Pool and get the <code>POOL_ID</code>, <code>APP_CLIENT_ID</code>, and <code>APP_CLIENT_SECRET</code>.</p>
+<p>Note: Do not share your app client secret publicly and keep it secure!</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user-pool.png" class="lightbox" data-gallery="quarto-lightbox-gallery-79"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user-pool.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-pool-id.png" class="lightbox" data-gallery="quarto-lightbox-gallery-80"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-pool-id.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-client-config.png" class="lightbox" data-gallery="quarto-lightbox-gallery-81"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-client-config.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="deploy-the-container" class="level3">
+<h3 class="anchored" data-anchor-id="deploy-the-container">7. Deploy the Container</h3>
+<p>In the “Deployments” tab of your Lightsail container service, provide the following environment variables:</p>
+<ul>
+<li>AWS_ACCESS_KEY_ID</li>
+<li>AWS_SECRET_ACCESS_KEY</li>
+</ul>
+<p>If Cognito is enabled</p>
+<ul>
+<li>POOL_ID</li>
+<li>APP_CLIENT_ID</li>
+<li>APP_CLIENT_SECRET</li>
+</ul>
+<p>Set the container port to 8501 and the protocol to HTTP.</p>
+<p>Click the “Deploy” button.</p>
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-deployment.png" class="lightbox" data-gallery="quarto-lightbox-gallery-82"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/lightsail-deployment.png" class="img-fluid"></a></p>
+<p>Your app should now be deployed and accessible via the public domain URL provided by Lightsail! For login you will be required to create a <code>verified cognito user</code>.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user.png" class="lightbox" data-gallery="quarto-lightbox-gallery-83"><img src="images/2025-01-26-streamlit-bedrock-nova-app/deployment/cognito-user.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="lightbox" data-gallery="quarto-lightbox-gallery-84"><img src="images/2025-01-26-streamlit-bedrock-nova-app/login.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>In this post, I’ve shared my journey of creating an application using Streamlit and the powerful Amazon Nova Canvas model. From generating images from text to performing advanced editing operations like inpainting and outpainting, this app offers a hands-on experience with some of the latest advancements in AI-powered image processing.</p>
+<p>I’ve shown you how to get started by running the app locally, and I’ve also provided a detailed guide on deploying the application to AWS using Lightsail. Now, you can easily create amazing visuals using the different tools that I have developed and even share it with your friends.</p>
+<p>I encourage you to explore the app, experiment with different prompts and parameters, and unleash your creativity. This is a starting point, and I’m excited to see what you create with these tools. I’d also love to hear your feedback and any ideas you have for future enhancements!</p>
+<p>Thank you for joining me on this journey. I hope this app inspires your creative projects and helps you discover the exciting possibilities of AI-powered image generation.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
