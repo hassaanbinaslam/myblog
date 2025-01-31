@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-01-29">
+<meta name="description" content="?">
+
+<title>Building a Web Server From Scratch in Pure Python – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Building a Web Server From Scratch in Pure Python – Random Thoughts">
+<meta property="og:description" content="?">
+<meta property="og:image" content="images/2025-01-29-pure-python-web-server.jpeg">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="Building a Web Server From Scratch in Pure Python – Random Thoughts">
+<meta name="twitter:description" content="?">
+<meta name="twitter:image" content="images/2025-01-29-pure-python-web-server.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  </ul></li>
+  <li><a href="#attempt-1---the-simplicity-of-http.server" id="toc-attempt-1---the-simplicity-of-http.server" class="nav-link" data-scroll-target="#attempt-1---the-simplicity-of-http.server">Attempt 1 - The Simplicity of <code>http.server</code></a></li>
+  <li><a href="#attempt-2---web-server-with-raw-sockets" id="toc-attempt-2---web-server-with-raw-sockets" class="nav-link" data-scroll-target="#attempt-2---web-server-with-raw-sockets">Attempt 2 - Web Server with Raw Sockets</a></li>
+  <li><a href="#attempt-3---threading-to-the-rescue" id="toc-attempt-3---threading-to-the-rescue" class="nav-link" data-scroll-target="#attempt-3---threading-to-the-rescue">Attempt 3 - Threading to the Rescue</a></li>
+  <li><a href="#attempt-4---selectors-with-blocking-time-simulation" id="toc-attempt-4---selectors-with-blocking-time-simulation" class="nav-link" data-scroll-target="#attempt-4---selectors-with-blocking-time-simulation">Attempt 4 - Selectors with Blocking Time Simulation</a></li>
+  <li><a href="#attempt-5---selectors-with-non-blocking-timer-simulation" id="toc-attempt-5---selectors-with-non-blocking-timer-simulation" class="nav-link" data-scroll-target="#attempt-5---selectors-with-non-blocking-timer-simulation">Attempt 5 - Selectors with Non-Blocking Timer Simulation</a></li>
+  <li><a href="#attempt-6---asyncio-true-non-blocking-io" id="toc-attempt-6---asyncio-true-non-blocking-io" class="nav-link" data-scroll-target="#attempt-6---asyncio-true-non-blocking-io">Attempt 6 - asyncio True Non-Blocking I/O</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Building a Web Server From Scratch in Pure Python</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">python</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    ?
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 29, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-01-29-pure-python-web-server.jpeg" class="img-fluid figure-img"></p>
+<figcaption>image source: https://www.artbreeder.com/image/ea82e4713d9d1468ae4c68676e3c</figcaption>
+</figure>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Have you ever wondered what’s happening under the hood when you access a website? I certainly have! That curiosity led me down a rabbit hole – building a web server from scratch using nothing but pure Python. Now, before you get too excited, let me be clear: this isn’t about creating the next <a href="https://nginx.org/en/">Nginx</a>. My goal is much simpler, and hopefully more insightful: <strong>to understand the fundamental concepts of networking and concurrency that power the web</strong>.</p>
+<p>Think of this as an educational adventure. We’re going to ditch the fancy frameworks and get our hands dirty with the raw building blocks. We’ll be exploring different ways to construct a basic web server, starting with Python’s built-in <a href="https://docs.python.org/3/library/http.server.html">http.server</a> and then diving deeper into <a href="https://docs.python.org/3/library/socket.html">sockets</a>, <a href="https://docs.python.org/3/library/threading.html">threading</a>, <a href="https://docs.python.org/3/library/selectors.html">selectors</a>, and finally, the asynchronous magic of <a href="https://docs.python.org/3/library/asyncio.html">asyncio</a>.</p>
+<p>Along the way, we’ll benchmark each server using <a href="https://httpd.apache.org/docs/2.4/programs/ab.html">Apache Benchmark (ab)</a> on an AWS <code>t2.micro</code> EC2 instance. EC2 machine is though entirely optional, and you can run these benchmarks on your local machine as well. I used it to give us a consistent way to compare performance and replicate. So, join me as we embark on this journey. It’s all about learning, experimenting, and maybe, just maybe, gaining a newfound appreciation for what goes into serving up those cat 🐈 videos you love.</p>
+<section id="environment-details" class="level3">
+<h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<div id="cell-4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>python==3.12.3</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code Samples
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All the code examples used in this post can be found on the GitHub repo <a href="https://github.com/hassaanbinaslam/2025-01-29-pure-python-web-server">2025-01-29-pure-python-web-server</a></p>
+</div>
+</div>
+</section>
+</section>
+<section id="attempt-1---the-simplicity-of-http.server" class="level2">
+<h2 class="anchored" data-anchor-id="attempt-1---the-simplicity-of-http.server">Attempt 1 - The Simplicity of <code>http.server</code></h2>
+<p>To start our journey, I wanted to establish a really simple baseline. Python’s <a href="https://docs.python.org/3/library/http.server.html">http.server</a> module is perfect for this. It’s like the ‘Hello, World!’ of web servers – incredibly easy to set up. Let’s take a look at the code.</p>
+<div id="cell-7" class="cell">
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>httpd/server.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> http.server</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="im">import</span> time</span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="im">from</span> http <span class="im">import</span> HTTPStatus</span>
+<span id="cb3-4"><a href="#cb3-4"></a></span>
+<span id="cb3-5"><a href="#cb3-5"></a>PORT <span class="op">=</span> <span class="dv">8000</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="kw">class</span> MyHandler(http.server.BaseHTTPRequestHandler):</span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="kw">def</span> do_GET(<span class="va">self</span>):</span>
+<span id="cb3-9"><a href="#cb3-9"></a>        <span class="co"># Simulate a database call or some processing</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>        time.sleep(<span class="fl">0.1</span>)</span>
+<span id="cb3-11"><a href="#cb3-11"></a></span>
+<span id="cb3-12"><a href="#cb3-12"></a>        <span class="va">self</span>.send_response(HTTPStatus.OK)</span>
+<span id="cb3-13"><a href="#cb3-13"></a>        <span class="va">self</span>.send_header(<span class="st">"Content-type"</span>, <span class="st">"text/html"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14"></a>        <span class="va">self</span>.end_headers()</span>
+<span id="cb3-15"><a href="#cb3-15"></a>        response_html <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="st">            &lt;html&gt;</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="st">                &lt;head&gt;</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="st">                    &lt;title&gt;My Basic Server&lt;/title&gt;</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="st">                &lt;/head&gt;</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="st">                &lt;body&gt;</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="st">                    &lt;h1&gt;Hello from my basic server&lt;/h1&gt;</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="st">                &lt;/body&gt;</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a><span class="st">            &lt;/html&gt;</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="st">        """</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a>        <span class="va">self</span>.wfile.write(response_html.encode())</span>
+<span id="cb3-26"><a href="#cb3-26"></a></span>
+<span id="cb3-27"><a href="#cb3-27"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb3-28"><a href="#cb3-28"></a>    <span class="cf">with</span> http.server.HTTPServer((<span class="st">""</span>, PORT), MyHandler) <span class="im">as</span> httpd:</span>
+<span id="cb3-29"><a href="#cb3-29"></a>        <span class="bu">print</span>(<span class="ss">f"Serving on port </span><span class="sc">{</span>PORT<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30"></a>        httpd.serve_forever()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>As you can see, it’s remarkably short.</p>
+<ul>
+<li>We import http.server, define a handler class <code>MyHandler</code> that inherits from <code>BaseHTTPRequestHandler</code>, and override the <code>do_GET</code> method.</li>
+<li>This method is called whenever the server receives a GET request.</li>
+<li>Inside, I’ve added <code>time.sleep(0.1)</code> to mimic a slow database call or some processing – because real-world servers aren’t instant.</li>
+<li>Then, we construct a simple HTML response and send it back.</li>
+</ul>
+<p>To run this, just type <code>python server.py</code> in your terminal. You should see “Serving on port 8000”. To test it, open your browser or use <code>curl http://localhost:8000</code>. You should see the “Hello from my basic server” message.</p>
+<p>Now, let’s see how it performs under a bit of load. I used Apache Benchmark with this command:</p>
+<blockquote class="blockquote">
+<p><code>ab -n 1000 -c 10 http://localhost:8000/.</code></p>
+</blockquote>
+<p>This sends 1000 requests with a concurrency of 10. Here are the results I got.</p>
+<div id="cell-9" class="cell" data-vscode="{&quot;languageId&quot;:&quot;bat&quot;}">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>Server Software:        BaseHTTP<span class="op">/</span><span class="fl">0.6</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>Server Hostname:        <span class="fl">3.90.155.197</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>Server Port:            <span class="dv">8000</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a>Document Path:          <span class="op">/</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>Document Length:        <span class="dv">249</span> <span class="bu">bytes</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a>Concurrency Level:      <span class="dv">10</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a>Time taken <span class="cf">for</span> tests:   <span class="fl">114.367</span> seconds</span>
+<span id="cb4-10"><a href="#cb4-10"></a>Complete requests:      <span class="dv">1000</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a>Failed requests:        <span class="dv">0</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a>Total transferred:      <span class="dv">366000</span> <span class="bu">bytes</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a>HTML transferred:       <span class="dv">249000</span> <span class="bu">bytes</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a>Requests per second:    <span class="fl">8.74</span> [<span class="co">#/sec] (mean)</span></span>
+<span id="cb4-15"><a href="#cb4-15"></a>Time per request:       <span class="fl">1143.666</span> [ms] (mean)</span>
+<span id="cb4-16"><a href="#cb4-16"></a>Time per request:       <span class="fl">114.367</span> [ms] (mean, across <span class="bu">all</span> concurrent requests)</span>
+<span id="cb4-17"><a href="#cb4-17"></a>Transfer rate:          <span class="fl">3.13</span> [Kbytes<span class="op">/</span>sec] received</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Looking at these numbers, especially the <strong>Requests per second: 8.74</strong>, it’s clear that while <code>http.server</code> is incredibly easy to use, it’s not exactly a performance beast. This is because it’s a very basic, single-threaded server. When <code>time.sleep(0.1)</code> is running for one request, the entire server is essentially waiting. This is what we call blocking I/O. One operation blocks everything else.</p>
+<p>This simple server gives us a starting point. It works, but it’s clearly not designed for handling many requests concurrently. In the next step, we’ll dive into raw sockets to understand things at a lower level and see if we can improve performance</p>
+</section>
+<section id="attempt-2---web-server-with-raw-sockets" class="level2">
+<h2 class="anchored" data-anchor-id="attempt-2---web-server-with-raw-sockets">Attempt 2 - Web Server with Raw Sockets</h2>
+<p>Okay, <code>http.server</code> was easy, but it felt a bit like cheating, right? To really understand what’s going on, I decided to ditch the convenience and build a server using raw sockets. This means we’re going to interact directly with the network, handling connections and HTTP protocol details ourselves. Let’s look at the code:</p>
+<div id="cell-12" class="cell">
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>sockets/server.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> socket</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="im">import</span> time</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">def</span> handle_request(conn, addr):</span>
+<span id="cb5-6"><a href="#cb5-6"></a>    <span class="cf">try</span>:</span>
+<span id="cb5-7"><a href="#cb5-7"></a>        request_data <span class="op">=</span> conn.recv(<span class="dv">1024</span>).decode()</span>
+<span id="cb5-8"><a href="#cb5-8"></a>        <span class="cf">if</span> request_data:</span>
+<span id="cb5-9"><a href="#cb5-9"></a>            <span class="co"># Simulate a database call or some processing</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>            time.sleep(<span class="fl">0.1</span>)  <span class="co"># 100 milliseconds delay</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>            response_html <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="st">            &lt;html&gt;</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="st">                &lt;head&gt;</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="st">                    &lt;title&gt;My Basic Server&lt;/title&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="st">                &lt;/head&gt;</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="st">                &lt;body&gt;</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="st">                    &lt;h1&gt;Hello from my basic server&lt;/h1&gt;</span></span>
+<span id="cb5-18"><a href="#cb5-18"></a><span class="st">                &lt;/body&gt;</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a><span class="st">            &lt;/html&gt;</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a><span class="st">        """</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a>            response <span class="op">=</span> <span class="st">"HTTP/1.1 200 OK</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a>            response <span class="op">+=</span> <span class="st">"Content-Type: text/html</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb5-23"><a href="#cb5-23"></a>            response <span class="op">+=</span> <span class="ss">f"Content-Length: </span><span class="sc">{</span><span class="bu">len</span>(response_html)<span class="sc">}</span><span class="ch">\r\n</span><span class="ss">"</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a>            response <span class="op">+=</span> <span class="st">"</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb5-25"><a href="#cb5-25"></a>            response <span class="op">+=</span> response_html</span>
+<span id="cb5-26"><a href="#cb5-26"></a>            conn.sendall(response.encode())</span>
+<span id="cb5-27"><a href="#cb5-27"></a></span>
+<span id="cb5-28"><a href="#cb5-28"></a>        <span class="cf">else</span>:</span>
+<span id="cb5-29"><a href="#cb5-29"></a>            <span class="bu">print</span>(<span class="ss">f"Client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss"> sent no data"</span>)</span>
+<span id="cb5-30"><a href="#cb5-30"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb5-31"><a href="#cb5-31"></a>        <span class="bu">print</span>(<span class="ss">f"Error handling client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-32"><a href="#cb5-32"></a>    <span class="cf">finally</span>:</span>
+<span id="cb5-33"><a href="#cb5-33"></a>        conn.close()</span>
+<span id="cb5-34"><a href="#cb5-34"></a></span>
+<span id="cb5-35"><a href="#cb5-35"></a></span>
+<span id="cb5-36"><a href="#cb5-36"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb5-37"><a href="#cb5-37"></a>    HOST <span class="op">=</span> <span class="st">""</span>  <span class="co"># Listen on all available interfaces</span></span>
+<span id="cb5-38"><a href="#cb5-38"></a>    PORT <span class="op">=</span> <span class="dv">8000</span></span>
+<span id="cb5-39"><a href="#cb5-39"></a>    <span class="cf">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="im">as</span> s:</span>
+<span id="cb5-40"><a href="#cb5-40"></a>        s.bind((HOST, PORT))</span>
+<span id="cb5-41"><a href="#cb5-41"></a>        s.listen()</span>
+<span id="cb5-42"><a href="#cb5-42"></a>        <span class="bu">print</span>(<span class="ss">f"Listening on port </span><span class="sc">{</span>PORT<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-43"><a href="#cb5-43"></a>        <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb5-44"><a href="#cb5-44"></a>            conn, addr <span class="op">=</span> s.accept()</span>
+<span id="cb5-45"><a href="#cb5-45"></a>            <span class="cf">with</span> conn:</span>
+<span id="cb5-46"><a href="#cb5-46"></a>                <span class="co"># print(f"Connected by {addr}")</span></span>
+<span id="cb5-47"><a href="#cb5-47"></a>                handle_request(conn, addr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>This code is a bit more involved, but still pretty straightforward.</p>
+<ul>
+<li>We start by importing the socket module.</li>
+<li>The <code>socket.socket()</code> function is used to create a new socket object in Python. It takes two main arguments: <strong>socket.socket(family, type)</strong>. I used <code>socket.socket(socket.AF_INET, socket.SOCK_STREAM)</code> where
+<ul>
+<li><a href="https://docs.python.org/3/library/socket.html#socket.AF_INET"><strong>socket.AF_INET</strong></a> specifies the address family, meaning the socket will use <code>IPv4</code>. If you wanted an <code>IPv6</code> socket, you would use <code>socket.AF_INET6</code></li>
+<li><a href="https://docs.python.org/3/library/socket.html#socket.SOCK_STREAM"><strong>socket.SOCK_STREAM</strong></a> specifies the socket type, meaning it will be a <strong>TCP</strong> (stream-based) socket. If you wanted a UDP socket, you would use <code>socket.SOCK_DGRAM</code></li>
+</ul></li>
+<li>Then, <code>s.bind((HOST, PORT))</code> binds the socket to listen on all available interfaces (HOST = ““) and port 8000.</li>
+<li><code>s.listen()</code> puts the socket into listening mode, ready to accept incoming connections.</li>
+<li><strong>The while True</strong>: loop is the heart of our server. <code>s.accept()</code> waits (blocks) for a new connection and, when one arrives it returns
+<ul>
+<li>a new socket object (<code>conn</code>) for sending/receiving data with that client</li>
+<li><code>addr</code> contains the client’s (IP address, port) tuple.</li>
+</ul></li>
+<li>We then call <code>handle_request(conn, addr)</code> to process this connection.</li>
+<li><strong>Inside handle_request</strong>
+<ul>
+<li><code>conn.recv(1024)</code> attempts to receive up to 1024 bytes of data from the client – this is where we get the HTTP request. If the client sends less than 1024 bytes, it reads whatever is available. If the request is longer than 1024 bytes, only the first part is read (you may need a loop for large requests).</li>
+<li><code>.decode()</code> We decode it i.e convert the received raw bytes into a string using UTF-8 encoding, and check if there’s any data. Data sent over sockets is binary, so it needs decoding.</li>
+</ul></li>
+<li>Just like before, <code>time.sleep(0.1)</code> simulates processing work.</li>
+<li>Then comes the part where we manually construct the HTTP response. We need to include the status line (HTTP/1.1 200 OK), headers like <code>Content-Type</code>, <code>Content-Length</code>, and the HTML body, all separated by as per HTTP protocol. Finally, <code>conn.sendall(response.encode())</code> sends the encoded (or binary) response back to the client, and <code>conn.close()</code> closes the connection.</li>
+</ul>
+<p>Let’s benchmark it with the same <code>ab</code> command, and here are the results:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource batch number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a href="#cb6-1"></a>Concurrency Level:      10</span>
+<span id="cb6-2"><a href="#cb6-2"></a>Time taken for tests:   100.414 seconds</span>
+<span id="cb6-3"><a href="#cb6-3"></a>Complete requests:      1000</span>
+<span id="cb6-4"><a href="#cb6-4"></a>Failed requests:        0</span>
+<span id="cb6-5"><a href="#cb6-5"></a>Total transferred:      314000 bytes</span>
+<span id="cb6-6"><a href="#cb6-6"></a>HTML transferred:       249000 bytes</span>
+<span id="cb6-7"><a href="#cb6-7"></a>Requests per second:    9.96 [#/sec] (mean)</span>
+<span id="cb6-8"><a href="#cb6-8"></a>Time per request:       1004.143 [ms] (mean)</span>
+<span id="cb6-9"><a href="#cb6-9"></a>Time per request:       100.414 [ms] (mean, across all concurrent requests)</span>
+<span id="cb6-10"><a href="#cb6-10"></a>Transfer rate:          3.05 [Kbytes/sec] received</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Looking at <strong>Requests per second: 9.96</strong>, the performance is actually slightly better than <strong>http.server (8.74 req/sec)</strong>, but still in the same ballpark. It’s not a significant improvement. Why? Because we are still using blocking sockets and a single process. Just like before, time.sleep(0.1) in <em>handle_request</em> blocks the entire server from handling other requests while it’s waiting. We are still processing requests sequentially, one after another.</p>
+<p>Building with raw sockets gives us more control and a deeper understanding, but in terms of concurrency and performance, this version is not fundamentally different from http.server. In the next step, we’ll introduce threads to handle multiple requests concurrently and hopefully see a real jump in performance.</p>
+</section>
+<section id="attempt-3---threading-to-the-rescue" class="level2">
+<h2 class="anchored" data-anchor-id="attempt-3---threading-to-the-rescue">Attempt 3 - Threading to the Rescue</h2>
+<p>The single-threaded nature of our previous servers is clearly the bottleneck. To handle multiple requests concurrently, the classic solution is <a href="https://docs.python.org/3/library/threading.html">threading</a>. Let’s see how threading can boost our server’s performance. Here’s the code:</p>
+<div id="cell-16" class="cell">
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>threading/server.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">import</span> socket</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="im">import</span> threading</span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="im">import</span> time</span>
+<span id="cb7-4"><a href="#cb7-4"></a></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="kw">def</span> handle_request(conn, addr):</span>
+<span id="cb7-6"><a href="#cb7-6"></a>    <span class="cf">try</span>:</span>
+<span id="cb7-7"><a href="#cb7-7"></a>        request_data <span class="op">=</span> conn.recv(<span class="dv">1024</span>).decode()</span>
+<span id="cb7-8"><a href="#cb7-8"></a>        <span class="cf">if</span> request_data:</span>
+<span id="cb7-9"><a href="#cb7-9"></a>            <span class="co"># Simulate a database call or some processing</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>            time.sleep(<span class="fl">0.1</span>)  <span class="co"># 100 milliseconds delay</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>            response_html <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a><span class="st">            &lt;html&gt;</span></span>
+<span id="cb7-13"><a href="#cb7-13"></a><span class="st">                &lt;head&gt;</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a><span class="st">                    &lt;title&gt;My Basic Server&lt;/title&gt;</span></span>
+<span id="cb7-15"><a href="#cb7-15"></a><span class="st">                &lt;/head&gt;</span></span>
+<span id="cb7-16"><a href="#cb7-16"></a><span class="st">                &lt;body&gt;</span></span>
+<span id="cb7-17"><a href="#cb7-17"></a><span class="st">                    &lt;h1&gt;Hello from my basic server&lt;/h1&gt;</span></span>
+<span id="cb7-18"><a href="#cb7-18"></a><span class="st">                &lt;/body&gt;</span></span>
+<span id="cb7-19"><a href="#cb7-19"></a><span class="st">            &lt;/html&gt;</span></span>
+<span id="cb7-20"><a href="#cb7-20"></a><span class="st">        """</span></span>
+<span id="cb7-21"><a href="#cb7-21"></a>            response <span class="op">=</span> <span class="st">"HTTP/1.1 200 OK</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb7-22"><a href="#cb7-22"></a>            response <span class="op">+=</span> <span class="st">"Content-Type: text/html</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb7-23"><a href="#cb7-23"></a>            response <span class="op">+=</span> <span class="ss">f"Content-Length: </span><span class="sc">{</span><span class="bu">len</span>(response_html)<span class="sc">}</span><span class="ch">\r\n</span><span class="ss">"</span></span>
+<span id="cb7-24"><a href="#cb7-24"></a>            response <span class="op">+=</span> <span class="st">"</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb7-25"><a href="#cb7-25"></a>            response <span class="op">+=</span> response_html</span>
+<span id="cb7-26"><a href="#cb7-26"></a>            conn.sendall(response.encode())</span>
+<span id="cb7-27"><a href="#cb7-27"></a>        <span class="cf">else</span>:</span>
+<span id="cb7-28"><a href="#cb7-28"></a>            <span class="bu">print</span>(<span class="ss">f"Client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss"> sent no data"</span>)</span>
+<span id="cb7-29"><a href="#cb7-29"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb7-30"><a href="#cb7-30"></a>        <span class="bu">print</span>(<span class="ss">f"Error handling client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-31"><a href="#cb7-31"></a>    <span class="cf">finally</span>:</span>
+<span id="cb7-32"><a href="#cb7-32"></a>        conn.close()</span>
+<span id="cb7-33"><a href="#cb7-33"></a></span>
+<span id="cb7-34"><a href="#cb7-34"></a></span>
+<span id="cb7-35"><a href="#cb7-35"></a><span class="kw">def</span> threaded_server():</span>
+<span id="cb7-36"><a href="#cb7-36"></a>    HOST <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb7-37"><a href="#cb7-37"></a>    PORT <span class="op">=</span> <span class="dv">8000</span></span>
+<span id="cb7-38"><a href="#cb7-38"></a>    <span class="cf">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="im">as</span> s:</span>
+<span id="cb7-39"><a href="#cb7-39"></a>        s.bind((HOST, PORT))</span>
+<span id="cb7-40"><a href="#cb7-40"></a>        s.listen()</span>
+<span id="cb7-41"><a href="#cb7-41"></a>        <span class="bu">print</span>(<span class="ss">f"Listening on port </span><span class="sc">{</span>PORT<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-42"><a href="#cb7-42"></a>        <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb7-43"><a href="#cb7-43"></a>            conn, addr <span class="op">=</span> s.accept()</span>
+<span id="cb7-44"><a href="#cb7-44"></a>            thread <span class="op">=</span> threading.Thread(target<span class="op">=</span>handle_request, args<span class="op">=</span>(conn, addr))</span>
+<span id="cb7-45"><a href="#cb7-45"></a>            thread.start()</span>
+<span id="cb7-46"><a href="#cb7-46"></a></span>
+<span id="cb7-47"><a href="#cb7-47"></a></span>
+<span id="cb7-48"><a href="#cb7-48"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb7-49"><a href="#cb7-49"></a>    threaded_server()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>The core <em>handle_request</em> function remains the same as in <em>sockets/server.py</em>. The key change is in the <code>threaded_server()</code> function. Inside the <strong>while True: loop</strong>, after accepting a connection with <code>conn, addr = s.accept()</code>, instead of directly calling <em>handle_request</em>, we now create a new thread:</p>
+<ul>
+<li><strong>thread = threading.Thread(target=handle_request, args=(conn, addr)).</strong>
+<ul>
+<li>We pass the <em>handle_request</em> function as the target for the thread, and the connection object “conn” and address “addr” as arguments.</li>
+<li>Then, <code>thread.start()</code> starts the new thread, which will execute handle_request concurrently.</li>
+</ul></li>
+</ul>
+<p>This means that <strong>when a new connection comes in, the main thread quickly accepts it and offloads the actual request handling to a separate thread. The main thread then immediately goes back to listening for new connections</strong>. This allows us to handle multiple requests seemingly at the same time.</p>
+<p>Now, let’s benchmark it, and here are the results:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource batch number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a href="#cb8-1"></a>Concurrency Level:      10</span>
+<span id="cb8-2"><a href="#cb8-2"></a>Time taken for tests:   11.085 seconds</span>
+<span id="cb8-3"><a href="#cb8-3"></a>Complete requests:      1000</span>
+<span id="cb8-4"><a href="#cb8-4"></a>Failed requests:        0</span>
+<span id="cb8-5"><a href="#cb8-5"></a>Total transferred:      314000 bytes</span>
+<span id="cb8-6"><a href="#cb8-6"></a>HTML transferred:       249000 bytes</span>
+<span id="cb8-7"><a href="#cb8-7"></a>Requests per second:    90.21 [#/sec] (mean)</span>
+<span id="cb8-8"><a href="#cb8-8"></a>Time per request:       110.852 [ms] (mean)</span>
+<span id="cb8-9"><a href="#cb8-9"></a>Time per request:       11.085 [ms] (mean, across all concurrent requests)</span>
+<span id="cb8-10"><a href="#cb8-10"></a>Transfer rate:          27.66 [Kbytes/sec] received</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Wow! Look at the <strong>Requests per second: 90.21</strong>. That’s a huge jump compared to our previous servers (around 9 req/sec)! Threading has made a massive difference. The time per request has also dropped significantly. This is because now, while one thread is waiting for time.sleep(0.1) to finish, other threads can continue processing other requests concurrently. We are no longer blocking the entire server on a single request.</p>
+<p>Threading is a simple way to achieve concurrency in Python and is very effective for I/O-bound tasks like web servers, where the server spends a lot of time waiting for network operations or, in our case, our simulated database call. However, it’s important to remember that <a href="https://wiki.python.org/moin/GlobalInterpreterLock">Python’s Global Interpreter Lock (GIL)</a> can limit the effectiveness of threads for CPU-bound tasks. Also, there’s overhead associated with creating and managing threads.</p>
+<p>Despite these limitations, for our simple I/O-bound web server, threading provides a dramatic performance improvement. In the next sections, we’ll explore asynchronous I/O using selectors and asyncio to see if we can achieve even better concurrency and efficiency.</p>
+</section>
+<section id="attempt-4---selectors-with-blocking-time-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="attempt-4---selectors-with-blocking-time-simulation">Attempt 4 - Selectors with Blocking Time Simulation</h2>
+<p>Threading significantly improved concurrency, but there’s another approach: asynchronous I/O. Instead of threads, asynchronous I/O allows a single thread to handle multiple connections by using non-blocking sockets and event notifications. Let’s explore this with Python’s selectors module. We’ll start with server_blocking.py, which, despite its name, introduces selectors but still uses a blocking time.sleep to simulate work – this is intentional to highlight the structure of a selector-based server, even with a blocking operation.</p>
+<p>Here’s the code:</p>
+<div id="cell-19" class="cell">
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>selectors/server_blocking.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">import</span> socket</span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="im">import</span> selectors</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="im">import</span> time</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a>selector <span class="op">=</span> selectors.DefaultSelector()</span>
+<span id="cb9-6"><a href="#cb9-6"></a></span>
+<span id="cb9-7"><a href="#cb9-7"></a></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="kw">def</span> send_response(conn, addr, response):</span>
+<span id="cb9-9"><a href="#cb9-9"></a>    <span class="co">"""Send the response when the socket is ready for writing."""</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a>    <span class="cf">try</span>:</span>
+<span id="cb9-11"><a href="#cb9-11"></a>        conn.sendall(response.encode())</span>
+<span id="cb9-12"><a href="#cb9-12"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb9-13"><a href="#cb9-13"></a>        <span class="bu">print</span>(<span class="ss">f"Error sending response to </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-14"><a href="#cb9-14"></a>    <span class="cf">finally</span>:</span>
+<span id="cb9-15"><a href="#cb9-15"></a>        selector.unregister(conn)</span>
+<span id="cb9-16"><a href="#cb9-16"></a>        conn.close()</span>
+<span id="cb9-17"><a href="#cb9-17"></a></span>
+<span id="cb9-18"><a href="#cb9-18"></a></span>
+<span id="cb9-19"><a href="#cb9-19"></a><span class="kw">def</span> handle_request(conn, addr):</span>
+<span id="cb9-20"><a href="#cb9-20"></a>    <span class="cf">try</span>:</span>
+<span id="cb9-21"><a href="#cb9-21"></a>        request_data <span class="op">=</span> conn.recv(<span class="dv">1024</span>).decode()</span>
+<span id="cb9-22"><a href="#cb9-22"></a>        <span class="cf">if</span> request_data:</span>
+<span id="cb9-23"><a href="#cb9-23"></a>            response_html <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb9-24"><a href="#cb9-24"></a><span class="st">            &lt;html&gt;</span></span>
+<span id="cb9-25"><a href="#cb9-25"></a><span class="st">                &lt;head&gt;</span></span>
+<span id="cb9-26"><a href="#cb9-26"></a><span class="st">                    &lt;title&gt;My Basic Server&lt;/title&gt;</span></span>
+<span id="cb9-27"><a href="#cb9-27"></a><span class="st">                &lt;/head&gt;</span></span>
+<span id="cb9-28"><a href="#cb9-28"></a><span class="st">                &lt;body&gt;</span></span>
+<span id="cb9-29"><a href="#cb9-29"></a><span class="st">                    &lt;h1&gt;Hello from my basic server&lt;/h1&gt;</span></span>
+<span id="cb9-30"><a href="#cb9-30"></a><span class="st">                &lt;/body&gt;</span></span>
+<span id="cb9-31"><a href="#cb9-31"></a><span class="st">            &lt;/html&gt;</span></span>
+<span id="cb9-32"><a href="#cb9-32"></a><span class="st">        """</span></span>
+<span id="cb9-33"><a href="#cb9-33"></a>            response <span class="op">=</span> <span class="st">"HTTP/1.1 200 OK</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb9-34"><a href="#cb9-34"></a>            response <span class="op">+=</span> <span class="st">"Content-Type: text/html</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb9-35"><a href="#cb9-35"></a>            response <span class="op">+=</span> <span class="ss">f"Content-Length: </span><span class="sc">{</span><span class="bu">len</span>(response_html)<span class="sc">}</span><span class="ch">\r\n</span><span class="ss">"</span></span>
+<span id="cb9-36"><a href="#cb9-36"></a>            response <span class="op">+=</span> <span class="st">"</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb9-37"><a href="#cb9-37"></a>            response <span class="op">+=</span> response_html</span>
+<span id="cb9-38"><a href="#cb9-38"></a></span>
+<span id="cb9-39"><a href="#cb9-39"></a>            time.sleep(<span class="fl">0.1</span>)  <span class="co"># &lt;-- Ideally, replace this with a non-blocking timer</span></span>
+<span id="cb9-40"><a href="#cb9-40"></a>            selector.modify(</span>
+<span id="cb9-41"><a href="#cb9-41"></a>                conn,</span>
+<span id="cb9-42"><a href="#cb9-42"></a>                selectors.EVENT_WRITE,</span>
+<span id="cb9-43"><a href="#cb9-43"></a>                <span class="kw">lambda</span> conn: send_response(conn, addr, response),</span>
+<span id="cb9-44"><a href="#cb9-44"></a>            )</span>
+<span id="cb9-45"><a href="#cb9-45"></a>        <span class="cf">else</span>:</span>
+<span id="cb9-46"><a href="#cb9-46"></a>            <span class="bu">print</span>(<span class="ss">f"Client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss"> sent no data"</span>)</span>
+<span id="cb9-47"><a href="#cb9-47"></a>            selector.unregister(conn)</span>
+<span id="cb9-48"><a href="#cb9-48"></a>            conn.close()</span>
+<span id="cb9-49"><a href="#cb9-49"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb9-50"><a href="#cb9-50"></a>        <span class="bu">print</span>(<span class="ss">f"Error handling client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-51"><a href="#cb9-51"></a>        selector.unregister(conn)</span>
+<span id="cb9-52"><a href="#cb9-52"></a>        conn.close()</span>
+<span id="cb9-53"><a href="#cb9-53"></a></span>
+<span id="cb9-54"><a href="#cb9-54"></a></span>
+<span id="cb9-55"><a href="#cb9-55"></a><span class="kw">def</span> accept_connection(sock):</span>
+<span id="cb9-56"><a href="#cb9-56"></a>    conn, addr <span class="op">=</span> sock.accept()</span>
+<span id="cb9-57"><a href="#cb9-57"></a>    conn.setblocking(<span class="va">False</span>)  <span class="co"># Set the connection to non-blocking</span></span>
+<span id="cb9-58"><a href="#cb9-58"></a>    selector.register(</span>
+<span id="cb9-59"><a href="#cb9-59"></a>        conn, selectors.EVENT_READ, <span class="kw">lambda</span> conn: handle_request(conn, addr)</span>
+<span id="cb9-60"><a href="#cb9-60"></a>    )</span>
+<span id="cb9-61"><a href="#cb9-61"></a></span>
+<span id="cb9-62"><a href="#cb9-62"></a></span>
+<span id="cb9-63"><a href="#cb9-63"></a><span class="kw">def</span> asynchronous_server():</span>
+<span id="cb9-64"><a href="#cb9-64"></a>    HOST <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb9-65"><a href="#cb9-65"></a>    PORT <span class="op">=</span> <span class="dv">8000</span></span>
+<span id="cb9-66"><a href="#cb9-66"></a>    <span class="cf">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="im">as</span> sock:</span>
+<span id="cb9-67"><a href="#cb9-67"></a>        sock.bind((HOST, PORT))</span>
+<span id="cb9-68"><a href="#cb9-68"></a>        sock.listen()</span>
+<span id="cb9-69"><a href="#cb9-69"></a>        sock.setblocking(<span class="va">False</span>)  <span class="co"># Set the main socket to non-blocking</span></span>
+<span id="cb9-70"><a href="#cb9-70"></a></span>
+<span id="cb9-71"><a href="#cb9-71"></a>        selector.register(sock, selectors.EVENT_READ, accept_connection)</span>
+<span id="cb9-72"><a href="#cb9-72"></a></span>
+<span id="cb9-73"><a href="#cb9-73"></a>        <span class="bu">print</span>(<span class="ss">f"Listening on port </span><span class="sc">{</span>PORT<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-74"><a href="#cb9-74"></a></span>
+<span id="cb9-75"><a href="#cb9-75"></a>        <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb9-76"><a href="#cb9-76"></a>            events <span class="op">=</span> selector.select()  <span class="co"># This function returns all the events</span></span>
+<span id="cb9-77"><a href="#cb9-77"></a>            <span class="cf">for</span> key, _ <span class="kw">in</span> events:</span>
+<span id="cb9-78"><a href="#cb9-78"></a>                callback <span class="op">=</span> key.data  <span class="co"># This is the function we registered earlier</span></span>
+<span id="cb9-79"><a href="#cb9-79"></a>                callback(key.fileobj)  <span class="co"># Execute callback with the socket</span></span>
+<span id="cb9-80"><a href="#cb9-80"></a></span>
+<span id="cb9-81"><a href="#cb9-81"></a></span>
+<span id="cb9-82"><a href="#cb9-82"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb9-83"><a href="#cb9-83"></a>    asynchronous_server()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>This code introduces several new concepts. Let’s unpack them before moving forward.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Unpack Selectors — High-level I/O multiplexing">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Unpack Selectors — High-level I/O multiplexing
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<section id="what-are-selectors-and-why-do-we-need-them" class="level4">
+<h4 class="anchored" data-anchor-id="what-are-selectors-and-why-do-we-need-them">What Are Selectors and Why Do We Need Them?</h4>
+<p><a href="https://docs.python.org/3/library/selectors.html">Selectors</a> are a way to efficiently manage <strong>multiple sockets</strong> at the same time <strong>without blocking</strong> the program. Instead of waiting for one socket to send or receive data before moving to the next, a <strong>selector watches multiple sockets at once</strong> and tells the program when each socket is ready. This makes it possible to handle thousands of connections <strong>in a single thread</strong>, saving system resources and improving performance.</p>
+<p>We need selectors because <strong>traditional blocking sockets</strong> make the server wait for each client one at a time, which is slow. Instead of creating a separate thread for each connection (which is expensive), selectors allow us to handle all connections efficiently in an <strong>event-driven</strong> manner.</p>
+</section>
+<section id="how-are-selectors-different-from-sockets" class="level4">
+<h4 class="anchored" data-anchor-id="how-are-selectors-different-from-sockets">How Are Selectors Different from Sockets?</h4>
+<p>A <strong>socket</strong> is just an endpoint for sending and receiving data over a network, like a phone line for communication. Normally, a server listens for connections and then handles each socket <strong>one at a time</strong> (blocking) or spawns a thread for each socket (multi-threading).</p>
+<p>Imagine a basic blocking server that handles one client at a time.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>conn, addr <span class="op">=</span> sock.accept()  <span class="co"># Blocks until a connection is received</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>data <span class="op">=</span> conn.recv(<span class="dv">1024</span>)  <span class="co"># Blocks until data is received</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>conn.sendall(response)  <span class="co"># Blocks until data is sent</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>conn.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Each step blocks the execution, meaning the server can’t handle other clients until the current one is fully processed. This becomes a huge bottleneck!</p>
+<p>A <strong>selector</strong>, on the other hand, is a tool that <strong>monitors multiple sockets at once</strong>. Instead of blocking or creating threads, it checks all registered sockets and only acts on the ones that are ready. Selectors provide a non-blocking, event-driven approach. Instead of waiting for each client, the server registers multiple sockets with a selector and processes them only when they are ready. This makes it much more efficient, especially when dealing with a large number of clients.</p>
+<p>Think of it like this:</p>
+<ul>
+<li><strong>Basic sockets</strong>: You call each person on the phone one by one.</li>
+<li><strong>Sockets + threads</strong>: You hire an assistant for each phone call.</li>
+<li><strong>Selectors</strong>: You put all calls on hold and switch between them only when they need attention.</li>
+</ul>
+</section>
+<section id="how-do-selectors-compare-with-sockets-threads" class="level4">
+<h4 class="anchored" data-anchor-id="how-do-selectors-compare-with-sockets-threads">How Do Selectors Compare with Sockets + Threads?</h4>
+<p>Using <strong>sockets with threads</strong>, the server creates a new thread for each client connection. This works well for a <strong>small</strong> number of clients, but as the number grows, <strong>CPU and memory usage skyrocket</strong> due to context switching and thread management. If thousands of clients connect, the system <strong>slows down or crashes</strong> because threads take too much memory.</p>
+<p>Selectors solve this by <strong>handling all connections in a single thread</strong>. Instead of creating a new thread per client, it waits for <strong>any socket</strong> to be ready and processes it immediately. This allows a single-threaded server to <strong>handle tens of thousands of connections efficiently</strong>, using far less memory and CPU.</p>
+<p><strong>For Comparison</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 28%">
+<col style="width: 26%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Sockets (Blocking)</th>
+<th>Sockets + Threads</th>
+<th>Selectors</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Concurrency</strong></td>
+<td>Low (one at a time)</td>
+<td>Medium (one thread per client)</td>
+<td>High (handles many clients in one thread)</td>
+</tr>
+<tr class="even">
+<td><strong>CPU Usage</strong></td>
+<td>Low (but slow)</td>
+<td>High (many threads)</td>
+<td>Low (single-threaded, event-driven)</td>
+</tr>
+<tr class="odd">
+<td><strong>Memory Usage</strong></td>
+<td>Low</td>
+<td>High (each thread takes memory)</td>
+<td>Very Low</td>
+</tr>
+<tr class="even">
+<td><strong>Scalability</strong></td>
+<td>Poor</td>
+<td>Medium (limited by threads)</td>
+<td>Excellent (handles thousands of clients)</td>
+</tr>
+<tr class="odd">
+<td><strong>Use Case</strong></td>
+<td>Small servers</td>
+<td>Moderate workload</td>
+<td>High-performance servers (e.g., Nginx, chat apps)</td>
+</tr>
+</tbody>
+</table>
+</section>
+</div>
+</div>
+</div>
+<p>After unpacking Selectors and their importance, let’s move back to our code again.</p>
+<ul>
+<li><p>First, we import selectors and create a selector object using <code>selectors.DefaultSelector()</code>.</p>
+<ul>
+<li>What is <code>selectors.DefaultSelector()</code>? It provides a high-level abstraction for <strong>I/O multiplexing</strong>, meaning it allows monitoring multiple sockets (or file descriptors) for events like:
+<ul>
+<li><strong>Read readiness</strong> (<code>EVENT_READ</code>) → Data is available to read</li>
+<li><strong>Write readiness</strong> (<code>EVENT_WRITE</code>) → The socket is ready to send data</li>
+</ul></li>
+<li><code>selectors.DefaultSelector()</code> automatically picks the best available <strong>system-dependent</strong> selector mechanism. This ensures optimal performance depending on the operating system:</li>
+<li><table class="caption-top table">
+<thead>
+<tr class="header">
+<th>OS</th>
+<th>Selector Used</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Windows</td>
+<td><code>SelectSelector</code> (based on <code>select()</code>)</td>
+</tr>
+<tr class="even">
+<td>Linux</td>
+<td><code>EpollSelector</code> (based on <code>epoll()</code>)</td>
+</tr>
+<tr class="odd">
+<td>macOS</td>
+<td><code>KqueueSelector</code> (based on <code>kqueue()</code>)</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p>In <code>asynchronous_server()</code>, we create a socket, bind, and listen, just like before. Crucially, we set both the listening socket (<strong>sock.setblocking(False)</strong>) and the connection socket (<strong>conn.setblocking(False)</strong> in accept_connection()) to <strong>non-blocking mode</strong>. This means that operations like <code>sock.accept()</code> and <code>conn.recv()</code> will return immediately, even if there’s no data or connection ready.</p></li>
+<li><p>We register the listening socket with the selector: <code>selector.register(sock, selectors.EVENT_READ, accept_connection)</code>. This tells the selector to monitor sock for read events (new connections) and call the <code>accept_connection</code> function when a connection is ready. Similarly, in accept_connection, we register each new connection socket (<code>conn</code>) with the selector to monitor for <code>EVENT_READ</code> and call handle_request when data is ready to be read from that connection.</p></li>
+<li><p><strong>The while True</strong>: loop in <em>asynchronous_server</em> is the <strong>event loop</strong>.</p>
+<ul>
+<li><code>events = selector.select()</code> waits (but importantly, not blocking the entire thread) until one or more registered sockets are ready.</li>
+<li>It returns a list of events. For each event, callback = key.data retrieves the callback function we registered (e.g., accept_connection or handle_request), and callback(key.fileobj) executes that function, passing the socket object as an argument.</li>
+</ul></li>
+<li><p>Now, look at handle_request. After receiving the request and preparing the response, we still have <code>time.sleep(0.1)</code>. And then, instead of sending the response directly, we register the connection conn with the selector for <code>EVENT_WRITE</code> and associate it with the send_response callback: <code>selector.modify(...)</code>. The intention here was to send the response when the socket is ready for writing… however, because of time.sleep(0.1) being before selector.modify, we are still blocking during the sleep.</p></li>
+</ul>
+<p>Let’s benchmark it. The results are:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1"></a><span class="ex">Concurrency</span> Level:      10</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="ex">Time</span> taken for tests:   100.484 seconds</span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="ex">Complete</span> requests:      1000</span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="ex">Failed</span> requests:        0</span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="ex">Total</span> transferred:      314000 bytes</span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="ex">HTML</span> transferred:       249000 bytes</span>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="ex">Requests</span> per second:    9.95 <span class="pp">[</span><span class="ss">#/sec</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean</span><span class="kw">)</span></span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="ex">Time</span> per request:       1004.840 <span class="pp">[</span><span class="ss">ms</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean</span><span class="kw">)</span></span>
+<span id="cb11-9"><a href="#cb11-9"></a><span class="ex">Time</span> per request:       100.484 <span class="pp">[</span><span class="ss">ms</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean,</span> across all concurrent requests<span class="kw">)</span></span>
+<span id="cb11-10"><a href="#cb11-10"></a><span class="ex">Transfer</span> rate:          3.05 <span class="pp">[</span><span class="ss">Kbytes/sec</span><span class="pp">]</span> received</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <strong>Requests per second: 9.95</strong> is similar to our raw sockets server, and even slightly worse than threaded server. This is not surprising. Even though we’ve introduced selectors and non-blocking sockets, <strong>the time.sleep(0.1) in handle_request is still blocking the event loop</strong>. While selector.select() itself is non-blocking and efficient for handling multiple connections, our simulated work is still synchronous and serializing request processing.</p>
+<p>This <code>selectors/server_blocking.py</code> example, as written, doesn’t give us the performance benefits of asynchronous I/O because of the blocking time.sleep. However, it’s a crucial stepping stone. It demonstrates the structure of a selector-based event loop, registering sockets and callbacks. In the next iteration, we’ll try to replace the blocking time.sleep with a truly non-blocking delay mechanism to unlock the real power of asynchronous I/O with selectors.</p>
+</section>
+<section id="attempt-5---selectors-with-non-blocking-timer-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="attempt-5---selectors-with-non-blocking-timer-simulation">Attempt 5 - Selectors with Non-Blocking Timer Simulation</h2>
+<p>In the previous section, we saw the structure of a selector-based server, but the blocking <em>time.sleep</em> negated any performance gains. To truly leverage asynchronous I/O, we need to replace that blocking delay with a non-blocking mechanism. In this attempt, I’ve used <code>threading.Timer</code> to simulate a non-blocking delay in conjunction with selectors. It’s still not pure asynchronous I/O in the ideal sense, as threading.Timer uses threads behind the scenes, but it’s a step closer and demonstrates the concept.</p>
+<p>Here’s the code:</p>
+<div id="cell-22" class="cell">
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>selectors/server_nonblocking.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="im">import</span> socket</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="im">import</span> selectors</span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="im">import</span> threading</span>
+<span id="cb12-4"><a href="#cb12-4"></a></span>
+<span id="cb12-5"><a href="#cb12-5"></a>selector <span class="op">=</span> selectors.DefaultSelector()</span>
+<span id="cb12-6"><a href="#cb12-6"></a></span>
+<span id="cb12-7"><a href="#cb12-7"></a></span>
+<span id="cb12-8"><a href="#cb12-8"></a><span class="kw">def</span> send_response(conn, addr, response):</span>
+<span id="cb12-9"><a href="#cb12-9"></a>    <span class="co">"""Send the response when the timer expires."""</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a>    <span class="cf">try</span>:</span>
+<span id="cb12-11"><a href="#cb12-11"></a>        conn.sendall(response.encode())</span>
+<span id="cb12-12"><a href="#cb12-12"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb12-13"><a href="#cb12-13"></a>        <span class="bu">print</span>(<span class="ss">f"Error sending response to </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-14"><a href="#cb12-14"></a>    <span class="cf">finally</span>:</span>
+<span id="cb12-15"><a href="#cb12-15"></a>        selector.unregister(conn)</span>
+<span id="cb12-16"><a href="#cb12-16"></a>        conn.close()</span>
+<span id="cb12-17"><a href="#cb12-17"></a></span>
+<span id="cb12-18"><a href="#cb12-18"></a></span>
+<span id="cb12-19"><a href="#cb12-19"></a><span class="kw">def</span> handle_request(conn, addr):</span>
+<span id="cb12-20"><a href="#cb12-20"></a>    <span class="cf">try</span>:</span>
+<span id="cb12-21"><a href="#cb12-21"></a>        request_data <span class="op">=</span> conn.recv(<span class="dv">1024</span>).decode()</span>
+<span id="cb12-22"><a href="#cb12-22"></a>        <span class="cf">if</span> request_data:</span>
+<span id="cb12-23"><a href="#cb12-23"></a>            response_html <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="st">            &lt;html&gt;</span></span>
+<span id="cb12-25"><a href="#cb12-25"></a><span class="st">                &lt;head&gt;</span></span>
+<span id="cb12-26"><a href="#cb12-26"></a><span class="st">                    &lt;title&gt;My Basic Server&lt;/title&gt;</span></span>
+<span id="cb12-27"><a href="#cb12-27"></a><span class="st">                &lt;/head&gt;</span></span>
+<span id="cb12-28"><a href="#cb12-28"></a><span class="st">                &lt;body&gt;</span></span>
+<span id="cb12-29"><a href="#cb12-29"></a><span class="st">                    &lt;h1&gt;Hello from my basic server&lt;/h1&gt;</span></span>
+<span id="cb12-30"><a href="#cb12-30"></a><span class="st">                &lt;/body&gt;</span></span>
+<span id="cb12-31"><a href="#cb12-31"></a><span class="st">            &lt;/html&gt;</span></span>
+<span id="cb12-32"><a href="#cb12-32"></a><span class="st">        """</span></span>
+<span id="cb12-33"><a href="#cb12-33"></a>            response <span class="op">=</span> <span class="st">"HTTP/1.1 200 OK</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb12-34"><a href="#cb12-34"></a>            response <span class="op">+=</span> <span class="st">"Content-Type: text/html</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb12-35"><a href="#cb12-35"></a>            response <span class="op">+=</span> <span class="ss">f"Content-Length: </span><span class="sc">{</span><span class="bu">len</span>(response_html)<span class="sc">}</span><span class="ch">\r\n</span><span class="ss">"</span></span>
+<span id="cb12-36"><a href="#cb12-36"></a>            response <span class="op">+=</span> <span class="st">"</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb12-37"><a href="#cb12-37"></a>            response <span class="op">+=</span> response_html</span>
+<span id="cb12-38"><a href="#cb12-38"></a></span>
+<span id="cb12-39"><a href="#cb12-39"></a>            <span class="co"># Use threading.Timer to call send_response after a delay</span></span>
+<span id="cb12-40"><a href="#cb12-40"></a>            timer <span class="op">=</span> threading.Timer(<span class="fl">0.1</span>, send_response, args<span class="op">=</span>(conn, addr, response))</span>
+<span id="cb12-41"><a href="#cb12-41"></a>            timer.start()</span>
+<span id="cb12-42"><a href="#cb12-42"></a></span>
+<span id="cb12-43"><a href="#cb12-43"></a>        <span class="cf">else</span>:</span>
+<span id="cb12-44"><a href="#cb12-44"></a>            <span class="bu">print</span>(<span class="ss">f"Client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss"> sent no data"</span>)</span>
+<span id="cb12-45"><a href="#cb12-45"></a>            selector.unregister(conn)</span>
+<span id="cb12-46"><a href="#cb12-46"></a>            conn.close()</span>
+<span id="cb12-47"><a href="#cb12-47"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb12-48"><a href="#cb12-48"></a>        <span class="bu">print</span>(<span class="ss">f"Error handling client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-49"><a href="#cb12-49"></a>        selector.unregister(conn)</span>
+<span id="cb12-50"><a href="#cb12-50"></a>        conn.close()</span>
+<span id="cb12-51"><a href="#cb12-51"></a></span>
+<span id="cb12-52"><a href="#cb12-52"></a></span>
+<span id="cb12-53"><a href="#cb12-53"></a><span class="kw">def</span> accept_connection(sock):</span>
+<span id="cb12-54"><a href="#cb12-54"></a>    conn, addr <span class="op">=</span> sock.accept()</span>
+<span id="cb12-55"><a href="#cb12-55"></a>    conn.setblocking(<span class="va">False</span>)  <span class="co"># Set the connection to non-blocking</span></span>
+<span id="cb12-56"><a href="#cb12-56"></a>    selector.register(</span>
+<span id="cb12-57"><a href="#cb12-57"></a>        conn, selectors.EVENT_READ, <span class="kw">lambda</span> conn: handle_request(conn, addr)</span>
+<span id="cb12-58"><a href="#cb12-58"></a>    )</span>
+<span id="cb12-59"><a href="#cb12-59"></a></span>
+<span id="cb12-60"><a href="#cb12-60"></a></span>
+<span id="cb12-61"><a href="#cb12-61"></a><span class="kw">def</span> asynchronous_server():</span>
+<span id="cb12-62"><a href="#cb12-62"></a>    HOST <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb12-63"><a href="#cb12-63"></a>    PORT <span class="op">=</span> <span class="dv">8000</span></span>
+<span id="cb12-64"><a href="#cb12-64"></a>    <span class="cf">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="im">as</span> sock:</span>
+<span id="cb12-65"><a href="#cb12-65"></a>        sock.bind((HOST, PORT))</span>
+<span id="cb12-66"><a href="#cb12-66"></a>        sock.listen()</span>
+<span id="cb12-67"><a href="#cb12-67"></a>        sock.setblocking(<span class="va">False</span>)  <span class="co"># Set the main socket to non-blocking</span></span>
+<span id="cb12-68"><a href="#cb12-68"></a></span>
+<span id="cb12-69"><a href="#cb12-69"></a>        selector.register(sock, selectors.EVENT_READ, accept_connection)</span>
+<span id="cb12-70"><a href="#cb12-70"></a></span>
+<span id="cb12-71"><a href="#cb12-71"></a>        <span class="bu">print</span>(<span class="ss">f"Listening on port </span><span class="sc">{</span>PORT<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-72"><a href="#cb12-72"></a></span>
+<span id="cb12-73"><a href="#cb12-73"></a>        <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb12-74"><a href="#cb12-74"></a>            events <span class="op">=</span> selector.select()  <span class="co"># This function returns all the events</span></span>
+<span id="cb12-75"><a href="#cb12-75"></a>            <span class="cf">for</span> key, _ <span class="kw">in</span> events:</span>
+<span id="cb12-76"><a href="#cb12-76"></a>                callback <span class="op">=</span> key.data  <span class="co"># This is the function we registered earlier</span></span>
+<span id="cb12-77"><a href="#cb12-77"></a>                callback(key.fileobj)  <span class="co"># Execute callback with the socket</span></span>
+<span id="cb12-78"><a href="#cb12-78"></a></span>
+<span id="cb12-79"><a href="#cb12-79"></a></span>
+<span id="cb12-80"><a href="#cb12-80"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb12-81"><a href="#cb12-81"></a>    asynchronous_server()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>The <em>accept_connection</em> and <em>asynchronous_server</em> functions are the same as in <code>server_blocking.py</code>. The key change is again in <em>handle_request</em>. Instead of <code>time.sleep(0.1)</code> and then registering for <code>EVENT_WRITE</code>, we now use <a href="https://docs.python.org/3/library/threading.html#threading.Timer"><strong>threading.Timer</strong></a>:</p>
+<div class="callout callout-style-default callout-note callout-titled" title="What is threading.Timer?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What is threading.Timer?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p><code>threading.Timer</code> is part of Python’s threading module and it allows you to run a function after a specified delay. It works in the following way:</p>
+<ul>
+<li>Delay: You give it a time delay in seconds.</li>
+<li>Function: You specify the function that should be executed when the time delay is over.</li>
+<li>Arguments: You can pass arguments to that function.</li>
+</ul>
+<p>This creates a new thread that waits for the specified delay and then runs the given function. It’s important to note that this is happening in the background, so the rest of the code can keep running.</p>
+<p><code>timer.start()</code> line starts the timer. Without calling <code>start()</code>, the timer won’t actually run. The timer runs in the background, which means it doesn’t block the main code from executing. The rest of the program continues to run while waiting for the timer to expire. Once the timer expires, the given function is called automatically, and the response is sent back to the client.</p>
+</div>
+</div>
+</div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>timer <span class="op">=</span> threading.Timer(<span class="fl">0.1</span>, send_response, args<span class="op">=</span>(conn, addr, response))</span>
+<span id="cb13-2"><a href="#cb13-2"></a>timer.start()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This creates a Timer that will call <code>send_response(conn, addr, response)</code> after 0.1 seconds, but importantly, it does this in a separate thread. The handle_request function itself returns immediately after starting the timer. This means the main event loop in <code>asynchronous_server()</code> is no longer blocked during the simulated delay. It can continue to process other events, like handling new connections or reading data from other sockets.</p>
+<p>Let’s benchmark it.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1"></a><span class="ex">Concurrency</span> Level:      10</span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="ex">Time</span> taken for tests:   11.073 seconds</span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="ex">Complete</span> requests:      1000</span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="ex">Failed</span> requests:        0</span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="ex">Total</span> transferred:      314000 bytes</span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="ex">HTML</span> transferred:       249000 bytes</span>
+<span id="cb14-7"><a href="#cb14-7"></a><span class="ex">Requests</span> per second:    90.31 <span class="pp">[</span><span class="ss">#/sec</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean</span><span class="kw">)</span></span>
+<span id="cb14-8"><a href="#cb14-8"></a><span class="ex">Time</span> per request:       110.731 <span class="pp">[</span><span class="ss">ms</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean</span><span class="kw">)</span></span>
+<span id="cb14-9"><a href="#cb14-9"></a><span class="ex">Time</span> per request:       11.073 <span class="pp">[</span><span class="ss">ms</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean,</span> across all concurrent requests<span class="kw">)</span></span>
+<span id="cb14-10"><a href="#cb14-10"></a><span class="ex">Transfer</span> rate:          27.69 <span class="pp">[</span><span class="ss">Kbytes/sec</span><span class="pp">]</span> received</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <strong>Requests per second: 90.31</strong> is very similar to our threaded server (90.21 req/sec)! This is a significant improvement over the blocking selector version and the basic socket servers. By using <strong>threading.Timer</strong>, we’ve effectively offloaded the delay to a separate thread, allowing the main selector event loop to remain non-blocked and handle other connections concurrently.</p>
+<p>While this approach works and shows improved concurrency, it’s crucial to understand that it’s still a hybrid approach, not pure asynchronous I/O. We’re using threads (via threading.Timer) to achieve non-blocking behavior. True asynchronous I/O aims to avoid threads altogether for concurrency, relying solely on event loops and non-blocking operations within a single thread.</p>
+<p>In the next and final step, we’ll explore asyncio, Python’s built-in library for true asynchronous programming, to see how we can achieve non-blocking I/O and concurrency in a more elegant and efficient way, without relying on threads for the simulated delay.</p>
+</section>
+<section id="attempt-6---asyncio-true-non-blocking-io" class="level2">
+<h2 class="anchored" data-anchor-id="attempt-6---asyncio-true-non-blocking-io">Attempt 6 - asyncio True Non-Blocking I/O</h2>
+<p>Finally, we arrive at <a href="https://docs.python.org/3/library/asyncio.html">asyncio</a>, Python’s built-in library for asynchronous programming. asyncio provides a framework for writing single-threaded concurrent code using coroutines, allowing for true non-blocking I/O without the complexities of threads for concurrency in I/O-bound operations. Let’s examine the code.</p>
+<div id="cell-25" class="cell">
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>asyncio/server.py</strong></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> asyncio</span>
+<span id="cb15-2"><a href="#cb15-2"></a></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="cf">async</span> <span class="kw">def</span> send_response(writer, response):</span>
+<span id="cb15-4"><a href="#cb15-4"></a>    <span class="co">"""Send the response when the timer expires."""</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a>    <span class="cf">try</span>:</span>
+<span id="cb15-6"><a href="#cb15-6"></a>        writer.write(response.encode())</span>
+<span id="cb15-7"><a href="#cb15-7"></a>        <span class="cf">await</span> writer.drain()  <span class="co"># Ensure data is sent</span></span>
+<span id="cb15-8"><a href="#cb15-8"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb15-9"><a href="#cb15-9"></a>        <span class="bu">print</span>(<span class="ss">f"Error sending response: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-10"><a href="#cb15-10"></a>    <span class="cf">finally</span>:</span>
+<span id="cb15-11"><a href="#cb15-11"></a>        writer.close()</span>
+<span id="cb15-12"><a href="#cb15-12"></a>        <span class="cf">await</span> writer.wait_closed()  <span class="co"># Wait for the writer to close</span></span>
+<span id="cb15-13"><a href="#cb15-13"></a></span>
+<span id="cb15-14"><a href="#cb15-14"></a></span>
+<span id="cb15-15"><a href="#cb15-15"></a><span class="cf">async</span> <span class="kw">def</span> handle_request(reader, writer):</span>
+<span id="cb15-16"><a href="#cb15-16"></a>    addr <span class="op">=</span> writer.get_extra_info(<span class="st">"peername"</span>)</span>
+<span id="cb15-17"><a href="#cb15-17"></a>    <span class="cf">try</span>:</span>
+<span id="cb15-18"><a href="#cb15-18"></a>        request_data <span class="op">=</span> <span class="cf">await</span> reader.read(<span class="dv">1024</span>)  <span class="co"># Asynchronously read data</span></span>
+<span id="cb15-19"><a href="#cb15-19"></a>        request_data <span class="op">=</span> request_data.decode()</span>
+<span id="cb15-20"><a href="#cb15-20"></a></span>
+<span id="cb15-21"><a href="#cb15-21"></a>        <span class="cf">if</span> request_data:</span>
+<span id="cb15-22"><a href="#cb15-22"></a>            response_html <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb15-23"><a href="#cb15-23"></a><span class="st">            &lt;html&gt;</span></span>
+<span id="cb15-24"><a href="#cb15-24"></a><span class="st">                &lt;head&gt;</span></span>
+<span id="cb15-25"><a href="#cb15-25"></a><span class="st">                    &lt;title&gt;My Basic Server&lt;/title&gt;</span></span>
+<span id="cb15-26"><a href="#cb15-26"></a><span class="st">                &lt;/head&gt;</span></span>
+<span id="cb15-27"><a href="#cb15-27"></a><span class="st">                &lt;body&gt;</span></span>
+<span id="cb15-28"><a href="#cb15-28"></a><span class="st">                    &lt;h1&gt;Hello from my basic server&lt;/h1&gt;</span></span>
+<span id="cb15-29"><a href="#cb15-29"></a><span class="st">                &lt;/body&gt;</span></span>
+<span id="cb15-30"><a href="#cb15-30"></a><span class="st">            &lt;/html&gt;</span></span>
+<span id="cb15-31"><a href="#cb15-31"></a><span class="st">        """</span></span>
+<span id="cb15-32"><a href="#cb15-32"></a>            response <span class="op">=</span> <span class="st">"HTTP/1.1 200 OK</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb15-33"><a href="#cb15-33"></a>            response <span class="op">+=</span> <span class="st">"Content-Type: text/html</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb15-34"><a href="#cb15-34"></a>            response <span class="op">+=</span> <span class="ss">f"Content-Length: </span><span class="sc">{</span><span class="bu">len</span>(response_html)<span class="sc">}</span><span class="ch">\r\n</span><span class="ss">"</span></span>
+<span id="cb15-35"><a href="#cb15-35"></a>            response <span class="op">+=</span> <span class="st">"</span><span class="ch">\r\n</span><span class="st">"</span></span>
+<span id="cb15-36"><a href="#cb15-36"></a>            response <span class="op">+=</span> response_html</span>
+<span id="cb15-37"><a href="#cb15-37"></a></span>
+<span id="cb15-38"><a href="#cb15-38"></a>            <span class="co"># Use asyncio.sleep for non-blocking delay</span></span>
+<span id="cb15-39"><a href="#cb15-39"></a>            <span class="cf">await</span> asyncio.sleep(<span class="fl">0.1</span>)</span>
+<span id="cb15-40"><a href="#cb15-40"></a>            asyncio.create_task(</span>
+<span id="cb15-41"><a href="#cb15-41"></a>                send_response(writer, response)</span>
+<span id="cb15-42"><a href="#cb15-42"></a>            )  <span class="co"># Create a task to send response asynchronously</span></span>
+<span id="cb15-43"><a href="#cb15-43"></a></span>
+<span id="cb15-44"><a href="#cb15-44"></a>        <span class="cf">else</span>:</span>
+<span id="cb15-45"><a href="#cb15-45"></a>            <span class="bu">print</span>(<span class="ss">f"Client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss"> sent no data"</span>)</span>
+<span id="cb15-46"><a href="#cb15-46"></a>            writer.close()</span>
+<span id="cb15-47"><a href="#cb15-47"></a>            <span class="cf">await</span> writer.wait_closed()</span>
+<span id="cb15-48"><a href="#cb15-48"></a></span>
+<span id="cb15-49"><a href="#cb15-49"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb15-50"><a href="#cb15-50"></a>        <span class="bu">print</span>(<span class="ss">f"Error handling client </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-51"><a href="#cb15-51"></a>        writer.close()</span>
+<span id="cb15-52"><a href="#cb15-52"></a>        <span class="cf">await</span> writer.wait_closed()</span>
+<span id="cb15-53"><a href="#cb15-53"></a></span>
+<span id="cb15-54"><a href="#cb15-54"></a></span>
+<span id="cb15-55"><a href="#cb15-55"></a><span class="cf">async</span> <span class="kw">def</span> main():</span>
+<span id="cb15-56"><a href="#cb15-56"></a>    HOST <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb15-57"><a href="#cb15-57"></a>    PORT <span class="op">=</span> <span class="dv">8000</span></span>
+<span id="cb15-58"><a href="#cb15-58"></a></span>
+<span id="cb15-59"><a href="#cb15-59"></a>    <span class="cf">async</span> <span class="kw">def</span> accept_connection(reader, writer):</span>
+<span id="cb15-60"><a href="#cb15-60"></a>        <span class="cf">await</span> handle_request(reader, writer)</span>
+<span id="cb15-61"><a href="#cb15-61"></a></span>
+<span id="cb15-62"><a href="#cb15-62"></a>    server <span class="op">=</span> <span class="cf">await</span> asyncio.start_server(accept_connection, HOST, PORT)</span>
+<span id="cb15-63"><a href="#cb15-63"></a>    addr <span class="op">=</span> server.sockets[<span class="dv">0</span>].getsockname()</span>
+<span id="cb15-64"><a href="#cb15-64"></a>    <span class="bu">print</span>(<span class="ss">f"Serving on </span><span class="sc">{</span>addr<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-65"><a href="#cb15-65"></a></span>
+<span id="cb15-66"><a href="#cb15-66"></a>    <span class="cf">async</span> <span class="cf">with</span> server:</span>
+<span id="cb15-67"><a href="#cb15-67"></a>        <span class="cf">await</span> server.serve_forever()</span>
+<span id="cb15-68"><a href="#cb15-68"></a></span>
+<span id="cb15-69"><a href="#cb15-69"></a></span>
+<span id="cb15-70"><a href="#cb15-70"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb15-71"><a href="#cb15-71"></a>    asyncio.run(main())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>This code looks quite different from the previous versions, leveraging async and await keywords. The send_response and handle_request functions are now defined as async def, making them coroutines (??). asyncio.start_server(accept_connection, HOST, PORT) starts the asynchronous server.</p>
+<p>Inside handle_request, reader and writer are asyncio.StreamReader and asyncio.StreamWriter objects, providing asynchronous read and write operations. request_data = await reader.read(1024) asynchronously reads data from the client. The await keyword is crucial here. It’s where the magic of non-blocking I/O happens. When await reader.read(1024) is encountered, the handle_request coroutine pauses execution, yielding control back to the asyncio event loop. The event loop can then proceed to handle other tasks, like processing other connections. When data is available to be read on this connection, the event loop will resume the handle_request coroutine right after the await line. This is true non-blocking I/O within a single thread.</p>
+<p>Similarly, await asyncio.sleep(0.1) provides a non-blocking delay. Instead of pausing the entire thread, it pauses only the current coroutine, allowing the event loop to continue processing other tasks.</p>
+<p>asyncio.create_task(send_response(writer, response)) creates an asyncio.Task to run send_response concurrently. This means that sending the response happens in the background, without blocking the handle_request coroutine from processing further requests (though in our simple example, handle_request is essentially done after this).</p>
+<p>The main() function sets up the server and starts the asyncio event loop using asyncio.run(main()).</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1"></a><span class="ex">Concurrency</span> Level:      10</span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="ex">Time</span> taken for tests:   12.061 seconds</span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="ex">Complete</span> requests:      1000</span>
+<span id="cb16-4"><a href="#cb16-4"></a><span class="ex">Failed</span> requests:        0</span>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="ex">Total</span> transferred:      314000 bytes</span>
+<span id="cb16-6"><a href="#cb16-6"></a><span class="ex">HTML</span> transferred:       249000 bytes</span>
+<span id="cb16-7"><a href="#cb16-7"></a><span class="ex">Requests</span> per second:    82.91 <span class="pp">[</span><span class="ss">#/sec</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean</span><span class="kw">)</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a><span class="ex">Time</span> per request:       120.612 <span class="pp">[</span><span class="ss">ms</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean</span><span class="kw">)</span></span>
+<span id="cb16-9"><a href="#cb16-9"></a><span class="ex">Time</span> per request:       12.061 <span class="pp">[</span><span class="ss">ms</span><span class="pp">]</span> <span class="er">(</span><span class="ex">mean,</span> across all concurrent requests<span class="kw">)</span></span>
+<span id="cb16-10"><a href="#cb16-10"></a><span class="ex">Transfer</span> rate:          25.42 <span class="pp">[</span><span class="ss">Kbytes/sec</span><span class="pp">]</span> received</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The Requests per second: 82.91 is slightly lower than the threaded and timer-selector versions in this particular benchmark run, but still significantly better than the initial blocking servers. In many scenarios, asyncio can outperform threading for I/O-bound tasks due to lower overhead and more efficient concurrency management. However, the exact performance can vary depending on the workload and specific system conditions.</p>
+<p>asyncio represents a more modern and efficient approach to concurrency for I/O-intensive applications in Python. It allows us to write highly concurrent code within a single thread, avoiding many of the complexities and overheads associated with threads. It’s the foundation for many modern Python web frameworks and asynchronous libraries.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>We’ve come a long way, starting from a super simple <code>http.server</code> to exploring threading, selectors, and finally, <code>asyncio</code>. Let’s take a moment to look back at the performance of each server implementation. Here’s a table summarizing the ‘Requests per second’ we observed with Apache Benchmark:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Server Implementation</th>
+<th>Requests per Second (approx.)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>http.server</code></td>
+<td>8.74</td>
+</tr>
+<tr class="even">
+<td>Raw Sockets</td>
+<td>9.96</td>
+</tr>
+<tr class="odd">
+<td>Threading</td>
+<td>90.21</td>
+</tr>
+<tr class="even">
+<td>Selectors (Blocking)</td>
+<td>9.95</td>
+</tr>
+<tr class="odd">
+<td>Selectors (Timer)</td>
+<td>90.31</td>
+</tr>
+<tr class="even">
+<td><code>asyncio</code></td>
+<td>82.91</td>
+</tr>
+</tbody>
+</table>
+<p>As you can clearly see, threading and the selector-timer hybrid approaches provided a dramatic performance boost compared to the basic single-threaded servers. <code>asyncio</code>, while in this specific benchmark run showing slightly lower RPS than the threaded versions, still demonstrated a significant improvement over the blocking approaches and represents a more robust and scalable architecture for I/O-bound applications in the long run.</p>
+<p>It’s important to remember that these are very basic, toy servers. They lack many features of production-ready web servers, such as robust HTTP parsing, proper error handling, security considerations, and more. They are meant for educational purposes – to illustrate the core concepts of networking and concurrency.</p>
+<p>Building these basic servers from scratch was a fascinating journey for me. I hope it has been for you too! It really demystifies what’s happening behind the scenes and gives a deeper appreciation for the evolution of concurrency approaches in Python and the power of asynchronous I/O.”</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
