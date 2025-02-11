@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-02-10">
+<meta name="description" content="This post walks you through building MNIST digit generators with diffusion models, starting from the basics. We introduce diffusion models, prepare the MNIST dataset, and train a simple convolutional UNet for direct image prediction. Finally, we evaluate its denoising performance as a foundation for more advanced models.">
+
+<title>From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 1) – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 1) – Random Thoughts">
+<meta property="og:description" content="some description">
+<meta property="og:image" content="images/2025-02-10-diffusion-model-mnist-part1.jpeg">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 1) – Random Thoughts">
+<meta name="twitter:description" content="some description">
+<meta name="twitter:image" content="images/2025-02-10-diffusion-model-mnist-part1.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#what-to-expect" id="toc-what-to-expect" class="nav-link" data-scroll-target="#what-to-expect">What to Expect</a></li>
+  <li><a href="#credits" id="toc-credits" class="nav-link" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  </ul></li>
+  <li><a href="#data-preparation-for-mnist-simple-digits-simple-setup" id="toc-data-preparation-for-mnist-simple-digits-simple-setup" class="nav-link" data-scroll-target="#data-preparation-for-mnist-simple-digits-simple-setup">Data Preparation for MNIST: Simple Digits, Simple Setup</a>
+  <ul class="collapse">
+  <li><a href="#loading-the-mnist-dataset" id="toc-loading-the-mnist-dataset" class="nav-link" data-scroll-target="#loading-the-mnist-dataset">Loading the MNIST Dataset</a></li>
+  <li><a href="#preprocessing-for-mnist-images" id="toc-preprocessing-for-mnist-images" class="nav-link" data-scroll-target="#preprocessing-for-mnist-images">Preprocessing for MNIST Images</a></li>
+  </ul></li>
+  <li><a href="#understanding-the-noise-corruption-function" id="toc-understanding-the-noise-corruption-function" class="nav-link" data-scroll-target="#understanding-the-noise-corruption-function">Understanding the Noise Corruption Function</a>
+  <ul class="collapse">
+  <li><a href="#introducing-the-corrupt-function" id="toc-introducing-the-corrupt-function" class="nav-link" data-scroll-target="#introducing-the-corrupt-function">Introducing the <code>corrupt</code> Function</a></li>
+  </ul></li>
+  <li><a href="#model-1-simple-convolutional-unet-for-direct-image-prediction" id="toc-model-1-simple-convolutional-unet-for-direct-image-prediction" class="nav-link" data-scroll-target="#model-1-simple-convolutional-unet-for-direct-image-prediction">Model 1: Simple Convolutional UNet for Direct Image Prediction</a>
+  <ul class="collapse">
+  <li><a href="#why-use-unets-for-diffusion" id="toc-why-use-unets-for-diffusion" class="nav-link" data-scroll-target="#why-use-unets-for-diffusion">Why Use UNets for Diffusion?</a></li>
+  <li><a href="#our-direct-image-prediction-approach" id="toc-our-direct-image-prediction-approach" class="nav-link" data-scroll-target="#our-direct-image-prediction-approach">Our Direct Image Prediction Approach</a></li>
+  <li><a href="#building-a-simple-convolutional-unet" id="toc-building-a-simple-convolutional-unet" class="nav-link" data-scroll-target="#building-a-simple-convolutional-unet">Building a Simple Convolutional UNet</a></li>
+  <li><a href="#training-the-model" id="toc-training-the-model" class="nav-link" data-scroll-target="#training-the-model">Training the Model</a></li>
+  <li><a href="#inference-with-model" id="toc-inference-with-model" class="nav-link" data-scroll-target="#inference-with-model">Inference with Model</a></li>
+  <li><a href="#results-and-discussion" id="toc-results-and-discussion" class="nav-link" data-scroll-target="#results-and-discussion">Results and Discussion</a></li>
+  </ul></li>
+  <li><a href="#key-takeaways-next-steps" id="toc-key-takeaways-next-steps" class="nav-link" data-scroll-target="#key-takeaways-next-steps">Key Takeaways &amp; Next Steps</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 1)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">python</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This post walks you through building MNIST digit generators with diffusion models, starting from the basics. We introduce diffusion models, prepare the MNIST dataset, and train a simple convolutional UNet for direct image prediction. Finally, we evaluate its denoising performance as a foundation for more advanced models.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 10, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-02-10-diffusion-model-mnist-part1.jpeg" class="img-fluid figure-img"></p>
+<figcaption>image source: https://www.artbreeder.com/image/4740f9c3d7ceac2112e54cd77b5c</figcaption>
+</figure>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Ever been amazed by AI-generated images? Let’s demystify the magic behind them! Have you ever wondered how a machine can generate something coherent from pure randomness? Take a look at the image below. On the left, you see a jumble of random pixels — digital noise. On the right, a crisp, recognizable MNIST digit emerges. This transformation from noise to structure is powered by <strong>Diffusion Models</strong>, a revolutionary approach in deep learning.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-02-10-diffusion-model-mnist-part1/noise_image.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-02-10-diffusion-model-mnist-part1/noise_image.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-02-10-diffusion-model-mnist-part1/mnist-digit.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-02-10-diffusion-model-mnist-part1/mnist-digit.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>But how does this noise-to-image process actually work? Imagine an old analog TV with no signal. The screen fills with static — random noise. Diffusion models learn to <strong>reverse this process</strong>, starting from pure noise and gradually refining it into a meaningful image. Think of it as a sophisticated un-blurring process. If you had an extremely blurry image of a digit, a diffusion model would learn to iteratively “de-blur” it, bringing the digit into sharp focus — step by step — until the final image is clear.</p>
+<p>MNIST digits provide the perfect playground for exploring this concept. Their simplicity allows us to focus on the <strong>core mechanics of diffusion</strong> without the added complexity of full-color, high-resolution images. In this post, we’ll take a hands-on approach, building our own <strong>MNIST digit generator from scratch</strong> to truly understand how diffusion models work.</p>
+<section id="what-to-expect" class="level3">
+<h3 class="anchored" data-anchor-id="what-to-expect">What to Expect</h3>
+<p>We’ll break down diffusion models into <strong>four key stages</strong>, each progressively refining our approach:</p>
+<ol type="1">
+<li><strong>Baseline Model:</strong> We’ll start with a simple <strong>Convolutional UNet</strong> trained to directly generate MNIST digits. This serves as our foundation before diving into diffusion.<br>
+</li>
+<li><strong>Architecture Improvements:</strong> Next, we’ll enhance our UNet using a more advanced design from the <strong>diffusers library</strong>, seeing firsthand how architectural tweaks improve results.<br>
+</li>
+<li><strong>Introducing Diffusion:</strong> Now comes the core idea — rather than predicting full images, we train our model to predict <strong>noise</strong>, the crucial step that enables real diffusion.<br>
+</li>
+<li><strong>Full Diffusion Process:</strong> Finally, we’ll integrate a <strong>noise scheduler</strong>, allowing our model to iteratively denoise images, unlocking the true power of diffusion models.</li>
+</ol>
+<p>By the end of this journey, you’ll not only understand how diffusion models generate images but also <strong>build one yourself</strong>! Whether you’re a deep-learning enthusiast or an AI researcher, this hands-on approach will give you both <strong>intuitive understanding</strong> and <strong>practical experience</strong> in one of the most exciting areas of machine learning today.</p>
+<p>Ready to dive in? Let’s get started!</p>
+</section>
+<section id="credits" class="level3">
+<h3 class="anchored" data-anchor-id="credits">Credits</h3>
+<p>This post is inspired by the <a href="https://huggingface.co/learn/diffusion-course/en/unit1/3">Hugging Face Diffusion Course</a></p>
+</section>
+<section id="environment-details" class="level3">
+<h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<p>You can access and run this Jupyter Notebook from the GitHub repository on this link <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2025-02-10-diffusion-model-mnist-part1.ipynb">2025-02-10-diffusion-model-mnist-part1.ipynb</a></p>
+<p>Run the following cell to install the required packages.</p>
+<ul>
+<li>This notebook can be run with <a href="https://colab.research.google.com/">Google Colab</a> T4 GPU runtime.</li>
+<li>I have also tested this notebook with AWS SageMaker Jupyter Notebook running on instance “ml.g5.xlarge” and image “SageMaker Distribution 2.3.0”.</li>
+</ul>
+<div id="47c651f8-0f51-44cb-8df6-54dd96313c33" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span>pip install datasets[vision]</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="op">!</span>pip install diffusers</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="op">!</span>pip install watermark</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="op">!</span>pip install torchinfo</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="op">!</span>pip install matplotlib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://github.com/rasbt/watermark">WaterMark</a> is an IPython magic extension for printing date and time stamps, version numbers, and hardware information. Let’s load this extension and print the environment details.</p>
+<div id="64dd2d3c-631e-43b2-ab87-b0e9e0c1bafa" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="9af53e1f-1b21-4ba4-84a9-f5df6c2c1f6b" class="cell" data-outputid="1ded64c8-c97b-4e32-9c10-958b87cbfd57" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p torch,torchvision,datasets,diffusers,matplotlib,watermark,torchinfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Python implementation: CPython
+Python version       : 3.11.11
+IPython version      : 7.34.0
+
+torch      : 2.5.1+cu124
+torchvision: 0.20.1+cu124
+datasets   : 3.2.0
+diffusers  : 0.32.2
+matplotlib : 3.10.0
+watermark  : 2.5.0
+torchinfo  : 1.8.0
+
+Compiler    : GCC 11.4.0
+OS          : Linux
+Release     : 6.1.85+
+Machine     : x86_64
+Processor   : x86_64
+CPU cores   : 2
+Architecture: 64bit
+</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="data-preparation-for-mnist-simple-digits-simple-setup" class="level2">
+<h2 class="anchored" data-anchor-id="data-preparation-for-mnist-simple-digits-simple-setup">Data Preparation for MNIST: Simple Digits, Simple Setup</h2>
+<p>Before training our diffusion model to generate MNIST digits, we first need to <strong>prepare the dataset properly</strong>. Data preparation is a critical step in any machine learning project, especially for image-based models. Think of it like setting up an artist’s workspace — before painting, an artist ensures that they have the right <em>canvas</em> and <em>paints</em>. Similarly, our model needs <strong>well-structured, consistently formatted, and properly scaled data</strong> to learn effectively and generate high-quality results.</p>
+<p>In this section, we’ll go through the <strong>key steps</strong> required to get our MNIST digits ready for diffusion modeling.</p>
+<section id="loading-the-mnist-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="loading-the-mnist-dataset">Loading the MNIST Dataset</h3>
+<p>Loading the MNIST dataset is incredibly easy, thanks to the <a href="https://huggingface.co/docs/datasets/en/index">Hugging Face <code>datasets</code> library</a>. With just one line of code, we can download and load the dataset:</p>
+<div id="55e2d7b7-2dfe-486f-bd9f-6a109ea1177e" class="cell" data-outputid="a688cea1-b0ac-4bab-9b17-fb4ff1ab92dc" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb5-2"><a href="#cb5-2"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"mnist"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="bu">print</span>(dataset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/usr/local/lib/python3.11/dist-packages/huggingface_hub/utils/_auth.py:94: UserWarning: 
+The secret `HF_TOKEN` does not exist in your Colab secrets.
+To authenticate with the Hugging Face Hub, create a token in your settings tab (https://huggingface.co/settings/tokens), set it as secret in your Google Colab and restart your session.
+You will be able to reuse this secret in all of your notebooks.
+Please note that authentication is recommended but still optional to access public models or datasets.
+  warnings.warn(</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['image', 'label'],
+        num_rows: 60000
+    })
+    test: Dataset({
+        features: ['image', 'label'],
+        num_rows: 10000
+    })
+})</code></pre>
+</div>
+</div>
+<p>Here’s what happens under the hood:</p>
+<ul>
+<li>The <code>load_dataset("mnist")</code> function from the <code>datasets</code> library <strong>automatically downloads</strong> the MNIST dataset (if not already cached) and prepares it for use.<br>
+</li>
+<li>Running <code>print(dataset)</code> reveals that it is stored as a <code>DatasetDict</code> with two splits: <code>'train'</code> and <code>'test'</code>. Each split contains a <code>Dataset</code> object with <code>'image'</code> and <code>'label'</code> features.<br>
+</li>
+<li>Although the dataset includes labels, <strong>we will not use them</strong> for our unconditional image generation task.<br>
+</li>
+<li>The images are in <strong>grayscale</strong> with pixel values ranging from <strong>0 to 255</strong>.</li>
+</ul>
+<p>Let’s display a sample image from the training dataset.</p>
+<div id="cbf44cc1-03a6-4daa-b255-1a2caca61594" class="cell" data-outputid="6cc393e6-7163-47ff-8b2b-31880354e6c3" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> display</span>
+<span id="cb8-2"><a href="#cb8-2"></a></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="co"># Extract a sample image from the dataset</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>sample_image <span class="op">=</span> dataset[<span class="st">"train"</span>][<span class="st">"image"</span>][<span class="dv">0</span>]</span>
+<span id="cb8-5"><a href="#cb8-5"></a></span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="co"># Print details about the image</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="bu">print</span>(<span class="st">"Data Type:"</span>, <span class="bu">type</span>(sample_image))  <span class="co"># Shows the type of object</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="bu">print</span>(<span class="st">"Image Size:"</span>, sample_image.size)  <span class="co"># Displays dimensions of the image</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co"># Display the image</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a>display(sample_image)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Data Type: &lt;class 'PIL.PngImagePlugin.PngImageFile'&gt;
+Image Size: (28, 28)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-6-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>From the last cell output, you can see the loaded images are object of <a href="https://pillow.readthedocs.io/en/stable/index.html">Python Image Library (PIL)</a> and are very tiny in their actual size. Let’s enlarge the sample image and view it up close.</p>
+<div id="fc933555-f744-438d-8f75-127cb4502ef6" class="cell" data-outputid="4514e571-d5ab-4f6a-abe1-65b2009b9752" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb10-2"><a href="#cb10-2"></a></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="co"># Display the image with a larger size</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">5</span>))  <span class="co"># Adjust the figure size as needed</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a>plt.imshow(sample_image, cmap<span class="op">=</span><span class="st">"gray"</span>)  <span class="co"># Use "gray" colormap for MNIST images</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a>plt.axis(<span class="st">"off"</span>)  <span class="co"># Hide axis for better visibility</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Each image is made up of small square pixels, with values ranging from 0 (black) to 255 (white). The grayscale intensity of each pixel determines how bright or dark it appears. By displaying these pixel values, we can understand how the model sees the image.</p>
+<div id="efcc90ee-b29c-40bd-b4b6-589554238130" class="cell" data-outputid="c2a9faed-4644-44bf-fec5-7621d05a3cbc" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-2"><a href="#cb11-2"></a></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="co"># Convert image to NumPy array</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>image_array <span class="op">=</span> np.array(sample_image)</span>
+<span id="cb11-5"><a href="#cb11-5"></a></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="co"># Print the pixel values in a structured format</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="cf">for</span> row <span class="kw">in</span> image_array:</span>
+<span id="cb11-8"><a href="#cb11-8"></a>    <span class="bu">print</span>(<span class="st">" "</span>.join(<span class="ss">f"</span><span class="sc">{</span>pixel<span class="sc">:3}</span><span class="ss">"</span> <span class="cf">for</span> pixel <span class="kw">in</span> row))  <span class="co"># Align values properly</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   3  18  18  18 126 136 175  26 166 255 247 127   0   0   0   0
+  0   0   0   0   0   0   0   0  30  36  94 154 170 253 253 253 253 253 225 172 253 242 195  64   0   0   0   0
+  0   0   0   0   0   0   0  49 238 253 253 253 253 253 253 253 253 251  93  82  82  56  39   0   0   0   0   0
+  0   0   0   0   0   0   0  18 219 253 253 253 253 253 198 182 247 241   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0  80 156 107 253 253 205  11   0  43 154   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0  14   1 154 253  90   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0 139 253 190   2   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0  11 190 253  70   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0  35 241 225 160 108   1   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0  81 240 253 253 119  25   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0  45 186 253 253 150  27   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  16  93 252 253 187   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 249 253 249  64   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0  46 130 183 253 253 207   2   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0  39 148 229 253 253 253 250 182   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0  24 114 221 253 253 253 253 201  78   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0  23  66 213 253 253 253 253 198  81   2   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0  18 171 219 253 253 253 253 195  80   9   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0  55 172 226 253 253 253 253 244 133  11   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0 136 253 253 253 212 135 132  16   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</code></pre>
+</div>
+</div>
+</section>
+<section id="preprocessing-for-mnist-images" class="level3">
+<h3 class="anchored" data-anchor-id="preprocessing-for-mnist-images">Preprocessing for MNIST Images</h3>
+<p>Once the MNIST dataset is loaded, the next crucial step is <strong>preprocessing</strong> the images. Raw MNIST images, which are grayscale and 28×28 in size, need to be formatted appropriately for deep learning models. Proper preprocessing helps standardize the input data, making it easier for the model to learn effectively.</p>
+<p>In this pipeline, we will use <code>torchvision.transforms.Compose</code> to apply a series of transformations:</p>
+<ul>
+<li><strong>Resizing</strong>: Ensures all images are a consistent size (e.g., 32×32).<br>
+</li>
+<li><strong>Tensor Conversion</strong>: Converts images to PyTorch tensors and scales pixel values to [0,1].</li>
+</ul>
+<p>Below is the code for our preprocessing pipeline:</p>
+<div id="4a63822a-e60a-4afc-a8d7-894c672e236f" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> torch</span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a>image_size <span class="op">=</span> <span class="dv">32</span>  <span class="co"># Define the target image size (e.g., 32x32)</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a></span>
+<span id="cb13-6"><a href="#cb13-6"></a>preprocess <span class="op">=</span> transforms.Compose([</span>
+<span id="cb13-7"><a href="#cb13-7"></a>    transforms.Resize((image_size, image_size)),  <span class="co"># Resize images to a fixed size</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a>    transforms.ToTensor(),  <span class="co"># Convert images to tensors &amp; scale pixel values to [0, 1]</span></span>
+<span id="cb13-9"><a href="#cb13-9"></a>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Each function in <code>transforms.Compose()</code> plays a crucial role in preparing the images:</p>
+<ul>
+<li><strong><code>transforms.Resize((image_size, image_size))</code></strong>
+<ul>
+<li>Resizes images to <strong>32×32 pixels</strong> (or any chosen <code>image_size</code>).<br>
+</li>
+<li>Ensures a consistent input size for our UNet model.<br>
+</li>
+</ul></li>
+<li><strong><code>transforms.ToTensor()</code></strong>
+<ul>
+<li>Converts images from <strong>PIL format</strong> to <strong>PyTorch tensors</strong>.<br>
+</li>
+<li>Scales pixel values from <strong>[0, 255]</strong> to <strong>[0, 1]</strong> for compatibility with deep learning models.</li>
+</ul></li>
+</ul>
+<section id="applying-the-transformations-to-the-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="applying-the-transformations-to-the-dataset">Applying the Transformations to the Dataset</h4>
+<p>With our preprocessing pipeline defined, we now need to <strong>apply it to the dataset</strong>. Instead of modifying the dataset in advance, we’ll use <strong>on-the-fly transformations</strong> — ensuring preprocessing is applied only when data is accessed, keeping memory usage efficient.</p>
+<p>To achieve this, we define a transformation function and set it for our dataset:</p>
+<div id="ac0ee97c-b8bb-4aba-a62a-4ac26a3fec89" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># Define the transform function</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">def</span> transform(examples):</span>
+<span id="cb14-3"><a href="#cb14-3"></a>    examples <span class="op">=</span> [preprocess(image) <span class="cf">for</span> image <span class="kw">in</span> examples[<span class="st">"image"</span>]]</span>
+<span id="cb14-4"><a href="#cb14-4"></a>    <span class="cf">return</span> {<span class="st">"images"</span>: examples}</span>
+<span id="cb14-5"><a href="#cb14-5"></a></span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="co"># Apply the transform to the dataset</span></span>
+<span id="cb14-7"><a href="#cb14-7"></a>dataset.set_transform(transform)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In this code:</p>
+<ul>
+<li><strong>The <code>transform</code> function</strong>
+<ul>
+<li>Receives batches of examples from the dataset.<br>
+</li>
+<li>Applies the <code>preprocess</code> pipeline (resizing, tensor conversion) to the <code>'image'</code> feature using list comprehension.<br>
+</li>
+<li>Returns a dictionary with the transformed images under the key <code>'images'</code>.<br>
+</li>
+</ul></li>
+<li><strong><code>dataset.set_transform(transform)</code></strong>
+<ul>
+<li>Associates the <code>transform</code> function with the dataset.<br>
+</li>
+<li>Ensures that preprocessing is <strong>dynamically applied</strong> whenever data is accessed, rather than modifying and storing a preprocessed copy.</li>
+</ul></li>
+</ul>
+</section>
+<section id="creating-the-dataloader" class="level4">
+<h4 class="anchored" data-anchor-id="creating-the-dataloader">Creating the DataLoader</h4>
+<p>With our dataset ready, the next step is to create a <strong>DataLoader</strong>. PyTorch’s <code>DataLoader</code> is an essential utility that efficiently handles data loading during training. It performs key tasks such as:</p>
+<ul>
+<li><strong>Batching</strong>: Groups images into batches for efficient processing, especially when using a GPU.<br>
+</li>
+<li><strong>Shuffling</strong>: Randomizes the order of samples to prevent the model from memorizing patterns based on dataset order.<br>
+</li>
+<li><strong>Efficient Loading</strong>: Streams data dynamically, preventing memory bottlenecks.</li>
+</ul>
+<p>Shuffling is particularly important as it enhances the model’s <strong>generalization ability</strong>, ensuring it learns meaningful patterns rather than sequence-based biases.</p>
+<p>Here’s how to create a <strong>DataLoader</strong> for the MNIST training set:</p>
+<div id="988d13e5-5507-4c1b-9464-1bd55c3a56bb" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> torch</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a>batch_size <span class="op">=</span> <span class="dv">8</span> <span class="co"># Define batch size (adjust as needed based on GPU memory)</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="co"># Using a small batch size for easier visual validation of images.</span></span>
+<span id="cb15-6"><a href="#cb15-6"></a><span class="co"># When training, we will use a larger batch size for efficiency.</span></span>
+<span id="cb15-7"><a href="#cb15-7"></a></span>
+<span id="cb15-8"><a href="#cb15-8"></a>train_dataloader <span class="op">=</span> DataLoader(dataset[<span class="st">"train"</span>], batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In this code snippet:</p>
+<ul>
+<li><strong><code>batch_size = 8</code></strong>: Defines the number of images in each batch. Larger batch sizes can speed up training but require more memory.<br>
+</li>
+<li><strong><code>dataset["train"]</code></strong>: Specifies the training split of the MNIST dataset.<br>
+</li>
+<li><strong><code>shuffle=True</code></strong>: Ensures that data is randomly shuffled at the beginning of each training epoch, preventing the model from learning sequence-based biases.</li>
+</ul>
+<p>With <code>train_dataloader</code> set up, we are now fully equipped to feed <strong>batches of preprocessed MNIST images</strong> into our diffusion model during training.</p>
+</section>
+<section id="visualizing-a-batch-of-preprocessed-images" class="level4">
+<h4 class="anchored" data-anchor-id="visualizing-a-batch-of-preprocessed-images">Visualizing a Batch of Preprocessed Images</h4>
+<p>Before training a model, it’s important to verify that our data preprocessing pipeline is functioning as expected. One effective way to do this is by visualizing a batch of preprocessed images. This allows us to check whether key transformations — such as resizing and tensor conversion — have been applied correctly.</p>
+<p>We can use <code>matplotlib</code> along with <code>torchvision.utils.make_grid</code> to display a grid of images from our <code>train_dataloader</code>. This quick visual inspection helps confirm that the images are correctly formatted and ready for model training.</p>
+<p>Below is a simple implementation to visualize a batch:</p>
+<div id="652c5ffc-72ed-477f-b77b-a63ace242e44" class="cell" data-outputid="972172e2-291c-48c4-b9a5-4d470c934c53" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="im">import</span> torchvision</span>
+<span id="cb16-2"><a href="#cb16-2"></a></span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="co"># Get a batch of images from the dataloader</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a>data_iter <span class="op">=</span> <span class="bu">iter</span>(train_dataloader)</span>
+<span id="cb16-5"><a href="#cb16-5"></a>batch <span class="op">=</span> <span class="bu">next</span>(data_iter)  <span class="co"># Get the first batch</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a>imgs <span class="op">=</span> batch[<span class="st">"images"</span>]  <span class="co"># Get images from the batch</span></span>
+<span id="cb16-7"><a href="#cb16-7"></a></span>
+<span id="cb16-8"><a href="#cb16-8"></a><span class="bu">print</span>(<span class="st">"Input shape:"</span>, imgs.shape)</span>
+<span id="cb16-9"><a href="#cb16-9"></a></span>
+<span id="cb16-10"><a href="#cb16-10"></a><span class="co"># Visualize the batch</span></span>
+<span id="cb16-11"><a href="#cb16-11"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb16-12"><a href="#cb16-12"></a>plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb16-13"><a href="#cb16-13"></a>plt.imshow(torchvision.utils.make_grid(imgs)[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"Greys"</span>)</span>
+<span id="cb16-14"><a href="#cb16-14"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Input shape: torch.Size([8, 1, 32, 32])</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Why the color of the images flipped?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why the color of the images flipped?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the previous plots, MNIST digits appeared as <strong>white pixels on a dark background</strong>, but in the last plot, they now appear as <strong>black pixels on a white background</strong>. This change is due to the <strong>colormap (<code>cmap</code>) setting</strong> used when plotting the images.</p>
+<p>Both <code>"gray"</code> and <code>"Greys"</code> are sequential colormaps, but they interpret pixel intensity slightly differently:</p>
+<ul>
+<li><strong><code>"gray"</code></strong> : Maps values close to 0 as black and higher values as white.</li>
+<li><strong><code>"Greys"</code></strong>: Maps values close to 0 as white and higher values as black.</li>
+</ul>
+<p>I switched the colormap to make the MNIST digits <strong>sharper and easier to validate visually</strong>. You can learn more about Matplotlib colormaps from the <a href="https://matplotlib.org/stable/users/explain/colors/colormaps.html">official documentation</a>.</p>
+</div>
+</div>
+<p>Our images have been transformed from pixel-based representations to tensors, making them more suitable for training. Now, let’s visualize how a single image appears after these transformations.</p>
+<div id="3400b617-9c8e-4ee3-a4e2-1b53239b4b72" class="cell" data-outputid="9f708ae5-ef0f-4498-c266-863bc6690c16" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co"># Take the first image from the batch</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>image_tensor <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(train_dataloader))[<span class="st">"images"</span>][<span class="dv">0</span>]</span>
+<span id="cb18-3"><a href="#cb18-3"></a></span>
+<span id="cb18-4"><a href="#cb18-4"></a><span class="co"># Convert tensor to NumPy array</span></span>
+<span id="cb18-5"><a href="#cb18-5"></a>image_array <span class="op">=</span> image_tensor.numpy()</span>
+<span id="cb18-6"><a href="#cb18-6"></a></span>
+<span id="cb18-7"><a href="#cb18-7"></a><span class="co"># Convert from (C, H, W) to (H, W) since it's grayscale</span></span>
+<span id="cb18-8"><a href="#cb18-8"></a>image_array <span class="op">=</span> image_array.squeeze(<span class="dv">0</span>)</span>
+<span id="cb18-9"><a href="#cb18-9"></a></span>
+<span id="cb18-10"><a href="#cb18-10"></a><span class="co"># Print pixel values</span></span>
+<span id="cb18-11"><a href="#cb18-11"></a><span class="bu">print</span>(<span class="st">"Pixel values after preprocessing:"</span>)</span>
+<span id="cb18-12"><a href="#cb18-12"></a><span class="cf">for</span> row <span class="kw">in</span> image_array:</span>
+<span id="cb18-13"><a href="#cb18-13"></a>    <span class="bu">print</span>(<span class="st">" "</span>.join(<span class="ss">f"</span><span class="sc">{</span>pixel<span class="sc">:.1f}</span><span class="ss">"</span> <span class="cf">for</span> pixel <span class="kw">in</span> row))</span>
+<span id="cb18-14"><a href="#cb18-14"></a></span>
+<span id="cb18-15"><a href="#cb18-15"></a><span class="co"># Display the image for reference</span></span>
+<span id="cb18-16"><a href="#cb18-16"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>,<span class="dv">6</span>))</span>
+<span id="cb18-17"><a href="#cb18-17"></a>plt.imshow(image_array, cmap<span class="op">=</span><span class="st">"gray"</span>, interpolation<span class="op">=</span><span class="st">"nearest"</span>)</span>
+<span id="cb18-18"><a href="#cb18-18"></a>plt.title(<span class="st">"Processed Image"</span>)</span>
+<span id="cb18-19"><a href="#cb18-19"></a>plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb18-20"><a href="#cb18-20"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Pixel values after preprocessing:
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.2 0.4 0.5 0.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5 0.9 0.9 0.6 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.3 0.8 0.9 0.8 0.5 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.6 0.9 0.9 0.5 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.8 0.9 0.8 0.4 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.7 1.0 0.6 0.2 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.5 0.9 0.8 0.4 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.4 0.9 0.9 0.4 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.2 0.5 0.8 0.8 0.4 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.4 0.8 0.9 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.6 0.9 0.7 0.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.2 0.7 0.9 0.6 0.0 0.0 0.0 0.0 0.0 0.1 0.1 0.2 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.6 0.9 0.5 0.0 0.0 0.0 0.0 0.1 0.3 0.7 0.9 0.7 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.6 0.9 0.7 0.3 0.0 0.0 0.0 0.4 0.8 0.9 1.0 1.0 0.9 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.6 1.0 0.7 0.2 0.0 0.0 0.3 0.8 1.0 1.0 1.0 1.0 1.0 0.8 0.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.6 1.0 0.8 0.3 0.1 0.4 0.8 1.0 1.0 0.7 0.6 0.7 1.0 0.9 0.4 0.1 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.2 0.7 1.0 0.9 0.7 0.6 0.8 1.0 0.8 0.5 0.3 0.4 0.7 1.0 0.9 0.2 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.2 0.6 0.9 1.0 1.0 0.9 1.0 1.0 0.8 0.5 0.5 0.6 0.9 1.0 0.8 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.3 0.6 0.9 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.8 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.2 0.6 1.0 1.0 0.9 0.8 0.9 0.9 0.9 0.9 0.8 0.5 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.3 0.8 0.9 0.5 0.2 0.4 0.6 0.7 0.7 0.5 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.3 0.7 0.8 0.2 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.2 0.6 0.8 0.2 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.2 0.3 0.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-13-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="understanding-the-noise-corruption-function" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-the-noise-corruption-function">Understanding the Noise Corruption Function</h2>
+<section id="introducing-the-corrupt-function" class="level3">
+<h3 class="anchored" data-anchor-id="introducing-the-corrupt-function">Introducing the <code>corrupt</code> Function</h3>
+<p>In diffusion models, we need a systematic way to introduce noise into clean images. This controlled noise addition is crucial for simulating the forward diffusion process, where an image gradually transforms from a structured state to pure noise. To achieve this, we use a helper function called <code>corrupt</code>.</p>
+<p>The <code>corrupt</code> function takes a batch of clean images and progressively degrades them by blending in random noise at varying levels, determined by an <code>amount</code> parameter. This function plays a fundamental role in diffusion models, enabling a structured transition from the original image to noise. While our initial implementation will use a simplified version, understanding its mechanics is essential, as more advanced models will build upon this process.</p>
+<p>Now, let’s examine its implementation:</p>
+<div id="f0329975-258a-4157-b263-7f0f6074e4da" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># Definition of the noise corruption function</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="kw">def</span> corrupt(x, noise, amount):</span>
+<span id="cb20-3"><a href="#cb20-3"></a>    amount <span class="op">=</span> amount.view(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)  <span class="co"># make sure it's broadcastable</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>    <span class="cf">return</span> (</span>
+<span id="cb20-5"><a href="#cb20-5"></a>        x <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> amount) <span class="op">+</span> noise <span class="op">*</span> amount</span>
+<span id="cb20-6"><a href="#cb20-6"></a>    )  <span class="co"># equivalent to x.lerp(noise, amount)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The function <code>corrupt(x, noise, amount)</code> takes three input arguments:</p>
+<ul>
+<li><strong><code>x</code></strong>: A batch of clean images, represented as a PyTorch tensor with shape <code>(batch_size, 1, image_size, image_size)</code>.<br>
+</li>
+<li><strong><code>noise</code></strong>: A tensor of random values, matching the shape of <code>x</code>, representing the noise to be added.<br>
+</li>
+<li><strong><code>amount</code></strong>: A tensor of shape <code>(batch_size,)</code>, specifying the level of noise corruption for each image in the batch.</li>
+</ul>
+<p>Since <code>amount</code> is a 1D tensor, it must be reshaped to match the dimensions of <code>x</code> for proper broadcasting during element-wise operations. This is achieved with:</p>
+<pre><code>amount = amount.view(-1, 1, 1, 1)</code></pre>
+<p>This transformation ensures that <code>amount</code> is applied consistently across all pixels and channels of each image.</p>
+<p>The core logic of noise corruption is in the return statement:</p>
+<pre><code>return x * (1 - amount) + noise * amount</code></pre>
+<p>This expression performs a smooth interpolation between the original image <code>x</code> and the noise <code>noise</code>, controlled by <code>amount</code>:</p>
+<ul>
+<li><code>(1 - amount)</code>: As <code>amount</code> increases from <code>0</code> to <code>1</code>, this value decreases from <code>1</code> to <code>0</code>.<br>
+</li>
+<li><code>x * (1 - amount)</code>: The <strong>clean image is scaled down</strong> based on <code>(1 - amount)</code>.
+<ul>
+<li>If <code>amount</code> is near <code>0</code>, the image remains mostly intact.</li>
+<li>If <code>amount</code> is near <code>1</code>, its contribution diminishes significantly.<br>
+</li>
+</ul></li>
+<li><code>noise * amount</code>: The <strong>noise is scaled up</strong> in proportion to <code>amount</code>.
+<ul>
+<li>At <code>amount = 0</code>, no noise is added</li>
+<li>At <code>amount = 1</code>, the image is entirely replaced by noise.</li>
+</ul></li>
+<li>The sum of these terms creates a seamless blend, where the noise level increases progressively with <code>amount</code>.</li>
+</ul>
+<p>By structuring the noise corruption process this way, we ensure that images degrade in a controlled and predictable manner — an essential property for training diffusion models.</p>
+<p>To better understand how the <code>corrupt</code> function modifies images, we will apply it to a batch of MNIST digits with varying levels of noise and visualize the results. The code below retrieves a batch of images from <code>train_dataloader</code>, generates a range of noise levels, applies the <code>corrupt</code> function, and then displays both the clean and noisy images.</p>
+<div id="2f6c7b3b-5a83-4b8d-bc90-6d95ceedaf39" class="cell" data-outputid="094acca5-b6e5-4967-aa83-a30125f43515" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># --- Visualizing the effect of the corrupt function ---</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="co"># Get a batch of images from the training dataloader</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a>batch <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(train_dataloader))</span>
+<span id="cb23-4"><a href="#cb23-4"></a>imgs <span class="op">=</span> batch[<span class="st">"images"</span>]</span>
+<span id="cb23-5"><a href="#cb23-5"></a></span>
+<span id="cb23-6"><a href="#cb23-6"></a><span class="co"># Prepare noise and noise amounts for visualization</span></span>
+<span id="cb23-7"><a href="#cb23-7"></a>amount <span class="op">=</span> torch.linspace(<span class="dv">0</span>, <span class="dv">1</span>, imgs.shape[<span class="dv">0</span>]) <span class="co"># Noise amounts from 0 to 1</span></span>
+<span id="cb23-8"><a href="#cb23-8"></a>noise <span class="op">=</span> torch.rand_like(imgs)                <span class="co"># Random noise tensor</span></span>
+<span id="cb23-9"><a href="#cb23-9"></a>noised_x <span class="op">=</span> corrupt(imgs, noise, amount)      <span class="co"># Apply corrupt function</span></span>
+<span id="cb23-10"><a href="#cb23-10"></a></span>
+<span id="cb23-11"><a href="#cb23-11"></a><span class="co"># --- Plotting the input and corrupted images ---</span></span>
+<span id="cb23-12"><a href="#cb23-12"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">5</span>)) <span class="co"># Create figure and axes for plotting</span></span>
+<span id="cb23-13"><a href="#cb23-13"></a></span>
+<span id="cb23-14"><a href="#cb23-14"></a><span class="co"># Plotting the original input data</span></span>
+<span id="cb23-15"><a href="#cb23-15"></a>axs[<span class="dv">0</span>].set_title(<span class="st">"Input data"</span>)</span>
+<span id="cb23-16"><a href="#cb23-16"></a>axs[<span class="dv">0</span>].imshow(torchvision.utils.make_grid(imgs)[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"Greys"</span>) <span class="co"># Display original images in top row</span></span>
+<span id="cb23-17"><a href="#cb23-17"></a></span>
+<span id="cb23-18"><a href="#cb23-18"></a><span class="co"># Plotting the corrupted version</span></span>
+<span id="cb23-19"><a href="#cb23-19"></a>axs[<span class="dv">1</span>].set_title(<span class="st">"Corrupted data, from little corruption to a lot of corrupton"</span>)</span>
+<span id="cb23-20"><a href="#cb23-20"></a>axs[<span class="dv">1</span>].imshow(torchvision.utils.make_grid(noised_x)[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"Greys"</span>) <span class="co"># Display corrupted images in bottom row</span></span>
+<span id="cb23-21"><a href="#cb23-21"></a></span>
+<span id="cb23-22"><a href="#cb23-22"></a>plt.show() <span class="co"># Show the plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Running this code generates a visualization consisting of two rows of MNIST digits:</p>
+<ol type="1">
+<li><strong>Top row (Input data)</strong> – This row displays the original, clean MNIST digits from <code>train_dataloader</code>. These digits are sharp and clearly recognizable. This serves as our reference point before noise is applied.<br>
+</li>
+<li><strong>Bottom row (Corrupted data, from little corruption to a lot of corruption)</strong> – This row shows the same digits after being processed by the <code>corrupt</code> function. Observing from left to right, we can see an increasing level of noise corruption.</li>
+</ol>
+<ul>
+<li><strong>Leftmost images</strong>: The noise level is minimal, so these images closely resemble the originals in the top row.<br>
+</li>
+<li><strong>Gradual progression</strong>: Moving toward the right, noise becomes more prominent, making the digits less distinct.<br>
+</li>
+<li><strong>Rightmost images</strong>: The noise level is at its maximum, significantly obscuring the original digit. In extreme cases, the digit may become unrecognizable.</li>
+</ul>
+<p>This visualization clearly illustrates the behavior of the <code>corrupt</code> function. By adjusting the <code>amount</code> parameter, we can precisely control the degree of noise added to an image — ranging from slight perturbations to near-complete corruption. This capability will be crucial in our exploration of diffusion models, where controlled noise application is fundamental to the learning process.</p>
+</section>
+</section>
+<section id="model-1-simple-convolutional-unet-for-direct-image-prediction" class="level2">
+<h2 class="anchored" data-anchor-id="model-1-simple-convolutional-unet-for-direct-image-prediction">Model 1: Simple Convolutional UNet for Direct Image Prediction</h2>
+<section id="why-use-unets-for-diffusion" class="level3">
+<h3 class="anchored" data-anchor-id="why-use-unets-for-diffusion">Why Use UNets for Diffusion?</h3>
+<p>Before building our first model, the <strong>Simple Convolutional UNet</strong>, let’s first understand why this architecture is essential for diffusion models.</p>
+<p>In the context of diffusion models, “diffusion” refers to a process inspired by natural phenomena — like how a drop of ink disperses in water until it is evenly distributed. In machine learning, this concept is mimicked by gradually adding noise to an image until it turns into pure random noise, similar to TV static. This is known as the <strong>forward diffusion process</strong>. The goal, however, is to reverse this process — step by step removing the noise to recover a meaningful image. This is the <strong>reverse diffusion process</strong>, and the neural network responsible for this denoising task is often a <strong>UNet</strong>.</p>
+<p>UNets are widely used for this purpose because they excel at image-to-image tasks, particularly <strong>restoring details from noisy images</strong>. Their <strong>U-shaped architecture</strong> consists of two key parts:</p>
+<ol type="1">
+<li><strong>The downsampling path (encoder):</strong> This progressively reduces the image size while extracting important features.</li>
+<li><strong>The upsampling path (decoder):</strong> This reconstructs the image while preserving fine details.</li>
+</ol>
+<p>A crucial component of UNets is <strong>skip connections</strong>, which transfer detailed features from the encoder directly to corresponding layers in the decoder. These connections help the network retain high-frequency information, such as edges and textures, which are often lost during downsampling.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-02-10-diffusion-model-mnist-part1/basic-unet.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Basic UNet Diagram"><img src="images/2025-02-10-diffusion-model-mnist-part1/basic-unet.png" class="img-fluid figure-img" alt="Basic UNet Diagram"></a></p>
+<figcaption>Basic UNet Diagram</figcaption>
+</figure>
+</div>
+<p>While other architectures could be used, UNets have consistently proven to be highly effective at reversing the diffusion process and generating high-quality images.</p>
+<p>Interestingly, UNets were not originally developed for diffusion models or image generation. They were first introduced for <strong>medical image segmentation</strong>, where precise localization of structures (such as tumors in MRI scans) is critical. Their success in medical imaging, which requires balancing <strong>contextual understanding</strong> and <strong>fine-detail preservation</strong>, makes them an excellent choice for denoising in diffusion models.</p>
+<p>In our first model, <strong>Model 1</strong>, we will use a simplified UNet for <strong>direct image prediction</strong> — a stepping stone toward more advanced diffusion models.</p>
+</section>
+<section id="our-direct-image-prediction-approach" class="level3">
+<h3 class="anchored" data-anchor-id="our-direct-image-prediction-approach">Our Direct Image Prediction Approach</h3>
+<p>To ease into the concepts behind diffusion models, <strong>Model 1</strong> takes a simplified approach: <strong>direct image prediction</strong>. Instead of fully implementing a diffusion model that gradually removes noise in multiple steps, we will train a <strong>Convolutional UNet</strong> to denoise an image in <strong>a single forward pass</strong>.</p>
+<p>It’s important to note that this is <strong>not</strong> a true diffusion model. Unlike traditional diffusion models, which iteratively refine an image by predicting noise at each step, this UNet directly predicts the clean version of a noisy MNIST digit in one go.</p>
+<p>Why start with this approach?</p>
+<ol type="1">
+<li><strong>It simplifies the learning process.</strong> By focusing solely on the UNet’s architecture and training, we can avoid the complexities of diffusion schedulers and iterative sampling.</li>
+<li><strong>It establishes a useful baseline.</strong> This basic denoising UNet allows us to compare performance as we transition to more sophisticated, iterative diffusion models.</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled" title="Are There U-Net Architectures Without Convolutional Layers?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Are There U-Net Architectures Without Convolutional Layers?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>When discussing U-Net architectures, we often assume they are convolution-based. But are there U-Net variants that don’t use convolutional layers at all?</p>
+<p>Yes, there are. Below are some alternatives that replace convolutions with different computational approaches.</p>
+<section id="fourier-neural-operator-u-net-fno-u-net" class="level5">
+<h5 class="anchored" data-anchor-id="fourier-neural-operator-u-net-fno-u-net">1. Fourier Neural Operator U-Net (FNO-U-Net)</h5>
+<p>This model replaces the usual convolutional layers with <strong>Fourier Transforms</strong>. Instead of learning patterns using small local filters (like in a CNN), it transforms the image into the <strong>frequency domain</strong>, where patterns can be processed more efficiently.</p>
+</section>
+<section id="siren-u-net" class="level5">
+<h5 class="anchored" data-anchor-id="siren-u-net">2. Siren U-Net</h5>
+<p>Instead of using convolutions, this model relies on <strong>Sinusoidal Representation Networks (SIREN)</strong>, which use sine functions as activation functions. This allows the network to smoothly model continuous signals.</p>
+</section>
+<section id="mlp-mixer-u-net" class="level5">
+<h5 class="anchored" data-anchor-id="mlp-mixer-u-net">3. MLP-Mixer U-Net</h5>
+<p>This model replaces convolutions with <strong>fully connected layers</strong> that process information across the entire image. Instead of scanning with filters, it mixes and reshapes the image data in two main steps:<br>
+- <strong>First step:</strong> Processes information across different image locations (spatial mixing).<br>
+- <strong>Second step:</strong> Processes information across different color or feature channels (channel mixing).<br>
+- This ensures that both <strong>local and global information</strong> is captured.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+<section id="building-a-simple-convolutional-unet" class="level3">
+<h3 class="anchored" data-anchor-id="building-a-simple-convolutional-unet">Building a Simple Convolutional UNet</h3>
+<p>Now, let’s construct a <strong>minimal yet functional UNet</strong> that serves as the core of our direct image prediction approach.</p>
+<section id="network-architecture" class="level4">
+<h4 class="anchored" data-anchor-id="network-architecture">Network Architecture</h4>
+<p>Our <strong>Convolutional UNet</strong>, implemented as the <code>BasicUNet</code> class, follows the standard U-shape design, consisting of:</p>
+<ul>
+<li><strong>A contracting path (encoder)</strong>: This reduces spatial dimensions while capturing important features through a series of convolutional layers and downsampling operations.</li>
+<li><strong>An expanding path (decoder)</strong>: This restores the original image size using convolutional layers and upsampling, reconstructing the denoised image.</li>
+<li><strong>Skip connections</strong>: These directly pass feature information from the encoder to the decoder, preserving fine details during the upsampling process.</li>
+</ul>
+<p>Here’s the PyTorch code for our BasicUNet class, implementing the simple convolutional UNet architecture we just described:</p>
+<div id="25b17100-3e56-4716-a66b-f0f140cf415d" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">from</span> torch <span class="im">import</span> nn</span>
+<span id="cb24-2"><a href="#cb24-2"></a></span>
+<span id="cb24-3"><a href="#cb24-3"></a></span>
+<span id="cb24-4"><a href="#cb24-4"></a><span class="kw">class</span> BasicUNet(nn.Module):</span>
+<span id="cb24-5"><a href="#cb24-5"></a>    <span class="co">"""A minimal UNet implementation."""</span></span>
+<span id="cb24-6"><a href="#cb24-6"></a></span>
+<span id="cb24-7"><a href="#cb24-7"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, in_channels<span class="op">=</span><span class="dv">1</span>, out_channels<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb24-8"><a href="#cb24-8"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb24-9"><a href="#cb24-9"></a>        <span class="va">self</span>.down_layers <span class="op">=</span> nn.ModuleList(</span>
+<span id="cb24-10"><a href="#cb24-10"></a>            [</span>
+<span id="cb24-11"><a href="#cb24-11"></a>                nn.Conv2d(in_channels, <span class="dv">32</span>, kernel_size<span class="op">=</span><span class="dv">5</span>, padding<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb24-12"><a href="#cb24-12"></a>                nn.Conv2d(<span class="dv">32</span>, <span class="dv">64</span>, kernel_size<span class="op">=</span><span class="dv">5</span>, padding<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb24-13"><a href="#cb24-13"></a>                nn.Conv2d(<span class="dv">64</span>, <span class="dv">64</span>, kernel_size<span class="op">=</span><span class="dv">5</span>, padding<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb24-14"><a href="#cb24-14"></a>            ]</span>
+<span id="cb24-15"><a href="#cb24-15"></a>        )</span>
+<span id="cb24-16"><a href="#cb24-16"></a>        <span class="va">self</span>.up_layers <span class="op">=</span> nn.ModuleList(</span>
+<span id="cb24-17"><a href="#cb24-17"></a>            [</span>
+<span id="cb24-18"><a href="#cb24-18"></a>                nn.Conv2d(<span class="dv">64</span>, <span class="dv">64</span>, kernel_size<span class="op">=</span><span class="dv">5</span>, padding<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb24-19"><a href="#cb24-19"></a>                nn.Conv2d(<span class="dv">64</span>, <span class="dv">32</span>, kernel_size<span class="op">=</span><span class="dv">5</span>, padding<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb24-20"><a href="#cb24-20"></a>                nn.Conv2d(<span class="dv">32</span>, out_channels, kernel_size<span class="op">=</span><span class="dv">5</span>, padding<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb24-21"><a href="#cb24-21"></a>            ]</span>
+<span id="cb24-22"><a href="#cb24-22"></a>        )</span>
+<span id="cb24-23"><a href="#cb24-23"></a></span>
+<span id="cb24-24"><a href="#cb24-24"></a>        <span class="co"># Use the SiLU activation function, which has been shown to work well</span></span>
+<span id="cb24-25"><a href="#cb24-25"></a>        <span class="co"># due to different properties (smoothness, non-monotonicity, etc.).</span></span>
+<span id="cb24-26"><a href="#cb24-26"></a>        <span class="va">self</span>.act <span class="op">=</span> nn.SiLU()</span>
+<span id="cb24-27"><a href="#cb24-27"></a>        <span class="va">self</span>.downscale <span class="op">=</span> nn.MaxPool2d(<span class="dv">2</span>)</span>
+<span id="cb24-28"><a href="#cb24-28"></a>        <span class="va">self</span>.upscale <span class="op">=</span> nn.Upsample(scale_factor<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb24-29"><a href="#cb24-29"></a></span>
+<span id="cb24-30"><a href="#cb24-30"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb24-31"><a href="#cb24-31"></a>        h <span class="op">=</span> []</span>
+<span id="cb24-32"><a href="#cb24-32"></a>        <span class="cf">for</span> i, l <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="va">self</span>.down_layers):</span>
+<span id="cb24-33"><a href="#cb24-33"></a>            x <span class="op">=</span> <span class="va">self</span>.act(l(x))</span>
+<span id="cb24-34"><a href="#cb24-34"></a>            <span class="cf">if</span> i <span class="op">&lt;</span> <span class="dv">2</span>:  <span class="co"># For all but the third (final) down layer:</span></span>
+<span id="cb24-35"><a href="#cb24-35"></a>                h.append(x)  <span class="co"># Storing output for skip connection</span></span>
+<span id="cb24-36"><a href="#cb24-36"></a>                x <span class="op">=</span> <span class="va">self</span>.downscale(x)  <span class="co"># Downscale ready for the next layer</span></span>
+<span id="cb24-37"><a href="#cb24-37"></a></span>
+<span id="cb24-38"><a href="#cb24-38"></a>        <span class="cf">for</span> i, l <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="va">self</span>.up_layers):</span>
+<span id="cb24-39"><a href="#cb24-39"></a>            <span class="cf">if</span> i <span class="op">&gt;</span> <span class="dv">0</span>:  <span class="co"># For all except the first up layer</span></span>
+<span id="cb24-40"><a href="#cb24-40"></a>                x <span class="op">=</span> <span class="va">self</span>.upscale(x)  <span class="co"># Upscale</span></span>
+<span id="cb24-41"><a href="#cb24-41"></a>                x <span class="op">+=</span> h.pop()  <span class="co"># Fetching stored output (skip connection)</span></span>
+<span id="cb24-42"><a href="#cb24-42"></a>            x <span class="op">=</span> <span class="va">self</span>.act(l(x))</span>
+<span id="cb24-43"><a href="#cb24-43"></a></span>
+<span id="cb24-44"><a href="#cb24-44"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="5c6a3c6a-1066-4a4d-adbf-f8c8575ca40a" class="cell" data-outputid="327ff6aa-386b-47b9-ed14-d187749c073d" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="im">from</span> torchinfo <span class="im">import</span> summary</span>
+<span id="cb25-2"><a href="#cb25-2"></a></span>
+<span id="cb25-3"><a href="#cb25-3"></a><span class="co"># initialize the model</span></span>
+<span id="cb25-4"><a href="#cb25-4"></a>model <span class="op">=</span> BasicUNet()</span>
+<span id="cb25-5"><a href="#cb25-5"></a></span>
+<span id="cb25-6"><a href="#cb25-6"></a><span class="co"># print model info</span></span>
+<span id="cb25-7"><a href="#cb25-7"></a><span class="bu">print</span>(model)</span>
+<span id="cb25-8"><a href="#cb25-8"></a>summary(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>BasicUNet(
+  (down_layers): ModuleList(
+    (0): Conv2d(1, 32, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+    (1): Conv2d(32, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+    (2): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+  )
+  (up_layers): ModuleList(
+    (0): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+    (1): Conv2d(64, 32, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+    (2): Conv2d(32, 1, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+  )
+  (act): SiLU()
+  (downscale): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  (upscale): Upsample(scale_factor=2.0, mode='nearest')
+)</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>=================================================================
+Layer (type:depth-idx)                   Param #
+=================================================================
+BasicUNet                                --
+├─ModuleList: 1-1                        --
+│    └─Conv2d: 2-1                       832
+│    └─Conv2d: 2-2                       51,264
+│    └─Conv2d: 2-3                       102,464
+├─ModuleList: 1-2                        --
+│    └─Conv2d: 2-4                       102,464
+│    └─Conv2d: 2-5                       51,232
+│    └─Conv2d: 2-6                       801
+├─SiLU: 1-3                              --
+├─MaxPool2d: 1-4                         --
+├─Upsample: 1-5                          --
+=================================================================
+Total params: 309,057
+Trainable params: 309,057
+Non-trainable params: 0
+=================================================================</code></pre>
+</div>
+</div>
+</section>
+<section id="explaining-the-simple-conv-unet-code" class="level4">
+<h4 class="anchored" data-anchor-id="explaining-the-simple-conv-unet-code">Explaining the Simple Conv UNet Code</h4>
+<p>Let’s break down the <code>BasicUNet</code> code step-by-step to understand its inner workings.</p>
+<p>We begin by defining our UNet as a Python class in PyTorch: <code>class BasicUNet(nn.Module):</code>. This line creates a class named <code>BasicUNet</code> that inherits from <code>nn.Module</code>. In PyTorch, <code>nn.Module</code> is the foundational building block for all neural networks. By inheriting from it, <code>BasicUNet</code> gains essential neural network capabilities.</p>
+<p>Inside the <code>BasicUNet</code> class, we find the constructor: <code>def __init__(self, in_channels=1, out_channels=1):</code>. This special method, <code>__init__</code>, is executed when you create an instance of <code>BasicUNet</code>. The parameters <code>in_channels=1</code> and <code>out_channels=1</code> are set here. They specify that our UNet, by default, is designed to take <strong>single-channel grayscale images (like MNIST digits) as input and produce single-channel grayscale images as output</strong>.</p>
+<section id="encoder-path" class="level5">
+<h5 class="anchored" data-anchor-id="encoder-path"><strong>Encoder Path</strong></h5>
+<p>Next, we define the encoder or downsampling path: <code>self.down_layers = nn.ModuleList([...])</code>. <code>self.down_layers</code> is an <code>nn.ModuleList</code>, which acts like a Python list but specifically designed to hold PyTorch neural network layers. Within <code>self.down_layers</code>, we define a sequence of three <code>nn.Conv2d</code> (2D Convolutional) layers:</p>
+<ul>
+<li><code>nn.Conv2d(in_channels, 32, kernel_size=5, padding=2)</code>: This is the first convolutional layer of the encoder. <code>in_channels</code> (initially 1 for grayscale images) defines the number of input channels this layer expects. <code>32</code> is the number of output channels or feature maps that this layer will generate. <code>kernel_size=5</code> sets the size of the convolutional filter to 5x5 pixels, and <code>padding=2</code> adds padding around the input. This padding is used to maintain the spatial dimensions of the output feature map, ensuring it’s the same size as the input.</li>
+<li><code>nn.Conv2d(32, 64, kernel_size=5, padding=2)</code>: The second convolutional layer takes <code>32</code> input channels (the output from the previous layer) and outputs <code>64</code> channels, further increasing the network’s capacity to learn complex features.</li>
+<li><code>nn.Conv2d(64, 64, kernel_size=5, padding=2)</code>: The third convolutional layer takes <code>64</code> input channels and also outputs <code>64</code> channels. Notice how the number of feature channels increases in the encoder’s initial layers. This is a common strategy in convolutional networks, allowing them to capture increasingly abstract and complex features as they go deeper.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Why Conv2d and not Conv3d or Conv1d?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why Conv2d and not Conv3d or Conv1d?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>It’s important to understand that <code>nn.Conv2d</code> creates a <strong>2D convolutional layer</strong> specifically for two-dimensional data, such as images. In this context, <strong>two dimensions refer to height and width</strong>, not the number of color channels.</p>
+<p>All standard images—whether grayscale or RGB—are inherently <strong>2D</strong> because they have a height and width. However, the number of channels (e.g., <strong>grayscale (1 channel), RGB (3 channels), or RGBA (4 channels)</strong>) should not be confused with the concept of dimensionality.</p>
+<p>But why do we specifically call it a <strong>2D convolutional layer</strong>? The reason is that convolutional layers can operate on different types of data:</p>
+<ul>
+<li><strong>Conv1d (<code>nn.Conv1d</code>)</strong> is used for <strong>1D data</strong>, where the input has only one spatial dimension (e.g., <strong>time series, audio signals, or text embeddings</strong>).<br>
+</li>
+<li><strong>Conv2d (<code>nn.Conv2d</code>)</strong> is for <strong>2D data</strong>, where the input has height and width (e.g., <strong>grayscale or RGB images</strong>).<br>
+</li>
+<li><strong>Conv3d (<code>nn.Conv3d</code>)</strong> is for <strong>3D data</strong>, where the input has height, width, and depth (e.g., <strong>CT scans, MRIs, or video frames</strong>).</li>
+</ul>
+<p>For example:</p>
+<ul>
+<li>Conv1d is commonly used for speech processing (e.g., analyzing waveforms).<br>
+</li>
+<li>Conv2d is used for standard image processing (e.g., segmentation, classification).<br>
+</li>
+<li>Conv3d is useful for volumetric data (e.g., 3D medical scans, motion analysis in videos).</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="decoder-path" class="level5">
+<h5 class="anchored" data-anchor-id="decoder-path"><strong>Decoder Path</strong></h5>
+<p>Similarly, we define the decoder or upsampling path: <code>self.up_layers = nn.ModuleList([...])</code>. <code>self.up_layers</code>, also an <code>nn.ModuleList</code>, holds the convolutional layers for the decoder. It contains three <code>nn.Conv2d</code> layers that, in terms of channel numbers, mirror the encoder in reverse. In the <code>forward</code> pass (explained later), these layers will be used in conjunction with upsampling to reconstruct the image:</p>
+<ul>
+<li><code>nn.Conv2d(64, 64, kernel_size=5, padding=2)</code>: The first convolutional layer in the decoder path.</li>
+<li><code>nn.Conv2d(64, 32, kernel_size=5, padding=2)</code>: The second convolutional layer, reducing the number of feature channels back to 32.</li>
+<li><code>nn.Conv2d(32, out_channels, kernel_size=5, padding=2)</code>: The final convolutional layer of the decoder. <code>out_channels</code> (which is 1 by default) ensures that the UNet outputs a single-channel grayscale image, consistent with the input.</li>
+</ul>
+</section>
+<section id="activation-function" class="level5">
+<h5 class="anchored" data-anchor-id="activation-function"><strong>Activation Function</strong></h5>
+<p><code>self.act = nn.SiLU()</code>: This line defines <code>self.act</code> as the SiLU (Sigmoid Linear Unit) activation function. Activation functions are crucial for introducing non-linearity into neural networks, enabling them to learn complex, non-linear relationships in the data. The SiLU activation <strong>will be applied after each convolutional layer</strong> in the forward pass.</p>
+</section>
+<section id="down-sampling" class="level5">
+<h5 class="anchored" data-anchor-id="down-sampling"><strong>Down Sampling</strong></h5>
+<p><code>self.downscale = nn.MaxPool2d(2)</code>: Here, <code>self.downscale</code> is defined as a <code>MaxPool2d</code> layer with a kernel size of 2. Max pooling is a downsampling technique. It reduces the spatial dimensions of feature maps by dividing the image into 2x2 blocks and keeping only the maximum value from each block. This effectively halves the height and width of the feature maps, reducing spatial size while retaining important features.</p>
+</section>
+<section id="up-sampling" class="level5">
+<h5 class="anchored" data-anchor-id="up-sampling"><strong>Up Sampling</strong></h5>
+<p><code>self.upscale = nn.Upsample(scale_factor=2)</code>: This defines <code>self.upscale</code> as an <code>Upsample</code> layer with a <code>scale_factor=2</code>. Upsampling is the inverse of downsampling; it increases the spatial size of feature maps. In this case, it doubles the height and width using nearest-neighbor interpolation by default, effectively reversing the spatial reduction done by max pooling in the encoder.</p>
+</section>
+<section id="forward-pass" class="level5">
+<h5 class="anchored" data-anchor-id="forward-pass"><strong>Forward Pass</strong></h5>
+<p>Finally, the <code>forward(self, x):</code> method defines the forward pass of the network – how input data <code>x</code> flows through the layers to produce an output.</p>
+<ul>
+<li><p><code>h = []</code>: We initialize an empty list <code>h</code>. This list will serve as storage for intermediate feature maps from the encoder path. These <strong>stored feature maps will be used later for skip connections</strong> in the decoder.</p></li>
+<li><p>The first <code>for i, l in enumerate(self.down_layers):</code> loop iterates through the encoder’s convolutional layers (<code>self.down_layers</code>).</p>
+<ul>
+<li><code>x = self.act(l(x))</code>: Inside the loop, for each convolutional layer <code>l</code>, we apply the layer to the current input <code>x</code> and then pass the result through the SiLU activation function (<code>self.act</code>). The output becomes the new <code>x</code>.</li>
+<li><code>if i &lt; 2: h.append(x); x = self.downscale(x)</code>: For the first two encoder layers (where <code>i</code> is 0 or 1, meaning not for the last encoder layer), we perform two key actions:
+<ul>
+<li><code>h.append(x)</code>: We store the output <code>x</code> of the activated convolutional layer into our skip connection list <code>h</code>. These stored feature maps from the encoder will be added to the decoder path later, enabling skip connections.</li>
+<li><code>x = self.downscale(x)</code>: We apply the <code>MaxPool2d</code> downsampling (<code>self.downscale</code>) to reduce the spatial dimensions of <code>x</code>, preparing it to be processed by the next layer in the encoder path. Downsampling is not performed after the final encoder layer in this architecture.</li>
+</ul></li>
+</ul></li>
+<li><p>The second <code>for i, l in enumerate(self.up_layers):</code> loop iterates through the decoder’s convolutional layers (<code>self.up_layers</code>).</p>
+<ul>
+<li><code>if i &gt; 0: x = self.upscale(x); x += h.pop()</code>: For all decoder layers except the first one (<code>i &gt; 0</code>), we perform the following:
+<ul>
+<li><code>x = self.upscale(x)</code>: We upsample the feature map <code>x</code> using <code>self.upscale</code> to increase its spatial size, reversing the downsampling from the encoder.</li>
+<li><code>x += h.pop()</code>: We implement the skip connection here. <code>h.pop()</code> retrieves the <em>last</em> stored feature map from our skip connection list <code>h</code>. We then add this retrieved feature map to the upsampled feature map <code>x</code>. This addition is the core of the skip connection, combining detailed features from the encoder with the upsampled features in the decoder to help preserve fine details during reconstruction.</li>
+</ul></li>
+<li><code>x = self.act(l(x))</code>: After the optional upsampling and skip connection (for layers after the first in the decoder), we apply the current decoder layer <code>l</code> (a <code>Conv2d</code> layer) and then the SiLU activation function (<code>self.act</code>).</li>
+</ul></li>
+<li><p><code>return x</code>: Finally, the <code>forward</code> method returns the processed tensor <code>x</code>. This is the output of the UNet, representing the <strong>predicted denoised MNIST digit</strong> in our case.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="training-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="training-the-model">Training the Model</h3>
+<p>Now that we have defined the <strong>BasicUNet</strong> architecture, the next step is to train it. We will follow a standard <strong>supervised learning approach</strong> to train the UNet to predict clean MNIST digits from noisy inputs. This involves defining a <strong>loss function</strong>, selecting an <strong>optimizer</strong>, and implementing a <strong>training loop</strong>.</p>
+<section id="loss-function-mean-squared-error-mse" class="level4">
+<h4 class="anchored" data-anchor-id="loss-function-mean-squared-error-mse">Loss Function: Mean Squared Error (MSE)</h4>
+<p>For this direct image prediction task, we use the <strong>Mean Squared Error (MSE) loss</strong>, implemented in PyTorch as <code>F.mse_loss</code> (from <code>torch.nn.functional</code>). MSE measures the average squared difference between the predicted image (output from the UNet) and the ground-truth clean image. By minimizing this loss, the model learns to generate outputs that closely match the original digits, ensuring pixel-wise accuracy.</p>
+</section>
+<section id="optimizer-adam" class="level4">
+<h4 class="anchored" data-anchor-id="optimizer-adam">Optimizer: Adam</h4>
+<p>We use the <strong>Adam optimizer</strong> (<code>torch.optim.Adam</code>) with a <strong>learning rate of 1e-3 (0.001)</strong>. Adam is a widely used optimizer that adapts the learning rate for each parameter, making training more stable and efficient. The learning rate determines how much the model’s weights are adjusted at each step—<strong>too high</strong> may lead to instability, while <strong>too low</strong> may slow down convergence.</p>
+</section>
+<section id="training-process" class="level4">
+<h4 class="anchored" data-anchor-id="training-process">Training Process</h4>
+<p>The model is trained for <strong>5 epochs</strong>, iterating through batches of MNIST images using <code>train_dataloader</code>. Within each epoch, the training loop performs the following steps:</p>
+<ol type="1">
+<li><strong>Load a batch of clean MNIST images</strong> from <code>train_dataloader</code> and move them to the computing device (GPU or CPU).</li>
+<li><strong>Generate noisy images</strong> by adding <strong>random noise</strong> to the clean images. The noise level varies per image, controlled by a random <code>noise_amount</code> scalar.</li>
+<li><strong>Feed the noisy images into the UNet</strong>, which predicts the corresponding denoised images.</li>
+<li><strong>Compute the MSE loss</strong>, comparing the predicted images with the clean images.</li>
+<li><strong>Perform backpropagation</strong> to compute gradients, indicating how each model parameter should be adjusted.</li>
+<li><strong>Update the model’s weights</strong> using the Adam optimizer to minimize the loss.</li>
+<li><strong>Store the loss value</strong> for tracking training progress.</li>
+</ol>
+<p>This process repeats for <strong>5 epochs</strong>, allowing the model to progressively improve its ability to denoise MNIST digits.</p>
+<p>After training, we <strong>plot the loss curve</strong> to visualize how the MSE loss evolves over time.</p>
+<div id="831e0595-79e4-4e77-bd9f-b5ee50d722f0" class="cell" data-outputid="69c11eaa-3855-4a6a-cbdc-6e60afa7e5c8" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="im">from</span> torch.nn <span class="im">import</span> functional <span class="im">as</span> F</span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="im">from</span> torch.optim <span class="im">import</span> Adam</span>
+<span id="cb28-3"><a href="#cb28-3"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb28-4"><a href="#cb28-4"></a></span>
+<span id="cb28-5"><a href="#cb28-5"></a><span class="co"># --- Check GPU Availability ---</span></span>
+<span id="cb28-6"><a href="#cb28-6"></a>device <span class="op">=</span> <span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span> <span class="co"># Use GPU if available, else CPU</span></span>
+<span id="cb28-7"><a href="#cb28-7"></a><span class="bu">print</span>(<span class="st">"device: "</span>, device)</span>
+<span id="cb28-8"><a href="#cb28-8"></a></span>
+<span id="cb28-9"><a href="#cb28-9"></a><span class="co"># --- Hyperparameters and Setup ---</span></span>
+<span id="cb28-10"><a href="#cb28-10"></a>model <span class="op">=</span> model.to(device)                             <span class="co"># Instantiate BasicUNet and move to device</span></span>
+<span id="cb28-11"><a href="#cb28-11"></a>optimizer <span class="op">=</span> Adam(model.parameters(), lr<span class="op">=</span><span class="fl">1e-3</span>)             <span class="co"># Initialize Adam optimizer</span></span>
+<span id="cb28-12"><a href="#cb28-12"></a>losses <span class="op">=</span> []                                                <span class="co"># Store loss values</span></span>
+<span id="cb28-13"><a href="#cb28-13"></a>num_epochs <span class="op">=</span> <span class="dv">5</span>                                             <span class="co"># Number of training epochs</span></span>
+<span id="cb28-14"><a href="#cb28-14"></a></span>
+<span id="cb28-15"><a href="#cb28-15"></a>batch_size <span class="op">=</span> <span class="dv">128</span>                                      <span class="co"># Larger batch size for training</span></span>
+<span id="cb28-16"><a href="#cb28-16"></a>train_dataloader <span class="op">=</span> torch.utils.data.DataLoader(</span>
+<span id="cb28-17"><a href="#cb28-17"></a>    dataset[<span class="st">"train"</span>], batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span></span>
+<span id="cb28-18"><a href="#cb28-18"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>device:  cuda</code></pre>
+</div>
+</div>
+<div id="96ff233e-1ce6-4a38-921c-8bc60e8e75f5" class="cell" data-outputid="2fd36efe-88ad-4496-8554-f9e53318bd7f" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="co"># --- Training Loop ---</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
+<span id="cb30-3"><a href="#cb30-3"></a>    <span class="cf">for</span> batch <span class="kw">in</span> train_dataloader:                         <span class="co"># Iterate over training batches</span></span>
+<span id="cb30-4"><a href="#cb30-4"></a>        clean_images <span class="op">=</span> batch[<span class="st">"images"</span>].to(device)           <span class="co"># Load clean images</span></span>
+<span id="cb30-5"><a href="#cb30-5"></a></span>
+<span id="cb30-6"><a href="#cb30-6"></a>        <span class="co"># Sample noise to add to the images</span></span>
+<span id="cb30-7"><a href="#cb30-7"></a>        noise <span class="op">=</span> torch.rand_like(clean_images).to(device)</span>
+<span id="cb30-8"><a href="#cb30-8"></a></span>
+<span id="cb30-9"><a href="#cb30-9"></a>        <span class="co"># Sample amount of noise to add to the images</span></span>
+<span id="cb30-10"><a href="#cb30-10"></a>        noise_amount <span class="op">=</span> torch.randn(clean_images.shape[<span class="dv">0</span>]).to(device)</span>
+<span id="cb30-11"><a href="#cb30-11"></a></span>
+<span id="cb30-12"><a href="#cb30-12"></a>        <span class="co"># Add noise to the clean images according to the noise magnitude</span></span>
+<span id="cb30-13"><a href="#cb30-13"></a>        noisy_images <span class="op">=</span> corrupt(clean_images, noise, noise_amount)</span>
+<span id="cb30-14"><a href="#cb30-14"></a></span>
+<span id="cb30-15"><a href="#cb30-15"></a>        predicted_images <span class="op">=</span> model(noisy_images)             <span class="co"># Model predicts denoised images</span></span>
+<span id="cb30-16"><a href="#cb30-16"></a>        loss <span class="op">=</span> F.mse_loss(predicted_images, clean_images)  <span class="co"># Compute MSE loss</span></span>
+<span id="cb30-17"><a href="#cb30-17"></a></span>
+<span id="cb30-18"><a href="#cb30-18"></a>        optimizer.zero_grad()                              <span class="co"># Clear previous gradients</span></span>
+<span id="cb30-19"><a href="#cb30-19"></a>        loss.backward()                                    <span class="co"># Backpropagate</span></span>
+<span id="cb30-20"><a href="#cb30-20"></a>        optimizer.step()                                   <span class="co"># Update model weights</span></span>
+<span id="cb30-21"><a href="#cb30-21"></a>        losses.append(loss.item())                         <span class="co"># Store loss</span></span>
+<span id="cb30-22"><a href="#cb30-22"></a></span>
+<span id="cb30-23"><a href="#cb30-23"></a>    <span class="co"># --- Print average loss per epoch ---</span></span>
+<span id="cb30-24"><a href="#cb30-24"></a>    avg_loss <span class="op">=</span> <span class="bu">sum</span>(losses[<span class="op">-</span><span class="bu">len</span>(train_dataloader):]) <span class="op">/</span> <span class="bu">len</span>(train_dataloader)</span>
+<span id="cb30-25"><a href="#cb30-25"></a>    <span class="bu">print</span>(<span class="ss">f"Epoch </span><span class="sc">{</span>epoch<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_epochs<span class="sc">}</span><span class="ss"> - Average Loss: </span><span class="sc">{</span>avg_loss<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epoch 1/5 - Average Loss: 0.0173
+Epoch 2/5 - Average Loss: 0.0105
+Epoch 3/5 - Average Loss: 0.0098
+Epoch 4/5 - Average Loss: 0.0093
+Epoch 5/5 - Average Loss: 0.0088</code></pre>
+</div>
+</div>
+<div id="d72db71d-566b-4085-8af9-e1578f3bfc9f" class="cell" data-outputid="4428fb22-52ce-45c8-aed9-8d32e73560a9" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># --- Plot Loss Curve ---</span></span>
+<span id="cb32-2"><a href="#cb32-2"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb32-3"><a href="#cb32-3"></a>plt.plot(losses)</span>
+<span id="cb32-4"><a href="#cb32-4"></a>plt.xlabel(<span class="st">"Iteration"</span>)</span>
+<span id="cb32-5"><a href="#cb32-5"></a>plt.ylabel(<span class="st">"MSE Loss"</span>)</span>
+<span id="cb32-6"><a href="#cb32-6"></a>plt.title(<span class="st">"Training Loss Curve (Model 1 - Direct Image Prediction)"</span>)</span>
+<span id="cb32-7"><a href="#cb32-7"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-20-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="inference-with-model" class="level3">
+<h3 class="anchored" data-anchor-id="inference-with-model">Inference with Model</h3>
+<p>Now that our model is trained, we need to evaluate its ability to <strong>denoise images it hasn’t encountered during training</strong>. This process, known as <strong>inference</strong> (or sometimes <strong>sampling</strong> or <strong>generation</strong>), involves using the trained model to generate outputs on new data.</p>
+<p>For <strong>Model 1</strong>, inference is straightforward because it performs <strong>direct image prediction</strong> in a single forward pass. Given a noisy image as input, it directly outputs a <strong>denoised</strong> version.</p>
+<p>To assess model’s denoising performance, we will use the <strong>MNIST test dataset</strong>. We’ll set up a <code>DataLoader</code> for the test set, similar to <code>train_dataloader</code>, but using <code>dataset["test"]</code> to load the test split. For each batch of test images, we will:</p>
+<ol type="1">
+<li><strong>Load a batch of clean MNIST test images</strong> from the <code>test_dataloader</code>.<br>
+</li>
+<li><strong>Generate <em>new</em> noisy versions</strong> of these test images.
+<ul>
+<li>It’s crucial to use <strong>fresh, randomly generated noise</strong>—distinct from what was used during training—to properly evaluate the model’s ability to generalize to unseen noisy inputs.<br>
+</li>
+<li>We will apply the same <code>corrupt</code> function used during training.<br>
+</li>
+</ul></li>
+<li><strong>Feed the noisy test images into our trained <code>BasicUNet</code> model</strong>.
+<ul>
+<li>The model will produce its <strong>predicted denoised images</strong> in a <strong>single forward pass</strong>.<br>
+</li>
+<li>This is <strong>one-shot denoising</strong>—no iterative refinement is involved.<br>
+</li>
+</ul></li>
+<li><strong>Transfer the model’s denoised output to the CPU</strong> and convert it to <strong>NumPy arrays</strong>.
+<ul>
+<li>This step is necessary for visualization with <code>matplotlib</code>, which operates on NumPy arrays.<br>
+</li>
+</ul></li>
+<li><strong>Visualize the results in a plot</strong>, displaying:
+<ul>
+<li><strong>Top row</strong>: Original clean test images (ground truth).<br>
+</li>
+<li><strong>Middle row</strong>: Noisy test images (input to Model 1).<br>
+</li>
+<li><strong>Bottom row</strong>: Denoised images (Model 1 output).</li>
+</ul></li>
+</ol>
+<p>By analyzing this plot, we can visually assess how effectively <strong>Model 1 denoises MNIST digits</strong> using its <strong>direct image prediction strategy</strong> and how well it generalizes to <strong>new noisy test data</strong>.</p>
+<p>The PyTorch code for this inference and visualization process is provided in the subsequent code block.</p>
+<div id="7322d73a" class="cell" data-outputid="860a709a-f0b9-4c91-a636-8a96a649aa94" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># --- Inference with Model 1 and Visualization ---</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a><span class="co"># --- Prepare test dataset and dataloader ---</span></span>
+<span id="cb33-3"><a href="#cb33-3"></a>test_dataset <span class="op">=</span> load_dataset(<span class="st">"mnist"</span>, split<span class="op">=</span><span class="st">"test"</span>) <span class="co"># Load MNIST test split dataset</span></span>
+<span id="cb33-4"><a href="#cb33-4"></a>test_dataset.set_transform(transform)             <span class="co"># Apply preprocessing transform to test dataset</span></span>
+<span id="cb33-5"><a href="#cb33-5"></a>test_dataloader <span class="op">=</span> DataLoader(test_dataset, batch_size<span class="op">=</span><span class="dv">8</span>, shuffle<span class="op">=</span><span class="va">True</span>) <span class="co"># Create DataLoader for test dataset</span></span>
+<span id="cb33-6"><a href="#cb33-6"></a></span>
+<span id="cb33-7"><a href="#cb33-7"></a><span class="co"># --- Get a batch of test images ---</span></span>
+<span id="cb33-8"><a href="#cb33-8"></a>batch <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(test_dataloader))</span>
+<span id="cb33-9"><a href="#cb33-9"></a>clean_images <span class="op">=</span> batch[<span class="st">"images"</span>].to(device) <span class="co"># Load clean test images to the device</span></span>
+<span id="cb33-10"><a href="#cb33-10"></a></span>
+<span id="cb33-11"><a href="#cb33-11"></a><span class="co"># --- Generate new random noise for inference ---</span></span>
+<span id="cb33-12"><a href="#cb33-12"></a>noise <span class="op">=</span> torch.rand_like(clean_images).to(device) <span class="co"># Generate random noise tensor</span></span>
+<span id="cb33-13"><a href="#cb33-13"></a>noise_amount <span class="op">=</span> torch.randn(clean_images.shape[<span class="dv">0</span>]).to(device) <span class="co"># Generate noise amount tensor</span></span>
+<span id="cb33-14"><a href="#cb33-14"></a>noisy_images <span class="op">=</span> corrupt(clean_images, noise, noise_amount) <span class="co"># Create noisy test images by corruption</span></span>
+<span id="cb33-15"><a href="#cb33-15"></a></span>
+<span id="cb33-16"><a href="#cb33-16"></a><span class="co"># --- Perform inference (get denoised images from Model 1) ---</span></span>
+<span id="cb33-17"><a href="#cb33-17"></a>model.<span class="bu">eval</span>()  <span class="co"># Set model to evaluation mode for inference</span></span>
+<span id="cb33-18"><a href="#cb33-18"></a><span class="cf">with</span> torch.no_grad():  <span class="co"># Disable gradient calculation during inference</span></span>
+<span id="cb33-19"><a href="#cb33-19"></a>    denoised_images <span class="op">=</span> model(noisy_images) <span class="co"># Get denoised images from model</span></span>
+<span id="cb33-20"><a href="#cb33-20"></a></span>
+<span id="cb33-21"><a href="#cb33-21"></a><span class="co"># --- Move tensors to CPU and convert to NumPy for visualization ---</span></span>
+<span id="cb33-22"><a href="#cb33-22"></a>noisy_images_np <span class="op">=</span> noisy_images.cpu().numpy() <span class="co"># Move noisy images to CPU and convert to NumPy</span></span>
+<span id="cb33-23"><a href="#cb33-23"></a>denoised_images_np <span class="op">=</span> denoised_images.cpu().numpy() <span class="co"># Move denoised images to CPU and convert to NumPy</span></span>
+<span id="cb33-24"><a href="#cb33-24"></a>clean_images_np <span class="op">=</span> clean_images.cpu().numpy() <span class="co"># Move clean images to CPU and convert to NumPy</span></span>
+<span id="cb33-25"><a href="#cb33-25"></a></span>
+<span id="cb33-26"><a href="#cb33-26"></a><span class="co"># --- Plotting the results: Original, Noisy, Denoised ---</span></span>
+<span id="cb33-27"><a href="#cb33-27"></a>num_images <span class="op">=</span> <span class="dv">6</span>  <span class="co"># Set number of images to visualize</span></span>
+<span id="cb33-28"><a href="#cb33-28"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>)) <span class="co"># Initialize matplotlib figure for plotting</span></span>
+<span id="cb33-29"><a href="#cb33-29"></a></span>
+<span id="cb33-30"><a href="#cb33-30"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_images): <span class="co"># Loop through number of images to plot</span></span>
+<span id="cb33-31"><a href="#cb33-31"></a>    <span class="co"># --- Plot Original (Clean) Images ---</span></span>
+<span id="cb33-32"><a href="#cb33-32"></a>    plt.subplot(<span class="dv">3</span>, num_images, i <span class="op">+</span> <span class="dv">1</span>) <span class="co"># Create subplot for original images (top row)</span></span>
+<span id="cb33-33"><a href="#cb33-33"></a>    plt.imshow(clean_images_np[i].squeeze(), cmap<span class="op">=</span><span class="st">'Greys'</span>) <span class="co"># Display original clean image</span></span>
+<span id="cb33-34"><a href="#cb33-34"></a>    plt.title(<span class="st">"Original"</span>) <span class="co"># Set title for original image subplot</span></span>
+<span id="cb33-35"><a href="#cb33-35"></a>    plt.axis(<span class="st">'off'</span>) <span class="co"># Hide axes for cleaner image display</span></span>
+<span id="cb33-36"><a href="#cb33-36"></a></span>
+<span id="cb33-37"><a href="#cb33-37"></a>    <span class="co"># --- Plot Noisy Images ---</span></span>
+<span id="cb33-38"><a href="#cb33-38"></a>    plt.subplot(<span class="dv">3</span>, num_images, i <span class="op">+</span> num_images <span class="op">+</span> <span class="dv">1</span>) <span class="co"># Create subplot for noisy images (middle row)</span></span>
+<span id="cb33-39"><a href="#cb33-39"></a>    plt.imshow(noisy_images_np[i].squeeze(), cmap<span class="op">=</span><span class="st">'Greys'</span>) <span class="co"># Display noisy image input</span></span>
+<span id="cb33-40"><a href="#cb33-40"></a>    plt.title(<span class="st">"Noisy"</span>) <span class="co"># Set title for noisy image subplot</span></span>
+<span id="cb33-41"><a href="#cb33-41"></a>    plt.axis(<span class="st">'off'</span>) <span class="co"># Hide axes</span></span>
+<span id="cb33-42"><a href="#cb33-42"></a></span>
+<span id="cb33-43"><a href="#cb33-43"></a>    <span class="co"># --- Plot Denoised Images ---</span></span>
+<span id="cb33-44"><a href="#cb33-44"></a>    plt.subplot(<span class="dv">3</span>, num_images, i <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> num_images <span class="op">+</span> <span class="dv">1</span>) <span class="co"># Create subplot for denoised images (bottom row)</span></span>
+<span id="cb33-45"><a href="#cb33-45"></a>    plt.imshow(denoised_images_np[i].squeeze(), cmap<span class="op">=</span><span class="st">'Greys'</span>) <span class="co"># Display denoised output image</span></span>
+<span id="cb33-46"><a href="#cb33-46"></a>    plt.title(<span class="st">"Denoised"</span>) <span class="co"># Set title for denoised image subplot</span></span>
+<span id="cb33-47"><a href="#cb33-47"></a>    plt.axis(<span class="st">'off'</span>) <span class="co"># Hide axes</span></span>
+<span id="cb33-48"><a href="#cb33-48"></a></span>
+<span id="cb33-49"><a href="#cb33-49"></a>plt.tight_layout() <span class="co"># Adjust subplot layout for better spacing</span></span>
+<span id="cb33-50"><a href="#cb33-50"></a>plt.show() <span class="co"># Show the complete plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-21-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="results-and-discussion" class="level3">
+<h3 class="anchored" data-anchor-id="results-and-discussion">Results and Discussion</h3>
+<p>Let’s analyze our initial <strong>one-shot denoising results</strong> to evaluate the baseline performance of our <strong>Simple Convolutional UNet</strong>.</p>
+<p>In the <strong>“Denoised” row</strong> (bottom row), you should notice that the digits are indeed <strong>visibly denoised</strong> compared to the <strong>“Noisy” row</strong> (middle row). The random noise has been reduced, and the digits appear <strong>less blurred</strong>, indicating that our basic <strong>Convolutional UNet</strong> has learned to remove some noise through its <strong>direct image prediction strategy</strong>.</p>
+<p>However, when comparing the <strong>“Denoised” row</strong> to the <strong>“Original” row</strong> (top row, showing clean digits), it becomes clear that the denoised digits are <strong>not perfectly restored</strong>. Some <strong>residual blurriness</strong> remains, and they lack the crispness and sharpness of the original images. Despite these imperfections, the denoised outputs remain <strong>recognizable as MNIST digits</strong>, showing that the model has captured key visual features.</p>
+<p>Let’s run inference one more time, but with a different approach.</p>
+<p>Instead of starting with an original <strong>MNIST digit</strong> and adding noise to it, we will feed the model <strong>pure noise</strong> as input and observe the results.</p>
+<div id="MbGMmRuQ_fel" class="cell" data-outputid="7a815557-5c8a-4fed-a28e-d1de23246790" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="im">import</span> torch</span>
+<span id="cb34-2"><a href="#cb34-2"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb34-3"><a href="#cb34-3"></a></span>
+<span id="cb34-4"><a href="#cb34-4"></a><span class="co"># Generate a noisy image (random noise)</span></span>
+<span id="cb34-5"><a href="#cb34-5"></a>noise_image <span class="op">=</span> torch.rand(<span class="dv">1</span>, <span class="dv">32</span>, <span class="dv">32</span>)  <span class="co"># Example: Single-channel (grayscale) 32x32 noise image</span></span>
+<span id="cb34-6"><a href="#cb34-6"></a></span>
+<span id="cb34-7"><a href="#cb34-7"></a><span class="co"># Assume `model` is trained and available</span></span>
+<span id="cb34-8"><a href="#cb34-8"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb34-9"><a href="#cb34-9"></a>    denoised_image <span class="op">=</span> model(noise_image.unsqueeze(<span class="dv">0</span>).to(device))  <span class="co"># Add batch dimension &amp; move to device</span></span>
+<span id="cb34-10"><a href="#cb34-10"></a>    denoised_image <span class="op">=</span> denoised_image.squeeze(<span class="dv">0</span>).cpu().detach()  <span class="co"># Remove batch dim &amp; move to CPU</span></span>
+<span id="cb34-11"><a href="#cb34-11"></a></span>
+<span id="cb34-12"><a href="#cb34-12"></a><span class="co"># Plot both images side by side</span></span>
+<span id="cb34-13"><a href="#cb34-13"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb34-14"><a href="#cb34-14"></a></span>
+<span id="cb34-15"><a href="#cb34-15"></a>axs[<span class="dv">0</span>].imshow(noise_image.squeeze(), cmap<span class="op">=</span><span class="st">"Greys"</span>)</span>
+<span id="cb34-16"><a href="#cb34-16"></a>axs[<span class="dv">0</span>].set_title(<span class="st">"Noisy Image"</span>)</span>
+<span id="cb34-17"><a href="#cb34-17"></a>axs[<span class="dv">0</span>].axis(<span class="st">"off"</span>)</span>
+<span id="cb34-18"><a href="#cb34-18"></a></span>
+<span id="cb34-19"><a href="#cb34-19"></a>axs[<span class="dv">1</span>].imshow(denoised_image.squeeze(), cmap<span class="op">=</span><span class="st">"Greys"</span>)</span>
+<span id="cb34-20"><a href="#cb34-20"></a>axs[<span class="dv">1</span>].set_title(<span class="st">"Model Prediction (Denoised)"</span>)</span>
+<span id="cb34-21"><a href="#cb34-21"></a>axs[<span class="dv">1</span>].axis(<span class="st">"off"</span>)</span>
+<span id="cb34-22"><a href="#cb34-22"></a></span>
+<span id="cb34-23"><a href="#cb34-23"></a>plt.tight_layout()</span>
+<span id="cb34-24"><a href="#cb34-24"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-22-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This time, the model <strong>struggled to generate a clear, crisp image</strong> from pure noise. While it did attempt to predict a digit, the result remains <strong>blurry</strong>.</p>
+<p>In some of my other runs, the outputs were <strong>even worse</strong>, indicating that the model has difficulty denoising <strong>pure noise in a single step</strong>. This suggests that <strong>one-shot denoising</strong> may not be sufficient for fully reconstructing meaningful digits from random noise.</p>
+<section id="exploring-iterative-refinement" class="level4">
+<h4 class="anchored" data-anchor-id="exploring-iterative-refinement">Exploring Iterative Refinement</h4>
+<p>To see if we can further improve upon these one-shot results, we will experiment with a simple <strong>iterative refinement approach</strong>. Instead of denoising in a single step, we start with <strong>pure random noise</strong> and iteratively refine it over <strong>5 steps</strong> using our trained model. The following code implements this process:</p>
+<div id="942241dd" class="cell" data-outputid="42d04845-91c0-4858-fd64-3a439b23f9c8" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="co"># --- Iterative Refinement Experiment (Model 1) ---</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a><span class="im">import</span> torchvision</span>
+<span id="cb35-3"><a href="#cb35-3"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb35-4"><a href="#cb35-4"></a></span>
+<span id="cb35-5"><a href="#cb35-5"></a>n_steps <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb35-6"><a href="#cb35-6"></a>x <span class="op">=</span> torch.rand(<span class="dv">8</span>, <span class="dv">1</span>, <span class="dv">32</span>, <span class="dv">32</span>).to(device) <span class="co"># Start from pure random noise</span></span>
+<span id="cb35-7"><a href="#cb35-7"></a>step_history <span class="op">=</span> [x.detach().cpu()] <span class="co"># Store initial noise</span></span>
+<span id="cb35-8"><a href="#cb35-8"></a>pred_output_history <span class="op">=</span> [] <span class="co"># Store model predictions at each step</span></span>
+<span id="cb35-9"><a href="#cb35-9"></a></span>
+<span id="cb35-10"><a href="#cb35-10"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_steps):</span>
+<span id="cb35-11"><a href="#cb35-11"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb35-12"><a href="#cb35-12"></a>        pred <span class="op">=</span> model(x) <span class="co"># Get model's direct prediction</span></span>
+<span id="cb35-13"><a href="#cb35-13"></a>    pred_output_history.append(pred.detach().cpu()) <span class="co"># Store prediction</span></span>
+<span id="cb35-14"><a href="#cb35-14"></a>    mix_factor <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (n_steps <span class="op">-</span> i) <span class="co"># Increasing mix factor over steps</span></span>
+<span id="cb35-15"><a href="#cb35-15"></a>    x <span class="op">=</span> x <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> mix_factor) <span class="op">+</span> pred <span class="op">*</span> mix_factor <span class="co"># Linear blend: refine x with prediction</span></span>
+<span id="cb35-16"><a href="#cb35-16"></a>    step_history.append(x.detach().cpu()) <span class="co"># Store refined x</span></span>
+<span id="cb35-17"><a href="#cb35-17"></a></span>
+<span id="cb35-18"><a href="#cb35-18"></a>fig, axs <span class="op">=</span> plt.subplots(n_steps, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>), sharex<span class="op">=</span><span class="va">True</span>) <span class="co"># Create 2-column plot</span></span>
+<span id="cb35-19"><a href="#cb35-19"></a>axs[<span class="dv">0</span>, <span class="dv">0</span>].set_title(<span class="st">"x (model input)"</span>) <span class="co"># Title for 'input' column</span></span>
+<span id="cb35-20"><a href="#cb35-20"></a>axs[<span class="dv">0</span>, <span class="dv">1</span>].set_title(<span class="st">"model prediction"</span>) <span class="co"># Title for 'prediction' column</span></span>
+<span id="cb35-21"><a href="#cb35-21"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_steps): <span class="co"># Loop to plot each step</span></span>
+<span id="cb35-22"><a href="#cb35-22"></a>    axs[i, <span class="dv">0</span>].imshow(torchvision.utils.make_grid(step_history[i])[<span class="dv">0</span>].clip(<span class="dv">0</span>, <span class="dv">1</span>), cmap<span class="op">=</span><span class="st">"Greys"</span>) <span class="co"># Plot refined x</span></span>
+<span id="cb35-23"><a href="#cb35-23"></a>    axs[i, <span class="dv">1</span>].imshow(torchvision.utils.make_grid(pred_output_history[i])[<span class="dv">0</span>].clip(<span class="dv">0</span>, <span class="dv">1</span>), cmap<span class="op">=</span><span class="st">"Greys"</span>) <span class="co"># Plot prediction</span></span>
+<span id="cb35-24"><a href="#cb35-24"></a>plt.tight_layout()</span>
+<span id="cb35-25"><a href="#cb35-25"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-23-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Running this iterative refinement code generates a new plot with two columns:</p>
+<ul>
+<li><strong>Left column (“x (model input)”)</strong> Shows images at each step of the refinement process. Starting from <strong>pure noise (top row),</strong> you can observe how the images gradually become more digit-like over the <strong>5 steps</strong>.<br>
+</li>
+<li><strong>Right column (“model prediction”)</strong> Displays the <em>direct predictions</em> of Model 1 at each step.</li>
+</ul>
+<p>Comparing the final results to the one-shot “Denoised” image from the previous experiment, you may notice a <strong>subtle but visible improvement</strong> in image quality. The iteratively refined digits often appear <strong>slightly sharper and more well-formed</strong> compared to the one-shot denoised outputs.</p>
+<p>This suggests that even with a <strong>direct prediction model</strong>, a <strong>basic iterative refinement approach</strong> can enhance image quality. However, it’s important to note that <strong>this process is still a simplification</strong>—it does not represent <strong>true diffusion model sampling.</strong> The model is still making <strong>direct predictions</strong>, and we are manually blending them to guide the image toward a cleaner state.</p>
+</section>
+</section>
+</section>
+<section id="key-takeaways-next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways-next-steps">Key Takeaways &amp; Next Steps</h2>
+<p>From both <strong>one-shot denoising</strong> and <strong>iterative refinement</strong>, we can conclude that even a <strong>basic Convolutional UNet</strong> trained for <strong>direct image prediction</strong> can perform some level of denoising on MNIST digits. However, to achieve <strong>higher-quality, sharper, and more faithfully reconstructed digits</strong>, we need to go beyond this basic approach.</p>
+<p>In the next <del>section</del> post, we will <strong>enhance our UNet architecture</strong> using the <code>diffusers</code> library while still employing <strong>direct image prediction</strong>. This will allow us to examine how <strong>architectural improvements</strong> can further boost performance. Eventually, we will transition to <strong>true noise prediction and scheduled denoising</strong>, bringing us closer to the core principles of <strong>diffusion models</strong>.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
