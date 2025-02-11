@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2025-02-10">
-<meta name="description" content="some description">
+<meta name="description" content="This post walks you through building MNIST digit generators with diffusion models, starting from the basics. We introduce diffusion models, prepare the MNIST dataset, and train a simple convolutional UNet for direct image prediction. Finally, we evaluate its denoising performance as a foundation for more advanced models.">
 
 <title>From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 1) – Random Thoughts</title>
 <style>
@@ -223,7 +223,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 
 <div>
   <div class="description">
-    some description
+    This post walks you through building MNIST digit generators with diffusion models, starting from the basics. We introduce diffusion models, prepare the MNIST dataset, and train a simple convolutional UNet for direct image prediction. Finally, we evaluate its denoising performance as a foundation for more advanced models.
   </div>
 </div>
 
@@ -291,10 +291,11 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </section>
 <section id="environment-details" class="level3">
 <h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<p>You can access and run this Jupyter Notebook from the GitHub repository on this link <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2025-02-10-diffusion-model-mnist-part1.ipynb">2025-02-10-diffusion-model-mnist-part1.ipynb</a></p>
 <p>Run the following cell to install the required packages.</p>
 <ul>
 <li>This notebook can be run with <a href="https://colab.research.google.com/">Google Colab</a> T4 GPU runtime.</li>
-<li>I have also tested this notebook with AWS SageMaker Jupyter Notebook running on instance “ml.g5.xlarge” and image “SageMaker Distribution 2.3.0”</li>
+<li>I have also tested this notebook with AWS SageMaker Jupyter Notebook running on instance “ml.g5.xlarge” and image “SageMaker Distribution 2.3.0”.</li>
 </ul>
 <div id="47c651f8-0f51-44cb-8df6-54dd96313c33" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
@@ -337,7 +338,7 @@ Architecture: 64bit
 </section>
 <section id="data-preparation-for-mnist-simple-digits-simple-setup" class="level2">
 <h2 class="anchored" data-anchor-id="data-preparation-for-mnist-simple-digits-simple-setup">Data Preparation for MNIST: Simple Digits, Simple Setup</h2>
-<p>Before training our diffusion model to generate MNIST digits, we first need to <strong>prepare the dataset properly</strong>. Data preparation is a critical step in any machine learning project, especially for image-based models. Think of it like setting up an artist’s workspace — before painting, an artist ensures they have the right <em>canvas</em> and <em>paints</em>. Similarly, our model needs <strong>well-structured, consistently formatted, and properly scaled data</strong> to learn effectively and generate high-quality results.</p>
+<p>Before training our diffusion model to generate MNIST digits, we first need to <strong>prepare the dataset properly</strong>. Data preparation is a critical step in any machine learning project, especially for image-based models. Think of it like setting up an artist’s workspace — before painting, an artist ensures that they have the right <em>canvas</em> and <em>paints</em>. Similarly, our model needs <strong>well-structured, consistently formatted, and properly scaled data</strong> to learn effectively and generate high-quality results.</p>
 <p>In this section, we’ll go through the <strong>key steps</strong> required to get our MNIST digits ready for diffusion modeling.</p>
 <section id="loading-the-mnist-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="loading-the-mnist-dataset">Loading the MNIST Dataset</h3>
@@ -389,8 +390,7 @@ Please note that authentication is recommended but still optional to access publ
 <span id="cb8-8"><a href="#cb8-8"></a><span class="bu">print</span>(<span class="st">"Image Size:"</span>, sample_image.size)  <span class="co"># Displays dimensions of the image</span></span>
 <span id="cb8-9"><a href="#cb8-9"></a></span>
 <span id="cb8-10"><a href="#cb8-10"></a><span class="co"># Display the image</span></span>
-<span id="cb8-11"><a href="#cb8-11"></a><span class="co"># sample_image.show()</span></span>
-<span id="cb8-12"><a href="#cb8-12"></a>display(sample_image)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-11"><a href="#cb8-11"></a>display(sample_image)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Data Type: &lt;class 'PIL.PngImagePlugin.PngImageFile'&gt;
 Image Size: (28, 28)</code></pre>
@@ -533,7 +533,7 @@ Image Size: (28, 28)</code></pre>
 </section>
 <section id="creating-the-dataloader" class="level4">
 <h4 class="anchored" data-anchor-id="creating-the-dataloader">Creating the DataLoader</h4>
-<p>With our dataset preprocessed, the next step is to create a <strong>DataLoader</strong>. PyTorch’s <code>DataLoader</code> is an essential utility that efficiently handles data loading during training. It performs key tasks such as:</p>
+<p>With our dataset ready, the next step is to create a <strong>DataLoader</strong>. PyTorch’s <code>DataLoader</code> is an essential utility that efficiently handles data loading during training. It performs key tasks such as:</p>
 <ul>
 <li><strong>Batching</strong>: Groups images into batches for efficient processing, especially when using a GPU.<br>
 </li>
@@ -555,7 +555,7 @@ Image Size: (28, 28)</code></pre>
 </div>
 <p>In this code snippet:</p>
 <ul>
-<li><strong><code>batch_size = 8</code></strong>: Defines the number of images in each batch. Larger batch sizes can speed up training but require more memory. Adjust as needed based on your hardware.<br>
+<li><strong><code>batch_size = 8</code></strong>: Defines the number of images in each batch. Larger batch sizes can speed up training but require more memory.<br>
 </li>
 <li><strong><code>dataset["train"]</code></strong>: Specifies the training split of the MNIST dataset.<br>
 </li>
@@ -592,6 +592,25 @@ Image Size: (28, 28)</code></pre>
 <p><img src="2025-02-10-diffusion-model-mnist-part1_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Why the color of the images flipped?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why the color of the images flipped?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the previous plots, MNIST digits appeared as <strong>white pixels on a dark background</strong>, but in the last plot, they now appear as <strong>black pixels on a white background</strong>. This change is due to the <strong>colormap (<code>cmap</code>) setting</strong> used when plotting the images.</p>
+<p>Both <code>"gray"</code> and <code>"Greys"</code> are sequential colormaps, but they interpret pixel intensity slightly differently:</p>
+<ul>
+<li><strong><code>"gray"</code></strong> : Maps values close to 0 as black and higher values as white.</li>
+<li><strong><code>"Greys"</code></strong>: Maps values close to 0 as white and higher values as black.</li>
+</ul>
+<p>I switched the colormap to make the MNIST digits <strong>sharper and easier to validate visually</strong>. You can learn more about Matplotlib colormaps from the <a href="https://matplotlib.org/stable/users/explain/colors/colormaps.html">official documentation</a>.</p>
 </div>
 </div>
 <p>Our images have been transformed from pixel-based representations to tensors, making them more suitable for training. Now, let’s visualize how a single image appears after these transformations.</p>
@@ -788,7 +807,7 @@ Image Size: (28, 28)</code></pre>
 <li><strong>It establishes a useful baseline.</strong> This basic denoising UNet allows us to compare performance as we transition to more sophisticated, iterative diffusion models.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Are There U-Net Architectures Without Convolutional Layers?">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -797,67 +816,24 @@ Are There U-Net Architectures Without Convolutional Layers?
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>When discussing U-Net architectures, we often assume they are convolution-based. But are there U-Net variants that don’t use convolutional layers at all?</p>
 <p>Yes, there are. Below are some alternatives that replace convolutions with different computational approaches.</p>
-<section id="fourier-neural-operator-u-net-fno-u-net" class="level4">
-<h4 class="anchored" data-anchor-id="fourier-neural-operator-u-net-fno-u-net">1. Fourier Neural Operator U-Net (FNO-U-Net)</h4>
+<section id="fourier-neural-operator-u-net-fno-u-net" class="level5">
+<h5 class="anchored" data-anchor-id="fourier-neural-operator-u-net-fno-u-net">1. Fourier Neural Operator U-Net (FNO-U-Net)</h5>
 <p>This model replaces the usual convolutional layers with <strong>Fourier Transforms</strong>. Instead of learning patterns using small local filters (like in a CNN), it transforms the image into the <strong>frequency domain</strong>, where patterns can be processed more efficiently.</p>
-<ul>
-<li><strong>How it works:</strong>
-<ul>
-<li>Converts the image into a set of wave-like components using the <strong>Fourier Transform</strong>.<br>
-</li>
-<li>Performs operations in this transformed space.<br>
-</li>
-<li>Converts the data back to an image after processing.</li>
-</ul></li>
-<li><strong>Why it’s useful:</strong>
-<ul>
-<li>Can capture both fine details and large-scale structures at the same time.<br>
-</li>
-<li>Works well for tasks like weather prediction and fluid dynamics, where patterns extend across large areas.</li>
-</ul></li>
-</ul>
 </section>
-<section id="siren-u-net" class="level4">
-<h4 class="anchored" data-anchor-id="siren-u-net">2. Siren U-Net</h4>
+<section id="siren-u-net" class="level5">
+<h5 class="anchored" data-anchor-id="siren-u-net">2. Siren U-Net</h5>
 <p>Instead of using convolutions, this model relies on <strong>Sinusoidal Representation Networks (SIREN)</strong>, which use sine functions as activation functions. This allows the network to smoothly model continuous signals.</p>
-<ul>
-<li><strong>How it works:</strong>
-<ul>
-<li>Instead of filters scanning small regions, the network represents the image as a continuous mathematical function.<br>
-</li>
-<li>Uses sine waves to reconstruct and modify the image.</li>
-</ul></li>
-<li><strong>Why it’s useful:</strong>
-<ul>
-<li>Great for tasks involving <strong>highly detailed textures</strong> or <strong>continuous signals</strong>, such as 3D modeling or implicit shape representations.<br>
-</li>
-<li>Can generate images at any resolution without pixelation.</li>
-</ul></li>
-</ul>
 </section>
-<section id="mlp-mixer-u-net" class="level4">
-<h4 class="anchored" data-anchor-id="mlp-mixer-u-net">3. MLP-Mixer U-Net</h4>
-<p>This model replaces convolutions with <strong>fully connected layers</strong> that process information across the entire image. Instead of scanning with filters, it mixes and reshapes the image data in two main steps:</p>
-<ul>
-<li><strong>How it works:</strong>
-<ul>
-<li><strong>First step:</strong> Processes information across different image locations (spatial mixing).<br>
-</li>
-<li><strong>Second step:</strong> Processes information across different color or feature channels (channel mixing).<br>
-</li>
-<li>This ensures that both <strong>local and global information</strong> is captured.</li>
-</ul></li>
-<li><strong>Why it’s useful:</strong>
-<ul>
-<li>Works well when the relationships between different parts of an image are more important than local details.<br>
-</li>
-<li>Good for medical imaging, where entire structures matter more than tiny textures.</li>
-</ul></li>
-</ul>
+<section id="mlp-mixer-u-net" class="level5">
+<h5 class="anchored" data-anchor-id="mlp-mixer-u-net">3. MLP-Mixer U-Net</h5>
+<p>This model replaces convolutions with <strong>fully connected layers</strong> that process information across the entire image. Instead of scanning with filters, it mixes and reshapes the image data in two main steps:<br>
+- <strong>First step:</strong> Processes information across different image locations (spatial mixing).<br>
+- <strong>Second step:</strong> Processes information across different color or feature channels (channel mixing).<br>
+- This ensures that both <strong>local and global information</strong> is captured.</p>
 </section>
 </div>
 </div>
@@ -985,7 +961,7 @@ Non-trainable params: 0
 <li><code>nn.Conv2d(64, 64, kernel_size=5, padding=2)</code>: The third convolutional layer takes <code>64</code> input channels and also outputs <code>64</code> channels. Notice how the number of feature channels increases in the encoder’s initial layers. This is a common strategy in convolutional networks, allowing them to capture increasingly abstract and complex features as they go deeper.</li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Why Conv2d and not Conv3d or Conv1d?">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -994,7 +970,7 @@ Why Conv2d and not Conv3d or Conv1d?
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>It’s important to understand that <code>nn.Conv2d</code> creates a <strong>2D convolutional layer</strong> specifically for two-dimensional data, such as images. In this context, <strong>two dimensions refer to height and width</strong>, not the number of color channels.</p>
 <p>All standard images—whether grayscale or RGB—are inherently <strong>2D</strong> because they have a height and width. However, the number of channels (e.g., <strong>grayscale (1 channel), RGB (3 channels), or RGBA (4 channels)</strong>) should not be confused with the concept of dimensionality.</p>
@@ -1171,7 +1147,7 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 <h3 class="anchored" data-anchor-id="inference-with-model">Inference with Model</h3>
 <p>Now that our model is trained, we need to evaluate its ability to <strong>denoise images it hasn’t encountered during training</strong>. This process, known as <strong>inference</strong> (or sometimes <strong>sampling</strong> or <strong>generation</strong>), involves using the trained model to generate outputs on new data.</p>
 <p>For <strong>Model 1</strong>, inference is straightforward because it performs <strong>direct image prediction</strong> in a single forward pass. Given a noisy image as input, it directly outputs a <strong>denoised</strong> version.</p>
-<p>To assess Model 1’s denoising performance, we will use the <strong>MNIST test dataset</strong>. We’ll set up a <code>DataLoader</code> for the test set, similar to <code>train_dataloader</code>, but using <code>dataset["test"]</code> to load the test split. For each batch of test images, we will:</p>
+<p>To assess model’s denoising performance, we will use the <strong>MNIST test dataset</strong>. We’ll set up a <code>DataLoader</code> for the test set, similar to <code>train_dataloader</code>, but using <code>dataset["test"]</code> to load the test split. For each batch of test images, we will:</p>
 <ol type="1">
 <li><strong>Load a batch of clean MNIST test images</strong> from the <code>test_dataloader</code>.<br>
 </li>
