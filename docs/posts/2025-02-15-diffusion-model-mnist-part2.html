@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-02-15">
+<meta name="description" content="??">
+
+<title>From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 2) – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-84543be43ff612bda7a31c913735130b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 2) – Random Thoughts">
+<meta property="og:description" content="??">
+<meta property="og:image" content="images/2025-02-15-diffusion-model-mnist-part2.jpeg">
+<meta property="og:site_name" content="Random Thoughts">
+<meta name="twitter:title" content="From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 2) – Random Thoughts">
+<meta name="twitter:description" content="??">
+<meta name="twitter:image" content="images/2025-02-15-diffusion-model-mnist-part2.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#credits" id="toc-credits" class="nav-link" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#environment-details" id="toc-environment-details" class="nav-link" data-scroll-target="#environment-details">Environment Details</a></li>
+  </ul></li>
+  <li><a href="#diving-into-diffusers-and-unet2dmodel" id="toc-diving-into-diffusers-and-unet2dmodel" class="nav-link" data-scroll-target="#diving-into-diffusers-and-unet2dmodel">Diving into <code>diffusers</code> and <code>UNet2DModel</code></a></li>
+  <li><a href="#data-preparation-and-preprocessing-for-mnist" id="toc-data-preparation-and-preprocessing-for-mnist" class="nav-link" data-scroll-target="#data-preparation-and-preprocessing-for-mnist">Data Preparation and Preprocessing for MNIST</a></li>
+  <li><a href="#model-2-implementing-unet2dmodel" id="toc-model-2-implementing-unet2dmodel" class="nav-link" data-scroll-target="#model-2-implementing-unet2dmodel">Model 2: Implementing <code>UNet2DModel</code></a>
+  <ul class="collapse">
+  <li><a href="#training-the-enhanced-unet" id="toc-training-the-enhanced-unet" class="nav-link" data-scroll-target="#training-the-enhanced-unet">Training the Enhanced UNet</a></li>
+  <li><a href="#inference-and-results-did-diffusers-unet-improve-things" id="toc-inference-and-results-did-diffusers-unet-improve-things" class="nav-link" data-scroll-target="#inference-and-results-did-diffusers-unet-improve-things">Inference and Results: Did <code>diffusers</code> UNet Improve Things?</a></li>
+  <li><a href="#exploring-iterative-refinement-again" id="toc-exploring-iterative-refinement-again" class="nav-link" data-scroll-target="#exploring-iterative-refinement-again">Exploring Iterative Refinement (Again)</a></li>
+  </ul></li>
+  <li><a href="#discussion-and-key-takeaways" id="toc-discussion-and-key-takeaways" class="nav-link" data-scroll-target="#discussion-and-key-takeaways">Discussion and Key Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">From Noise to Numbers: A Hands-On Guide to Generating MNIST Digits with Diffusion Models (Part 2)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">python</div>
+    <div class="quarto-category">dl</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    ??
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 15, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-02-15-diffusion-model-mnist-part2.jpeg" class="img-fluid figure-img"></p>
+<figcaption>image source: https://www.artbreeder.com/image/6b4df6c697078f0e2cda42348ec6</figcaption>
+</figure>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome back to Part 2 of our journey into diffusion models! In the <a href="https://hassaanbinaslam.github.io/myblog/posts/2025-02-10-diffusion-model-mnist-part1.html">first part</a>, we successfully built a basic Convolutional UNet from scratch and trained it to directly predict denoised MNIST digits. We saw that it could indeed remove some noise, but the results were still a bit blurry, and it wasn’t quite the “diffusion model magic” we were hoping for.</p>
+<p>One of the key limitations we hinted at was the simplicity of our <code>BasicUNet</code> architecture. For this second part, we’re going to address that and we’ll be upgrading our UNet architecture to something more powerful and feature-rich.</p>
+<p>To do this, we’ll be leveraging the fantastic <code>diffusers</code> library from <a href="https://huggingface.co/">Hugging Face</a>. <a href="https://huggingface.co/docs/diffusers/en/index"><code>diffusers</code></a> is a widely adopted toolkit in the world of diffusion models, providing pre-built and optimized components that can significantly simplify our development process and boost performance.</p>
+<p>In this part, we’ll replace our <code>BasicUNet</code> with a <code>UNet2DModel</code> from <code>diffusers</code>. We’ll keep the core task the same – direct image prediction – but with a more advanced UNet under the hood. This will allow us to see firsthand how architectural improvements can impact the quality of our denoising results, setting the stage for even more exciting explorations in future parts! Let’s dive in!</p>
+<section id="credits" class="level3">
+<h3 class="anchored" data-anchor-id="credits">Credits</h3>
+<p>This post is inspired by the <a href="https://huggingface.co/learn/diffusion-course/en/unit1/3">Hugging Face Diffusion Course</a></p>
+</section>
+<section id="environment-details" class="level3">
+<h3 class="anchored" data-anchor-id="environment-details">Environment Details</h3>
+<p>You can access and run this Jupyter Notebook from the GitHub repository on this link <a href="https://github.com/hassaanbinaslam/myblog/blob/main/posts/2025-02-15-diffusion-model-mnist-part2.ipynb">2025-02-15-diffusion-model-mnist-part2.ipynb</a></p>
+<p>Run the following cell to install the required packages.</p>
+<ul>
+<li>This notebook can be run with <a href="https://colab.research.google.com/">Google Colab</a> T4 GPU runtime.</li>
+<li>I have also tested this notebook with AWS SageMaker Jupyter Notebook running on instance “ml.g5.xlarge” and image “SageMaker Distribution 2.3.0”.</li>
+</ul>
+<div id="47c651f8-0f51-44cb-8df6-54dd96313c33" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span>pip install datasets[vision]</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="op">!</span>pip install diffusers</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="op">!</span>pip install watermark</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="op">!</span>pip install torchinfo</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="op">!</span>pip install matplotlib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://github.com/rasbt/watermark">WaterMark</a> is an IPython magic extension for printing date and time stamps, version numbers, and hardware information. Let’s load this extension and print the environment details.</p>
+<div id="64dd2d3c-631e-43b2-ab87-b0e9e0c1bafa" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="9af53e1f-1b21-4ba4-84a9-f5df6c2c1f6b" class="cell" data-outputid="e0c6c9aa-e5bb-47ab-99c9-a1b73c7b3d16" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p torch,torchvision,datasets,diffusers,matplotlib,watermark,torchinfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Python implementation: CPython
+Python version       : 3.11.11
+IPython version      : 7.34.0
+
+torch      : 2.5.1+cu124
+torchvision: 0.20.1+cu124
+datasets   : 3.3.0
+diffusers  : 0.32.2
+matplotlib : 3.10.0
+watermark  : 2.5.0
+torchinfo  : 1.8.0
+
+Compiler    : GCC 11.4.0
+OS          : Linux
+Release     : 6.1.85+
+Machine     : x86_64
+Processor   : x86_64
+CPU cores   : 2
+Architecture: 64bit
+</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="diving-into-diffusers-and-unet2dmodel" class="level2">
+<h2 class="anchored" data-anchor-id="diving-into-diffusers-and-unet2dmodel">Diving into <code>diffusers</code> and <code>UNet2DModel</code></h2>
+<p>So, what exactly <em>is</em> this <a href="https://huggingface.co/docs/diffusers/en/index"><code>diffusers</code></a> library we’re so excited about? Think of <code>diffusers</code> as a comprehensive, community-driven library in <a href="https://pytorch.org/">PyTorch</a> specifically designed for working with diffusion models. It’s maintained by Hugging Face, the same team behind the popular <a href="https://huggingface.co/docs/transformers/en/index">Transformers</a> library, so you know it’s built with quality and ease of use in mind.</p>
+<p>Why are we using <code>diffusers</code> now? Several reasons! First, it provides well-tested and optimized implementations of various diffusion model components, saving us from writing everything from scratch. Second, it’s a vibrant ecosystem, constantly evolving with the latest research and techniques in diffusion models. By using <code>diffusers</code>, we’re standing on the shoulders of giants!</p>
+<p>For Part 2, the star of the show is the <a href="https://huggingface.co/docs/diffusers/main/en/api/models/unet2d"><code>UNet2DModel</code></a> class from <code>diffusers</code>. This is a more sophisticated UNet architecture compared to our <code>BasicUNet</code>. It’s like upgrading from a standard bicycle to a mountain bike – both are bikes, but the mountain bike is built for more challenging terrain and better performance.</p>
+<p>What makes <code>UNet2DModel</code> more advanced? Let’s look at some key architectural improvements under the hood:</p>
+<ul>
+<li><p><strong>ResNet Blocks:</strong> Instead of simple convolutional layers, <code>UNet2DModel</code> utilizes ResNet blocks within its downsampling and upsampling paths. ResNet blocks are known for making it easier to train deeper networks, which can capture more complex features in images. Think of them as more efficient and powerful building blocks for our UNet.</p></li>
+<li><p><strong>Attention Mechanisms:</strong> <code>UNet2DModel</code> incorporates attention mechanisms, specifically “Attention Blocks,” in its architecture. Attention is a powerful concept in deep learning that allows the model to focus on the most relevant parts of the input when processing information. In image generation, attention can help the model selectively focus on different regions of the image, potentially leading to finer details and more coherent structures.</p></li>
+<li><p><strong>Group Normalization:</strong> Instead of Batch Normalization, <code>UNet2DModel</code> uses Group Normalization. Group Normalization is often favored in generative models, especially when working with smaller batch sizes, as it tends to be more stable and perform better in those scenarios.</p></li>
+<li><p><strong>Timestep Embedding:</strong> Even though we are still doing direct image prediction in this part, <code>UNet2DModel</code> is designed with diffusion models in mind. It includes a <code>TimestepEmbedding</code> layer, which is a standard component in diffusion models to handle the timestep information (which we’ll explore in later parts!). For now, we’ll just be passing in a timestep of 0, but this layer is there, ready for when we move to true diffusion.</p></li>
+</ul>
+<p>These architectural enhancements in <code>UNet2DModel</code> give it a greater capacity to learn and potentially denoise images more effectively than our <code>BasicUNet</code>. Let’s see if it lives up to the hype!</p>
+</section>
+<section id="data-preparation-and-preprocessing-for-mnist" class="level2">
+<h2 class="anchored" data-anchor-id="data-preparation-and-preprocessing-for-mnist">Data Preparation and Preprocessing for MNIST</h2>
+<p>As we are building upon the foundations laid in <a href="https://hassaanbinaslam.github.io/myblog/posts/2025-02-10-diffusion-model-mnist-part1.html">Part 1</a>, we will reuse the same data preparation and preprocessing steps for the MNIST dataset. For a more in-depth explanation of these steps, please refer back to the first part of this guide. Here, we will quickly outline the process to ensure our data is ready for training our enhanced UNet.</p>
+<p>First, we load the MNIST dataset using the <code>datasets</code> library:</p>
+<div id="8c9203a3" class="cell" data-outputid="af428329-0ae6-404e-e0c7-cbc01b6da00f" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb5-2"><a href="#cb5-2"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"mnist"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="bu">print</span>(dataset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/usr/local/lib/python3.11/dist-packages/huggingface_hub/utils/_auth.py:104: UserWarning: 
+Error while fetching `HF_TOKEN` secret value from your vault: 'Requesting secret HF_TOKEN timed out. Secrets can only be fetched when running from the Colab UI.'.
+You are not authenticated with the Hugging Face Hub in this notebook.
+If the error persists, please let us know by opening an issue on GitHub (https://github.com/huggingface/huggingface_hub/issues/new).
+  warnings.warn(</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"6eb1274625c54cf3936403f1664d0b97","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"cd35ebc94de54d76affdd01d964b1fb8","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"6b586d3e8119496a894a0e2fe9534820","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"7ce729a7bc704aa691f046e5af6555ac","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"525046febfd24b32b28b5b13b8306af9","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['image', 'label'],
+        num_rows: 60000
+    })
+    test: Dataset({
+        features: ['image', 'label'],
+        num_rows: 10000
+    })
+})</code></pre>
+</div>
+</div>
+<p>This code snippet downloads and loads the MNIST dataset. As we saw in <a href="https://hassaanbinaslam.github.io/myblog/posts/2025-02-10-diffusion-model-mnist-part1.html">Part 1</a>, this dataset is provided as a <code>DatasetDict</code> with ‘train’ and ‘test’ splits, each containing ‘image’ and ‘label’ features.</p>
+<p>Next, we define our preprocessing pipeline using <code>torchvision.transforms</code>:</p>
+<div id="622fd34b" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">import</span> torch</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
+<span id="cb8-3"><a href="#cb8-3"></a></span>
+<span id="cb8-4"><a href="#cb8-4"></a>image_size <span class="op">=</span> <span class="dv">32</span>  <span class="co"># Define the target image size</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a></span>
+<span id="cb8-6"><a href="#cb8-6"></a>preprocess <span class="op">=</span> transforms.Compose([</span>
+<span id="cb8-7"><a href="#cb8-7"></a>    transforms.Resize((image_size, image_size)),</span>
+<span id="cb8-8"><a href="#cb8-8"></a>    transforms.ToTensor(),</span>
+<span id="cb8-9"><a href="#cb8-9"></a>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This <code>preprocess</code> pipeline consists of two transformations:</p>
+<ul>
+<li><code>transforms.Resize((image_size, image_size))</code>: Resizes each image to a fixed size of 32x32 pixels. This ensures consistent input dimensions for our UNet model.</li>
+<li><code>transforms.ToTensor()</code>: Converts the images to PyTorch tensors and scales the pixel values to the range [0, 1]. This normalization is crucial for training deep learning models effectively.</li>
+</ul>
+<p>To apply this preprocessing to the dataset efficiently, we define a <code>transform</code> function and set it for our dataset:</p>
+<div id="119c7480" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># Define the transform function</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="kw">def</span> transform(examples):</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    examples <span class="op">=</span> [preprocess(image) <span class="cf">for</span> image <span class="kw">in</span> examples[<span class="st">"image"</span>]]</span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="cf">return</span> {<span class="st">"images"</span>: examples}</span>
+<span id="cb9-5"><a href="#cb9-5"></a></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="co"># Apply the transform to the dataset</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>dataset.set_transform(transform)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This <code>transform</code> function applies our <code>preprocess</code> pipeline to each image in the dataset on-the-fly, meaning preprocessing happens only when the data is accessed, saving memory and keeping our dataset efficient.</p>
+<p>Finally, we need the noise corruption function that we introduced in Part 1. This function will be used to add controlled noise to our clean MNIST images during training, simulating the forward diffusion process:</p>
+<div id="kXPYGnPeedPf" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># Definition of the noise corruption function</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">def</span> corrupt(x, noise, amount):</span>
+<span id="cb10-3"><a href="#cb10-3"></a>    amount <span class="op">=</span> amount.view(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)  <span class="co"># make sure it's broadcastable</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>    <span class="cf">return</span> (</span>
+<span id="cb10-5"><a href="#cb10-5"></a>        x <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> amount) <span class="op">+</span> noise <span class="op">*</span> amount</span>
+<span id="cb10-6"><a href="#cb10-6"></a>    )  <span class="co"># equivalent to x.lerp(noise, amount)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This <code>corrupt</code> function takes a clean image (<code>x</code>), random noise (<code>noise</code>), and a noise <code>amount</code> (ranging from 0 to 1) as input. It then blends the clean image with the noise based on the <code>amount</code>, effectively creating a noisy version of the image. The higher the <code>amount</code>, the more noise is added.</p>
+<p>With the MNIST dataset loaded, preprocessed, and the noise corruption function defined, we are now fully prepared to train our enhanced UNet architecture from the <code>diffusers</code> library! Let’s move on to explore the <code>UNet2DModel</code>.</p>
+</section>
+<section id="model-2-implementing-unet2dmodel" class="level2">
+<h2 class="anchored" data-anchor-id="model-2-implementing-unet2dmodel">Model 2: Implementing <code>UNet2DModel</code></h2>
+<p>Now, let’s see how to put the <code>diffusers</code> <code>UNet2DModel</code> into action for our MNIST digit denoising task. Here’s the code snippet we’ll use to instantiate the model:</p>
+<div id="f56ae62f" class="cell" data-outputid="ed344a68-2ebd-454d-833b-04ab4f74d60b" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="im">from</span> diffusers <span class="im">import</span> UNet2DModel</span>
+<span id="cb11-2"><a href="#cb11-2"></a></span>
+<span id="cb11-3"><a href="#cb11-3"></a>model <span class="op">=</span> UNet2DModel(</span>
+<span id="cb11-4"><a href="#cb11-4"></a>    sample_size<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb11-5"><a href="#cb11-5"></a>    in_channels<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb11-6"><a href="#cb11-6"></a>    out_channels<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb11-7"><a href="#cb11-7"></a>    layers_per_block<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb11-8"><a href="#cb11-8"></a>    block_out_channels<span class="op">=</span>(<span class="dv">32</span>, <span class="dv">64</span>, <span class="dv">64</span>),</span>
+<span id="cb11-9"><a href="#cb11-9"></a>    down_block_types<span class="op">=</span>(</span>
+<span id="cb11-10"><a href="#cb11-10"></a>        <span class="st">"DownBlock2D"</span>,</span>
+<span id="cb11-11"><a href="#cb11-11"></a>        <span class="st">"AttnDownBlock2D"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12"></a>        <span class="st">"AttnDownBlock2D"</span>,</span>
+<span id="cb11-13"><a href="#cb11-13"></a>    ),</span>
+<span id="cb11-14"><a href="#cb11-14"></a>    up_block_types<span class="op">=</span>(</span>
+<span id="cb11-15"><a href="#cb11-15"></a>        <span class="st">"AttnUpBlock2D"</span>,</span>
+<span id="cb11-16"><a href="#cb11-16"></a>        <span class="st">"AttnUpBlock2D"</span>,</span>
+<span id="cb11-17"><a href="#cb11-17"></a>        <span class="st">"UpBlock2D"</span>,</span>
+<span id="cb11-18"><a href="#cb11-18"></a>    ),</span>
+<span id="cb11-19"><a href="#cb11-19"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The cache for model files in Transformers v4.22.0 has been updated. Migrating your old cache. This is a one-time only operation. You can interrupt this and resume the migration later on by calling `transformers.utils.move_cache()`.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"ae8c2883c0724a669361424113063a0b","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<div id="jqL9ehEMeBHo" class="cell" data-outputid="3f1eae1a-9fa2-4360-9711-57a73f9fa19a" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="bu">print</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>UNet2DModel(
+  (conv_in): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (time_proj): Timesteps()
+  (time_embedding): TimestepEmbedding(
+    (linear_1): Linear(in_features=32, out_features=128, bias=True)
+    (act): SiLU()
+    (linear_2): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (down_blocks): ModuleList(
+    (0): DownBlock2D(
+      (resnets): ModuleList(
+        (0-1): 2 x ResnetBlock2D(
+          (norm1): GroupNorm(32, 32, eps=1e-05, affine=True)
+          (conv1): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=32, bias=True)
+          (norm2): GroupNorm(32, 32, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+        )
+      )
+      (downsamplers): ModuleList(
+        (0): Downsample2D(
+          (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        )
+      )
+    )
+    (1): AttnDownBlock2D(
+      (attentions): ModuleList(
+        (0-1): 2 x Attention(
+          (group_norm): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (to_q): Linear(in_features=64, out_features=64, bias=True)
+          (to_k): Linear(in_features=64, out_features=64, bias=True)
+          (to_v): Linear(in_features=64, out_features=64, bias=True)
+          (to_out): ModuleList(
+            (0): Linear(in_features=64, out_features=64, bias=True)
+            (1): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (resnets): ModuleList(
+        (0): ResnetBlock2D(
+          (norm1): GroupNorm(32, 32, eps=1e-05, affine=True)
+          (conv1): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=64, bias=True)
+          (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+          (conv_shortcut): Conv2d(32, 64, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (1): ResnetBlock2D(
+          (norm1): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=64, bias=True)
+          (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+        )
+      )
+      (downsamplers): ModuleList(
+        (0): Downsample2D(
+          (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        )
+      )
+    )
+    (2): AttnDownBlock2D(
+      (attentions): ModuleList(
+        (0-1): 2 x Attention(
+          (group_norm): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (to_q): Linear(in_features=64, out_features=64, bias=True)
+          (to_k): Linear(in_features=64, out_features=64, bias=True)
+          (to_v): Linear(in_features=64, out_features=64, bias=True)
+          (to_out): ModuleList(
+            (0): Linear(in_features=64, out_features=64, bias=True)
+            (1): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (resnets): ModuleList(
+        (0-1): 2 x ResnetBlock2D(
+          (norm1): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=64, bias=True)
+          (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+        )
+      )
+    )
+  )
+  (up_blocks): ModuleList(
+    (0): AttnUpBlock2D(
+      (attentions): ModuleList(
+        (0-2): 3 x Attention(
+          (group_norm): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (to_q): Linear(in_features=64, out_features=64, bias=True)
+          (to_k): Linear(in_features=64, out_features=64, bias=True)
+          (to_v): Linear(in_features=64, out_features=64, bias=True)
+          (to_out): ModuleList(
+            (0): Linear(in_features=64, out_features=64, bias=True)
+            (1): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (resnets): ModuleList(
+        (0-2): 3 x ResnetBlock2D(
+          (norm1): GroupNorm(32, 128, eps=1e-05, affine=True)
+          (conv1): Conv2d(128, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=64, bias=True)
+          (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+          (conv_shortcut): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+        )
+      )
+      (upsamplers): ModuleList(
+        (0): Upsample2D(
+          (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+    )
+    (1): AttnUpBlock2D(
+      (attentions): ModuleList(
+        (0-2): 3 x Attention(
+          (group_norm): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (to_q): Linear(in_features=64, out_features=64, bias=True)
+          (to_k): Linear(in_features=64, out_features=64, bias=True)
+          (to_v): Linear(in_features=64, out_features=64, bias=True)
+          (to_out): ModuleList(
+            (0): Linear(in_features=64, out_features=64, bias=True)
+            (1): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (resnets): ModuleList(
+        (0-1): 2 x ResnetBlock2D(
+          (norm1): GroupNorm(32, 128, eps=1e-05, affine=True)
+          (conv1): Conv2d(128, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=64, bias=True)
+          (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+          (conv_shortcut): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (2): ResnetBlock2D(
+          (norm1): GroupNorm(32, 96, eps=1e-05, affine=True)
+          (conv1): Conv2d(96, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=64, bias=True)
+          (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+          (conv_shortcut): Conv2d(96, 64, kernel_size=(1, 1), stride=(1, 1))
+        )
+      )
+      (upsamplers): ModuleList(
+        (0): Upsample2D(
+          (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+    )
+    (2): UpBlock2D(
+      (resnets): ModuleList(
+        (0): ResnetBlock2D(
+          (norm1): GroupNorm(32, 96, eps=1e-05, affine=True)
+          (conv1): Conv2d(96, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=32, bias=True)
+          (norm2): GroupNorm(32, 32, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+          (conv_shortcut): Conv2d(96, 32, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (1-2): 2 x ResnetBlock2D(
+          (norm1): GroupNorm(32, 64, eps=1e-05, affine=True)
+          (conv1): Conv2d(64, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (time_emb_proj): Linear(in_features=128, out_features=32, bias=True)
+          (norm2): GroupNorm(32, 32, eps=1e-05, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (nonlinearity): SiLU()
+          (conv_shortcut): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+        )
+      )
+    )
+  )
+  (mid_block): UNetMidBlock2D(
+    (attentions): ModuleList(
+      (0): Attention(
+        (group_norm): GroupNorm(32, 64, eps=1e-05, affine=True)
+        (to_q): Linear(in_features=64, out_features=64, bias=True)
+        (to_k): Linear(in_features=64, out_features=64, bias=True)
+        (to_v): Linear(in_features=64, out_features=64, bias=True)
+        (to_out): ModuleList(
+          (0): Linear(in_features=64, out_features=64, bias=True)
+          (1): Dropout(p=0.0, inplace=False)
+        )
+      )
+    )
+    (resnets): ModuleList(
+      (0-1): 2 x ResnetBlock2D(
+        (norm1): GroupNorm(32, 64, eps=1e-05, affine=True)
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (time_emb_proj): Linear(in_features=128, out_features=64, bias=True)
+        (norm2): GroupNorm(32, 64, eps=1e-05, affine=True)
+        (dropout): Dropout(p=0.0, inplace=False)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (nonlinearity): SiLU()
+      )
+    )
+  )
+  (conv_norm_out): GroupNorm(32, 32, eps=1e-05, affine=True)
+  (conv_act): SiLU()
+  (conv_out): Conv2d(32, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)</code></pre>
+</div>
+</div>
+<div id="FeFxfpWEeE7J" class="cell" data-outputid="f97b5bf0-dd59-4bd0-d6fa-c8ba3a1a8cce" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">from</span> torchinfo <span class="im">import</span> summary</span>
+<span id="cb15-2"><a href="#cb15-2"></a></span>
+<span id="cb15-3"><a href="#cb15-3"></a>summary(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>======================================================================
+Layer (type:depth-idx)                        Param #
+======================================================================
+UNet2DModel                                   --
+├─Conv2d: 1-1                                 320
+├─Timesteps: 1-2                              --
+├─TimestepEmbedding: 1-3                      --
+│    └─Linear: 2-1                            4,224
+│    └─SiLU: 2-2                              --
+│    └─Linear: 2-3                            16,512
+├─ModuleList: 1-4                             --
+│    └─DownBlock2D: 2-4                       --
+│    │    └─ModuleList: 3-1                   45,504
+│    │    └─ModuleList: 3-2                   9,248
+│    └─AttnDownBlock2D: 2-5                   --
+│    │    └─ModuleList: 3-3                   33,536
+│    │    └─ModuleList: 3-4                   148,352
+│    │    └─ModuleList: 3-5                   36,928
+│    └─AttnDownBlock2D: 2-6                   --
+│    │    └─ModuleList: 3-6                   33,536
+│    │    └─ModuleList: 3-7                   164,736
+├─ModuleList: 1-5                             --
+│    └─AttnUpBlock2D: 2-7                     --
+│    │    └─ModuleList: 3-8                   50,304
+│    │    └─ModuleList: 3-9                   382,848
+│    │    └─ModuleList: 3-10                  36,928
+│    └─AttnUpBlock2D: 2-8                     --
+│    │    └─ModuleList: 3-11                  50,304
+│    │    └─ModuleList: 3-12                  362,304
+│    │    └─ModuleList: 3-13                  36,928
+│    └─UpBlock2D: 2-9                         --
+│    │    └─ModuleList: 3-14                  112,640
+├─UNetMidBlock2D: 1-6                         --
+│    └─ModuleList: 2-10                       --
+│    │    └─Attention: 3-15                   16,768
+│    └─ModuleList: 2-11                       --
+│    │    └─ResnetBlock2D: 3-16               82,368
+│    │    └─ResnetBlock2D: 3-17               82,368
+├─GroupNorm: 1-7                              64
+├─SiLU: 1-8                                   --
+├─Conv2d: 1-9                                 289
+======================================================================
+Total params: 1,707,009
+Trainable params: 1,707,009
+Non-trainable params: 0
+======================================================================</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Our model based on diffuser library UNet2DModel has 5x more trainable parameters as compared to Basic Convolutional UNet Model from Part 1.</p>
+</div>
+</div>
+<p>Let’s break down the parameters we’ve used when creating our <code>UNet2DModel</code> instance:</p>
+<ul>
+<li><code>sample_size=32</code>: This specifies the size of the input images. We’re still working with 32x32 MNIST images after preprocessing, so we set this to 32.</li>
+<li><code>in_channels=1</code>: MNIST images are grayscale, meaning they have a single color channel. Therefore, <code>in_channels</code> is set to 1.</li>
+<li><code>out_channels=1</code>: We want our UNet to output denoised grayscale images, so <code>out_channels</code> is also 1.</li>
+<li><code>layers_per_block=2</code>: This parameter controls the number of ResNet layers within each UNet block (both downsampling and upsampling blocks). We’ve chosen 2, meaning each block will have two ResNet layers. Increasing this would make the model deeper and potentially more powerful, but also increase training time.</li>
+<li><code>block_out_channels=(32, 64, 64)</code>: This is a crucial parameter that defines the number of output channels for each block in the downsampling path.
+<ul>
+<li>The first value, <code>32</code>, corresponds to the output channels of the initial downsampling block.</li>
+<li>The second value, <code>64</code>, is for the next downsampling block, and so on.</li>
+<li>We’ve chosen <code>(32, 64, 64)</code>, which is “roughly matching our basic unet example” as we noted in the code comments. This is a deliberate choice to keep the model size somewhat comparable to our <code>BasicUNet</code> while still benefiting from the architectural improvements of <code>UNet2DModel</code>.</li>
+</ul></li>
+<li><code>down_block_types=("DownBlock2D", "AttnDownBlock2D", "AttnDownBlock2D")</code>: This list specifies the type of downsampling blocks to use in the encoder path.
+<ul>
+<li><code>"DownBlock2D"</code>: A standard ResNet downsampling block.</li>
+<li><code>"AttnDownBlock2D"</code>: A ResNet downsampling block with added attention mechanisms.</li>
+<li>We’re using a mix of standard and attention-based downsampling blocks to leverage the benefits of attention in capturing important image features.</li>
+</ul></li>
+<li><code>up_block_types=("AttnUpBlock2D", "AttnUpBlock2D", "UpBlock2D")</code>: Similarly, this list defines the types of upsampling blocks in the decoder path, mirroring the downsampling path and also incorporating attention blocks in the upsampling process.</li>
+</ul>
+<p>By carefully configuring these parameters, we’ve created a <code>UNet2DModel</code> tailored for our MNIST denoising task, leveraging the power of <code>diffusers</code> and incorporating more advanced architectural components compared to our <code>BasicUNet</code>. The <code>print(model)</code> output (or <code>summary(model)</code>) will show the detailed architecture and confirm the parameter settings we’ve defined. You’ll likely notice a significantly larger number of parameters compared to <code>BasicUNet</code>, hinting at the increased capacity of this enhanced model.</p>
+<section id="training-the-enhanced-unet" class="level3">
+<h3 class="anchored" data-anchor-id="training-the-enhanced-unet">Training the Enhanced UNet</h3>
+<p>With our <code>UNet2DModel</code> defined, the next step is to train it! The training process for this enhanced UNet will be remarkably similar to what we did in Part 1 with our <code>BasicUNet</code>. This is intentional! By keeping the training process consistent, we can isolate the impact of the architectural changes we’ve made by switching to <code>UNet2DModel</code>.</p>
+<p>We will still be using:</p>
+<ul>
+<li><strong>Direct Image Prediction:</strong> Our model will still be trained to directly predict the denoised version of a noisy MNIST image in a single forward pass.</li>
+<li><strong>Mean Squared Error (MSE) Loss:</strong> We’ll continue to use MSE loss (<code>F.mse_loss</code>) to measure the difference between the predicted denoised image and the clean target image.</li>
+<li><strong>Adam Optimizer:</strong> We’ll stick with the Adam optimizer (<code>torch.optim.Adam</code>) to update the model’s weights during training.</li>
+</ul>
+<p>Here’s a snippet of the training loop code. You’ll notice it’s almost identical to the training loop from Part 1:</p>
+<div id="e7f9417c" class="cell" data-outputid="e3f98a95-ddea-44e4-b434-d89297b684a9" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb17-2"><a href="#cb17-2"></a><span class="im">from</span> torch.optim <span class="im">import</span> Adam</span>
+<span id="cb17-3"><a href="#cb17-3"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb17-4"><a href="#cb17-4"></a></span>
+<span id="cb17-5"><a href="#cb17-5"></a><span class="co"># --- Setup (Device, Model, Optimizer, Loss History, Hyperparameters) ---</span></span>
+<span id="cb17-6"><a href="#cb17-6"></a>device <span class="op">=</span> torch.device(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span>
+<span id="cb17-7"><a href="#cb17-7"></a>model <span class="op">=</span> model.to(device) <span class="co"># Our UNet2DModel from diffusers</span></span>
+<span id="cb17-8"><a href="#cb17-8"></a>optimizer <span class="op">=</span> Adam(model.parameters(), lr<span class="op">=</span><span class="fl">1e-3</span>) <span class="co"># Same learning rate as Part 1</span></span>
+<span id="cb17-9"><a href="#cb17-9"></a>losses <span class="op">=</span> []</span>
+<span id="cb17-10"><a href="#cb17-10"></a>num_epochs <span class="op">=</span> <span class="dv">5</span> <span class="co"># Same number of epochs as Part 1</span></span>
+<span id="cb17-11"><a href="#cb17-11"></a>batch_size <span class="op">=</span> <span class="dv">128</span> <span class="co"># Same batch size as Part 1</span></span>
+<span id="cb17-12"><a href="#cb17-12"></a></span>
+<span id="cb17-13"><a href="#cb17-13"></a>train_dataloader <span class="op">=</span> torch.utils.data.DataLoader(</span>
+<span id="cb17-14"><a href="#cb17-14"></a>    dataset[<span class="st">"train"</span>], batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span></span>
+<span id="cb17-15"><a href="#cb17-15"></a>)</span>
+<span id="cb17-16"><a href="#cb17-16"></a></span>
+<span id="cb17-17"><a href="#cb17-17"></a><span class="bu">print</span>(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>cuda</code></pre>
+</div>
+</div>
+<div id="11f86cf6" class="cell" data-outputid="0b8d2812-2f6d-4ce7-8ef5-07bbbd67a2c8" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co"># --- Training Loop ---</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
+<span id="cb19-3"><a href="#cb19-3"></a>    <span class="cf">for</span> batch <span class="kw">in</span> train_dataloader:</span>
+<span id="cb19-4"><a href="#cb19-4"></a>        clean_images <span class="op">=</span> batch[<span class="st">"images"</span>].to(device)</span>
+<span id="cb19-5"><a href="#cb19-5"></a>        noise <span class="op">=</span> torch.rand_like(clean_images).to(device)</span>
+<span id="cb19-6"><a href="#cb19-6"></a>        noise_amount <span class="op">=</span> torch.randn(clean_images.shape[<span class="dv">0</span>]).to(device)</span>
+<span id="cb19-7"><a href="#cb19-7"></a>        noisy_images <span class="op">=</span> corrupt(clean_images, noise, noise_amount) <span class="co"># Same corrupt function</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a></span>
+<span id="cb19-9"><a href="#cb19-9"></a>        predicted_images <span class="op">=</span> model(noisy_images, <span class="dv">0</span>).sample <span class="co"># Still passing timestep 0</span></span>
+<span id="cb19-10"><a href="#cb19-10"></a></span>
+<span id="cb19-11"><a href="#cb19-11"></a>        loss <span class="op">=</span> F.mse_loss(predicted_images, clean_images)</span>
+<span id="cb19-12"><a href="#cb19-12"></a>        optimizer.zero_grad()</span>
+<span id="cb19-13"><a href="#cb19-13"></a>        loss.backward()</span>
+<span id="cb19-14"><a href="#cb19-14"></a>        optimizer.step()</span>
+<span id="cb19-15"><a href="#cb19-15"></a>        losses.append(loss.item())</span>
+<span id="cb19-16"><a href="#cb19-16"></a></span>
+<span id="cb19-17"><a href="#cb19-17"></a>    avg_loss <span class="op">=</span> <span class="bu">sum</span>(losses[<span class="op">-</span><span class="bu">len</span>(train_dataloader):]) <span class="op">/</span> <span class="bu">len</span>(train_dataloader)</span>
+<span id="cb19-18"><a href="#cb19-18"></a>    <span class="bu">print</span>(<span class="ss">f"Epoch </span><span class="sc">{</span>epoch<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_epochs<span class="sc">}</span><span class="ss"> - Average Loss: </span><span class="sc">{</span>avg_loss<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epoch 1/5 - Average Loss: 0.0130
+Epoch 2/5 - Average Loss: 0.0073
+Epoch 3/5 - Average Loss: 0.0062
+Epoch 4/5 - Average Loss: 0.0058
+Epoch 5/5 - Average Loss: 0.0055</code></pre>
+</div>
+</div>
+<p>As you can see, the core training logic remains the same. We load batches, generate noise, corrupt images, feed them to the <code>UNet2DModel</code> (still with a timestep of 0), calculate MSE loss, and update the weights using Adam. We’ve also kept the hyperparameters (learning rate, batch size, number of epochs) consistent with Part 1 for a direct comparison.</p>
+<p>After running this training code, we obtain the following loss curve:</p>
+<div id="29f8c3bf" class="cell" data-outputid="8fc06dca-ddb6-409d-de7d-8f479f053025" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># --- Plotting Loss Curve ---</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb21-3"><a href="#cb21-3"></a>plt.plot(losses, label<span class="op">=</span><span class="st">"Training Loss"</span>)</span>
+<span id="cb21-4"><a href="#cb21-4"></a>plt.title(<span class="st">"Training Loss Curve (UNet2DModel - Direct Prediction)"</span>) <span class="co"># Updated title</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a>plt.xlabel(<span class="st">"Iteration"</span>)</span>
+<span id="cb21-6"><a href="#cb21-6"></a>plt.ylabel(<span class="st">"MSE Loss"</span>)</span>
+<span id="cb21-7"><a href="#cb21-7"></a>plt.legend()</span>
+<span id="cb21-8"><a href="#cb21-8"></a>plt.grid(<span class="va">True</span>)</span>
+<span id="cb21-9"><a href="#cb21-9"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-15-diffusion-model-mnist-part2_files/figure-html/cell-14-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now that our enhanced UNet is trained, let’s see how it performs in denoising MNIST digits!</p>
+</section>
+<section id="inference-and-results-did-diffusers-unet-improve-things" class="level3">
+<h3 class="anchored" data-anchor-id="inference-and-results-did-diffusers-unet-improve-things">Inference and Results: Did <code>diffusers</code> UNet Improve Things?</h3>
+<p>Now comes the crucial question: Did upgrading to <code>UNet2DModel</code> actually improve our denoising performance compared to the <code>BasicUNet</code> from Part 1? To find out, we need to evaluate our trained <code>UNet2DModel</code> on unseen MNIST test data.</p>
+<p>We’ll follow a similar inference process as in Part 1. We’ll load a batch of test images, generate noisy versions of them using the same <code>corrupt</code> function, feed these noisy images into our trained <code>UNet2DModel</code>, and then visualize the results.</p>
+<p>Here’s the code for inference and visualization:</p>
+<div id="V_IvnGjDi_Tz" class="cell" data-outputid="58612177-d202-4d69-e65e-f0bb4c8f76ba" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="co"># --- Inference with Model 1 and Visualization ---</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="co"># --- Prepare test dataset and dataloader ---</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a>test_dataset <span class="op">=</span> load_dataset(<span class="st">"mnist"</span>, split<span class="op">=</span><span class="st">"test"</span>) <span class="co"># Load MNIST test split dataset</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a>test_dataset.set_transform(transform)             <span class="co"># Apply preprocessing transform to test dataset</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a>test_dataloader <span class="op">=</span> torch.utils.data.DataLoader(test_dataset, batch_size<span class="op">=</span><span class="dv">8</span>, shuffle<span class="op">=</span><span class="va">True</span>) <span class="co"># Create DataLoader for test dataset</span></span>
+<span id="cb22-6"><a href="#cb22-6"></a></span>
+<span id="cb22-7"><a href="#cb22-7"></a><span class="co"># --- Get a batch of test images ---</span></span>
+<span id="cb22-8"><a href="#cb22-8"></a>batch <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(test_dataloader))</span>
+<span id="cb22-9"><a href="#cb22-9"></a>clean_images <span class="op">=</span> batch[<span class="st">"images"</span>].to(device) <span class="co"># Load clean test images to the device</span></span>
+<span id="cb22-10"><a href="#cb22-10"></a></span>
+<span id="cb22-11"><a href="#cb22-11"></a><span class="co"># --- Generate new random noise for inference ---</span></span>
+<span id="cb22-12"><a href="#cb22-12"></a>noise <span class="op">=</span> torch.rand_like(clean_images).to(device) <span class="co"># Generate random noise tensor</span></span>
+<span id="cb22-13"><a href="#cb22-13"></a>noise_amount <span class="op">=</span> torch.randn(clean_images.shape[<span class="dv">0</span>]).to(device) <span class="co"># Generate noise amount tensor</span></span>
+<span id="cb22-14"><a href="#cb22-14"></a>noisy_images <span class="op">=</span> corrupt(clean_images, noise, noise_amount) <span class="co"># Create noisy test images by corruption</span></span>
+<span id="cb22-15"><a href="#cb22-15"></a></span>
+<span id="cb22-16"><a href="#cb22-16"></a><span class="co"># --- Perform inference (get denoised images from Model 1) ---</span></span>
+<span id="cb22-17"><a href="#cb22-17"></a>model.<span class="bu">eval</span>()  <span class="co"># Set model to evaluation mode for inference</span></span>
+<span id="cb22-18"><a href="#cb22-18"></a><span class="cf">with</span> torch.no_grad():  <span class="co"># Disable gradient calculation during inference</span></span>
+<span id="cb22-19"><a href="#cb22-19"></a>    denoised_images <span class="op">=</span> model(noisy_images, <span class="dv">0</span>) <span class="co"># Get denoised images from model</span></span>
+<span id="cb22-20"><a href="#cb22-20"></a></span>
+<span id="cb22-21"><a href="#cb22-21"></a><span class="co"># --- Move tensors to CPU and convert to NumPy for visualization ---</span></span>
+<span id="cb22-22"><a href="#cb22-22"></a>noisy_images_np <span class="op">=</span> noisy_images.cpu().numpy() <span class="co"># Move noisy images to CPU and convert to NumPy</span></span>
+<span id="cb22-23"><a href="#cb22-23"></a>denoised_images_np <span class="op">=</span> denoised_images[<span class="st">"sample"</span>].cpu().numpy() <span class="co"># Move denoised images to CPU and convert to NumPy</span></span>
+<span id="cb22-24"><a href="#cb22-24"></a>clean_images_np <span class="op">=</span> clean_images.cpu().numpy() <span class="co"># Move clean images to CPU and convert to NumPy</span></span>
+<span id="cb22-25"><a href="#cb22-25"></a></span>
+<span id="cb22-26"><a href="#cb22-26"></a><span class="co"># --- Plotting the results: Original, Noisy, Denoised ---</span></span>
+<span id="cb22-27"><a href="#cb22-27"></a>num_images <span class="op">=</span> <span class="dv">6</span>  <span class="co"># Set number of images to visualize</span></span>
+<span id="cb22-28"><a href="#cb22-28"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>)) <span class="co"># Initialize matplotlib figure for plotting</span></span>
+<span id="cb22-29"><a href="#cb22-29"></a></span>
+<span id="cb22-30"><a href="#cb22-30"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_images): <span class="co"># Loop through number of images to plot</span></span>
+<span id="cb22-31"><a href="#cb22-31"></a>    <span class="co"># --- Plot Original (Clean) Images ---</span></span>
+<span id="cb22-32"><a href="#cb22-32"></a>    plt.subplot(<span class="dv">3</span>, num_images, i <span class="op">+</span> <span class="dv">1</span>) <span class="co"># Create subplot for original images (top row)</span></span>
+<span id="cb22-33"><a href="#cb22-33"></a>    plt.imshow(clean_images_np[i].squeeze(), cmap<span class="op">=</span><span class="st">'Greys'</span>) <span class="co"># Display original clean image</span></span>
+<span id="cb22-34"><a href="#cb22-34"></a>    plt.title(<span class="st">"Original"</span>) <span class="co"># Set title for original image subplot</span></span>
+<span id="cb22-35"><a href="#cb22-35"></a>    plt.axis(<span class="st">'off'</span>) <span class="co"># Hide axes for cleaner image display</span></span>
+<span id="cb22-36"><a href="#cb22-36"></a></span>
+<span id="cb22-37"><a href="#cb22-37"></a>    <span class="co"># --- Plot Noisy Images ---</span></span>
+<span id="cb22-38"><a href="#cb22-38"></a>    plt.subplot(<span class="dv">3</span>, num_images, i <span class="op">+</span> num_images <span class="op">+</span> <span class="dv">1</span>) <span class="co"># Create subplot for noisy images (middle row)</span></span>
+<span id="cb22-39"><a href="#cb22-39"></a>    plt.imshow(noisy_images_np[i].squeeze(), cmap<span class="op">=</span><span class="st">'Greys'</span>) <span class="co"># Display noisy image input</span></span>
+<span id="cb22-40"><a href="#cb22-40"></a>    plt.title(<span class="st">"Noisy"</span>) <span class="co"># Set title for noisy image subplot</span></span>
+<span id="cb22-41"><a href="#cb22-41"></a>    plt.axis(<span class="st">'off'</span>) <span class="co"># Hide axes</span></span>
+<span id="cb22-42"><a href="#cb22-42"></a></span>
+<span id="cb22-43"><a href="#cb22-43"></a>    <span class="co"># --- Plot Denoised Images ---</span></span>
+<span id="cb22-44"><a href="#cb22-44"></a>    plt.subplot(<span class="dv">3</span>, num_images, i <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> num_images <span class="op">+</span> <span class="dv">1</span>) <span class="co"># Create subplot for denoised images (bottom row)</span></span>
+<span id="cb22-45"><a href="#cb22-45"></a>    plt.imshow(denoised_images_np[i].squeeze(), cmap<span class="op">=</span><span class="st">'Greys'</span>) <span class="co"># Display denoised output image</span></span>
+<span id="cb22-46"><a href="#cb22-46"></a>    plt.title(<span class="st">"Denoised"</span>) <span class="co"># Set title for denoised image subplot</span></span>
+<span id="cb22-47"><a href="#cb22-47"></a>    plt.axis(<span class="st">'off'</span>) <span class="co"># Hide axes</span></span>
+<span id="cb22-48"><a href="#cb22-48"></a></span>
+<span id="cb22-49"><a href="#cb22-49"></a>plt.tight_layout() <span class="co"># Adjust subplot layout for better spacing</span></span>
+<span id="cb22-50"><a href="#cb22-50"></a>plt.show() <span class="co"># Show the complete plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-15-diffusion-model-mnist-part2_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now, let’s analyze the results visually. Looking at the “Denoised (UNet2DModel Output)” row (bottom row), and comparing it to the “Noisy (Input)” row (middle row), we can observe that the <code>UNet2DModel</code> is indeed denoising the digits. The random noise is significantly reduced, and the digit shapes become much clearer.</p>
+<p><strong>However, the key question is: Is it <em>better</em> than <code>BasicUNet</code>?</strong></p>
+<ul>
+<li><strong>Sharpness:</strong> Are the denoised digits from <code>UNet2DModel</code> sharper and more well-defined compared to <code>BasicUNet</code>?</li>
+<li><strong>Blurriness:</strong> Is there less residual blurriness in the <code>UNet2DModel</code> outputs?</li>
+<li><strong>Artifacts/Noise:</strong> Are there fewer artifacts or less remaining noise in the background or around the digits generated by <code>UNet2DModel</code>?</li>
+<li><strong>Overall Visual Quality:</strong> Subjectively, do the denoised digits from <code>UNet2DModel</code> look more like clean MNIST digits compared to <code>BasicUNet</code>?</li>
+</ul>
+<p>Upon visual inspection, the denoised digits from <code>UNet2DModel</code> appear to be noticeably sharper and more defined than those from <code>BasicUNet</code> in Part 1. The residual blurriness seems reduced, and the digits have a slightly cleaner appearance. While not perfectly restored, the <code>UNet2DModel</code> outputs do seem to represent a step up in visual quality compared to our baseline model.</p>
+<p>Let’s run inference one more time, but with a different approach.</p>
+<p>Instead of starting with an original <strong>MNIST digit</strong> and adding noise to it, we will feed the model <strong>pure noise</strong> as input and observe the results.</p>
+<div id="QNtlnzFaiNyH" class="cell" data-outputid="4bfe431c-8896-46eb-bd0d-bd5c68bd5d01" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="im">import</span> torch</span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb23-3"><a href="#cb23-3"></a></span>
+<span id="cb23-4"><a href="#cb23-4"></a><span class="co"># Generate a noisy image (random noise)</span></span>
+<span id="cb23-5"><a href="#cb23-5"></a>noise_image <span class="op">=</span> torch.rand(<span class="dv">1</span>, <span class="dv">32</span>, <span class="dv">32</span>)  <span class="co"># Example: Single-channel (grayscale) 32x32 noise image</span></span>
+<span id="cb23-6"><a href="#cb23-6"></a></span>
+<span id="cb23-7"><a href="#cb23-7"></a><span class="co"># Assume `model` is trained and available</span></span>
+<span id="cb23-8"><a href="#cb23-8"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb23-9"><a href="#cb23-9"></a>    denoised_image <span class="op">=</span> model(noise_image.unsqueeze(<span class="dv">0</span>).to(device), <span class="dv">0</span>)  <span class="co"># Add batch dimension &amp; move to device</span></span>
+<span id="cb23-10"><a href="#cb23-10"></a>    denoised_image <span class="op">=</span> denoised_image[<span class="st">"sample"</span>].squeeze(<span class="dv">0</span>).cpu().detach()  <span class="co"># Remove batch dim &amp; move to CPU</span></span>
+<span id="cb23-11"><a href="#cb23-11"></a></span>
+<span id="cb23-12"><a href="#cb23-12"></a><span class="co"># Plot both images side by side</span></span>
+<span id="cb23-13"><a href="#cb23-13"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb23-14"><a href="#cb23-14"></a></span>
+<span id="cb23-15"><a href="#cb23-15"></a>axs[<span class="dv">0</span>].imshow(noise_image.squeeze(), cmap<span class="op">=</span><span class="st">"Greys"</span>)</span>
+<span id="cb23-16"><a href="#cb23-16"></a>axs[<span class="dv">0</span>].set_title(<span class="st">"Noisy Image"</span>)</span>
+<span id="cb23-17"><a href="#cb23-17"></a>axs[<span class="dv">0</span>].axis(<span class="st">"off"</span>)</span>
+<span id="cb23-18"><a href="#cb23-18"></a></span>
+<span id="cb23-19"><a href="#cb23-19"></a>axs[<span class="dv">1</span>].imshow(denoised_image.squeeze(), cmap<span class="op">=</span><span class="st">"Greys"</span>)</span>
+<span id="cb23-20"><a href="#cb23-20"></a>axs[<span class="dv">1</span>].set_title(<span class="st">"Model Prediction (Denoised)"</span>)</span>
+<span id="cb23-21"><a href="#cb23-21"></a>axs[<span class="dv">1</span>].axis(<span class="st">"off"</span>)</span>
+<span id="cb23-22"><a href="#cb23-22"></a></span>
+<span id="cb23-23"><a href="#cb23-23"></a>plt.tight_layout()</span>
+<span id="cb23-24"><a href="#cb23-24"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-15-diffusion-model-mnist-part2_files/figure-html/cell-16-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In summary, our initial visual assessment suggests that enhancing our UNet architecture by using <code>UNet2DModel</code> from <code>diffusers</code> has led to an improvement in denoising performance for direct image prediction. The more sophisticated architecture, seems to be better at capturing and removing noise while preserving digit details.</p>
+<p>However, let’s push this further and see if iterative refinement can further enhance the quality of images generated by our <code>UNet2DModel</code>!</p>
+</section>
+<section id="exploring-iterative-refinement-again" class="level3">
+<h3 class="anchored" data-anchor-id="exploring-iterative-refinement-again">Exploring Iterative Refinement (Again)</h3>
+<p>At the end of Part 1, we experimented with a simple iterative refinement approach to see if we could further improve the denoising results from our <code>BasicUNet</code>. We found that by repeatedly applying the model in steps, we could nudge the image towards a cleaner state. Now, let’s revisit this iterative refinement strategy, but this time using our enhanced <code>UNet2DModel</code>.</p>
+<p>The idea is the same: instead of just denoising in a single shot, we’ll start with pure random noise and iteratively refine it over multiple steps using our trained <code>UNet2DModel</code>. The following code performs iterative refinement over <code>n_steps</code> (set to 5 in this example). In each step, we feed the current image <code>x</code> (initially random noise) into our <code>UNet2DModel</code> to get a prediction. We then blend this prediction with the current image <code>x</code> using a linear interpolation, gradually refining the image towards the model’s predictions. We also track the image at each step (<code>step_history</code>) and the model’s direct predictions (<code>pred_output_history</code>) for visualization.</p>
+<p>Running this iterative refinement code with our <code>UNet2DModel</code> produces the following visualization:</p>
+<div id="IpkyemIqhyrn" class="cell" data-outputid="f36d2b36-0c68-4351-f84d-ae8728bcafde" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">import</span> torchvision</span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
+<span id="cb24-3"><a href="#cb24-3"></a></span>
+<span id="cb24-4"><a href="#cb24-4"></a>n_steps <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb24-5"><a href="#cb24-5"></a>x <span class="op">=</span> torch.rand(<span class="dv">8</span>, <span class="dv">1</span>, <span class="dv">32</span>, <span class="dv">32</span>).to(device)  <span class="co"># Start from random</span></span>
+<span id="cb24-6"><a href="#cb24-6"></a>step_history <span class="op">=</span> [x.detach().cpu()]</span>
+<span id="cb24-7"><a href="#cb24-7"></a>pred_output_history <span class="op">=</span> []</span>
+<span id="cb24-8"><a href="#cb24-8"></a></span>
+<span id="cb24-9"><a href="#cb24-9"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_steps):</span>
+<span id="cb24-10"><a href="#cb24-10"></a>    <span class="co"># Predict denoise image</span></span>
+<span id="cb24-11"><a href="#cb24-11"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb24-12"><a href="#cb24-12"></a>        pred <span class="op">=</span> model(x, <span class="dv">0</span>).sample</span>
+<span id="cb24-13"><a href="#cb24-13"></a></span>
+<span id="cb24-14"><a href="#cb24-14"></a>    <span class="co"># Store output for plotting</span></span>
+<span id="cb24-15"><a href="#cb24-15"></a>    pred_output_history.append(pred.detach().cpu())</span>
+<span id="cb24-16"><a href="#cb24-16"></a></span>
+<span id="cb24-17"><a href="#cb24-17"></a>    <span class="co"># Move slightly towards that direction</span></span>
+<span id="cb24-18"><a href="#cb24-18"></a>    mix_factor <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (n_steps <span class="op">-</span> i)</span>
+<span id="cb24-19"><a href="#cb24-19"></a>    x <span class="op">=</span> x <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> mix_factor) <span class="op">+</span> pred <span class="op">*</span> mix_factor</span>
+<span id="cb24-20"><a href="#cb24-20"></a></span>
+<span id="cb24-21"><a href="#cb24-21"></a>    <span class="co"># Store output for plotting</span></span>
+<span id="cb24-22"><a href="#cb24-22"></a>    step_history.append(x.detach().cpu())</span>
+<span id="cb24-23"><a href="#cb24-23"></a></span>
+<span id="cb24-24"><a href="#cb24-24"></a>fig, axs <span class="op">=</span> plt.subplots(n_steps, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>), sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb24-25"><a href="#cb24-25"></a>axs[<span class="dv">0</span>, <span class="dv">0</span>].set_title(<span class="st">"x (model input)"</span>)</span>
+<span id="cb24-26"><a href="#cb24-26"></a>axs[<span class="dv">0</span>, <span class="dv">1</span>].set_title(<span class="st">"model prediction"</span>)</span>
+<span id="cb24-27"><a href="#cb24-27"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_steps):</span>
+<span id="cb24-28"><a href="#cb24-28"></a>    axs[i, <span class="dv">0</span>].imshow(</span>
+<span id="cb24-29"><a href="#cb24-29"></a>        torchvision.utils.make_grid(step_history[i])[<span class="dv">0</span>].clip(<span class="dv">0</span>, <span class="dv">1</span>), cmap<span class="op">=</span><span class="st">"Greys"</span></span>
+<span id="cb24-30"><a href="#cb24-30"></a>    )</span>
+<span id="cb24-31"><a href="#cb24-31"></a>    axs[i, <span class="dv">1</span>].imshow(</span>
+<span id="cb24-32"><a href="#cb24-32"></a>        torchvision.utils.make_grid(pred_output_history[i])[<span class="dv">0</span>].clip(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb24-33"><a href="#cb24-33"></a>        cmap<span class="op">=</span><span class="st">"Greys"</span>,</span>
+<span id="cb24-34"><a href="#cb24-34"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2025-02-15-diffusion-model-mnist-part2_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Let’s analyze the results. Looking at the left column, “x (Model Input),” which shows the image at each refinement step, we can observe how the initially random noise gradually transforms into recognizable digit-like structures over the 5 steps.</p>
+<p>Now, let’s compare these iteratively refined results to: Iterative Refinement with <code>BasicUNet</code></p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-02-15-diffusion-model-mnist-part2/basicunetmodel-output.png" class="img-fluid figure-img"></p>
+<figcaption>BasicUNet</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-02-15-diffusion-model-mnist-part2/unet2dmodel-output.png" class="img-fluid figure-img"></p>
+<figcaption>UNet2DModel</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>We can see a subtle but noticeable improvement in <code>UNet2DModel</code> image quality. This suggests that <code>UNet2DModel</code> iterative refinement can still be a valuable technique to squeeze out a bit more image quality for direct image prediction. However, it’s crucial to remember that this iterative process is still a simplification. It is not representative of true diffusion model sampling. We are essentially manually guiding the image towards a cleaner state by repeatedly using our direct prediction model, rather than implementing the probabilistic reverse diffusion process that is at the heart of true diffusion models.</p>
+<p>In the next and final part of this series, we will finally move beyond direct image prediction and delve into the core principles of diffusion models: noise prediction and scheduled denoising. This will unlock the true power and flexibility of diffusion models for image generation!</p>
+</section>
+</section>
+<section id="discussion-and-key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="discussion-and-key-takeaways">Discussion and Key Takeaways</h2>
+<p>In Part 2, we took a significant step forward by enhancing our UNet architecture. By replacing our <code>BasicUNet</code> with the <code>UNet2DModel</code> from the <code>diffusers</code> library, we aimed to improve the quality of our MNIST digit denoising through direct image prediction.</p>
+<p>Our experiments and visual analysis suggest the following key takeaways:</p>
+<ul>
+<li><strong><code>UNet2DModel</code> Shows Improvement:</strong> Visually, the <code>UNet2DModel</code> does appear to denoise MNIST digits more effectively than our <code>BasicUNet</code> from Part 1.</li>
+<li><strong>Iterative Refinement Still Helps:</strong> Even with the enhanced <code>UNet2DModel</code>, we found that iterative refinement could still further improve the visual quality of the denoised digits, leading to slightly sharper and more well-formed digits. This reinforces the idea that even with a better model, iterative approaches can be a useful strategy to refine outputs in direct prediction scenarios.</li>
+<li><strong><code>diffusers</code> is a Powerful Tool:</strong> This part highlighted the value of using libraries like <code>diffusers</code>. By leveraging <code>UNet2DModel</code>, we were able to quickly implement a more advanced UNet architecture without having to build it from scratch. <code>diffusers</code> provides a rich set of pre-built, optimized components that can significantly accelerate diffusion model development and experimentation.</li>
+<li><strong>Direct Prediction is Limited:</strong> Despite the improvements with <code>UNet2DModel</code>, it’s crucial to remember that we are still working within the paradigm of <em>direct image prediction</em>. While we can achieve some level of denoising and even generate somewhat digit-like images from pure noise through iterative refinement, this approach is fundamentally different from how true diffusion models work. It lacks the probabilistic nature and controlled noise scheduling that are the hallmarks of diffusion models.</li>
+</ul>
+<p><strong>Next Steps: Embracing True Diffusion!</strong></p>
+<p>In Part 3, we will finally move beyond direct image prediction and dive into the heart of diffusion models! We will transition to <strong>noise prediction</strong> – training our model to predict the <em>noise</em> in a noisy image, rather than directly predicting the clean image itself. We will also introduce <strong>scheduled denoising</strong>, a key technique that controls the denoising process over multiple steps, mimicking the reverse of the gradual noise addition process in diffusion models.</p>
+<p>This transition to true noise prediction and scheduled denoising will unlock the full potential of diffusion models and pave the way for more sophisticated and higher-quality image generation. Get ready for the exciting conclusion of our journey in Part 3, where we will finally witness the real “diffusion model magic”!</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="application/vnd.jupyter.widget-state+json">
+{"00f4eef8ac52446b8015c3d153f2beee":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"030c732a7d044c6a8dd52ea2747caff1":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"03303167f4e8443ca9250c82162dfd42":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"0762d59ae58f4224bd405f17469b9233":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"086b3fc80cb94529bb811ce018d625a6":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":"20px"}},"0a1bfe8e34ec4f1d88e430fec302567b":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"0adffe3a885d47649e83b4438cfad162":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_a3bc896cb2094918b12312b18083a7a2","max":10000,"min":0,"orientation":"horizontal","style":"IPY_MODEL_c778757e6b454de8adfdc94e420e0b3c","value":10000}},"1095dd51a7284fe0ae5e7e39b1016c01":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"14830f4a28a34c01b53fb10061791bdf":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"1525a314974c422da4708e86fa8ad07f":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_3e5bf09779344d139b18149c48a7c164","placeholder":"​","style":"IPY_MODEL_9f1c91b2ad3d478abe81313246decc00","value":"train-00000-of-00001.parquet: 100%"}},"17cc245f30d14ca9a1afdb1a9ab56082":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_31ade931a41840f1ad0ec781ec747279","placeholder":"​","style":"IPY_MODEL_a601f90adfb84ed9a3412610ae5f64ee","value":" 10000/10000 [00:00&lt;00:00, 87350.58 examples/s]"}},"18ded9dc30824f829d3bb2aa89a2346c":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"2599009f5207495eb1d288f2f4b6e8ac":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_9eaded557efb45caac16815860c36c9c","placeholder":"​","style":"IPY_MODEL_f142580245ed43059aed04f4047c2a85","value":" 6.97k/6.97k [00:00&lt;00:00, 561kB/s]"}},"31ade931a41840f1ad0ec781ec747279":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"33cc57c02d9d47f3b70a4810edd8ab64":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"3776594c56c449998d424d21f3ad9e5e":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"3e5bf09779344d139b18149c48a7c164":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"435f3e67e13d459087d16892940e4691":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"4e019f14c6f8451eb60b540b5a7e0210":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_e44df598683a4bcabe373a130af44118","placeholder":"​","style":"IPY_MODEL_14830f4a28a34c01b53fb10061791bdf","value":"README.md: 100%"}},"525046febfd24b32b28b5b13b8306af9":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_65cb97103e5b42ccaa8f04ea9e684517","IPY_MODEL_0adffe3a885d47649e83b4438cfad162","IPY_MODEL_17cc245f30d14ca9a1afdb1a9ab56082"],"layout":"IPY_MODEL_6715842938ae4ac1939370c9d8168fdb"}},"52e2d66f94e448fc832e1d6c959ad223":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_b1e927539903456e89a882c3b74c27ea","placeholder":"​","style":"IPY_MODEL_c3f6a993c8544294a96f26e9fa257cb5","value":"test-00000-of-00001.parquet: 100%"}},"55104260a69440e794575f253e73385e":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"5d1fc72418324e4d833bc6cd62db836f":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"5f1a645faea24b36a8fd0a485a910215":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"648ff077d27742528a968f15c5049925":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"65cb97103e5b42ccaa8f04ea9e684517":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_5d1fc72418324e4d833bc6cd62db836f","placeholder":"​","style":"IPY_MODEL_d3f9337534c649e28ea2e6b83da8d769","value":"Generating test split: 100%"}},"66041c4159d8487d8dedc0dd7e2b8374":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"6715842938ae4ac1939370c9d8168fdb":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"6b586d3e8119496a894a0e2fe9534820":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_52e2d66f94e448fc832e1d6c959ad223","IPY_MODEL_c685f3dc8fc743b58c4fdb628bc394da","IPY_MODEL_7893bc52c53e459d8552dd3425cb78ea"],"layout":"IPY_MODEL_faf3d82c291f42aba766eab90d083e46"}},"6eb1274625c54cf3936403f1664d0b97":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_4e019f14c6f8451eb60b540b5a7e0210","IPY_MODEL_ca6aac74de634fa798c1887091064a39","IPY_MODEL_2599009f5207495eb1d288f2f4b6e8ac"],"layout":"IPY_MODEL_648ff077d27742528a968f15c5049925"}},"70be270fb74240f19445f57993df16cf":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"71814f83227446fcad8ca7e06135c4e4":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"73b690e94cfa4785ae4f6075dde563e6":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_77e383828391432eb8753472ce743134","max":15561616,"min":0,"orientation":"horizontal","style":"IPY_MODEL_f2742e43fcc7498cb4da1f46079ac374","value":15561616}},"76462e15c3874d59937197e92ecc4741":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_00f4eef8ac52446b8015c3d153f2beee","placeholder":"​","style":"IPY_MODEL_a667ec891f8248609ceb37982e0271e9","value":""}},"770d9410f9774514b1cc459455e1e973":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"777030c8cf004478bff4fdf3e978c9be":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"77e383828391432eb8753472ce743134":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"7893bc52c53e459d8552dd3425cb78ea":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_71814f83227446fcad8ca7e06135c4e4","placeholder":"​","style":"IPY_MODEL_0762d59ae58f4224bd405f17469b9233","value":" 2.60M/2.60M [00:00&lt;00:00, 95.1MB/s]"}},"7ce729a7bc704aa691f046e5af6555ac":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_8674adcc4f224a62a26d7c2b3f0dec85","IPY_MODEL_96cdaa51d3784c6ea745caf638009cc7","IPY_MODEL_cefd2ef52cd046b798b9254995797f6c"],"layout":"IPY_MODEL_435f3e67e13d459087d16892940e4691"}},"8674adcc4f224a62a26d7c2b3f0dec85":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_0a1bfe8e34ec4f1d88e430fec302567b","placeholder":"​","style":"IPY_MODEL_3776594c56c449998d424d21f3ad9e5e","value":"Generating train split: 100%"}},"96cdaa51d3784c6ea745caf638009cc7":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_03303167f4e8443ca9250c82162dfd42","max":60000,"min":0,"orientation":"horizontal","style":"IPY_MODEL_c18ee5cf1266403abd597ebfaee813e4","value":60000}},"9eaded557efb45caac16815860c36c9c":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"9f1c91b2ad3d478abe81313246decc00":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"a3bc896cb2094918b12312b18083a7a2":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"a601f90adfb84ed9a3412610ae5f64ee":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"a667ec891f8248609ceb37982e0271e9":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"a8607f6ed55447a893f72e3f3b27b4b8":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"a99799fbaa964fd3a4025bc2788150f7":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"ac21c69d51144727a28fa384de0c9d48":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"ae8c2883c0724a669361424113063a0b":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_76462e15c3874d59937197e92ecc4741","IPY_MODEL_feb8220596544fdd93235d6753fbf84e","IPY_MODEL_b8d3b743a30f492f83c8c04fa5dfe58a"],"layout":"IPY_MODEL_a99799fbaa964fd3a4025bc2788150f7"}},"b1e927539903456e89a882c3b74c27ea":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"b8d3b743a30f492f83c8c04fa5dfe58a":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_18ded9dc30824f829d3bb2aa89a2346c","placeholder":"​","style":"IPY_MODEL_1095dd51a7284fe0ae5e7e39b1016c01","value":" 0/0 [00:00&lt;?, ?it/s]"}},"c18ee5cf1266403abd597ebfaee813e4":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"c2100cb0729645e9853a1939d3d766c8":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_030c732a7d044c6a8dd52ea2747caff1","placeholder":"​","style":"IPY_MODEL_777030c8cf004478bff4fdf3e978c9be","value":" 15.6M/15.6M [00:00&lt;00:00, 77.8MB/s]"}},"c3f6a993c8544294a96f26e9fa257cb5":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"c685f3dc8fc743b58c4fdb628bc394da":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_ac21c69d51144727a28fa384de0c9d48","max":2595890,"min":0,"orientation":"horizontal","style":"IPY_MODEL_70be270fb74240f19445f57993df16cf","value":2595890}},"c778757e6b454de8adfdc94e420e0b3c":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"ca6aac74de634fa798c1887091064a39":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_a8607f6ed55447a893f72e3f3b27b4b8","max":6971,"min":0,"orientation":"horizontal","style":"IPY_MODEL_770d9410f9774514b1cc459455e1e973","value":6971}},"cd35ebc94de54d76affdd01d964b1fb8":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HBoxModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HBoxModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HBoxView","box_style":"","children":["IPY_MODEL_1525a314974c422da4708e86fa8ad07f","IPY_MODEL_73b690e94cfa4785ae4f6075dde563e6","IPY_MODEL_c2100cb0729645e9853a1939d3d766c8"],"layout":"IPY_MODEL_5f1a645faea24b36a8fd0a485a910215"}},"cefd2ef52cd046b798b9254995797f6c":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"HTMLModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"HTMLModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"HTMLView","description":"","description_tooltip":null,"layout":"IPY_MODEL_66041c4159d8487d8dedc0dd7e2b8374","placeholder":"​","style":"IPY_MODEL_33cc57c02d9d47f3b70a4810edd8ab64","value":" 60000/60000 [00:00&lt;00:00, 180712.86 examples/s]"}},"d3f9337534c649e28ea2e6b83da8d769":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"e44df598683a4bcabe373a130af44118":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"f142580245ed43059aed04f4047c2a85":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"DescriptionStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"DescriptionStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","description_width":""}},"f2742e43fcc7498cb4da1f46079ac374":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"StyleView","bar_color":null,"description_width":""}},"faf3d82c291f42aba766eab90d083e46":{"model_module":"@jupyter-widgets/base","model_module_version":"1.2.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"1.2.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"1.2.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"overflow_x":null,"overflow_y":null,"padding":null,"right":null,"top":null,"visibility":null,"width":null}},"feb8220596544fdd93235d6753fbf84e":{"model_module":"@jupyter-widgets/controls","model_module_version":"1.5.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"1.5.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"1.5.0","_view_name":"ProgressView","bar_style":"success","description":"","description_tooltip":null,"layout":"IPY_MODEL_086b3fc80cb94529bb811ce018d625a6","max":1,"min":0,"orientation":"horizontal","style":"IPY_MODEL_55104260a69440e794575f253e73385e","value":0}}}
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
