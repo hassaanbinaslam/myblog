@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-03">
+<meta name="description" content="A detailed, page-by-page breakdown of the Fully Convolutional Networks paper, explaining how to build efficient neural networks for semantic segmentation.">
+
+<title>A Deep Dive into Fully Convolutional Networks for Semantic Segmentation – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="A Deep Dive into Fully Convolutional Networks for Semantic Segmentation – Random Thoughts">
+<meta property="og:description" content="A detailed, page-by-page breakdown of the Fully Convolutional Networks paper, explaining how to build efficient neural networks for semantic segmentation.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-03-fcn-segmentation-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="A Deep Dive into Fully Convolutional Networks for Semantic Segmentation – Random Thoughts">
+<meta name="twitter:description" content="A detailed, page-by-page breakdown of the Fully Convolutional Networks paper, explaining how to build efficient neural networks for semantic segmentation.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-03-fcn-segmentation-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#diving-into-the-abstract-section-abstract" id="toc-diving-into-the-abstract-section-abstract" class="nav-link active" data-scroll-target="#diving-into-the-abstract-section-abstract">Diving into the Abstract (Section: Abstract)</a>
+  <ul class="collapse">
+  <li><a href="#whats-the-problem-semantic-segmentation." id="toc-whats-the-problem-semantic-segmentation." class="nav-link" data-scroll-target="#whats-the-problem-semantic-segmentation.">What’s the Problem? Semantic Segmentation.</a></li>
+  <li><a href="#the-key-insight-going-fully-convolutional" id="toc-the-key-insight-going-fully-convolutional" class="nav-link" data-scroll-target="#the-key-insight-going-fully-convolutional">The “Key Insight”: Going Fully Convolutional</a></li>
+  <li><a href="#building-on-the-shoulders-of-giants-transfer-learning" id="toc-building-on-the-shoulders-of-giants-transfer-learning" class="nav-link" data-scroll-target="#building-on-the-shoulders-of-giants-transfer-learning">Building on the Shoulders of Giants: Transfer Learning</a></li>
+  <li><a href="#the-second-big-idea-combining-what-with-where" id="toc-the-second-big-idea-combining-what-with-where" class="nav-link" data-scroll-target="#the-second-big-idea-combining-what-with-where">The Second Big Idea: Combining “What” with “Where”</a></li>
+  <li><a href="#the-results-state-of-the-art-and-fast" id="toc-the-results-state-of-the-art-and-fast" class="nav-link" data-scroll-target="#the-results-state-of-the-art-and-fast">The Results: State-of-the-Art and Fast</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1: Introduction</a>
+  <ul class="collapse">
+  <li><a href="#a-departure-from-complexity" id="toc-a-departure-from-complexity" class="nav-link" data-scroll-target="#a-departure-from-complexity">A Departure from Complexity</a></li>
+  </ul></li>
+  <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">2. Related Work</a>
+  <ul class="collapse">
+  <li><a href="#the-foundations-classification-and-transfer-learning" id="toc-the-foundations-classification-and-transfer-learning" class="nav-link" data-scroll-target="#the-foundations-classification-and-transfer-learning">The Foundations: Classification and Transfer Learning</a></li>
+  <li><a href="#the-history-of-fully-convolutional-networks" id="toc-the-history-of-fully-convolutional-networks" class="nav-link" data-scroll-target="#the-history-of-fully-convolutional-networks">The History of “Fully Convolutional Networks”</a></li>
+  <li><a href="#the-contemporaries-dense-prediction-with-convnets" id="toc-the-contemporaries-dense-prediction-with-convnets" class="nav-link" data-scroll-target="#the-contemporaries-dense-prediction-with-convnets">The Contemporaries: “Dense Prediction with Convnets”</a></li>
+  <li><a href="#the-final-showdown-the-state-of-the-art" id="toc-the-final-showdown-the-state-of-the-art" class="nav-link" data-scroll-target="#the-final-showdown-the-state-of-the-art">The Final Showdown: The State-of-the-Art</a></li>
+  </ul></li>
+  <li><a href="#fully-convolutional-networks" id="toc-fully-convolutional-networks" class="nav-link" data-scroll-target="#fully-convolutional-networks">3. Fully Convolutional Networks</a>
+  <ul class="collapse">
+  <li><a href="#the-data-as-a-3d-volume" id="toc-the-data-as-a-3d-volume" class="nav-link" data-scroll-target="#the-data-as-a-3d-volume">The Data as a 3D Volume</a></li>
+  <li><a href="#what-is-a-receptive-field" id="toc-what-is-a-receptive-field" class="nav-link" data-scroll-target="#what-is-a-receptive-field">What is a Receptive Field?</a></li>
+  <li><a href="#the-core-principle-translation-invariance" id="toc-the-core-principle-translation-invariance" class="nav-link" data-scroll-target="#the-core-principle-translation-invariance">1. The Core Principle: Translation Invariance</a></li>
+  <li><a href="#the-general-equation-for-a-cnn-layer" id="toc-the-general-equation-for-a-cnn-layer" class="nav-link" data-scroll-target="#the-general-equation-for-a-cnn-layer">2. The General Equation for a CNN Layer</a></li>
+  <li><a href="#the-power-of-composition" id="toc-the-power-of-composition" class="nav-link" data-scroll-target="#the-power-of-composition">3. The Power of Composition</a></li>
+  <li><a href="#the-efficiency-of-whole-image-training" id="toc-the-efficiency-of-whole-image-training" class="nav-link" data-scroll-target="#the-efficiency-of-whole-image-training">The Efficiency of Whole-Image Training</a></li>
+  <li><a href="#laying-out-the-plan" id="toc-laying-out-the-plan" class="nav-link" data-scroll-target="#laying-out-the-plan">Laying Out the Plan</a></li>
+  </ul></li>
+  <li><a href="#adapting-classifiers-for-dense-prediction" id="toc-adapting-classifiers-for-dense-prediction" class="nav-link" data-scroll-target="#adapting-classifiers-for-dense-prediction">3.1. Adapting Classifiers for Dense Prediction</a></li>
+  <li><a href="#shift-and-stitch-is-filter-rarefaction" id="toc-shift-and-stitch-is-filter-rarefaction" class="nav-link" data-scroll-target="#shift-and-stitch-is-filter-rarefaction">3.2. Shift-and-stitch is filter rarefaction</a></li>
+  <li><a href="#upsampling-is-backwards-strided-convolution" id="toc-upsampling-is-backwards-strided-convolution" class="nav-link" data-scroll-target="#upsampling-is-backwards-strided-convolution">3.3. Upsampling is backwards strided convolution</a></li>
+  <li><a href="#segmentation-architecture" id="toc-segmentation-architecture" class="nav-link" data-scroll-target="#segmentation-architecture">4. Segmentation Architecture</a></li>
+  <li><a href="#from-classifier-to-dense-fcn" id="toc-from-classifier-to-dense-fcn" class="nav-link" data-scroll-target="#from-classifier-to-dense-fcn">4.1. From Classifier to Dense FCN</a></li>
+  <li><a href="#combining-what-and-where" id="toc-combining-what-and-where" class="nav-link" data-scroll-target="#combining-what-and-where">4.2. Combining what and where</a></li>
+  <li><a href="#experimental-framework" id="toc-experimental-framework" class="nav-link" data-scroll-target="#experimental-framework">4.3. Experimental Framework</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">5. Results</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A Deep Dive into Fully Convolutional Networks for Semantic Segmentation</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A detailed, page-by-page breakdown of the Fully Convolutional Networks paper, explaining how to build efficient neural networks for semantic segmentation.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 3, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-03-fcn-segmentation-reading-notes.png" class="img-fluid"></p>
+<p>The paper on our reading list is foundational paper in modern computer vision: “Fully Convolutional Networks for Semantic Segmentation” by Long, Shelhamer, and Darrell from UC Berkeley. This 2015 paper was a game-changer, fundamentally shifting how deep learning models handle tasks that require pixel-level understanding.e</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-title.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-title.PNG" class="img-fluid"></a></p>
+<section id="diving-into-the-abstract-section-abstract" class="level2">
+<h2 class="anchored" data-anchor-id="diving-into-the-abstract-section-abstract">Diving into the Abstract (Section: Abstract)</h2>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-abstract.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-abstract.PNG" class="img-fluid"></a></p>
+<section id="whats-the-problem-semantic-segmentation." class="level3">
+<h3 class="anchored" data-anchor-id="whats-the-problem-semantic-segmentation.">What’s the Problem? Semantic Segmentation.</h3>
+<p>First, the authors state their goal is to tackle <strong>semantic segmentation</strong>. What is that?</p>
+<p>Imagine you show a computer a photo of a cat sitting on grass.</p>
+<ul>
+<li><strong>Image Classification</strong> would say: “This is an image of a cat.”</li>
+<li><strong>Object Detection</strong> would say: “There is a cat inside this bounding box.”</li>
+<li><strong>Semantic Segmentation</strong> goes a step further. It says: “<em>These exact pixels</em> belong to a cat, and <em>these other pixels</em> belong to grass.”</li>
+</ul>
+<p>It’s about understanding an image at the most granular level, classifying every single pixel. This is what the paper calls a “spatially dense prediction task.”</p>
+</section>
+<section id="the-key-insight-going-fully-convolutional" class="level3">
+<h3 class="anchored" data-anchor-id="the-key-insight-going-fully-convolutional">The “Key Insight”: Going Fully Convolutional</h3>
+<p>Before this paper, top-performing neural networks for vision tasks, like AlexNet or VGG, were primarily classifiers. They would take an image (usually of a fixed size, like 224x224 pixels) and shrink it down through a series of convolutional and pooling layers until it was small enough to be fed into a few final “fully connected” layers, which would then output a single classification (e.g., “cat,” “dog,” “car”).</p>
+<p>The problem is that those final fully connected layers discard all spatial information. They know <em>what</em> is in the image, but they’ve lost track of <em>where</em> it is.</p>
+<p>The authors’ “key insight” is to get rid of these fully connected layers and replace them with convolutional layers. A network composed entirely of convolutional-style layers is what they call a <strong>“fully convolutional” network (FCN)</strong>. This simple but profound change has two immediate benefits mentioned in the abstract:</p>
+<ol type="1">
+<li><strong>It can process images of any size.</strong> Since a convolution is just a filter that slides over the input, it doesn’t care if the image is 200x200 or 1000x800.</li>
+<li><strong>It produces an output map, not just a single number.</strong> The output is a “correspondingly-sized” heatmap that preserves spatial dimensions, which is exactly what we need for segmentation.</li>
+</ol>
+</section>
+<section id="building-on-the-shoulders-of-giants-transfer-learning" class="level3">
+<h3 class="anchored" data-anchor-id="building-on-the-shoulders-of-giants-transfer-learning">Building on the Shoulders of Giants: Transfer Learning</h3>
+<p>The authors didn’t start from scratch. They took the powerful, pre-trained classification networks of the day (AlexNet, VGGNet, GoogLeNet) and <strong>“adapted”</strong> them. These networks had already learned a rich “hierarchy of features” from being trained on the massive ImageNet dataset. They knew how to recognize edges, textures, shapes, and object parts.</p>
+<p>The authors cleverly repurposed this knowledge. They performed a kind of “network surgery”: they chopped off the final classification layers and converted the remaining ones into an FCN. They then <strong>“fine-tuned”</strong> this modified network on the segmentation task. This is a classic example of <strong>transfer learning</strong>, and it’s far more effective than trying to train a deep network from zero.</p>
+</section>
+<section id="the-second-big-idea-combining-what-with-where" class="level3">
+<h3 class="anchored" data-anchor-id="the-second-big-idea-combining-what-with-where">The Second Big Idea: Combining “What” with “Where”</h3>
+<p>The abstract hints at another crucial contribution: a <strong>“novel architecture.”</strong> Deep in a neural network, the features are highly semantic but spatially coarse.</p>
+<p>The network might know there’s a face in the image, but the feature map is so small that it can’t pinpoint the exact location of the nose. Conversely, the early layers of the network have very precise spatial information (fine details, sharp edges) but don’t know what they’re looking at.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>As we go deeper into the network, our understanding of <strong>WHAT</strong> is in the image gets better (e.g., “I’m confident this is a cat face”), but our knowledge of <strong>WHERE</strong> it is located gets worse (e.g., “It’s somewhere in this big block of pixels”).</p>
+</div>
+</div>
+</div>
+<p>The authors’ new architecture combines this “semantic information from a deep, coarse layer with appearance information from a shallow, fine layer.” This allows the network to make predictions that are both semantically meaningful (it knows this is a car) and spatially precise (it knows exactly where the car’s boundary is). We’ll see later in the paper that they accomplish this with an elegant mechanism called “skip connections.”</p>
+</section>
+<section id="the-results-state-of-the-art-and-fast" class="level3">
+<h3 class="anchored" data-anchor-id="the-results-state-of-the-art-and-fast">The Results: State-of-the-Art and Fast</h3>
+<p>Finally, the abstract delivers the punchline. Their method works, and it works extremely well.</p>
+<ul>
+<li>It achieved <strong>state-of-the-art</strong> results on standard benchmark datasets (PASCAL VOC, NYUDv2, SIFT Flow).</li>
+<li>The improvement was significant: a <strong>20% relative jump</strong> on the important PASCAL VOC 2012 benchmark. In deep learning research, that’s a massive leap, not an incremental improvement.</li>
+<li>It was also <strong>fast</strong>. At less than a fifth of a second per image, it was practical for real-world use.</li>
+</ul>
+</section>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1: Introduction</h2>
+<p>Now that we have the big picture from the Abstract, the Introduction begins to fill in the details. The authors start by framing their work as a natural next step in the evolution of deep learning, moving from coarse, image-level tasks to fine, pixel-level ones.</p>
+<p>Let’s look at the first two paragraphs of the introduction. The first is a general statement, and the second (the one you’ve highlighted) is the core thesis.</p>
+<blockquote class="blockquote">
+<p><em>Convolutional networks are driving advances in recognition. Convnets are not only improving for whole-image classification [19, 31, 32], but also making progress on local tasks with structured output. These include advances in bounding box object detection [29, 12, 17], part and keypoint prediction [39, 24], and local correspondence [24, 9].</em></p>
+<p><em>The natural next step in the progression from coarse to fine inference is to make a prediction at every pixel…</em></p>
+</blockquote>
+<p>This sets up their key contribution, which they detail in the next paragraph:</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-1-1.PNG" class="img-fluid"></a></p>
+<p>This paragraph is packed with crucial concepts. Let’s break it down sentence by sentence.</p>
+<section id="the-main-claim-simple-and-state-of-the-art" class="level4">
+<h4 class="anchored" data-anchor-id="the-main-claim-simple-and-state-of-the-art">1. The Main Claim: Simple and State-of-the-Art</h4>
+<blockquote class="blockquote">
+<p>“We show that a fully convolutional network (FCN), trained <strong>end-to-end</strong>, <strong>pixels-to-pixels</strong> on semantic segmentation exceeds the state-of-the-art <strong>without further machinery</strong>.”</p>
+</blockquote>
+<p>Let’s define these terms:</p>
+<ul>
+<li><strong>End-to-end:</strong> This means the model is a single, unified system. You feed it raw pixels, and it directly outputs the final segmentation map. The entire network, from the first layer to the last, is trained together with a single learning objective. This is in stark contrast to previous methods that were often complex, multi-stage pipelines.</li>
+<li><strong>Pixels-to-pixels:</strong> This is a more specific way of saying “end-to-end” for this task. The input is a grid of pixels, and the output is a corresponding grid of pixel-class labels.</li>
+<li><strong>Without further machinery:</strong> This is a key point. Before FCN, state-of-the-art systems were often Frankenstein’s monsters. They would use a CNN as a feature extractor, then bolt on other complex components (“machinery”) like superpixel generation, region proposal methods, or post-processing with Conditional Random Fields (CRFs) to clean up the final output. The authors are claiming their single, elegant FCN can beat these complicated systems on its own.</li>
+</ul>
+</section>
+<section id="the-novelty-what-makes-this-first" class="level4">
+<h4 class="anchored" data-anchor-id="the-novelty-what-makes-this-first">2. The Novelty: What Makes This “First”?</h4>
+<blockquote class="blockquote">
+<p>“To our knowledge, this is the <strong>first work</strong> to train FCNs end-to-end (1) for pixelwise prediction and (2) from <strong>supervised pre-training</strong>.”</p>
+</blockquote>
+<p>They are claiming two key “firsts”:</p>
+<ol type="1">
+<li><strong>First to <em>train</em> an FCN end-to-end for this task:</strong> While people had used convolutional networks to produce heatmaps before (e.g., for sliding-window detection), the authors argue they are the first to set up a training procedure that learns to produce dense, pixel-level predictions directly. The learning process itself is novel.</li>
+<li><strong>First to do it from supervised pre-training:</strong> This is the transfer learning magic we discussed earlier. Previous attempts at segmentation with CNNs often used small networks trained from scratch. The authors were the first to successfully adapt the giant, powerful networks pre-trained on ImageNet for classification and fine-tune them for the segmentation task. This gave them a massive head start in feature representation.</li>
+</ol>
+</section>
+<section id="the-how-to-the-mechanics-of-fcns" class="level4">
+<h4 class="anchored" data-anchor-id="the-how-to-the-mechanics-of-fcns">3. The “How-To”: The Mechanics of FCNs</h4>
+<blockquote class="blockquote">
+<p>“Fully convolutional versions of existing networks predict <strong>dense outputs</strong> from <strong>arbitrary-sized inputs</strong>. Both learning and inference are performed <strong>whole-image-at-a-time</strong>… <strong>In-network upsampling layers</strong> enable pixelwise prediction and learning in nets with <strong>subsampled pooling</strong>.”</p>
+</blockquote>
+<p>This part explains <em>how</em> it all works.</p>
+<ul>
+<li><strong>Dense outputs from arbitrary-sized inputs:</strong> This is the direct result of replacing fully connected layers with convolutions. The network is no longer constrained to a fixed input size and naturally produces a spatial output map (a “dense output”).</li>
+<li><strong>Whole-image-at-a-time:</strong> This is a major efficiency win. The common alternative was <strong>patchwise training</strong>, where you’d cut the big input image into thousands of small patches, feed each patch through the network individually to classify its center pixel, and then stitch the results together. This is incredibly slow and redundant because the network re-computes features for overlapping regions again and again. FCNs process the entire image in one go, sharing computation across all “patches” implicitly. This is what they mean by “dense feedforward computation and backpropagation.”</li>
+<li><strong>In-network upsampling layers:</strong> Here they hint at the solution to the “What vs.&nbsp;Where” problem. As we discussed, pooling layers (“subsampled pooling”) shrink the feature maps, making them spatially coarse. To get back to the original image resolution for a final pixel-wise prediction, they need to upsample. Instead of using a simple, fixed method <em>after</em> the network, they build learnable upsampling layers <em>inside</em> the network. This allows the FCN to learn how to best create a fine-grained prediction from coarse features, all within that end-to-end training framework.</li>
+</ul>
+</section>
+<section id="a-departure-from-complexity" class="level3">
+<h3 class="anchored" data-anchor-id="a-departure-from-complexity">A Departure from Complexity</h3>
+<p>Having laid out their core idea, the authors now draw a sharp contrast between their elegant, unified approach and the complex, multi-stage pipelines that were common at the time.</p>
+<blockquote class="blockquote">
+<p><em>This method is efficient, both asymptotically and absolutely, and precludes the need for the complications in other works. Patchwise training is common [27, 2, 8, 28, 11], but lacks the efficiency of fully convolutional training. Our approach does not make use of pre- and post-processing complications, including superpixels [8, 16], proposals [16, 14], or post-hoc refinement by random fields or local classifiers [8, 16]. Our model transfers recent success in classification [19, 31, 32] to dense prediction by reinterpreting classification nets as fully convolutional and fine-tuning from their learned representations. In contrast, previous works have applied small convnets without supervised pre-training [8, 28, 27].</em></p>
+</blockquote>
+<p>This paragraph is a list of techniques that FCN makes obsolete. Let’s quickly define these “complications”:</p>
+<ul>
+<li><strong>Patchwise training:</strong> We’ve already discussed this. Instead of processing a whole image at once, these methods would classify one small image patch at a time. The authors correctly point out this is highly inefficient.</li>
+<li><strong>Pre- and post-processing:</strong> This refers to steps taken before the network sees the data or after it makes a prediction. The authors’ method is “end-to-end,” meaning no extra steps are needed.</li>
+<li><strong>Superpixels:</strong> A pre-processing step where you group pixels into small, perceptually meaningful regions (superpixels). The network would then classify these superpixels instead of individual pixels. This adds complexity and can introduce errors if the initial grouping is bad.</li>
+<li><strong>Proposals (or Region Proposals):</strong> These are “guesses” for where objects might be in an image, often generated by a separate algorithm. This was a core component of famous models like R-CNN. The network’s job was to classify these proposed regions, not the whole image.</li>
+<li><strong>Post-hoc refinement by random fields:</strong> “Post-hoc” means “after the fact.” After the network made a raw, often noisy prediction, a separate model like a Conditional Random Field (CRF) would be used to clean it up, making sure neighboring pixels have similar labels. While effective, this is a separate optimization step, breaking the “end-to-end” learning principle.</li>
+</ul>
+<p>The final two sentences of the paragraph reiterate their key advantages: they use <strong>transfer learning</strong> from large, pre-trained classification networks, whereas previous approaches often used smaller, custom networks trained from scratch, which were far less powerful.</p>
+<section id="solving-the-what-vs.-where-dilemma" class="level4">
+<h4 class="anchored" data-anchor-id="solving-the-what-vs.-where-dilemma">Solving the “What vs.&nbsp;Where” Dilemma</h4>
+<p>Now we get to the heart of the architectural challenge. The authors formally state the core tension we discussed earlier and introduce their solution.</p>
+<blockquote class="blockquote">
+<p><em>Semantic segmentation faces an inherent tension between semantics and location: global information resolves <strong>what</strong> while local information resolves <strong>where</strong>. Deep feature hierarchies jointly encode location and semantics in a local-to-global pyramid. We define a novel “skip” architecture to combine deep, coarse, semantic information and shallow, fine, appearance information in Section 4.2 (see Figure 3).</em></p>
+</blockquote>
+<p>This is the most critical paragraph in the introduction.</p>
+<ul>
+<li><strong>“The tension between semantics and location”</strong>: This is the “What vs.&nbsp;Where” problem.
+<ul>
+<li><strong>Global information resolves what</strong>: To know that you’re looking at a “bicycle,” you need to see the whole object—the wheels, handlebars, and frame together. This holistic, big-picture view comes from the deep layers of the network, which have a large “receptive field.”</li>
+<li><strong>Local information resolves where</strong>: To know the precise boundary between the bicycle’s tire and the road, you need to look at a very small, high-resolution patch of pixels. This fine-grained detail is only available in the shallow, early layers of the network.</li>
+</ul></li>
+<li><strong>The Solution: A “skip” architecture</strong>: How do you get the best of both worlds? The authors propose a “skip” architecture. The name is descriptive: they create connections that <strong>skip over</strong> intermediate layers of the network. These skip connections pipe the fine-grained spatial information from the early layers directly to the deep layers. The deep layers can then use this detailed map to refine their coarse semantic predictions, resulting in a final segmentation that is both accurate (knows it’s a bicycle) and precise (knows exactly where the edges are).</li>
+</ul>
+</section>
+<section id="the-road-ahead" class="level4">
+<h4 class="anchored" data-anchor-id="the-road-ahead">The Road Ahead</h4>
+<p>The introduction concludes with a standard roadmap, outlining the structure of the rest of the paper.</p>
+<blockquote class="blockquote">
+<p><em>In the next section, we review related work on deep classification nets, FCNs, and recent approaches to semantic segmentation using convnets. The following sections explain FCN design and dense prediction tradeoffs, introduce our architecture with in-network upsampling and multilayer combinations, and describe our experimental framework. Finally, we demonstrate state-of-the-art results on PASCAL VOC 2011-2, NYUDv2, and SIFT Flow.</em></p>
+</blockquote>
+<p>This tells us what’s coming: a review of prior work, a technical deep-dive into FCNs and their architecture, experimental details, and finally, the impressive results.</p>
+<p>With the introduction complete, we now have a solid foundation for understanding the rest of this landmark paper. Next, we’ll dive into the Related Work section.</p>
+</section>
+</section>
+</section>
+<section id="related-work" class="level2">
+<h2 class="anchored" data-anchor-id="related-work">2. Related Work</h2>
+<p>In this section, the authors map out the landscape of ideas that FCN is built on and competes with. They organize the discussion into a few key areas.</p>
+<section id="the-foundations-classification-and-transfer-learning" class="level3">
+<h3 class="anchored" data-anchor-id="the-foundations-classification-and-transfer-learning">The Foundations: Classification and Transfer Learning</h3>
+<blockquote class="blockquote">
+<p><em>Our approach draws on recent successes of deep nets for image classification [19, 31, 32] and transfer learning [4, 38]. Transfer was first demonstrated on various visual recognition tasks [4, 38], then on detection, and on both instance and semantic segmentation in hybrid proposal-classifier models [12, 16, 14]. We now re-architect and fine-tune classification nets to direct, dense prediction of semantic segmentation…</em></p>
+</blockquote>
+<p>This first paragraph acknowledges the two giant pillars their work rests on:</p>
+<ol type="1">
+<li><strong>Powerful Classification Networks:</strong> The success of AlexNet, VGGNet, and GoogLeNet on the ImageNet classification challenge provided a set of incredibly powerful, pre-trained feature extractors.</li>
+<li><strong>Transfer Learning:</strong> The idea of taking a network trained for one task (like classification) and fine-tuning it for another (like detection or segmentation) was already established.</li>
+</ol>
+<p>Their key contribution, they restate, is to <strong>re-architect</strong> these nets to perform segmentation directly, rather than using them as a component in a more complex “hybrid” system.</p>
+</section>
+<section id="the-history-of-fully-convolutional-networks" class="level3">
+<h3 class="anchored" data-anchor-id="the-history-of-fully-convolutional-networks">The History of “Fully Convolutional Networks”</h3>
+<p>Here, the authors show that the <em>idea</em> of a network made purely of convolutional layers isn’t entirely new, but its application and training for dense prediction is.</p>
+<blockquote class="blockquote">
+<p><em>To our knowledge, the idea of extending a convnet to arbitrary-sized inputs first appeared in Matan et al.&nbsp;[25], which extended the classic LeNet [21] to recognize strings of digits… Wolf and Platt [37] expand convnet outputs to 2-dimensional maps of detection scores…</em></p>
+</blockquote>
+<p>They give credit to very early work from the 90s that used the fully convolutional property for simple tasks like reading multiple digits in a row.</p>
+<blockquote class="blockquote">
+<p><em>Fully convolutional computation has also been exploited in the present era… by Sermanet et al.&nbsp;[29], Pinheiro and Collobert [28], and Eigen et al.&nbsp;[5]… Fully convolutional training is rare, but used effectively by Tompson et al.&nbsp;[35] to learn an end-to-end part detector…</em></p>
+</blockquote>
+<p>They acknowledge that more recent works also used fully convolutional <em>inference</em> (the forward pass), most famously OverFeat by Sermanet et al.&nbsp;for sliding-window detection. However, they point out that fully convolutional <em>training</em> (learning the weights this way) is rare. They cite one example in pose estimation but note the authors didn’t analyze or generalize the method.</p>
+<blockquote class="blockquote">
+<p><em>Alternatively, He et al.&nbsp;[17] discard the non-convolutional portion of classification nets to make a feature extractor. They combine proposals and spatial pyramid pooling… this hybrid model cannot be learned end-to-end.</em></p>
+</blockquote>
+<p>This is an important contrast. Another very popular paper at the time, SPP-Net (He et al.), also solved the fixed-input-size problem of classifiers, but in a different way. The authors draw a clear line: SPP-Net is a “hybrid model” that still relies on other components (like proposals) and <strong>cannot be learned end-to-end</strong>. This highlights the elegance and unity of their own FCN approach.</p>
+</section>
+<section id="the-contemporaries-dense-prediction-with-convnets" class="level3">
+<h3 class="anchored" data-anchor-id="the-contemporaries-dense-prediction-with-convnets">The Contemporaries: “Dense Prediction with Convnets”</h3>
+<p>This is where they size up their direct competition in the segmentation space. They list several techniques that were common in other contemporary methods and implicitly state that their method doesn’t need them.</p>
+<blockquote class="blockquote">
+<p><em>Several recent works have applied convnets to dense prediction problems… Common elements of these approaches include</em></p>
+<ul>
+<li>small models restricting capacity and receptive fields;</li>
+<li>patchwise training…</li>
+<li>post-processing by superpixel projection, random field regularization…</li>
+<li>input shifting and output interlacing for dense output… (shift-and-stitch)</li>
+<li>multi-scale pyramid processing…</li>
+<li>saturating tanh nonlinearities…</li>
+<li>ensembles…</li>
+</ul>
+<p><em>…whereas our method does without this machinery.</em></p>
+</blockquote>
+<p>They are essentially summarizing the entire field’s bag of tricks and then stating, “We don’t need any of that.” They do, however, note that they will analyze some of these ideas, like patchwise training and “shift-and-stitch” (a clever trick for getting higher-resolution output by running the model on slightly shifted inputs), from the perspective of their FCN framework.</p>
+</section>
+<section id="the-final-showdown-the-state-of-the-art" class="level3">
+<h3 class="anchored" data-anchor-id="the-final-showdown-the-state-of-the-art">The Final Showdown: The State-of-the-Art</h3>
+<p>Finally, they name their two main rivals for the state-of-the-art crown on the PASCAL VOC dataset.</p>
+<blockquote class="blockquote">
+<p><em>Hariharan et al.&nbsp;[16] and Gupta et al.&nbsp;[14] likewise adapt deep classification nets to semantic segmentation, but do so in hybrid proposal-classifier models. These approaches fine-tune an R-CNN system… Neither method is learned end-to-end.</em></p>
+<p><em>They achieve state-of-the-art results on PASCAL VOC segmentation… so we directly compare our standalone, end-to-end FCN to their semantic segmentation results in Section 5.</em></p>
+</blockquote>
+<p>This paragraph sets up the final benchmark comparison. The reigning champions, SDS (Hariharan et al.), use a complex, multi-stage R-CNN-based pipeline. It’s powerful, but it’s slow and definitely not “end-to-end.”</p>
+</section>
+</section>
+<section id="fully-convolutional-networks" class="level2">
+<h2 class="anchored" data-anchor-id="fully-convolutional-networks">3. Fully Convolutional Networks</h2>
+<p>Section 3 is the technical heart of the paper, where the authors formally define what a Fully Convolutional Network is and how it works. They start by reviewing the fundamental building blocks.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-1.PNG" class="img-fluid"></a></p>
+<p>This first paragraph is a concise review of the core data structure inside a CNN. Let’s break it down.</p>
+<section id="the-data-as-a-3d-volume" class="level3">
+<h3 class="anchored" data-anchor-id="the-data-as-a-3d-volume">The Data as a 3D Volume</h3>
+<p>The authors’ first point is that data inside a CNN is not a flat list of numbers; it’s a 3D block, or a “volume,” with dimensions of <strong>height (h), width (w), and depth (d)</strong>.</p>
+<ul>
+<li><strong>h &amp; w (Spatial Dimensions):</strong> This is straightforward. It’s the “grid” of the image or feature map.</li>
+<li><strong>d (Feature/Channel Dimension):</strong> This is the most interesting part.
+<ul>
+<li>For the very <strong>first layer</strong> (the input image), <code>d</code> is the number of color channels. For a standard color photo, <code>d=3</code> (Red, Green, Blue).</li>
+<li>For <strong>deeper layers</strong>, <code>d</code> represents the number of <em>features</em> or <em>filters</em> that the layer has learned. For example, a layer might have <code>d=256</code>, meaning it has learned 256 different feature detectors. One feature detector might look for vertical edges, another might look for a specific texture, and a third might look for a reddish-blue color combination.</li>
+</ul></li>
+</ul>
+<p>So, a CNN takes a 3D volume (the input image) and transforms it into a series of other 3D volumes (the feature maps).</p>
+</section>
+<section id="what-is-a-receptive-field" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-a-receptive-field">What is a Receptive Field?</h3>
+<p>This is arguably the most important concept in this paragraph.</p>
+<blockquote class="blockquote">
+<p>“Locations in higher layers correspond to the locations in the image they are path-connected to, which are called their <strong>receptive fields</strong>.”</p>
+</blockquote>
+<p>A single “pixel” or neuron in a deep feature map doesn’t just see one pixel from the original input. It sees a whole region. The <strong>receptive field</strong> is the specific patch of the original input image that influences the value of that single neuron.</p>
+<p>Think of it like this:</p>
+<ul>
+<li>A neuron in the <strong>first convolutional layer</strong> might look at a tiny 3x3 patch of pixels from the input image. Its receptive field is 3x3.</li>
+<li>A neuron in the <strong>second layer</strong> looks at a 3x3 patch of neurons from the first layer. But since each of <em>those</em> neurons saw a 3x3 patch of the input, this second-layer neuron is actually seeing a larger 5x5 region of the original input. Its receptive field is 5x5.</li>
+</ul>
+<p>As you go deeper, the receptive field size grows. A neuron deep in the network might have a receptive field of 200x200 pixels. This is how CNNs build up a hierarchical understanding:</p>
+<ul>
+<li><strong>Shallow layers</strong> have small receptive fields. They focus on local details like edges and corners (high-precision <strong>“where”</strong> information).</li>
+<li><strong>Deep layers</strong> have large receptive fields. They can see enough of the image to recognize complex objects like faces or cars (high-level <strong>“what”</strong> information).</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/receptive-field-in-convolutional-networks.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Receptive Field in the Convolutional Networks"><img src="images/2025-09-03-fcn-segmentation-reading-notes/receptive-field-in-convolutional-networks.png" class="img-fluid figure-img" alt="Receptive Field in the Convolutional Networks"></a></p>
+<figcaption>Receptive Field in the Convolutional Networks</figcaption>
+</figure>
+</div>
+<p><em>Image Source: <a href="https://theaisummer.com/receptive-field/">Receptive Field in the Convolutional Networks</a></em></p>
+<p>After establishing the basic data structure (the 3D volume), the authors now get into the mathematical properties of the layers themselves. This part is a little dense, but it’s the foundation for everything that follows.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-2a.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-2a.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-2b.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-2b.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>Let’s unpack this step-by-step.</p>
+</section>
+<section id="the-core-principle-translation-invariance" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-principle-translation-invariance">1. The Core Principle: Translation Invariance</h3>
+<p>The most important sentence is the first one: <strong>“Convnets are built on translation invariance.”</strong> (Technically, it’s equivariance, but the general idea is the same).</p>
+<ul>
+<li><strong>Translation</strong> means moving something without rotating or resizing it.</li>
+<li><strong>Invariance</strong> means that something doesn’t change.</li>
+</ul>
+<p>So, “translation invariance” means that if you take an object (like a cat) in an image and move it to a different location, the network should still recognize it as a cat. The network’s “cat detector” works everywhere in the image.</p>
+<p><strong>How does it achieve this?</strong> The next line explains: the operations depend only on <strong>relative spatial coordinates</strong>. A filter doesn’t know if it’s at position (x=10, y=20) or (x=300, y=400). It only knows the pattern of values in its immediate neighborhood—the pixels to its “top-left,” “bottom-right,” etc. The same filter weights are applied at every single location, which is what gives it this powerful property.</p>
+</section>
+<section id="the-general-equation-for-a-cnn-layer" class="level3">
+<h3 class="anchored" data-anchor-id="the-general-equation-for-a-cnn-layer">2. The General Equation for a CNN Layer</h3>
+<p>The equation <code>y_ij = f_ks(...)</code> looks intimidating, but it’s just a general way to write down what any CNN layer does. Let’s translate it into English:</p>
+<p>“The output value at a single location <code>y_ij</code> in this layer is calculated by a function <code>f</code>, which takes in a small patch of input values from the previous layer <code>x</code>.”</p>
+<p>Let’s look at the pieces:</p>
+<ul>
+<li><strong><code>y_ij</code></strong>: A single output value (or vector of features) at coordinate <code>(i, j)</code>.</li>
+<li><strong><code>x</code></strong>: The input from the previous layer.</li>
+<li><strong><code>f_ks</code></strong>: The function the layer performs.
+<ul>
+<li>It could be <code>max pooling</code> (find the maximum value in the input patch).</li>
+<li>It could be <code>convolution</code> (perform a weighted sum of the input patch).</li>
+<li>It could be <code>ReLU</code> (an activation function applied to each element).</li>
+</ul></li>
+<li><strong><code>k</code> (kernel size):</strong> How big is the input patch we’re looking at? A <code>k=3</code> means we’re looking at a 3x3 neighborhood.</li>
+<li><strong><code>s</code> (stride):</strong> How far do we jump in the input to calculate the next output? A <code>s=1</code> means we slide the window one pixel at a time. A <code>s=2</code> means we jump two pixels, effectively downsampling the output.</li>
+<li>The complicated-looking <code>x_si+δi, sj+δj</code> is just the math for “grab the input patch of size <code>k</code> centered around the location <code>(si, sj)</code>.”</li>
+</ul>
+</section>
+<section id="the-power-of-composition" class="level3">
+<h3 class="anchored" data-anchor-id="the-power-of-composition">3. The Power of Composition</h3>
+<p>The paragraph concludes with another important mathematical property.</p>
+<blockquote class="blockquote">
+<p><em>This functional form is maintained under composition, with kernel size and stride obeying the transformation rule</em></p>
+<p><em>f<sub>ks</sub> ◦ g<sub>k’s’</sub> = (f ◦ g)<sub>k’+(k-1)s’, ss’</sub></em></p>
+</blockquote>
+<p>This is a fancy way of saying: <strong>“When you stack these layers, they compose in a predictable way.”</strong></p>
+<p>If you have one layer <code>g</code> followed by another layer <code>f</code>, the combination of the two (<code>f ◦ g</code>) acts like a <em>single, larger layer</em> of the same type. This new super-layer has a new, larger effective kernel size and a new, larger effective stride.</p>
+<ul>
+<li><strong>New stride (<code>ss'</code>):</strong> This is simple. If you have a layer with stride 2, and you stack another layer with stride 2 on top, the total stride from the input of the first layer to the output of the second is <code>2 * 2 = 4</code>. The strides multiply.</li>
+<li><strong>New kernel size (<code>k' + (k-1)s'</code>):</strong> This is the formula for calculating the growth of the <strong>receptive field</strong>! It tells you exactly how big a patch of the original input a neuron sees after two layers.</li>
+</ul>
+<p>The key takeaway is that the fundamental nature of the computation doesn’t change as you go deeper. You are just creating a filter with a larger and larger receptive field. This mathematical elegance is what makes deep CNNs so powerful and analyzable.</p>
+</section>
+<section id="the-efficiency-of-whole-image-training" class="level3">
+<h3 class="anchored" data-anchor-id="the-efficiency-of-whole-image-training">The Efficiency of Whole-Image Training</h3>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3-3.PNG" class="img-fluid"></a></p>
+<p>After defining the mathematical properties of convolutional layers, the authors now explain the powerful implications of building a network <em>entirely</em> out of these layers.</p>
+<blockquote class="blockquote">
+<p><em>While a general deep net computes a general nonlinear function, a net with only layers of this form computes a nonlinear <strong>filter</strong>, which we call a <strong>deep filter</strong> or <strong>fully convolutional network</strong>. An FCN naturally operates on an input of any size, and produces an output of corresponding (possibly resampled) spatial dimensions.</em></p>
+</blockquote>
+<p>This is a key distinction. A “general deep net” (one with fully connected layers) takes a fixed-size input and squashes it down to a single output vector. It’s a black box function. An FCN, on the other hand, acts like a sophisticated <strong>filter</strong> from signal processing. It slides over the input image, transforming it into an output map that preserves the spatial grid. This is why it can handle inputs of any size—the filter just has more area to slide over.</p>
+<section id="the-magic-of-the-loss-function" class="level4">
+<h4 class="anchored" data-anchor-id="the-magic-of-the-loss-function">The Magic of the Loss Function</h4>
+<p>The next part is the most critical insight for understanding the efficiency of FCNs.</p>
+<blockquote class="blockquote">
+<p><em>A real-valued loss function composed with an FCN defines a task. If the loss function is a sum over the spatial dimensions of the final layer, l(x; θ) = ∑<sub>ij</sub> l’(x<sub>ij</sub>; θ), its gradient will be a sum over the gradients of each of its spatial components. Thus stochastic gradient descent on l computed on whole images will be the same as stochastic gradient descent on l’, taking all of the final layer receptive fields as a minibatch.</em></p>
+</blockquote>
+<p>This sounds complicated, but the idea is actually very intuitive. Let’s break it down.</p>
+<ol type="1">
+<li><p><strong>“A loss function… defines a task.”</strong>: The loss function is what tells the network if its prediction is good or bad. For segmentation, the loss is typically calculated at every pixel. For example, for a pixel that is supposed to be “cat,” the network gets a high penalty (loss) if it predicts “dog.”</p></li>
+<li><p><strong>“The loss function is a sum over the spatial dimensions.”</strong>: To get the total loss for the entire image, you just add up the individual losses from every single pixel (or every location <code>(i,j)</code> in the final output map). The total image loss <code>l</code> is the sum of all the little pixel losses <code>l'</code>.</p></li>
+<li><p><strong>The “Aha!” Moment</strong>: Because of the rules of calculus (specifically, the sum rule of derivatives), the gradient of the total loss is simply the sum of the gradients from each individual pixel’s loss.</p></li>
+<li><p><strong>The Punchline</strong>: This means that performing one backpropagation step on the <strong>entire image</strong> is mathematically identical to performing many individual backpropagation steps on every single output pixel (or, more accurately, on every input patch that corresponds to an output pixel) and then averaging the gradients together.</p></li>
+</ol>
+<p>In other words:</p>
+<p><strong>Training an FCN on one full image is the same as training a regular CNN on a giant batch of overlapping image patches taken from that image.</strong></p>
+<p>The FCN approach is just an incredibly efficient way to do this. Instead of running each patch through the network independently (which involves tons of redundant calculations on the overlapping parts), the FCN computes it all in one elegant, shared forward and backward pass.</p>
+<p>The authors summarize this by saying it’s like taking all of the final layer’s receptive fields and treating them as a <strong>“minibatch”</strong>. This is the key insight that unlocks fast, efficient training for dense prediction tasks.</p>
+</section>
+</section>
+<section id="laying-out-the-plan" class="level3">
+<h3 class="anchored" data-anchor-id="laying-out-the-plan">Laying Out the Plan</h3>
+<p>Having established the theoretical and efficiency benefits of the FCN paradigm, the authors now summarize the main point and provide a clear roadmap for the subsections that follow.</p>
+<blockquote class="blockquote">
+<p><em>When these receptive fields overlap significantly, both feedforward computation and backpropagation are much more efficient when computed layer-by-layer over an entire image instead of independently patch-by-patch.</em></p>
+</blockquote>
+<p>This sentence is the grand summary of the previous discussion. Because adjacent “patches” in an image overlap a great deal, processing them one by one is wasteful. An FCN exploits this overlap by sharing the computation, making both the forward pass (inference) and the backward pass (learning) vastly more efficient.</p>
+<section id="the-roadmap-for-fcn-design" class="level4">
+<h4 class="anchored" data-anchor-id="the-roadmap-for-fcn-design">The Roadmap for FCN Design</h4>
+<p>The rest of the paragraph lays out the practical steps and design choices they will now explain in detail. It’s a preview of the rest of Section 3.</p>
+<blockquote class="blockquote">
+<p><em>We next explain how to <strong>convert classification nets into fully convolutional nets</strong> that produce coarse output maps.</em></p>
+</blockquote>
+<p>This is the first step: the “network surgery” we talked about. They will show how to take a network like VGG, chop off its final layers, and reinterpret the remaining layers as convolutions. The output will be a low-resolution or <strong>“coarse”</strong> map of predictions.</p>
+<blockquote class="blockquote">
+<p><em>For pixelwise prediction, we need to connect these coarse outputs back to the pixels. Section 3.2 describes a trick that OverFeat [29] introduced for this purpose. We gain insight into this trick by reinterpreting it as an equivalent network modification.</em></p>
+</blockquote>
+<p>Step two is dealing with the coarse output. How do you get a full-resolution prediction? They first analyze a previous method, the “shift-and-stitch” trick from the OverFeat paper. They promise to give a new perspective on how this trick actually works under the hood.</p>
+<blockquote class="blockquote">
+<p><em>As an efficient, effective alternative, we introduce <strong>deconvolution layers for upsampling</strong> in Section 3.3.</em></p>
+</blockquote>
+<p>This is where they introduce their preferred solution. Instead of a clever but potentially clunky trick like shift-and-stitch, they propose a more elegant, learnable, in-network solution: <strong>deconvolution layers</strong>. (Note: “deconvolution” is a slightly confusing term; today, this is more commonly called a “transposed convolution.” But the idea is the same: it’s a layer that upsamples its input.)</p>
+<blockquote class="blockquote">
+<p><em>In Section 3.4 we consider training by patchwise sampling, and give evidence in Section 4.3 that our <strong>whole image training is faster and equally effective</strong>.</em></p>
+</blockquote>
+<p>Finally, they will address the alternative training methodology head-on. They will analyze patchwise training and then, later in the paper, present experimental evidence that their whole-image training approach converges just as well (or better) and in a fraction of the time.</p>
+<p>This paragraph effectively transitions us from the general theory of FCNs to the specific, practical details of their implementation. Let’s dive into these subsections one by one.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Summary of Section 3 (So Far): The Theory of FCNs">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Summary of Section 3 (So Far): The Theory of FCNs
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li><strong>Fundamental Properties of Convnets:</strong> The section begins by establishing the basics.
+<ul>
+<li>Data in a CNN is a <strong>3D volume</strong> (<code>height x width x depth/channels</code>).</li>
+<li>The <strong>receptive field</strong> is a crucial concept: it’s the area of the original input that a neuron in a deeper layer is sensitive to. Receptive fields grow as you go deeper into the network.</li>
+<li>The core operations (convolution, pooling) are built on <strong>translation invariance</strong>, meaning the same feature detector is applied everywhere. This makes them act like sliding filters.</li>
+</ul></li>
+<li><strong>Defining a Fully Convolutional Network (FCN):</strong>
+<ul>
+<li>A network composed <em>only</em> of these filter-like layers is called a <strong>“deep filter”</strong> or an FCN.</li>
+<li>Crucially, unlike a traditional classifier with fixed-size layers, an FCN can naturally process an <strong>input of any size</strong> and will produce a corresponding spatial output map.</li>
+</ul></li>
+<li><strong>The Breakthrough in Training Efficiency:</strong> This is the most important insight of the section.
+<ul>
+<li>The total loss for a segmentation task is simply the <strong>sum of the individual losses at each pixel</strong>.</li>
+<li>Because of this, the gradient calculation for the entire image is also just the sum of the gradients from each pixel.</li>
+<li>This means that training an FCN on <strong>one whole image</strong> is mathematically equivalent to training a traditional CNN on a <strong>massive minibatch of overlapping image patches</strong>.</li>
+<li>The FCN architecture is a computationally brilliant way to perform this batch training, sharing all the redundant computations and making the process incredibly fast and efficient.</li>
+</ul></li>
+<li><strong>The Road Ahead:</strong>
+<ul>
+<li>The section concludes by providing a roadmap for the rest of the technical discussion. The authors will now explain the practical steps:
+<ol type="1">
+<li>How to convert existing classification networks into FCNs.</li>
+<li>How to solve the problem of getting from the network’s coarse output map back to a full-resolution pixel prediction, first by analyzing an old method and then by proposing their superior alternative (<strong>deconvolution layers</strong>).</li>
+<li>Why their <strong>whole-image training</strong> approach is better than the common patch-based sampling method.</li>
+</ol></li>
+</ul></li>
+</ol>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="adapting-classifiers-for-dense-prediction" class="level2">
+<h2 class="anchored" data-anchor-id="adapting-classifiers-for-dense-prediction">3.1. Adapting Classifiers for Dense Prediction</h2>
+<p>This section details the first and most fundamental trick in the FCN playbook: converting a standard image classification network into a network that can produce a spatial heatmap of predictions.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-1.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-2.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>Let’s break this down, using the <strong>Figure 2</strong> as our guide.</p>
+<section id="the-problem-with-classifiers-fully-connected-layers" class="level4">
+<h4 class="anchored" data-anchor-id="the-problem-with-classifiers-fully-connected-layers">The Problem with Classifiers: Fully Connected Layers</h4>
+<p>As the text states, networks like AlexNet or VGG were designed for classification. They take an image (e.g., 224x224 pixels) and produce a <strong>“nonspatial output”</strong>—a simple list of 1000 scores, one for each possible class.</p>
+<p>The reason they are locked into a fixed input size and lose all spatial information is because of their final layers, the <strong>fully connected (FC) layers</strong>.</p>
+<ul>
+<li>An FC layer connects every neuron from its input to every one of its output neurons.</li>
+<li>To do this, it first requires that its input is “flattened” into a fixed-length 1D vector. For example, a 7x7x512 feature map from the last convolutional layer is flattened into a single vector of <code>7 * 7 * 512 = 25,088</code> numbers.</li>
+<li>This flattening step is what <strong>“throws away spatial coordinates.”</strong> The network no longer knows what was next to what; it just has one long list of features.</li>
+<li>Because the weight matrix of the FC layer has a fixed size (e.g., 4096 outputs x 25,088 inputs), the input vector <em>must</em> always have a length of 25,088. This is why the original image had to be a fixed size.</li>
+</ul>
+</section>
+<section id="the-solution-viewing-fc-layers-as-convolutions" class="level4">
+<h4 class="anchored" data-anchor-id="the-solution-viewing-fc-layers-as-convolutions">The Solution: Viewing FC Layers as Convolutions</h4>
+<p>Here comes the key insight. The authors state that an FC layer can be perfectly mimicked by a convolutional layer. How?</p>
+<p>Imagine that last 7x7x512 feature map. Instead of flattening it, let’s apply a convolutional layer where the <strong>kernel size is exactly 7x7</strong>. A <code>7x7</code> kernel will cover the entire <code>7x7</code> input feature map in one go. If this convolutional layer has 4096 output filters, it will produce a <code>1x1x4096</code> output map. This is mathematically identical to the <code>4096</code>-element vector produced by the original FC layer!</p>
+<p>This process of replacing FC layers with equivalent convolutional layers is what the paper calls <strong>“convolutionalization.”</strong></p>
+</section>
+<section id="the-magic-of-convolutionalization-figure-2" class="level4">
+<h4 class="anchored">The Magic of Convolutionalization (Figure 2)</h4>
+<p>Figure 2 illustrates this transformation beautifully.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-2.PNG" class="img-fluid"></a></p>
+<ul>
+<li><p><strong>The Top Path (Standard Classifier):</strong> A small, fixed-size image of a cat is fed into the network. After several convolutional/pooling layers, it’s processed by the FC layers to produce a single output vector, which correctly identifies the image as a “tabby cat.”</p></li>
+<li><p><strong>The Bottom Path (The FCN):</strong> The network has been “convolutionalized.”</p>
+<ol type="1">
+<li><strong>Arbitrary-Sized Input:</strong> We can now feed it a <em>larger image</em>—one that contains both a dog and the cat. The convolutional parts of the network don’t mind; they just produce larger feature maps.</li>
+<li><strong>Spatial Output (Heatmap):</strong> The layers that replaced the old FC layers now act like filters sliding over the larger feature map. The result is not a single <code>1x1</code> output, but a spatial grid of predictions—a <strong>“tabby cat heatmap.”</strong></li>
+<li><strong>Interpreting the Heatmap:</strong> The heatmap is hot in the region corresponding to the cat and cold elsewhere. The network is now telling us both <em>what</em> it sees (tabby cat) and <em>where</em> it sees it.</li>
+</ol></li>
+</ul>
+<p>This simple reinterpretation is the key that unlocks the power of pre-trained classification networks for dense prediction tasks. It turns a tool designed to answer a single question (“What is in this image?”) into a tool that can answer a question for every location (“What is at this location?”).</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Some questions?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Some questions?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<section id="question-1-how-can-the-fcn-take-a-larger-image" class="level3">
+<h3 class="anchored" data-anchor-id="question-1-how-can-the-fcn-take-a-larger-image">Question 1: How can the FCN take a larger image?</h3>
+<p>We only changed the <em>end</em> of the network, so how does that affect what the <em>beginning</em> of the network can accept?</p>
+<p>The key is to realize that the <strong>convolutional layers never had a fixed-size requirement in the first place.</strong> We were only <em>pretending</em> they did because the fully connected (FC) layer at the end forced our hand.</p>
+<p>Let’s walk through the logic:</p>
+<ol type="1">
+<li><p><strong>A Convolutional Layer is Flexible:</strong> Think about a single <code>3x3</code> convolution. It’s just a small filter that slides across its input. Does this filter care if it’s sliding over a 7x7 input or a 100x100 input? No.&nbsp;It will just slide more times on the bigger input and produce a bigger output map. The <em>operation itself</em> is independent of the input size. The same is true for pooling layers.</p></li>
+<li><p><strong>The Bottleneck was the FC Layer:</strong> The problem came at the transition from the last convolutional layer to the first FC layer. Let’s use AlexNet’s numbers.</p>
+<ul>
+<li>The last convolutional layer (conv5) produces a feature map of size <code>6x6x256</code> (when the input is 227x227).</li>
+<li>The first FC layer (fc6) expects its input to be a flattened vector of length <code>6 * 6 * 256 = 9216</code>. This is a <strong>hard requirement</strong>. The weight matrix of this layer is fixed at size <code>4096 x 9216</code>. It cannot accept a vector of any other length.</li>
+</ul></li>
+</ol>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/alexnet-architecture.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-09-03-fcn-segmentation-reading-notes/alexnet-architecture.PNG" class="img-fluid"></a></p>
+<p><em>Image Source: <a href="https://anhreynolds.com/blogs/alexnet.html">Large-scale image recognition: AlexNet by Anh H. Reynolds</a></em></p>
+<ol start="3" type="1">
+<li><p><strong>The Chain Reaction:</strong> Because fc6 demanded a <code>9216</code>-element vector, conv5 had to produce a <code>6x6x256</code> map. For conv5 to produce a <code>6x6x256</code> map, its input had to be a certain size, and so on, all the way back to the very first layer. The fixed-size requirement of the final FC layer created a ripple effect backwards through the entire network, forcing the input image to be a fixed size (227x227).</p></li>
+<li><p><strong>Removing the Bottleneck:</strong> When we “convolutionalize” the network, we replace that rigid <code>fc6</code> layer with a flexible convolutional layer. This new convolutional layer has a <code>6x6</code> kernel. It can slide over an input of <em>any</em> size. If the feature map from <code>conv5</code> is <code>6x6</code>, the new layer will produce a <code>1x1</code> output. If the feature map from <code>conv5</code> is <code>10x10</code> (from a bigger input image), it will slide over it and produce a <code>5x5</code> output map.</p></li>
+</ol>
+<p><strong>In summary: The initial layers of the network were always capable of handling larger images. The <em>only</em> reason they were ever fed fixed-size inputs was to satisfy the rigid demands of the fully connected layer at the very end. By replacing that FC layer with a flexible convolution, we unleash the inherent flexibility of the entire network.</strong></p>
+</section>
+<section id="question-2-what-changed-to-make-the-last-layer-give-a-heatmap-instead-of-tabby-cat" class="level3">
+<h3 class="anchored" data-anchor-id="question-2-what-changed-to-make-the-last-layer-give-a-heatmap-instead-of-tabby-cat">Question 2: What changed to make the last layer give a heatmap instead of “tabby cat”?</h3>
+<p>The output <em>is</em> still saying “tabby cat,” but it’s now saying it at <em>every spatial location</em> in its output grid.</p>
+<p>Let’s trace the output:</p>
+<ol type="1">
+<li><p><strong>Original Classifier Output:</strong> The very last FC layer in AlexNet (fc8) takes the <code>4096</code> features from the layer before it and outputs <code>1000</code> numbers. A softmax function is then applied to turn these numbers into probabilities. The highest probability (e.g., the 281st number, which corresponds to “tabby cat”) is the final prediction.</p></li>
+<li><p><strong>“Convolutionalized” Final Layer:</strong> We replace this final <code>fc8</code> layer with a <code>1x1</code> convolutional layer that has <code>1000</code> output channels.</p>
+<ul>
+<li><strong>Input:</strong> It takes the output map from the previous layer (which might be, for example, a <code>5x5x4096</code> map).</li>
+<li><strong>Operation:</strong> A <code>1x1</code> convolution is very simple. At each of the <code>5x5</code> locations, it looks at the <code>4096</code> numbers (the feature vector for that location) and computes <code>1000</code> new numbers (the class scores for that location).</li>
+<li><strong>Output:</strong> The result is a <code>5x5x1000</code> output map.</li>
+</ul></li>
+<li><p><strong>Visualizing the Heatmap:</strong> This <code>5x5x1000</code> map is our final prediction. It’s a grid of class scores.</p>
+<ul>
+<li>If we look at just one channel, say the 281st channel (the “tabby cat” channel), we get a <code>5x5</code> grid of numbers. These numbers represent the score for “tabby cat” at each of the 25 locations.</li>
+<li>This <code>5x5</code> grid of scores <strong>is the heatmap</strong>. We can visualize it by coloring the locations with high scores red/yellow and locations with low scores blue.</li>
+</ul></li>
+</ol>
+<p><strong>In summary: We replaced the final layer that produced one list of 1000 class scores with a <code>1x1</code> convolution that produces a <em>grid</em> of 1000-score lists. The heatmap for a specific class (like “tabby cat”) is simply a visualization of that class’s score at every point in the output grid.</strong> The network is now effectively a sliding-window classifier, but one that runs extremely efficiently in a single forward pass.</p>
+</section>
+</div>
+</div>
+</div>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-3.PNG" class="img-fluid"></a></p>
+<p>Now that the authors have established <em>how</em> to turn a classifier into an FCN, they explain <em>why</em> this is such a good idea. The core concept here is <strong>amortized computation</strong>.</p>
+</section>
+<section id="equivalence-and-amortization" class="level4">
+<h4 class="anchored" data-anchor-id="equivalence-and-amortization">1. Equivalence and Amortization</h4>
+<blockquote class="blockquote">
+<p><em>Furthermore, while the resulting maps are equivalent to the evaluation of the original net on particular input patches, the computation is highly <strong>amortized</strong> over the overlapping regions of those patches.</em></p>
+</blockquote>
+<p>This is the key sentence. Let’s break it down:</p>
+<ul>
+<li><strong>“equivalent to the evaluation… on particular input patches”</strong>: This means that if you take the final heatmap from the FCN, the prediction at a single point <code>(i,j)</code> is <em>exactly the same</em> as if you had cropped out the corresponding 227x227 patch from the original input image and fed it through the original classifier network. The results are identical.</li>
+<li><strong>“computation is highly amortized”</strong>: “Amortized” is a term from accounting and computer science that means spreading a cost over many units. Here, the “cost” is the computational work of the convolutions. Instead of re-doing the work for every single patch (many of which overlap), the FCN does the computation just once. The cost is shared, or “amortized,” across all the patches.</li>
+</ul>
+</section>
+<section id="speedup-by-the-numbers" class="level4">
+<h4 class="anchored" data-anchor-id="speedup-by-the-numbers">2. Speedup by the Numbers</h4>
+<p>The authors then provide concrete numbers to show this isn’t just a theoretical benefit.</p>
+<blockquote class="blockquote">
+<p><em>For example, while AlexNet takes 1.2 ms (on a typical GPU) to produce the classification scores of a 227 × 227 image, the fully convolutional version takes 22 ms to produce a 10 × 10 grid of outputs from a 500 × 500 image, which is more than <strong>5 times faster</strong> than the naïve approach¹.</em></p>
+</blockquote>
+<p>Let’s do the math on the “naïve approach”:</p>
+<ul>
+<li>The FCN produces a <code>10 x 10 = 100</code> grid of predictions.</li>
+<li>The naïve approach would be to run the original AlexNet on 100 different input patches.</li>
+<li>Time for naïve approach: <code>100 patches * 1.2 ms/patch = 120 ms</code>.</li>
+<li>Time for FCN: <code>22 ms</code>.</li>
+<li>Speedup: <code>120 ms / 22 ms ≈ 5.45</code> times faster.</li>
+</ul>
+<p>This is a massive speedup, and it gets even bigger for larger images. This efficiency is what makes dense prediction with deep networks practical.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="The naïve approach would be to run the original AlexNet on 100 different input patches">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The naïve approach would be to run the original AlexNet on 100 different input patches
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This describes the old, slow, “brute-force” way of doing semantic segmentation before FCNs.</p>
+<p>Imagine you have a large 500x500 pixel image you want to segment. But the only tool you have is the original AlexNet, which is a classifier that only accepts small, fixed-size 227x227 images. How can you get a prediction for every pixel in your big image?</p>
+<p>The “naïve approach” is to simulate a <strong>sliding window</strong>:</p>
+<ol type="1">
+<li><strong>Crop a Patch:</strong> From your large 500x500 image, you would first crop a 227x227 patch from the top-left corner.</li>
+<li><strong>Classify It:</strong> You feed this single patch into AlexNet. The network processes it and gives you one prediction (e.g., “grass”). You assume this prediction applies to the center of the patch you just cropped.</li>
+<li><strong>Slide and Repeat:</strong> You then slide your cropping window a bit to the right (say, by 32 pixels), creating a <em>new</em> 227x227 patch that heavily overlaps with the first one. You feed this new patch into AlexNet and get another prediction.</li>
+<li><strong>Cover the Whole Image:</strong> You repeat this process, sliding the window across the entire 500x500 image, until you have a prediction for every location. To get the <code>10x10</code> grid of predictions mentioned in the paper, you would have to do this <code>10 * 10 = 100</code> times.</li>
+</ol>
+<p><strong>Why is this “naïve”?</strong> It is incredibly wasteful. The second patch you process shares about 85% of its pixels with the first patch. But the naïve approach runs the <em>entire</em> AlexNet computation from scratch for both patches. All the work done on the overlapping pixels is thrown away and re-computed again and again.</p>
+<p>The FCN, by processing the whole image at once, performs this computation for each pixel exactly once and shares the results—this is the “amortization” they talk about.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="a-natural-fit-for-dense-learning" class="level4">
+<h4 class="anchored" data-anchor-id="a-natural-fit-for-dense-learning">3. A Natural Fit for Dense Learning</h4>
+<blockquote class="blockquote">
+<p><em>The spatial output maps of these convolutionalized models make them a natural choice for dense problems like semantic segmentation. With ground truth available at every output cell, both the forward and backward passes are straightforward, and both take advantage of the inherent computational efficiency…</em></p>
+</blockquote>
+<p>The authors are saying that this architecture isn’t just a clever hack; it’s a perfect match for the problem. Since the network outputs a spatial map, we can directly compare it to our ground truth segmentation map (which is also a spatial map). We can define a loss at every single “output cell” or pixel.</p>
+<p>And because of the efficiency they just described, the backward pass (backpropagation) for learning is also incredibly fast.</p>
+</section>
+<section id="fast-learning-too" class="level4">
+<h4 class="anchored" data-anchor-id="fast-learning-too">4. Fast Learning, Too</h4>
+<blockquote class="blockquote">
+<p><em>The corresponding backward times for the AlexNet example are 2.4 ms for a single image and 37 ms for a fully convolutional 10 × 10 output map, resulting in a speedup similar to that of the forward pass. This dense backpropagation is illustrated in Figure 1.</em></p>
+</blockquote>
+<p>Just as the forward pass is faster, the backward pass benefits from the same amortization. Learning on one large image is much faster than learning on 100 individual patches. This is a crucial point: the FCN architecture speeds up not just <strong>inference</strong> (making predictions) but also <strong>training</strong> (learning the weights).</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-1.PNG" class="img-fluid"></a></p>
+<p>Figure 1 in the paper visually represents this idea: the data flows forward through the whole image to produce a dense prediction map, and the error signals flow backward through the whole image to update the weights. It’s a single, efficient, end-to-end process.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.1-4.PNG" class="img-fluid"></a></p>
+<p>Let’s break down this crucial paragraph.</p>
+</section>
+<section id="the-cause-subsampling" class="level4">
+<h4 class="anchored" data-anchor-id="the-cause-subsampling">1. The Cause: Subsampling</h4>
+<p>The problem is <strong>subsampling</strong> (also known as downsampling). Inside any deep classification network like VGG, there are pooling layers (e.g., max pooling) or convolutions with a stride greater than 1.</p>
+<ul>
+<li><strong>Why do they subsample?</strong> The paragraph gives two reasons:
+<ol type="1">
+<li><strong>To keep filters small:</strong> Subsampling allows the network to increase the <em>receptive field</em> of its filters without increasing the <em>kernel size</em>. A 3x3 filter after a 2x pooling layer “sees” a larger area of the original image than a 3x3 filter with no pooling. This allows the network to learn about larger structures efficiently.</li>
+<li><strong>To keep computational requirements reasonable:</strong> Each time you subsample, you dramatically reduce the size of the feature map (e.g., a 2x2 max pool cuts the number of activations by 75%). This saves a huge amount of memory and computation in the deeper layers.</li>
+</ol></li>
+</ul>
+</section>
+<section id="the-effect-coarse-output" class="level4">
+<h4 class="anchored" data-anchor-id="the-effect-coarse-output">2. The Effect: Coarse Output</h4>
+<p>While subsampling is essential for efficient classification, it has a major downside for segmentation: it <strong>“coarsens”</strong> the output.</p>
+<ul>
+<li>Imagine a 224x224 input image.</li>
+<li>A network like VGG might have a total of five 2x pooling layers.</li>
+<li>The total subsampling factor is <code>2 * 2 * 2 * 2 * 2 = 32</code>.</li>
+<li>This means the final feature map before the classifier will be <code>224 / 32 = 7</code>, so it’s a <code>7x7</code> grid.</li>
+<li>Our FCN’s output heatmap will therefore also be a <code>7x7</code> grid.</li>
+</ul>
+<p>A <code>7x7</code> prediction is extremely coarse! Each cell in that grid corresponds to a large <code>32x32</code> block of pixels in the original input. This is the “What vs.&nbsp;Where” problem in action. We might know that one of these <code>32x32</code> blocks contains a cat, but we have lost all the fine-grained detail needed to draw the cat’s exact outline.</p>
+</section>
+<section id="the-pixel-stride" class="level4">
+<h4 class="anchored" data-anchor-id="the-pixel-stride">3. The “Pixel Stride”</h4>
+<p>The authors formalize this by saying the output is reduced by a factor equal to the <strong>“pixel stride of the receptive fields of the output units.”</strong> This is a more technical way of saying the same thing. The “pixel stride” is just the total subsampling factor. It describes how far apart the centers of the receptive fields of adjacent output units are in the original pixel space. If the total stride is 32, it means one output cell is looking at a patch of the input, and the very next output cell is looking at a patch whose center is 32 pixels away.</p>
+<p>This perfectly sets the stage for the next sections, which will explore different strategies for taking this coarse heatmap and turning it into a dense, pixel-perfect segmentation.</p>
+</section>
+</section>
+<section id="shift-and-stitch-is-filter-rarefaction" class="level2">
+<h2 class="anchored" data-anchor-id="shift-and-stitch-is-filter-rarefaction">3.2. Shift-and-stitch is filter rarefaction</h2>
+<p>We’ve established the problem: our FCN produces a coarse output map because of subsampling. For example, if the network has a total stride of <code>f=2</code>, the output map is half the size of the input. We only have a prediction for every other pixel. How do we fill in the gaps?</p>
+<p>This section analyzes one of the first proposed solutions, a trick from the OverFeat paper called <strong>“shift-and-stitch”</strong>.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.2-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.2-1.PNG" class="img-fluid"></a></p>
+<p>This sounds very complex, so let’s break it down with a simple example.</p>
+<section id="the-shift-and-stitch-trick-explained" class="level4">
+<h4 class="anchored" data-anchor-id="the-shift-and-stitch-trick-explained">The “Shift-and-Stitch” Trick Explained</h4>
+<p>Imagine our network has a total subsampling factor of <code>f=2</code>. This means our output is half the height and half the width of the input. We are “missing” the predictions for many pixels.</p>
+<p>The shift-and-stitch trick says we can get these missing predictions by re-running the network multiple times on slightly shifted versions of the input image.</p>
+<p>Let’s say <code>f=2</code>. The number of runs we need is <code>f² = 2² = 4</code>. The shifts <code>(x, y)</code> will be: <code>(0,0)</code>, <code>(0,1)</code>, <code>(1,0)</code>, and <code>(1,1)</code>.</p>
+<ol type="1">
+<li><strong>Run 1: Shift (0,0) - No shift.</strong>
+<ul>
+<li>We feed the original image into our FCN.</li>
+<li>It produces a coarse output map. These are our predictions for a grid of pixels <code>(0,0), (0,2), (0,4)...</code>, <code>(2,0), (2,2), (2,4)...</code>, etc.</li>
+</ul></li>
+<li><strong>Run 2: Shift (0,1) - Shift down by 1 pixel.</strong>
+<ul>
+<li>We take the original image and shift the whole thing <em>down</em> by one pixel (padding the top with zeros).</li>
+<li>We feed this <em>new, shifted image</em> into the FCN.</li>
+<li>Because the input was shifted, the output predictions now correspond to a <em>different grid</em> of pixels in the original image space: <code>(1,0), (1,2), (1,4)...</code>, <code>(3,0), (3,2), (3,4)...</code>, etc.</li>
+</ul></li>
+<li><strong>Run 3: Shift (1,0) - Shift right by 1 pixel.</strong>
+<ul>
+<li>We shift the original image to the <em>right</em> by one pixel.</li>
+<li>The FCN’s output now corresponds to the grid <code>(0,1), (0,3), (0,5)...</code>, <code>(2,1), (2,3), (2,5)...</code>, etc.</li>
+</ul></li>
+<li><strong>Run 4: Shift (1,1) - Shift right by 1 and down by 1.</strong>
+<ul>
+<li>We shift the image both right and down.</li>
+<li>The FCN’s output now corresponds to the final missing grid: <code>(1,1), (1,3), (1,5)...</code>, <code>(3,1), (3,3), (3,5)...</code>, etc.</li>
+</ul></li>
+</ol>
+<p><strong>The “Stitch” Part:</strong> After these four runs, we have four different coarse output maps. The “stitch” (or “interlace”) part is simple: we weave them together. We take the first prediction from the first map, the first from the second, the first from the third, and so on, to build a new, dense output map that is <code>f</code> times larger and contains predictions for every single pixel.</p>
+<p><strong>The Downside:</strong> This trick works, but it’s inefficient. We had to run our network <code>f²</code> times (in this case, 4 times) just to get one dense prediction. The authors of FCN are looking for a way to get the same result, but with the efficiency of a single pass. Their analysis in the rest of this section will show how.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.2-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.2-2.PNG" class="img-fluid"></a></p>
+<p>The authors start with a bold claim:</p>
+<blockquote class="blockquote">
+<p><em>Changing only the filters and layer strides of a convnet can produce the same output as this shift-and-stitch trick.</em></p>
+</blockquote>
+<p>Instead of running the network <code>f²</code> times on shifted inputs, they are saying you can modify the network itself to get the exact same dense output in a single pass. How?</p>
+<p>Let’s follow their logic.</p>
+</section>
+<section id="step-1-remove-the-subsampling" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-remove-the-subsampling">Step 1: Remove the Subsampling</h4>
+<blockquote class="blockquote">
+<p><em>Consider a layer (convolution or pooling) with input stride s… Setting the lower layer’s input stride to 1 upsamples its output by a factor of s…</em></p>
+</blockquote>
+<p>Let’s say we have a pooling layer with a stride <code>s=2</code>. This is what causes the subsampling. The most obvious way to prevent subsampling is to simply change the stride to <code>s=1</code>. Now, the output feature map from this layer will be the same size as its input. We have successfully produced a denser output.</p>
+</section>
+<section id="step-2-the-problem-with-step-1" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-the-problem-with-step-1">Step 2: The Problem with Step 1</h4>
+<p>But wait, it’s not that simple.</p>
+<blockquote class="blockquote">
+<p><em>However, convolving the original filter with the upsampled output does not produce the same result as the trick, because the original filter only sees a reduced portion of its (now upsampled) input.</em></p>
+</blockquote>
+<p>This is the crucial problem. Let’s say the <em>next</em> layer has a <code>3x3</code> filter.</p>
+<ul>
+<li><strong>Original Network (with stride 2):</strong> The <code>3x3</code> filter looks at a <code>3x3</code> patch of the coarse feature map. Because that map was subsampled by a factor of 2, this <code>3x3</code> patch corresponds to a larger region of the original input. The filter has a large receptive field.</li>
+<li><strong>Modified Network (stride set to 1):</strong> We removed the subsampling. Now the <code>3x3</code> filter looks at a <code>3x3</code> patch of a <em>dense</em> feature map. It is now looking at a much smaller, finer-grained region of the original input. <strong>We have shrunk its receptive field!</strong></li>
+</ul>
+<p>By naively changing the stride to 1, we made the output denser, but we broke the network. The filters in the deeper layers are no longer seeing the world the way they were trained to; their view has become narrow and myopic.</p>
+</section>
+<section id="step-3-the-solution---filter-rarefaction" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-the-solution---filter-rarefaction">Step 3: The Solution - “Filter Rarefaction”</h4>
+<p>How do we give the filter its wide view back? The answer is to <strong>“rarefy”</strong> the filter. “Rarefy” means to make something less dense. In this context, it means we are going to enlarge the filter by inserting holes (zeros) into it. This is also known as an <strong>atrous convolution</strong> or <strong>dilated convolution</strong>.</p>
+<blockquote class="blockquote">
+<p><em>To reproduce the trick, rarefy the filter by enlarging it as</em> <em>f’<sub>ij</sub> = { f<sub>i/s, j/s</sub> if s divides both i and j; 0 otherwise }</em></p>
+</blockquote>
+<p>Let’s translate this equation with our <code>s=2</code> example. Imagine our original <code>3x3</code> filter <code>f</code> looks like this:</p>
+<pre><code>[w1, w2, w3]
+[w4, w5, w6]
+[w7, w8, w9]</code></pre>
+<p>To “rarefy” it, we create a new, larger filter <code>f'</code> by taking the original weights and spreading them out, filling the gaps with zeros. For <code>s=2</code>, we put a zero between each original weight. The new rarefied <code>5x5</code> filter <code>f'</code> would look like this:</p>
+<pre><code>[w1,  0, w2,  0, w3]
+[ 0,  0,  0,  0,  0]
+[w4,  0, w5,  0, w6]
+[ 0,  0,  0,  0,  0]
+[w7,  0, w8,  0, w9]</code></pre>
+<p>This new, larger, “holey” filter now operates on the dense feature map (the one we got by setting the stride to 1). Because the filter is spread out, it now sees the exact same large receptive field as the original <code>3x3</code> filter did on the coarse map.</p>
+<p><strong>The Punchline:</strong> By applying this process—(1) setting the stride of a pooling layer to 1, and (2) rarefying the filter of the <em>next</em> convolutional layer—we have perfectly reproduced the result of the complex shift-and-stitch trick, but we can do it all in a <strong>single, efficient forward pass</strong>. This is a profound insight that would later lead to the popularization of dilated convolutions in segmentation models like DeepLab.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.2-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.2-3.PNG" class="img-fluid"></a></p>
+<p>After deconstructing the “shift-and-stitch” trick and showing its equivalence to modifying the network’s filters (“filter rarefaction” or dilated convolution), the authors now step back to evaluate the tradeoffs and explain why they are ultimately going to choose a different path.</p>
+</section>
+<section id="two-kinds-of-tradeoffs" class="level4">
+<h4 class="anchored" data-anchor-id="two-kinds-of-tradeoffs">Two Kinds of Tradeoffs</h4>
+<p>The authors identify two distinct ways to get denser predictions, each with its own pros and cons.</p>
+<ol type="1">
+<li><p><strong>The Simple Way: “Decreasing subsampling”</strong></p>
+<blockquote class="blockquote">
+<p><em>Simply decreasing subsampling within a net is a tradeoff: the filters see finer information, but have smaller receptive fields and take longer to compute.</em> This refers to the naive approach we discussed: just setting the stride of a pooling layer to 1.</p>
+</blockquote>
+<ul>
+<li><strong>Pro:</strong> The filters now operate on a dense map, so they can see very fine-grained details.</li>
+<li><strong>Con 1 (Smaller Receptive Fields):</strong> As we saw, this shrinks the effective receptive field of deeper layers, preventing them from seeing the “big picture.” The network loses crucial context.</li>
+<li><strong>Con 2 (Slower):</strong> Processing dense feature maps through the entire network is computationally very expensive.</li>
+</ul></li>
+<li><p><strong>The Clever Way: “Shift-and-stitch” / Filter Rarefaction</strong></p>
+<blockquote class="blockquote">
+<p><em>We have seen that the shift-and-stitch trick is another kind of tradeoff: the output is made denser without decreasing the receptive field sizes of the filters, but the filters are prohibited from accessing information at a finer scale than their original design.</em> This refers to the method they just analyzed.</p>
+</blockquote>
+<ul>
+<li><strong>Pro:</strong> It cleverly makes the output dense while preserving the large receptive fields of the original network design. This is a big win.</li>
+<li><strong>Con:</strong> The “holey” or rarefied filters systematically skip information. The filter <code>[w1, 0, w2, 0, w3]</code> will never see the information from the pixels that land on the zeros. It’s locked into looking at the world with a specific, coarse grid. It is <strong>“prohibited from accessing information at a finer scale.”</strong> It can’t see the fine details that the “simple way” could.</li>
+</ul></li>
+</ol>
+</section>
+<section id="the-verdict-a-better-way-forward" class="level4">
+<h4 class="anchored" data-anchor-id="the-verdict-a-better-way-forward">The Verdict: A Better Way Forward</h4>
+<p>Having analyzed these two options, the authors declare their choice.</p>
+<blockquote class="blockquote">
+<p><em>Although we have done preliminary experiments with shift-and-stitch, we do not use it in our model. We find learning through <strong>upsampling</strong>, as described in the next section, to be more effective and efficient, especially when combined with the <strong>skip layer fusion</strong> described later on.</em></p>
+</blockquote>
+<p>This is a critical pivot. They acknowledge the cleverness of shift-and-stitch/filter rarefaction but ultimately reject it. They have found a third option that they believe is superior:</p>
+<ol type="1">
+<li><strong>Keep the original network as is:</strong> Let the network do its subsampling and produce a coarse, low-resolution but semantically rich feature map.</li>
+<li><strong>Learn to upsample:</strong> Then, add new layers to the end of the network whose job is to intelligently <strong>upsample</strong> this coarse map back to the full resolution.</li>
+<li><strong>Fuse with skip layers:</strong> They also tease their most important architectural innovation: they will combine this upsampling process with “skip connections” that bring in fine-detail information from the shallow layers.</li>
+</ol>
+<p>This sets the stage perfectly for Section 3.3, where they will introduce their chosen upsampling method: the “deconvolution” or transposed convolution layer.</p>
+</section>
+</section>
+<section id="upsampling-is-backwards-strided-convolution" class="level2">
+<h2 class="anchored" data-anchor-id="upsampling-is-backwards-strided-convolution">3.3. Upsampling is backwards strided convolution</h2>
+<p>We have a coarse, low-resolution prediction map from our network. How do we get back to a dense, full-resolution prediction? The authors propose a new, elegant, and learnable approach.</p>
+<p>They begin by introducing the general concept using a familiar idea: <strong>interpolation</strong>.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.3-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.3-1.PNG" class="img-fluid"></a></p>
+<section id="the-simple-idea-interpolation" class="level4">
+<h4 class="anchored" data-anchor-id="the-simple-idea-interpolation">The Simple Idea: Interpolation</h4>
+<p>Imagine you have a tiny 2x2 image and you want to make it 4x4. How do you fill in all the new pixels?</p>
+<p><strong>Bilinear interpolation</strong> is a standard method to do this. For each new pixel you want to create, you look at the 4 closest pixels in the original coarse image. You then calculate the new pixel’s value as a weighted average of those 4 neighbors. The closer a neighbor is, the more weight it gets in the average.</p>
+<p>This is a fixed, mathematical procedure. It’s a simple “linear map” that smoothly blends the existing values to fill in the gaps. It’s a reasonable starting point, but it’s not very intelligent. It will always produce a somewhat blurry result because it’s just averaging.</p>
+</section>
+<section id="the-big-idea-learnable-upsampling" class="level4">
+<h4 class="anchored" data-anchor-id="the-big-idea-learnable-upsampling">The Big Idea: Learnable Upsampling</h4>
+<p>The authors’ key insight is that since interpolation can be expressed as a linear operation, it can be implemented within the network itself. And if it’s <em>in</em> the network, it can be <em>learned</em>.</p>
+<p>This leads them to the core idea of this section: <strong>backwards strided convolution</strong>, which is also commonly known as <strong>transposed convolution</strong> or, somewhat misleadingly, <strong>deconvolution</strong>.</p>
+<p>Let’s think about what a normal convolution with a stride does:</p>
+<ul>
+<li><strong>Normal Strided Convolution (Downsampling):</strong> It’s a <em>many-to-one</em> mapping. It takes a patch of input values (e.g., a 3x3 patch) and computes a <em>single</em> output value. If the stride is greater than 1, the output map is smaller than the input map. It reduces resolution.</li>
+</ul>
+<p>A <strong>backwards strided convolution</strong> does the exact opposite:</p>
+<ul>
+<li><strong>Backwards Strided Convolution (Upsampling):</strong> It’s a <em>one-to-many</em> mapping. It takes a <em>single</em> input value from the coarse map and projects it onto a patch of the larger output map. It effectively “splats” or “paints” the input value onto a larger grid, increasing the resolution. The weights of the filter control the shape and values of this “splat.”</li>
+</ul>
+<p>This operation is called a “backwards” convolution because it uses the same connectivity pattern as a regular convolution, but in the reverse direction (from output to input). It’s the operation needed to compute the gradients in the backward pass of a normal convolution, which is why it’s a natural fit for deep learning libraries.</p>
+</section>
+<section id="formalizing-upsampling-as-a-convolution" class="level4">
+<h4 class="anchored" data-anchor-id="formalizing-upsampling-as-a-convolution">Formalizing Upsampling as a Convolution</h4>
+<p>The authors now provide the formal connection between upsampling and convolution.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.3-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.3-2.PNG" class="img-fluid"></a></p>
+<p>This is a very elegant way to think about it.</p>
+<ul>
+<li>A normal convolution with a stride of <code>s=2</code> skips every other input pixel.</li>
+<li>An upsampling operation with a factor of <code>f=2</code> could be thought of as a convolution with a stride of <code>s=1/2</code>, meaning it processes “in-between” pixels that don’t yet exist.</li>
+<li>While a “fractional stride” is just a conceptual device, it leads to a concrete implementation: the <strong>backwards convolution</strong> (or transposed convolution). This layer does exactly what’s needed. It takes a coarse input and produces a dense output, with the upsampling factor controlled by its stride.</li>
+<li>The final sentence highlights why this was a practical choice: deep learning frameworks (like Caffe, which they used) already had this operation built-in, because it’s the same operation needed to compute gradients for a regular convolution. So, implementing it was easy.</li>
+</ul>
+</section>
+<section id="the-power-of-learnable-upsampling" class="level4">
+<h4 class="anchored" data-anchor-id="the-power-of-learnable-upsampling">The Power of Learnable Upsampling</h4>
+<p>This is the punchline of the whole section. Why is this approach better than just using a fixed function like bilinear interpolation?</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.3-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-21"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-3.3-3.PNG" class="img-fluid"></a></p>
+<p>This is the critical advantage.</p>
+<ol type="1">
+<li><strong>End-to-end Learning:</strong> Because the upsampling is just another layer in the network, it can be trained along with all the other layers. The error signal from the final pixelwise loss flows all the way back through the deconvolution layers, teaching them how to upsample better.</li>
+<li><strong>It can be Learned:</strong> The weights of the deconvolution filter are not fixed. The network can learn the optimal way to go from a coarse to a fine representation for the specific task. For example, it might learn that when it sees a coarse blob for “car,” the best way to upsample it is to create sharp, straight lines at the edges. A fixed bilinear filter could never learn this; it would just create a blurry blob.</li>
+<li><strong>Nonlinear Upsampling:</strong> By stacking multiple deconvolution layers with activation functions (like ReLU) in between, the network can learn an even more powerful, nonlinear mapping from the coarse space to the dense space.</li>
+</ol>
+</section>
+<section id="the-authors-final-choice" class="level4">
+<h4 class="anchored" data-anchor-id="the-authors-final-choice">The Authors’ Final Choice</h4>
+<blockquote class="blockquote">
+<p><em>In our experiments, we find that in-network upsampling is <strong>fast and effective</strong> for learning dense prediction. Our best segmentation architecture uses these layers to learn to upsample for refined prediction in Section 4.2.</em></p>
+</blockquote>
+<p>The authors conclude the section by stating their verdict. This method of using learnable deconvolution/transposed convolution layers is their chosen weapon for tackling the coarse output problem. It’s efficient, it’s powerful because it’s learnable, and it fits perfectly into their end-to-end training philosophy.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Summary of Sections 3.1-3.3: From Coarse Classifiers to Dense Predictors">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Summary of Sections 3.1-3.3: From Coarse Classifiers to Dense Predictors
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<section id="section-3.1-the-core-idea-and-its-flaw" class="level4">
+<h4 class="anchored" data-anchor-id="section-3.1-the-core-idea-and-its-flaw">Section 3.1: The Core Idea and Its Flaw</h4>
+<ul>
+<li><strong>The Idea: “Convolutionalization”</strong>. We can take a powerful, pre-trained image classifier (like VGG or AlexNet) and make it produce a spatial prediction map. We do this by replacing the final, rigid <strong>fully connected layers</strong> with equivalent <strong>convolutional layers</strong>.</li>
+<li><strong>The Benefits:</strong> This simple trick makes the network flexible (it can accept inputs of any size) and incredibly efficient. A single pass over a large image is mathematically equivalent to, but much faster than, running the original classifier on thousands of overlapping patches. This applies to both inference and training.</li>
+<li><strong>The Flaw: Coarse Output</strong>. The resulting prediction map is very low-resolution. Because of repeated <strong>subsampling</strong> (pooling layers) in the original network, the output might have a stride of 32, meaning one prediction covers a large <code>32x32</code> block of input pixels. This is too “blurry” for precise segmentation.</li>
+</ul>
+</section>
+<section id="section-3.2-analyzing-a-prior-solution-and-rejecting-it" class="level4">
+<h4 class="anchored" data-anchor-id="section-3.2-analyzing-a-prior-solution-and-rejecting-it">Section 3.2: Analyzing a Prior Solution (And Rejecting It)</h4>
+<ul>
+<li><strong>The Problem:</strong> How do we get from the coarse map to a dense, pixel-perfect one?</li>
+<li><strong>An Existing Trick: “Shift-and-Stitch”</strong>. One method (from the OverFeat paper) involves running the network multiple times on slightly shifted versions of the input and then weaving the results together. This is clever but inefficient.</li>
+<li><strong>A Deeper Insight: “Filter Rarefaction”</strong>. The authors show that the shift-and-stitch trick is mathematically equivalent to a network modification: removing the subsampling (by setting layer strides to 1) and making the convolutional filters “holey” to preserve their receptive fields (also known as <strong>dilated/atrous convolution</strong>).</li>
+<li><strong>The Verdict:</strong> While this method preserves context (large receptive fields), the “holey” filters systematically skip pixels and are prevented from seeing fine-grained information. The authors conclude it’s a clever but flawed tradeoff and look for a better way.</li>
+</ul>
+</section>
+<section id="section-3.3-the-fcns-chosen-solution" class="level4">
+<h4 class="anchored" data-anchor-id="section-3.3-the-fcns-chosen-solution">Section 3.3: The FCN’s Chosen Solution</h4>
+<ul>
+<li><strong>The New Idea: In-Network Upsampling</strong>. Instead of avoiding subsampling, the FCN approach embraces it. Let the network produce a coarse, semantically rich feature map, and then learn how to upsample it.</li>
+<li><strong>The Mechanism: “Backwards Convolution”</strong>. The authors propose using <strong>transposed convolution</strong> (which they call “backwards convolution” or “deconvolution”) as the upsampling layer. This operation is a natural inverse to a standard convolution and was already available in deep learning frameworks.</li>
+<li><strong>The Killer Feature: It’s Learnable</strong>. Crucially, the upsampling filter is not fixed (like traditional bilinear interpolation). Its weights are learned during end-to-end training. The network itself learns the best way to create a high-resolution prediction from a low-resolution feature map. It can even be stacked to learn powerful, <strong>nonlinear upsampling</strong>.</li>
+<li><strong>The Conclusion:</strong> This method is fast, effective, and fits perfectly into the end-to-end learning paradigm. It becomes the foundational building block for the final FCN architecture.</li>
+</ul>
+</section>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="segmentation-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="segmentation-architecture">4. Segmentation Architecture</h2>
+<p>Having established the theoretical components—convolutionalization, the coarse output problem, and learnable upsampling—the authors now detail how they assemble these parts into a state-of-the-art segmentation architecture. This section is the practical “recipe.”</p>
+<p>They begin with a high-level overview of their entire process, followed by the specific details of their experimental setup.</p>
+<section id="the-overall-strategy" class="level4">
+<h4 class="anchored" data-anchor-id="the-overall-strategy">The Overall Strategy</h4>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-22"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4-1.PNG" class="img-fluid"></a></p>
+<p>This first paragraph is a perfect summary of their entire architectural contribution. It’s a three-step plan:</p>
+<ol type="1">
+<li><strong>Adapt:</strong> Take a pre-trained classifier (“ILSVRC classifier”) and “cast” it into an FCN using the convolutionalization trick from Section 3.1.</li>
+<li><strong>Upsample:</strong> Augment this base FCN with the in-network upsampling layers (transposed convolutions from Section 3.3) to learn how to produce dense predictions. The network is trained end-to-end with a “pixelwise loss.”</li>
+<li><strong>Refine:</strong> Create a “novel skip architecture.” This is the final and most important piece. They will build connections that “skip” over parts of the network to combine the deep, “coarse, semantic” information (the “what”) with the shallow, “local, appearance” information (the “where”). This is the key to getting predictions that are both accurate and detailed.</li>
+</ol>
+</section>
+<section id="the-proving-grounds-dataset-and-metrics" class="level4">
+<h4 class="anchored" data-anchor-id="the-proving-grounds-dataset-and-metrics">The Proving Grounds: Dataset and Metrics</h4>
+<p>Before showing their results, the authors define the rules of the game: the dataset they’re using, how the model learns, and how its performance is measured.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-23"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4-2.PNG" class="img-fluid"></a></p>
+<p>Let’s break down these critical experimental details:</p>
+<ul>
+<li><p><strong>The Dataset: PASCAL VOC 2011.</strong> This was one of the premier, most challenging benchmarks for computer vision at the time. Proving your model’s worth on this dataset was a big deal.</p></li>
+<li><p><strong>The Loss Function: “per-pixel multinomial logistic loss.”</strong> This is a fancy name for a simple idea. It’s the standard <strong>cross-entropy loss</strong> used for classification, but applied independently at <em>every single pixel</em>.</p>
+<ul>
+<li>For each pixel, the network outputs a set of scores for all possible classes (e.g., cat, dog, sky, background).</li>
+<li>The loss function compares this prediction to the one-hot encoded ground truth label for that pixel.</li>
+<li>The total loss for the image is just the average of the losses over all pixels.</li>
+</ul></li>
+<li><p><strong>The Evaluation Metric: “mean pixel intersection over union (mIoU).”</strong> This is the gold standard for evaluating segmentation quality. It’s much more telling than simple pixel accuracy.</p>
+<ul>
+<li>For a single class (e.g., “car”), the <strong>IoU</strong> is calculated as: <code>IoU = (Area of Overlap) / (Area of Union)</code></li>
+<li><strong>Area of Overlap (Intersection):</strong> The number of pixels that were correctly predicted as “car.”</li>
+<li><strong>Area of Union:</strong> The total number of pixels that were labeled as “car” in either the prediction OR the ground truth.</li>
+<li>IoU is a strict metric. It punishes both false positives (predicting “car” where there isn’t one) and false negatives (failing to predict a “car” where there is one).</li>
+<li><strong>Mean IoU (mIoU):</strong> The IoU is calculated for every class, and then the scores are averaged. This gives a single, robust number that represents the model’s overall performance.</li>
+</ul></li>
+<li><p><strong>Handling Ambiguity:</strong> The training “ignores pixels that are masked out.” This is standard practice. Datasets often have ambiguous regions (e.g., a blurry boundary) that are excluded from the loss calculation so the model isn’t penalized for a problem that even human labelers couldn’t solve.</p></li>
+</ul>
+</section>
+</section>
+<section id="from-classifier-to-dense-fcn" class="level2">
+<h2 class="anchored" data-anchor-id="from-classifier-to-dense-fcn">4.1. From Classifier to Dense FCN</h2>
+<p>In this section, the authors execute the first part of their plan: take off-the-shelf classifiers, turn them into FCNs, and see how well they perform on segmentation “out of the box” after fine-tuning. This serves as a crucial baseline to measure all future improvements against.</p>
+<section id="the-process-a-step-by-step-recipe" class="level4">
+<h4 class="anchored" data-anchor-id="the-process-a-step-by-step-recipe">The Process: A Step-by-Step Recipe</h4>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-24"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.1-1.PNG" class="img-fluid"></a></p>
+<p>This is the concrete recipe for creating their simplest FCN, which they will later call <strong>FCN-32s</strong>.</p>
+<ol type="1">
+<li><strong>Choose a Backbone:</strong> They start with three of the most famous and powerful classification networks of the era: AlexNet, VGG16, and GoogLeNet.</li>
+<li><strong>“Decapitate”:</strong> They perform the network surgery from Section 3.1. They chop off the final classification layer (which was specific to the 1000 ImageNet classes) and convert all the fully connected layers into equivalent convolution layers.</li>
+<li><strong>Add a Prediction Head:</strong> They need the network to predict scores for the PASCAL VOC classes, not the ImageNet ones. So, they add a new <code>1x1</code> convolution layer at the very end. The number of output channels is 21 (20 object classes in PASCAL + 1 for the background). This <code>1x1</code> convolution is what produces the final, coarse prediction map.</li>
+<li><strong>Upsample:</strong> To get a final prediction, they need to get from the coarse map back to the original image size. For this first simple baseline, they use a single <strong>deconvolution (transposed convolution) layer</strong> that performs a <em>fixed</em> bilinear upsampling. They are not using learnable upsampling or skip connections yet. This is the simplest possible way to get a dense output.</li>
+</ol>
+</section>
+<section id="the-results-vgg-is-the-clear-winner-table-1" class="level4">
+<h4 class="anchored" data-anchor-id="the-results-vgg-is-the-clear-winner-table-1">The Results: VGG is the Clear Winner (Table 1)</h4>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-table-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-25"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-table-1.PNG" class="img-fluid"></a></p>
+<p>Let’s interpret these results:</p>
+<ul>
+<li><strong>Accuracy (mean IU):</strong> FCN-VGG16 is the undisputed champion, scoring <strong>56.0 mIoU</strong>. This is a huge leap over both AlexNet (39.8) and GoogLeNet (42.5). This demonstrates that the quality of the pre-trained features from the backbone network is critically important. VGG’s simple, deep, and uniform architecture seems to produce features that are more transferable to the segmentation task.</li>
+<li><strong>Speed (forward time):</strong> FCN-VGG16 is by far the slowest at 210 ms. This is the price of its depth and large number of parameters. AlexNet and GoogLeNet are much faster, at 50-60 ms.</li>
+<li><strong>Size (parameters):</strong> VGG is a beast, with 134 million parameters. AlexNet is also large (57M). GoogLeNet is famously efficient, achieving good classification performance with only 6M parameters, but this efficiency doesn’t seem to translate into top-tier segmentation performance in this simple FCN setup.</li>
+<li><strong>Architecture (layers, rf size, stride):</strong> We can see that VGG is much deeper than AlexNet. All three networks have a maximum stride of 32, which confirms that their output before upsampling is very coarse (1/32nd of the input size).</li>
+</ul>
+<p><strong>The key takeaway from this section is:</strong> Even this simple “decapitate and upsample” approach, when applied to a strong backbone like VGG16, can produce very respectable segmentation results. The next step is to see how much better they can do by getting more sophisticated.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-26"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.1-2.PNG" class="img-fluid"></a></p>
+<p>Let’s unpack these important claims:</p>
+<ol type="1">
+<li><strong>Transfer learning works:</strong> The fact that simply fine-tuning pre-trained classifiers gives “reasonable predictions” is a major validation of their core approach. Even their FCN-AlexNet, the worst of the three, is still in the ballpark of the best prior methods.</li>
+<li><strong>The baseline FCN is already state-of-the-art:</strong> This is a huge result. Their <strong>FCN-VGG16</strong>, which is the most basic version of their architecture (later called FCN-32s), scores <strong>56.0 mIoU</strong> on the validation set. This is already better than the <strong>52.6 mIoU</strong> achieved on the <em>test set</em> by the previous state-of-the-art model, SDS [16]. SDS was a much more complex, multi-stage pipeline involving region proposals and post-processing. The fact that a simple, end-to-end FCN can beat it is a powerful statement about the elegance and effectiveness of their method.</li>
+<li><strong>More data helps:</strong> They mention that when they train on a larger dataset (the one used by the SDS authors), their score improves even further to <strong>59.4 mIoU</strong>. This is a standard finding in deep learning, but it confirms their model benefits from more data.</li>
+</ol>
+</section>
+<section id="the-googlenet-anomaly" class="level4">
+<h4 class="anchored" data-anchor-id="the-googlenet-anomaly">The GoogLeNet Anomaly</h4>
+<p>Finally, they comment on a slightly puzzling result from their experiments.</p>
+<blockquote class="blockquote">
+<p><em>Despite similar classification accuracy, our implementation of GoogLeNet did not match this segmentation result.</em></p>
+</blockquote>
+<p>This is an interesting aside. On the original ImageNet classification task, VGG16 and GoogLeNet had very similar top-tier performance. You might expect, therefore, that they would also perform similarly on segmentation when used as backbones. But they don’t; FCN-VGG16 is much better.</p>
+<p>The authors don’t give a definitive reason, but this finding suggests that raw classification accuracy isn’t the only thing that matters for transfer learning. The <em>internal feature representations</em> of the network matter a great deal. It seems that VGG’s simpler, more uniform structure with its large, feature-rich convolutional layers produces representations that are more readily adapted for the dense, spatial task of segmentation than GoogLeNet’s more complex “Inception” modules.</p>
+<p>With these strong baseline results in hand, the authors have set the stage perfectly. They have shown that even their simplest model is a state-of-the-art contender. Now, in Section 4.2, they will introduce the “skip architecture” to show how they can improve upon this already impressive result.</p>
+</section>
+</section>
+<section id="combining-what-and-where" class="level2">
+<h2 class="anchored" data-anchor-id="combining-what-and-where">4.2. Combining what and where</h2>
+<p>The previous section showed that a simple FCN (which they will call FCN-32s) can achieve state-of-the-art results. But the authors aren’t satisfied. They know the output is still crude. Now, they will introduce their novel architecture to fix this.</p>
+<section id="restating-the-problem-coarse-outputs" class="level4">
+<h4 class="anchored" data-anchor-id="restating-the-problem-coarse-outputs">Restating the Problem: Coarse Outputs</h4>
+<p>They begin by reminding us of the core problem.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-27"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-1.PNG" class="img-fluid"></a></p>
+<p>This paragraph sets the stage perfectly.</p>
+<ul>
+<li><strong>The Goal:</strong> To create a new FCN architecture that “refines the spatial precision of the output.”</li>
+<li><strong>The Motivation:</strong> The baseline FCN-32s model, despite its high mIoU score, produces visually unappealing, “blobby” segmentations. You can see this clearly in the first column of <strong>Figure 4</strong>. The mIoU metric rewards getting the general location of objects correct, but it doesn’t heavily penalize fuzzy boundaries.</li>
+<li><strong>The Cause:</strong> The root cause is the <code>32 pixel stride</code>. The final prediction is made from a feature map that is <code>1/32nd</code> the resolution of the input. When you upsample this tiny map by a factor of 32, you are forced to make the same prediction for large blocks of pixels, which washes out all the fine details.</li>
+</ul>
+<p>The problem is clear: the final prediction layer has great semantic information (it knows <em>what</em> it’s looking at) but terrible spatial information (it has no idea <em>where</em> the precise boundaries are). How can we re-introduce that missing spatial information? The answer is the skip architecture.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-28"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-3.PNG" class="img-fluid"></a></p>
+<p>The caption calls this a <strong>“DAG net”</strong>. DAG stands for Directed Acyclic Graph. This is a departure from a standard classification network, which has a simple linear topology (layer 1 -&gt; layer 2 -&gt; layer 3…). Here, the information flows along multiple paths and gets combined, creating a graph-like structure.</p>
+<p>The diagram shows how three different versions of the FCN are constructed.</p>
+</section>
+<section id="fcn-32s-solid-line---the-baseline" class="level4">
+<h4 class="anchored" data-anchor-id="fcn-32s-solid-line---the-baseline">1. FCN-32s (Solid Line) - The Baseline</h4>
+<ul>
+<li><strong>Path:</strong> This follows the solid black arrow. The network processes the image through all its pooling layers (<code>pool1</code> through <code>pool5</code>) until it reaches the final, deepest, and most coarse layer. This layer has a stride of 32 relative to the input.</li>
+<li><strong>Prediction:</strong> A prediction is made from this <code>pool5</code> layer.</li>
+<li><strong>Upsampling:</strong> This coarse prediction is then upsampled by a factor of 32 in a single giant step to get back to the original image resolution.</li>
+<li><strong>Analysis:</strong> This is the simple baseline model from Section 4.1. It relies entirely on the deep semantic information from the last layer. As we know, this results in coarse, “blobby” segmentations.</li>
+</ul>
+</section>
+<section id="fcn-16s-dashed-line---the-first-refinement" class="level4">
+<h4 class="anchored" data-anchor-id="fcn-16s-dashed-line---the-first-refinement">2. FCN-16s (Dashed Line) - The First Refinement</h4>
+<p>This is the first and most important step in the skip architecture.</p>
+<ul>
+<li><strong>The Problem:</strong> The <code>FCN-32s</code> prediction is too coarse.</li>
+<li><strong>The Idea:</strong> Let’s get some spatial detail from an earlier, less coarse layer. The authors choose <code>pool4</code>, which has a stride of 16.</li>
+<li><strong>The Architecture:</strong>
+<ol type="1">
+<li>First, the <code>pool5</code> prediction is upsampled by a factor of 2x (using a transposed convolution). Now it has the same dimensions as the <code>pool4</code> layer.</li>
+<li>A prediction is also made directly from the <code>pool4</code> layer (by adding a <code>1x1</code> convolution head). This prediction is spatially finer but semantically weaker than the <code>pool5</code> prediction.</li>
+<li><strong>Fuse:</strong> The two predictions (the upsampled <code>pool5</code> one and the <code>pool4</code> one) are combined, typically by element-wise addition (indicated by the ∑ symbol).</li>
+<li><strong>Final Upsampling:</strong> This new, fused prediction map, which is at a stride of 16, is then upsampled by a factor of 16 to get the final full-resolution output.</li>
+</ol></li>
+<li><strong>Analysis:</strong> This is the core of the “what meets where” idea. The upsampled <code>pool5</code> prediction provides the strong semantic guidance (the “what”), while the <code>pool4</code> prediction provides more precise spatial details (the “where”). By fusing them, the network can learn to correct the coarse <code>pool5</code> predictions using the finer information from <code>pool4</code>.</li>
+</ul>
+</section>
+<section id="fcn-8s-dotted-line---the-second-refinement" class="level4">
+<h4 class="anchored" data-anchor-id="fcn-8s-dotted-line---the-second-refinement">3. FCN-8s (Dotted Line) - The Second Refinement</h4>
+<p>This is just a logical extension of the FCN-16s idea.</p>
+<ul>
+<li><strong>The Problem:</strong> FCN-16s is better, but maybe we can make it even more precise.</li>
+<li><strong>The Idea:</strong> Let’s add even finer-grained detail from an even earlier layer, <code>pool3</code>, which has a stride of 8.</li>
+<li><strong>The Architecture:</strong>
+<ol type="1">
+<li>Take the fused <code>16s</code> prediction map (the one we got by combining <code>pool5</code> and <code>pool4</code>).</li>
+<li>Upsample this map by a factor of 2x. Now it has the same dimensions as the <code>pool3</code> layer.</li>
+<li>Make a new prediction directly from the <code>pool3</code> layer.</li>
+<li><strong>Fuse:</strong> Combine the upsampled <code>16s</code> map with the new <code>pool3</code> prediction.</li>
+<li><strong>Final Upsampling:</strong> This final fused map, now at a stride of 8, is upsampled by a factor of 8 to get the final output.</li>
+</ol></li>
+<li><strong>Analysis:</strong> This architecture creates a cascade of refinements. The <code>pool5</code> prediction is refined by <code>pool4</code>, and that result is <em>further</em> refined by <code>pool3</code>. Each skip connection adds another level of detail to the final prediction.</li>
+</ul>
+<p>In summary, Figure 3 shows a systematic way to solve the coarse prediction problem. Instead of a single, massive upsampling leap (32x), the FCN-16s and FCN-8s models use a series of smaller upsampling steps, injecting high-resolution feature information at each stage to progressively refine the segmentation boundaries.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-29"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-2.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-30"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-3.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>This paragraph explains the philosophy behind the skip architecture.</p>
+<ul>
+<li>It’s a <strong>DAG (Directed Acyclic Graph)</strong>, not a simple line.</li>
+<li><strong>“Local predictions that respect global structure”</strong>: This is the perfect summary of the goal. The prediction from a shallow layer (<code>pool4</code>) is “local” (spatially precise), but it lacks context. The prediction from the deep layer (<code>pool5</code>/<code>conv7</code>) provides the “global structure” (the semantic understanding). The skip connection fuses them to get the best of both worlds.</li>
+<li><strong>“Deep Jet”</strong>: This is the cool name they give to their architecture, drawing an analogy to a classic concept in computer vision scale-space theory.</li>
+</ul>
+</section>
+<section id="the-concrete-recipe-for-fcn-16s" class="level4">
+<h4 class="anchored" data-anchor-id="the-concrete-recipe-for-fcn-16s">The Concrete Recipe for FCN-16s</h4>
+<p>The next part is the step-by-step implementation guide for the FCN-16s model.</p>
+<blockquote class="blockquote">
+<p><em>We first divide the output stride in half by predicting from a 16 pixel stride layer. We add a 1 × 1 convolution layer on top of <strong>pool4</strong> to produce additional class predictions. We fuse this output with the predictions computed on top of <strong>conv7</strong> (convolutionalized fc7) at stride 32 by adding a <strong>2× upsampling layer and summing</strong> both predictions. (See Figure 3). We initialize the 2× upsampling to bilinear interpolation, but allow the parameters to be learned… Finally, the stride 16 predictions are upsampled back to the image. We call this net <strong>FCN-16s</strong>.</em></p>
+</blockquote>
+<p>This exactly matches the “dashed line” path we traced in Figure 3:</p>
+<ol type="1">
+<li>Take the final stride-32 prediction from <code>conv7</code>.</li>
+<li>Upsample it by 2x using a learnable transposed convolution. (They note they initialize this layer’s weights to perform simple bilinear upsampling, which is a common and effective trick to give the training a good starting point).</li>
+<li>Take the <code>pool4</code> feature map (which is at stride 16).</li>
+<li>Add a new <code>1x1</code> convolution layer on top of <code>pool4</code> to make a class prediction at this finer scale.</li>
+<li><strong>Fuse:</strong> Add the results of step 2 and step 4 together.</li>
+<li>Take the fused map and upsample it by 16x to get the final, full-resolution output.</li>
+</ol>
+</section>
+<section id="the-training-strategy-staged-fine-tuning" class="level4">
+<h4 class="anchored" data-anchor-id="the-training-strategy-staged-fine-tuning">The Training Strategy: Staged Fine-tuning</h4>
+<p>The final part is a crucial detail about <em>how</em> they train this more complex model. They don’t train it from scratch.</p>
+<blockquote class="blockquote">
+<p><em>FCN-16s is learned end-to-end, initialized with the parameters of the last, coarser net, which we now call <strong>FCN-32s</strong>. The new parameters acting on pool4 are zero-initialized so that the net starts with unmodified predictions. The learning rate is decreased by a factor of 100.</em></p>
+</blockquote>
+<p>This is a very clever, staged training approach:</p>
+<ol type="1">
+<li><strong>First, train FCN-32s:</strong> They take their simple baseline model and train it until it converges.</li>
+<li><strong>Initialize FCN-16s:</strong> They build the FCN-16s architecture and initialize its weights using the already-trained weights from the FCN-32s model. The “backbone” of the network is already good to go.</li>
+<li><strong>Zero-initialize the new parts:</strong> What about the brand new <code>1x1</code> convolution layer they added on top of <code>pool4</code>? They <strong>zero-initialize</strong> it. This is a brilliant trick. If the weights of this new layer are all zero, then at the very beginning of training, it adds nothing to the fused prediction. This means that at iteration zero, the FCN-16s model produces the <em>exact same output</em> as the FCN-32s model it was initialized from. The network starts from a known, good state.</li>
+<li><strong>Fine-tune with a low learning rate:</strong> They then continue training (fine-tuning) the whole FCN-16s network end-to-end, but with a much smaller learning rate. This allows the network to gently learn how to use the new <code>pool4</code> information to refine the already-good predictions from the deeper layers, without catastrophically disrupting the learned weights.</li>
+</ol>
+<p>This staged, careful fine-tuning is key to getting these complex architectures to converge properly.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-31"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-4.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-32"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-section-4.2-5.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>Now that the authors have detailed the “how” of their FCN-16s and FCN-8s architectures, they present the results of these experiments.</p>
+</section>
+<section id="the-payoff-of-fcn-16s" class="level4">
+<h4 class="anchored" data-anchor-id="the-payoff-of-fcn-16s">The Payoff of FCN-16s</h4>
+<blockquote class="blockquote">
+<p><em>Learning this skip net improves performance on the validation set by <strong>3.0 mean IU to 62.4</strong>. Figure 4 shows improvement in the fine structure of the output.</em></p>
+</blockquote>
+<p>This is a significant result.</p>
+<ul>
+<li><strong>FCN-32s (baseline):</strong> 59.4 mIoU (this is the score with extra training data mentioned earlier, making it a stronger baseline to compare against).</li>
+<li><strong>FCN-16s:</strong> 62.4 mIoU.</li>
+</ul>
+<p>Adding just one skip connection from <code>pool4</code> provides a solid <strong>+3.0 mIoU</strong> boost. This is a big jump at the state-of-the-art level. The authors also note that the improvement isn’t just in the numbers; the visual quality (“fine structure”) of the output is noticeably better, which we can see in Figure 4.</p>
+<p>To prove that the skip connection itself is what matters, they run two sanity-check experiments:</p>
+<ol type="1">
+<li><strong>Training only from <code>pool4</code>:</strong> This gave “poor performance.” This makes sense. <code>pool4</code> has good spatial detail but lacks the deep semantic context of the later layers. It knows <em>where</em> edges are, but not what they belong to.</li>
+<li><strong>Just fine-tuning FCN-32s longer:</strong> They tried continuing to train the baseline model with the lower learning rate but <em>without</em> the skip connection. This resulted in “insignificant” improvement.</li>
+</ol>
+<p>These checks confirm that the performance gain comes specifically from the <strong>fusion of deep and shallow features</strong>.</p>
+</section>
+<section id="extending-to-fcn-8s" class="level4">
+<h4 class="anchored" data-anchor-id="extending-to-fcn-8s">Extending to FCN-8s</h4>
+<p>Next, they apply the same logic one more time to build the FCN-8s model.</p>
+<blockquote class="blockquote">
+<p><em>We continue in this fashion by fusing predictions from <strong>pool3</strong> with a 2× upsampling of predictions fused from pool4 and conv7, building the net <strong>FCN-8s</strong>. We obtain a minor additional improvement to <strong>62.7 mean IU</strong>, and find a slight improvement in the smoothness and detail of our output.</em></p>
+</blockquote>
+<p>This is another key result.</p>
+<ul>
+<li><strong>FCN-16s:</strong> 62.4 mIoU.</li>
+<li><strong>FCN-8s:</strong> 62.7 mIoU.</li>
+</ul>
+<p>Adding a second skip connection from <code>pool3</code> gives another small boost of <strong>+0.3 mIoU</strong>. The visual quality also gets a little better.</p>
+</section>
+<section id="the-law-of-diminishing-returns" class="level4">
+<h4 class="anchored" data-anchor-id="the-law-of-diminishing-returns">The Law of Diminishing Returns</h4>
+<p>This result leads them to their final architectural conclusion.</p>
+<blockquote class="blockquote">
+<p><em>At this point our fusion improvements have met <strong>diminishing returns</strong>, both with respect to the IU metric which emphasizes large-scale correctness, and also in terms of the improvement visible e.g.&nbsp;in Figure 4, so we do not continue fusing even lower layers.</em></p>
+</blockquote>
+<p>This is a very important and practical observation.</p>
+<ul>
+<li>The first skip connection (FCN-16s) gave a <strong>+3.0 mIoU</strong> improvement.</li>
+<li>The second skip connection (FCN-8s) gave a <strong>+0.3 mIoU</strong> improvement.</li>
+</ul>
+<p>The benefit is clearly shrinking. While they could continue this process, adding skip connections from <code>pool2</code> (FCN-4s) and <code>pool1</code> (FCN-2s), the engineering complexity would increase for what would likely be a very tiny gain in performance.</p>
+<p>The <strong>mIoU metric</strong> itself also plays a role. It cares more about getting the overall shape and location of the object correct (“large-scale correctness”) than it does about pixel-perfect boundaries. Therefore, the huge gains come from the first skip connection that cleans up the coarse blobs, while further refinements yield smaller and smaller gains on this particular metric.</p>
+<p>Based on this, they decide to stop at FCN-8s, which represents the best balance of performance and complexity.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-33"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-4.PNG" class="img-fluid"></a></p>
+<p>This figure is the perfect illustration of the “what vs.&nbsp;where” tradeoff and how the skip architecture helps to resolve it. It shows the output of the three main architectures—FCN-32s, FCN-16s, and FCN-8s—compared to the ground truth label. The image appears to show a person (pink) on a bicycle (green).</p>
+<p>Let’s analyze the progression from left to right.</p>
+</section>
+<section id="fcn-32s-the-coarse-baseline" class="level4">
+<h4 class="anchored" data-anchor-id="fcn-32s-the-coarse-baseline">1. FCN-32s: The Coarse Baseline</h4>
+<ul>
+<li><strong>Observation:</strong> The output is extremely “blobby” and coarse. The general shapes of the person and the bicycle are there, but the boundaries are smeared and undefined. The thin structures of the bicycle frame and handlebars are completely lost, merged into a single green mass. The person’s arm blends into their torso.</li>
+<li><strong>Interpretation:</strong> This is the direct result of making a prediction from the stride-32 feature map. The model has excellent semantic knowledge—it knows <em>that</em> a person and a bicycle are in these general regions—but it has almost zero fine-grained spatial knowledge. The 32x upsampling step cannot possibly recover details that were lost in the deep layers of the network.</li>
+</ul>
+</section>
+<section id="fcn-16s-the-first-leap-in-detail" class="level4">
+<h4 class="anchored" data-anchor-id="fcn-16s-the-first-leap-in-detail">2. FCN-16s: The First Leap in Detail</h4>
+<ul>
+<li><strong>Observation:</strong> There is a dramatic improvement in the level of detail. The boundary between the person and the bicycle is much sharper. We can start to see the shape of the person’s arm and the negative space between their body and the bike. The overall shapes are much less amorphous and closer to the ground truth.</li>
+<li><strong>Interpretation:</strong> This is the effect of fusing the stride-16 <code>pool4</code> features. The <code>pool4</code> layer still has enough spatial resolution to “remember” where some of these key boundaries are. The network learns to use this information to correct the coarse blobs from the deeper layers. This is the “+3.0 mIoU” jump we saw in the text, and visually, it’s a huge step forward.</li>
+</ul>
+</section>
+<section id="fcn-8s-fine-tuning-the-details" class="level4">
+<h4 class="anchored" data-anchor-id="fcn-8s-fine-tuning-the-details">3. FCN-8s: Fine-Tuning the Details</h4>
+<ul>
+<li><strong>Observation:</strong> The improvement from FCN-16s to FCN-8s is more subtle, but it’s definitely there. The edges become even smoother and more accurate. Look at the person’s shoulder, the top of the bicycle’s handlebars, and the space under the person’s arm—these areas are all slightly cleaner and more defined than in the FCN-16s output.</li>
+<li><strong>Interpretation:</strong> This shows the effect of the second skip connection from the stride-8 <code>pool3</code> layer. This layer provides even finer spatial information, allowing the model to make small, final adjustments to the boundaries. This corresponds to the smaller “+0.3 mIoU” gain and confirms the “diminishing returns” the authors mentioned.</li>
+</ul>
+</section>
+<section id="ground-truth-the-goal" class="level4">
+<h4 class="anchored" data-anchor-id="ground-truth-the-goal">4. Ground Truth: The Goal</h4>
+<ul>
+<li><strong>Observation:</strong> The ground truth shows just how complex the segmentation task is. The bicycle handlebars and frame are extremely thin structures.</li>
+<li><strong>Interpretation:</strong> Even the best model, FCN-8s, is not perfect. It still struggles with the thinnest parts of the bicycle and doesn’t capture every nuance of the person’s outline. However, by comparing FCN-32s to FCN-8s, the power of the skip architecture is undeniable. It transforms a coarse, almost useless segmentation into one that is highly detailed and remarkably close to the ground truth.</li>
+</ul>
+</section>
+</section>
+<section id="experimental-framework" class="level2">
+<h2 class="anchored" data-anchor-id="experimental-framework">4.3. Experimental Framework</h2>
+<p>This section dives into the practical details of how the models were trained. While less glamorous than the architectural innovations, these details are what make the difference between a great idea and a working, state-of-the-art system.</p>
+<section id="optimization" class="level4">
+<h4 class="anchored" data-anchor-id="optimization">Optimization</h4>
+<p>This part describes the core training algorithm and its hyperparameters.</p>
+<ul>
+<li><strong>Algorithm:</strong> Standard <strong>SGD with momentum</strong>. This was the workhorse optimizer of the era.</li>
+<li><strong>Batch Size:</strong> 20 images per minibatch.</li>
+<li><strong>Learning Rates:</strong> They used fixed learning rates, which they found by experimentation (“line search”). Notably, the learning rate for the powerful VGG16 model (<code>10⁻⁴</code>) is much smaller than for AlexNet (<code>10⁻³</code>), which is a common practice when fine-tuning very deep networks.</li>
+<li><strong>Other Hyperparameters:</strong> They used standard momentum (0.9) and weight decay. They also used a common trick of doubling the learning rate for bias terms.</li>
+<li><strong>Initialization:</strong> They <strong>zero-initialize</strong> the final classification layer (the <code>1x1</code> convolution that produces the class scores). This is a safe and stable choice, and they found that random initialization didn’t help.</li>
+<li><strong>Regularization:</strong> They kept <strong>Dropout</strong> in the network where it existed in the original classifiers (e.g., in the fully connected layers of VGG that were converted to convolutions).</li>
+</ul>
+</section>
+<section id="fine-tuning" class="level4">
+<h4 class="anchored" data-anchor-id="fine-tuning">Fine-tuning</h4>
+<p>This section emphasizes the importance of their training strategy.</p>
+<ul>
+<li><strong>Whole-network fine-tuning:</strong> They confirm that they fine-tune <strong>all layers</strong> of the network, not just the newly added ones. The error signal from the segmentation loss is backpropagated through the entire net.</li>
+<li><strong>Justification:</strong> They provide a crucial ablation study: fine-tuning only the final output layer yields just <strong>70%</strong> of the performance of full fine-tuning. This proves that the early feature-extraction layers are also adapting to the new task, which is key to achieving top performance.</li>
+<li><strong>No Training from Scratch:</strong> They state that training these massive networks from random initialization is not feasible due to the time it would take. Relying on the ImageNet pre-training is essential.</li>
+<li><strong>Training Time:</strong> They provide practical numbers: training the baseline FCN-32s takes about <strong>three days on a single GPU</strong>, and upgrading and fine-tuning it to FCN-16s and then FCN-8s takes about one additional day for each step.</li>
+</ul>
+</section>
+<section id="patch-sampling-vs.-whole-image-training" class="level4">
+<h4 class="anchored" data-anchor-id="patch-sampling-vs.-whole-image-training">Patch Sampling (vs.&nbsp;Whole Image Training)</h4>
+<p>Here, they directly address the popular alternative to their whole-image training approach and prove that their method is superior.</p>
+<ul>
+<li><strong>The Theory:</strong> Prior work often used random patch sampling, arguing that the higher variance in these batches could speed up convergence.</li>
+<li><strong>The FCN Equivalent:</strong> The authors simulate patch sampling in their framework by randomly ignoring the loss from a subset of the output cells (<code>1-p</code> of them). This is a clever form of spatial dropout on the loss itself.</li>
+<li><strong>The Result (Figure 5):</strong> The results are crystal clear.
+<ul>
+<li><strong>Left Plot (vs.&nbsp;Iteration Number):</strong> All methods (full image, 50% sampling, 25% sampling) converge at roughly the same rate <em>per iteration</em>. Sampling doesn’t seem to offer a convergence advantage.</li>
+<li><strong>Right Plot (vs.&nbsp;Wall Clock Time):</strong> This is the key. Whole-image training is dramatically faster. Because sampling requires processing more images to form a single effective batch, it takes much longer to reach the same level of performance.</li>
+</ul></li>
+<li><strong>The Verdict:</strong> They conclude that their <strong>unsampled, whole-image training is the most effective and efficient</strong> strategy.</li>
+</ul>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-34"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-fig-5.PNG" class="img-fluid"></a></p>
+</section>
+<section id="other-experimental-details" class="level4">
+<h4 class="anchored" data-anchor-id="other-experimental-details">Other Experimental Details</h4>
+<ul>
+<li><strong>Class Balancing:</strong> They found that although their dataset was mildly imbalanced (mostly background pixels), they did not need to use any special class balancing techniques (like weighting the loss). The standard training worked fine.</li>
+<li><strong>Dense Prediction:</strong> They reiterate their upsampling strategy. The final upsampling layer is a fixed bilinear interpolation, but the intermediate upsampling layers (in FCN-16s and FCN-8s) are initialized as bilinear but are <strong>then learned</strong>. They explicitly state they do not use shift-and-stitch.</li>
+<li><strong>Augmentation:</strong> They tried standard data augmentation techniques like random mirroring and jittering (small translations) but found it provided <strong>“no noticeable improvement.”</strong> This is a somewhat surprising result, but it suggests the pre-trained features are already very robust.</li>
+<li><strong>More Training Data:</strong> They mention the two datasets used: the standard PASCAL VOC 2011 training set (1112 images) and a much larger set of 8498 images collected by Hariharan et al., which was used to train the previous state-of-the-art model and is used here for their best results.</li>
+</ul>
+</section>
+</section>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">5. Results</h2>
+<p>This section showcases the performance of the authors’ best model, the <strong>FCN-8s</strong>, on a variety of challenging tasks.</p>
+<blockquote class="blockquote">
+<p><em>We test our FCN on semantic segmentation and scene parsing, exploring PASCAL VOC, NYUDv2, and SIFT Flow. Although these tasks have historically distinguished between objects and regions, we treat both uniformly as pixel prediction.</em></p>
+</blockquote>
+<p>This opening statement highlights the generality of their approach. They don’t need different models for “objects” vs.&nbsp;“stuff” (like grass or sky); their FCN treats everything as a pixel classification problem.</p>
+<section id="metrics" class="level4">
+<h4 class="anchored" data-anchor-id="metrics">Metrics</h4>
+<p>First, they formally define the evaluation metrics they will use, which are all variations of pixel accuracy and Intersection over Union (IoU). The most important one, as discussed before, is <strong>mean IU (mIoU)</strong>, which is the gold standard.</p>
+</section>
+<section id="pascal-voc" class="level4">
+<h4 class="anchored" data-anchor-id="pascal-voc">PASCAL VOC</h4>
+<p>This is the main event. PASCAL VOC was the most influential object segmentation benchmark at the time.</p>
+<blockquote class="blockquote">
+<p><em>Table 3 gives the performance of our FCN-8s on the test sets of PASCAL VOC 2011 and 2012, and compares it to the previous state-of-the-art, SDS [16], and the well-known R-CNN [12]. We achieve the best results on mean IU by a <strong>relative margin of 20%</strong>. Inference time is reduced <strong>114×</strong> (convnet only…) or <strong>286×</strong> (overall).</em></p>
+</blockquote>
+<p><strong>Table 3</strong> tells a stunning story of progress.</p>
+<p><a href="images/2025-09-03-fcn-segmentation-reading-notes/paper-table-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-35"><img src="images/2025-09-03-fcn-segmentation-reading-notes/paper-table-3.PNG" class="img-fluid"></a></p>
+<p>Let’s analyze the breakthrough:</p>
+<ul>
+<li><strong>Massive Accuracy Jump:</strong> FCN-8s achieves <strong>62.2 mIoU</strong> on the 2012 test set. The previous state-of-the-art, SDS, was at 51.6. This isn’t just a small improvement; it’s a <strong>20% relative leap</strong> (<code>(62.2 - 51.6) / 51.6 ≈ 0.20</code>), which is a massive advancement in a mature field.</li>
+<li><strong>Ludicrous Speedup:</strong> The FCN model is orders of magnitude faster. SDS took almost a minute per image (50 seconds). The FCN takes <strong>175 milliseconds</strong> (less than 1/5th of a second). This is a speedup of roughly <strong>286 times</strong>. This speedup is a direct result of the end-to-end, whole-image processing paradigm, which eliminates the need for slow proposal generation and complex post-processing.</li>
+</ul>
+</section>
+<section id="nyudv2" class="level4">
+<h4 class="anchored" data-anchor-id="nyudv2">NYUDv2</h4>
+<p>To prove their method isn’t just a one-trick pony, they test it on NYUDv2, an indoor scene segmentation dataset that includes <strong>depth information</strong> from a Microsoft Kinect sensor (RGB-D).</p>
+<ul>
+<li><strong>The Challenge:</strong> How to best incorporate the depth (D) channel along with the color (RGB) channels?</li>
+<li><strong>Experiments:</strong> They try several strategies:
+<ol type="1">
+<li><strong>RGB only (baseline):</strong> Just use the color images.</li>
+<li><strong>RGB-D (early fusion):</strong> Treat depth as a fourth input channel. This gave little benefit.</li>
+<li><strong>HHA:</strong> Use a sophisticated pre-processing method from Gupta et al.&nbsp;[14] that converts raw depth into three meaningful channels: Horizontal disparity, Height above ground, and Angle with gravity (HHA).</li>
+<li><strong>RGB + HHA (late fusion):</strong> Train two separate FCN streams, one for RGB and one for HHA, and add their final prediction scores together. This <strong>two-stream “late fusion”</strong> model performed the best.</li>
+</ol></li>
+<li><strong>The Result:</strong> Their final model (a 16-stride version, FCN-16s) again achieves state-of-the-art results on this dataset, demonstrating the FCN’s ability to adapt to multi-modal data.</li>
+</ul>
+</section>
+<section id="sift-flow" class="level4">
+<h4 class="anchored" data-anchor-id="sift-flow">SIFT Flow</h4>
+<p>Finally, they tackle the SIFT Flow dataset, which has labels for both <strong>semantic classes</strong> (e.g., “bridge,” “mountain”) and <strong>geometric classes</strong> (“horizontal,” “vertical,” “sky”).</p>
+<ul>
+<li><strong>The Challenge:</strong> Can a single network learn to predict two different types of labels for each pixel simultaneously?</li>
+<li><strong>The Architecture: “Two-headed” FCN.</strong> This is a beautiful demonstration of the flexibility of FCNs. They take their FCN-16s and, at the very end, branch it into <strong>two separate prediction “heads.”</strong>
+<ul>
+<li>One head is a <code>1x1</code> convolution that predicts the 33 semantic classes.</li>
+<li>The other head is a <code>1x1</code> convolution that predicts the 3 geometric classes.</li>
+</ul></li>
+<li><strong>The Training:</strong> The network is trained with a combined loss function that is simply the sum of the semantic loss and the geometric loss. The entire network learns a shared representation in its backbone that is useful for solving both tasks.</li>
+<li><strong>The Result:</strong> This multi-task FCN performs as well on both tasks as two models that were trained completely independently. And, because the feature extraction is shared, it’s nearly twice as fast as running two separate models. This is another major win for the FCN paradigm, showing its power in multi-task learning settings.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
