@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-11">
+<meta name="description" content="A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.">
+
+<title>R-CNN: The Paper that Revolutionized Object Detection – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="R-CNN: The Paper that Revolutionized Object Detection – Random Thoughts">
+<meta property="og:description" content="A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-11-rcnn-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="R-CNN: The Paper that Revolutionized Object Detection – Random Thoughts">
+<meta name="twitter:description" content="A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-11-rcnn-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a>
+  <ul class="collapse">
+  <li><a href="#the-problem-a-performance-plateau" id="toc-the-problem-a-performance-plateau" class="nav-link" data-scroll-target="#the-problem-a-performance-plateau">The Problem: A Performance Plateau</a></li>
+  <li><a href="#the-solution-two-key-insights" id="toc-the-solution-two-key-insights" class="nav-link" data-scroll-target="#the-solution-two-key-insights">The Solution: Two Key Insights</a></li>
+  <li><a href="#the-result-a-quantum-leap-in-accuracy" id="toc-the-result-a-quantum-leap-in-accuracy" class="nav-link" data-scroll-target="#the-result-a-quantum-leap-in-accuracy">The Result: A Quantum Leap in Accuracy</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#features-matter-from-handcrafted-to-learned-hierarchies" id="toc-features-matter-from-handcrafted-to-learned-hierarchies" class="nav-link" data-scroll-target="#features-matter-from-handcrafted-to-learned-hierarchies">Features Matter: From Handcrafted to Learned Hierarchies</a></li>
+  <li><a href="#the-rise-of-convolutional-neural-networks-cnns" id="toc-the-rise-of-convolutional-neural-networks-cnns" class="nav-link" data-scroll-target="#the-rise-of-convolutional-neural-networks-cnns">The Rise of Convolutional Neural Networks (CNNs)</a></li>
+  <li><a href="#the-boom-bust-and-rebirth-of-cnns" id="toc-the-boom-bust-and-rebirth-of-cnns" class="nav-link" data-scroll-target="#the-boom-bust-and-rebirth-of-cnns">The Boom, Bust, and Rebirth of CNNs</a></li>
+  <li><a href="#bridging-the-gap-from-classification-to-detection" id="toc-bridging-the-gap-from-classification-to-detection" class="nav-link" data-scroll-target="#bridging-the-gap-from-classification-to-detection">Bridging the Gap: From Classification to Detection</a></li>
+  <li><a href="#the-localization-challenge-rejecting-the-obvious" id="toc-the-localization-challenge-rejecting-the-obvious" class="nav-link" data-scroll-target="#the-localization-challenge-rejecting-the-obvious">The Localization Challenge: Rejecting the Obvious</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">R-CNN: The Paper that Revolutionized Object Detection</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 11, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-11-rcnn-reading-notes.png" class="img-fluid"></p>
+<p>In the world of computer vision, progress on object detection had hit a wall by the early 2010s. Existing methods were complex, incremental, and struggling to push performance forward. Then, in 2012, AlexNet and deep learning changed everything for image classification. This left a critical question hanging in the air: could the power of Convolutional Neural Networks (CNNs) be harnessed for the more complex task of localizing and classifying multiple objects within an image?</p>
+<p>Enter R-CNN. In their 2014 paper, “Rich feature hierarchies for accurate object detection and semantic segmentation,” Ross Girshick and his team at UC Berkeley didn’t just answer “yes”—they smashed the existing benchmarks, setting a new course for the entire field.</p>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-title.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-11-rcnn-reading-notes/paper-title.PNG" class="img-fluid"></a></p>
+<p>Let’s break down exactly how they did it, section by section.</p>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p><a href="images/2025-09-09-unet-reading-notes/paper-abstract.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-09-unet-reading-notes/paper-abstract.PNG" class="img-fluid"></a></p>
+<p>This abstract is the perfect elevator pitch. It crisply defines the problem, presents a groundbreaking solution, and quantifies its success with a staggering number. Let’s unpack the key points.</p>
+<section id="the-problem-a-performance-plateau" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem-a-performance-plateau">The Problem: A Performance Plateau</h3>
+<p>The authors open by stating that progress on the <strong>PASCAL VOC</strong> dataset—the benchmark for object detection at the time—had stalled. The top models were “complex ensemble systems” that mixed handcrafted features (like HOG and SIFT) with other contextual models. This is academic language for “we’re stuck building increasingly complicated systems just to squeeze out another fraction of a percentage point in accuracy.” The field was hungry for a breakthrough.</p>
+</section>
+<section id="the-solution-two-key-insights" class="level3">
+<h3 class="anchored" data-anchor-id="the-solution-two-key-insights">The Solution: Two Key Insights</h3>
+<p>The authors propose R-CNN, a method built on two simple but powerful ideas that, when combined, shattered the performance plateau.</p>
+<ol type="1">
+<li><p><strong>Regions + CNNs</strong>: The first insight is architectural. Instead of applying a computationally expensive CNN across an entire image in a sliding-window fashion, they propose a two-step process. First, use an efficient, traditional computer vision algorithm to generate a set of potential object locations, called <strong>“region proposals.”</strong> Then, and only then, run a powerful CNN feature extractor on these proposed regions.</p>
+<ul>
+<li><strong>Analogy:</strong> Imagine searching for a specific book in a massive library. The old “sliding window” approach is like reading the title of every single book on every shelf—thorough but incredibly slow. The R-CNN approach is like asking the librarian (the region proposal algorithm) to first point you to all the shelves that contain books about “computer science.” You then only need to apply your expert knowledge (the CNN) to these much smaller, more relevant sections. This is the core idea of “recognition using regions.”</li>
+</ul></li>
+<li><p><strong>Pre-training and Fine-Tuning</strong>: The second insight is about the training strategy. Object detection datasets, which require expensive bounding-box annotations, are much smaller than classification datasets. This makes training a “high-capacity” (i.e., very large) CNN from scratch on a detection dataset nearly impossible due to overfitting. The authors’ solution is a now-standard technique called <strong>transfer learning</strong>:</p>
+<ul>
+<li><strong>Supervised Pre-training:</strong> First, train a large CNN on an “auxiliary task” with abundant data—in this case, image classification using the massive ImageNet (ILSVRC) dataset. This teaches the network a rich hierarchy of visual features, from simple edges and colors to more complex textures and object parts.</li>
+<li><strong>Domain-specific Fine-tuning:</strong> Then, take this pre-trained network and continue training it (fine-tune it) on the smaller, domain-specific dataset (PASCAL VOC for object detection). This adapts the generic features learned from ImageNet to the specific task of detection.</li>
+</ul></li>
+</ol>
+</section>
+<section id="the-result-a-quantum-leap-in-accuracy" class="level3">
+<h3 class="anchored" data-anchor-id="the-result-a-quantum-leap-in-accuracy">The Result: A Quantum Leap in Accuracy</h3>
+<p>The result of these two insights is a massive performance gain. R-CNN achieved a <strong>mean Average Precision (mAP)</strong> of 53.3% on PASCAL VOC 2012. This represented a <strong>30% <em>relative</em> improvement</strong> over the previous state-of-the-art. In a field accustomed to incremental gains, this was a revolutionary jump that unequivocally demonstrated the power of deep learning features for object detection.</p>
+<p>Finally, the authors astutely compare R-CNN to a contemporary model, OverFeat, which also used CNNs but in a sliding-window fashion. By showing that R-CNN significantly outperforms OverFeat, they prove that their <em>approach</em>—combining region proposals with CNNs—is superior, not just the use of CNNs in general.</p>
+</section>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-1.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-2.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<section id="features-matter-from-handcrafted-to-learned-hierarchies" class="level3">
+<h3 class="anchored" data-anchor-id="features-matter-from-handcrafted-to-learned-hierarchies">Features Matter: From Handcrafted to Learned Hierarchies</h3>
+<p>The paper opens with a simple, powerful declaration: “Features matter.” In machine learning, a “feature” is a numerical representation of raw input data. For computer vision, this means converting a grid of pixels into a compact, informative vector that a model can learn from. The quality of these features dictates the performance of the entire system.</p>
+<p>For about a decade, the field was dominated by two titans of feature engineering:</p>
+<ul>
+<li><strong>SIFT (Scale-Invariant Feature Transform):</strong> An algorithm that identifies keypoints in an image and describes the local region around them based on gradient orientations. It’s robust to changes in scale and rotation.</li>
+<li><strong>HOG (Histogram of Oriented Gradients):</strong> An algorithm that divides an image into small cells, calculates a histogram of gradient directions within each cell, and then normalizes these histograms across larger blocks. This proved incredibly effective for detecting objects with well-defined shapes, like pedestrians.</li>
+</ul>
+<p>These handcrafted features were the engine of computer vision progress in the 2000s. But, as the authors point out, by 2010, progress on the benchmark PASCAL VOC object detection challenge had stagnated. Researchers were hitting a wall, creating complex “ensemble” systems that layered models on top of models just to eke out marginal improvements. The well of handcrafted features was running dry.</p>
+<p>The authors then make a brilliant analogy to neuroscience. They equate SIFT and HOG to the computations performed by complex cells in <strong>V1</strong>, the first processing area in the brain’s visual cortex. V1 is great at detecting basic elements like edges and orientations. But human vision doesn’t stop there; recognition is a <strong>hierarchical process</strong>. Information from V1 flows to V2, V4, and other areas that recognize more complex structures like shapes, textures, and eventually, whole objects.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-09-11-rcnn-reading-notes/v1-v2-hierarchy.jpg" class="img-fluid figure-img"></p>
+<figcaption><strong>Left</strong>: A typical hierarchical, feedforward model, where information processing starts at the retina, proceeds to the LGN, then to V1, V2, V4, and IT. Decisions about stimuli are made in the frontal cortex. <strong>Center</strong>: Lower visual areas have smaller receptive fields, while neurons in higher areas have gradually increasing receptive field sizes, integrating information over larger and larger regions of the visual field. <strong>Right</strong>: Lower visual areas, such as V1, code for basic features such as edges and lines. Higher-level neurons pool information over multiple low-level neurons with smaller receptive fields and code for more complex features. There is thus a hierarchy of features.</figcaption>
+</figure>
+</div>
+<p><em>Image source: <a href="https://www.frontiersin.org/journals/computational-neuroscience/articles/10.3389/fncom.2014.00135/full">Why vision is not both hierarchical and feedforward</a></em></p>
+<p>This analogy beautifully frames the problem. If the entire field was stuck using “V1-like” features, the logical next step was to build models capable of learning a richer, multi-stage feature hierarchy. This is the perfect setup to introduce Convolutional Neural Networks, which do precisely that.</p>
+</section>
+<section id="the-rise-of-convolutional-neural-networks-cnns" class="level3">
+<h3 class="anchored" data-anchor-id="the-rise-of-convolutional-neural-networks-cnns">The Rise of Convolutional Neural Networks (CNNs)</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-3.PNG" class="img-fluid"></a></p>
+<p>Having established the <em>need</em> for a hierarchical feature extractor, the authors now introduce the model that would eventually provide the solution: the Convolutional Neural Network. But they start with its ancestor, the <strong>Neocognitron</strong>, developed by Kunihiko Fukushima in 1980.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/fukushima.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Kunihiko Fukushima"><img src="images/2025-09-11-rcnn-reading-notes/fukushima.png" class="img-fluid figure-img" alt="Kunihiko Fukushima"></a></p>
+<figcaption>Kunihiko Fukushima</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/neocognition.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Neocognition model proposed architecture"><img src="images/2025-09-11-rcnn-reading-notes/neocognition.png" class="img-fluid figure-img" alt="Neocognition model proposed architecture"></a></p>
+<figcaption>Neocognition model proposed architecture</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>The Neocognitron was a visionary model. It directly mimicked the hierarchical structure of the visual cortex with layers of “S-cells” (simple cells) for feature extraction and “C-cells” (complex cells) for pooling, making it robust to shifts in the position of objects. It had the right architectural idea, but it was missing a critical component: an effective way to learn. As the paper notes, it “lacked a supervised training algorithm.” There was no efficient way to teach the model by showing it labeled examples and correcting its mistakes.</p>
+<p>The solution to this problem came from a different line of research. The breakthrough was <strong>backpropagation</strong>, an algorithm popularized by Rumelhart, Hinton, and Williams that allowed for efficient “end-to-end” training of multi-layered networks.</p>
+<ul>
+<li><strong>Backpropagation:</strong> In simple terms, this algorithm calculates the error (the difference between the network’s prediction and the correct label) and then propagates this error signal backward through the network. As the signal travels back, it tells each connection how much it contributed to the total error, allowing the network to adjust its internal parameters (weights) to make a better prediction next time.</li>
+</ul>
+<p>It was Yann LeCun who, in the late 1980s and early 1990s, fused the architecture of the Neocognitron with the training power of backpropagation. This combination created the modern <strong>Convolutional Neural Network (CNN)</strong>: a hierarchical, biologically-inspired model that could actually be trained effectively on real-world data.</p>
+</section>
+<section id="the-boom-bust-and-rebirth-of-cnns" class="level3">
+<h3 class="anchored" data-anchor-id="the-boom-bust-and-rebirth-of-cnns">The Boom, Bust, and Rebirth of CNNs</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-4.PNG" class="img-fluid"></a></p>
+<p>Here, the authors chart the rollercoaster history of CNNs.</p>
+<ul>
+<li><strong>The Boom (1990s):</strong> Thanks to Yann LeCun’s work, CNNs were successful in the 90s for specific, constrained tasks like recognizing handwritten zip codes (the famous LeNet-5 architecture).</li>
+<li><strong>The Bust (~2000-2012):</strong> CNNs then entered a so-called “AI winter.” Why? Training them was computationally brutal, and they required huge amounts of labeled data that simply didn’t exist yet. A more mathematically elegant and practical approach, the <strong>Support Vector Machine (SVM)</strong>, took over. When paired with powerful handcrafted features like SIFT and HOG, SVMs became the state-of-the-art for most computer vision tasks.</li>
+<li><strong>The Rebirth (2012):</strong> Everything changed in 2012. At the annual ImageNet Large Scale Visual Recognition Challenge (ILSVRC), a team from the University of Toronto led by Alex Krizhevsky (and including Geoffrey Hinton) unveiled a deep CNN, now famously known as <strong>AlexNet</strong>. It didn’t just win the competition; it demolished the competition. Its error rate was 15.3%, while the next best entry, which used traditional methods, was stuck at 26.2%. This was the moment the entire field was forced to pivot to deep learning.</li>
+</ul>
+<p>The authors highlight that AlexNet’s success wasn’t just about using an old idea. It was a perfect storm of three key ingredients:</p>
+<ol type="1">
+<li><strong>Big Data:</strong> The existence of the ImageNet dataset, with its 1.2 million labeled images, was crucial. For the first time, there was enough data to train a deep, high-capacity network without crippling overfitting.</li>
+<li><strong>Big Compute:</strong> The use of Graphics Processing Units (GPUs) made it feasible to train such a large network in a reasonable amount of time (days instead of months).</li>
+<li><strong>Algorithmic Tweaks:</strong> AlexNet introduced two simple but vital improvements:
+<ul>
+<li><strong>ReLU (Rectified Linear Unit):</strong> A new activation function (<code>max(0, x)</code>) that replaced the traditional sigmoid and tanh functions. Its simplicity and non-saturating nature allowed gradients to flow more easily during backpropagation, dramatically speeding up training.</li>
+<li><strong>Dropout:</strong> A regularization technique where a random fraction of neurons are ignored during each training step. This prevents the network from becoming too reliant on any single neuron and forces it to learn more robust and general features, significantly reducing overfitting.</li>
+</ul></li>
+</ol>
+</section>
+<section id="bridging-the-gap-from-classification-to-detection" class="level3">
+<h3 class="anchored" data-anchor-id="bridging-the-gap-from-classification-to-detection">Bridging the Gap: From Classification to Detection</h3>
+<blockquote class="blockquote">
+<p>The significance of the ImageNet result was vigorously debated during the ILSVRC 2012 workshop. The central issue can be distilled to the following: To what extent do the CNN classification results on ImageNet generalize to object detection results on the PASCAL VOC Challenge?</p>
+<p>We answer this question by bridging the gap between image classification and object detection. This paper is the first to show that a CNN can lead to dramatically higher object detection performance on PASCAL VOC as compared to systems based on simpler HOG-like features. To achieve this result, we focused on two problems: localizing objects with a deep network and training a high-capacity model with only a small quantity of annotated detection data.</p>
+</blockquote>
+<p>AlexNet’s victory was a seismic event, but it didn’t immediately solve all of computer vision’s problems. As the authors note, the community was buzzing with a critical question. Knowing a CNN could tell you <em>that</em> an image contains a cat (classification) is one thing. But can it tell you <em>where</em> the cat is by drawing a tight box around it (detection)? This is a fundamentally harder problem. Classification has one answer per image; detection can have many answers, each with precise spatial coordinates.</p>
+<p>The authors position their paper as the definitive answer to this debate. They explicitly state their goal is to bridge this gap. They then make a bold claim: this is the <em>first</em> paper to prove that a CNN can blow past the old HOG-based systems for object detection on the PASCAL VOC benchmark.</p>
+<p>To get there, they had to solve two specific, challenging problems that we saw foreshadowed in the abstract:</p>
+<ol type="1">
+<li><strong>The Localization Problem:</strong> How do you adapt a network built for whole-image analysis to pinpoint the location of potentially many, arbitrarily-sized objects? A naive sliding-window approach would be computationally prohibitive for a deep network like AlexNet.</li>
+<li><strong>The Data Scarcity Problem:</strong> How do you train a massive, data-hungry CNN for detection when the best available datasets (like PASCAL VOC) are orders of magnitude smaller than ImageNet?</li>
+</ol>
+</section>
+<section id="the-localization-challenge-rejecting-the-obvious" class="level3">
+<h3 class="anchored" data-anchor-id="the-localization-challenge-rejecting-the-obvious">The Localization Challenge: Rejecting the Obvious</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-7.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-7.PNG" class="img-fluid"></a></p>
+<p>Here, the authors systematically dismantle the two most intuitive ways to adapt a CNN for object detection, demonstrating why a new approach is necessary.</p>
+<section id="approach-1-bounding-box-regression-rejected" class="level4">
+<h4 class="anchored" data-anchor-id="approach-1-bounding-box-regression-rejected">Approach 1: Bounding Box Regression (Rejected)</h4>
+<p>The first idea is to treat localization as a <strong>regression problem</strong>. This means training the CNN to directly predict the coordinates of a bounding box—its x and y position, width, and height—as numerical values. The authors quickly dismiss this, not based on theory, but on empirical evidence. They point to a concurrent paper that tried this and achieved a mAP of 30.5%. By contrasting this with their own result of 58.5%, they make a powerful statement: direct regression wasn’t the way to go.</p>
+</section>
+<section id="approach-2-the-sliding-window-detector-rejected-for-deep-cnns" class="level4">
+<h4 class="anchored" data-anchor-id="approach-2-the-sliding-window-detector-rejected-for-deep-cnns">Approach 2: The Sliding Window Detector (Rejected for Deep CNNs)</h4>
+<p>The second, more traditional approach is the <strong>sliding window detector</strong>.</p>
+<ul>
+<li><strong>How it works:</strong> You take a small window (or patch) of a fixed size, slide it across the entire image, and run a classifier on each patch to see if it contains an object. To find objects of different sizes, you repeat this process with windows of different scales. This is a classic and robust technique.</li>
+</ul>
+<p>The authors acknowledge that this has been done with CNNs before, but with a critical caveat: it only worked well with <em>shallow</em> networks (e.g., just two layers). Why? Because shallow networks have high spatial resolution.</p>
+<p>This brings us to the core reason why the sliding window approach fails for a <em>deep</em> network like the one used in this paper (a variant of AlexNet). The problem lies in two key properties of deep CNNs:</p>
+<ul>
+<li><strong>Receptive Field:</strong> This is the size of the region in the input image that a single neuron in a given layer is “looking at.” As you go deeper into the network, each neuron’s receptive field grows exponentially. The authors state that neurons in their final convolutional layer have a massive receptive field of <strong>195x195 pixels</strong>. A single feature is summarizing a huge chunk of the image, making it very difficult to precisely locate a small object within that field.</li>
+<li><strong>Stride:</strong> This is the step size the network’s filter takes as it moves across the image. The deep network they use has a large stride of <strong>32x32 pixels</strong>. This means the “window” jumps 32 pixels at a time. This is great for classification, as it’s computationally efficient, but terrible for detection. An object could easily fall between the strides, leading to poor localization.</li>
+</ul>
+<p>Trying to use a deep CNN as a sliding window detector is like trying to perform delicate surgery with a shovel. The tool is too coarse for the fine-grained task of precise localization.</p>
+<p>Having skillfully argued against the two most obvious solutions, the authors have cleared the stage for their own, more elegant approach. Let’s see what they propose instead.</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
