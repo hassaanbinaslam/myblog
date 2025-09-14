@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-11">
+<meta name="description" content="A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.">
+
+<title>R-CNN: The Paper that Revolutionized Object Detection – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="R-CNN: The Paper that Revolutionized Object Detection – Random Thoughts">
+<meta property="og:description" content="A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-11-rcnn-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="R-CNN: The Paper that Revolutionized Object Detection – Random Thoughts">
+<meta name="twitter:description" content="A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-11-rcnn-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a>
+  <ul class="collapse">
+  <li><a href="#the-problem-a-performance-plateau" id="toc-the-problem-a-performance-plateau" class="nav-link" data-scroll-target="#the-problem-a-performance-plateau">The Problem: A Performance Plateau</a></li>
+  <li><a href="#the-solution-two-key-insights" id="toc-the-solution-two-key-insights" class="nav-link" data-scroll-target="#the-solution-two-key-insights">The Solution: Two Key Insights</a></li>
+  <li><a href="#the-result-a-quantum-leap-in-accuracy" id="toc-the-result-a-quantum-leap-in-accuracy" class="nav-link" data-scroll-target="#the-result-a-quantum-leap-in-accuracy">The Result: A Quantum Leap in Accuracy</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#features-matter-from-handcrafted-to-learned-hierarchies" id="toc-features-matter-from-handcrafted-to-learned-hierarchies" class="nav-link" data-scroll-target="#features-matter-from-handcrafted-to-learned-hierarchies">Features Matter: From Handcrafted to Learned Hierarchies</a></li>
+  <li><a href="#the-rise-of-convolutional-neural-networks-cnns" id="toc-the-rise-of-convolutional-neural-networks-cnns" class="nav-link" data-scroll-target="#the-rise-of-convolutional-neural-networks-cnns">The Rise of Convolutional Neural Networks (CNNs)</a></li>
+  <li><a href="#the-boom-bust-and-rebirth-of-cnns" id="toc-the-boom-bust-and-rebirth-of-cnns" class="nav-link" data-scroll-target="#the-boom-bust-and-rebirth-of-cnns">The Boom, Bust, and Rebirth of CNNs</a></li>
+  <li><a href="#bridging-the-gap-from-classification-to-detection" id="toc-bridging-the-gap-from-classification-to-detection" class="nav-link" data-scroll-target="#bridging-the-gap-from-classification-to-detection">Bridging the Gap: From Classification to Detection</a></li>
+  <li><a href="#the-localization-challenge-rejecting-the-obvious" id="toc-the-localization-challenge-rejecting-the-obvious" class="nav-link" data-scroll-target="#the-localization-challenge-rejecting-the-obvious">The Localization Challenge: Rejecting the Obvious</a></li>
+  <li><a href="#the-r-cnn-pipeline-a-simple-powerful-idea" id="toc-the-r-cnn-pipeline-a-simple-powerful-idea" class="nav-link" data-scroll-target="#the-r-cnn-pipeline-a-simple-powerful-idea">The R-CNN Pipeline: A Simple, Powerful Idea</a></li>
+  <li><a href="#figure-1-the-r-cnn-pipeline-in-a-nutshell" id="toc-figure-1-the-r-cnn-pipeline-in-a-nutshell" class="nav-link" data-scroll-target="#figure-1-the-r-cnn-pipeline-in-a-nutshell">Figure 1: The R-CNN Pipeline in a Nutshell</a></li>
+  <li><a href="#proving-the-paradigm-r-cnn-vs.-overfeat" id="toc-proving-the-paradigm-r-cnn-vs.-overfeat" class="nav-link" data-scroll-target="#proving-the-paradigm-r-cnn-vs.-overfeat">Proving the Paradigm: R-CNN vs.&nbsp;OverFeat</a></li>
+  <li><a href="#the-training-recipe-pre-training-and-fine-tuning" id="toc-the-training-recipe-pre-training-and-fine-tuning" class="nav-link" data-scroll-target="#the-training-recipe-pre-training-and-fine-tuning">The Training Recipe: Pre-training and Fine-tuning</a></li>
+  <li><a href="#efficiency-error-analysis-and-versatility" id="toc-efficiency-error-analysis-and-versatility" class="nav-link" data-scroll-target="#efficiency-error-analysis-and-versatility">Efficiency, Error Analysis, and Versatility</a></li>
+  </ul></li>
+  <li><a href="#object-detection-with-r-cnn" id="toc-object-detection-with-r-cnn" class="nav-link" data-scroll-target="#object-detection-with-r-cnn">2. Object Detection with R-CNN</a></li>
+  <li><a href="#module-design" id="toc-module-design" class="nav-link" data-scroll-target="#module-design">2.1. Module Design</a>
+  <ul class="collapse">
+  <li><a href="#module-1-region-proposals" id="toc-module-1-region-proposals" class="nav-link" data-scroll-target="#module-1-region-proposals">Module 1: Region Proposals</a></li>
+  <li><a href="#module-2-feature-extraction" id="toc-module-2-feature-extraction" class="nav-link" data-scroll-target="#module-2-feature-extraction">Module 2: Feature Extraction</a></li>
+  </ul></li>
+  <li><a href="#test-time-detection" id="toc-test-time-detection" class="nav-link" data-scroll-target="#test-time-detection">2.2. Test-time Detection</a>
+  <ul class="collapse">
+  <li><a href="#run-time-analysis-the-efficiency-of-shared-features" id="toc-run-time-analysis-the-efficiency-of-shared-features" class="nav-link" data-scroll-target="#run-time-analysis-the-efficiency-of-shared-features">Run-time Analysis: The Efficiency of Shared Features</a></li>
+  <li><a href="#putting-scalability-in-perspective" id="toc-putting-scalability-in-perspective" class="nav-link" data-scroll-target="#putting-scalability-in-perspective">Putting Scalability in Perspective</a></li>
+  </ul></li>
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">2.3. Training</a>
+  <ul class="collapse">
+  <li><a href="#supervised-pre-training-learning-a-visual-vocabulary" id="toc-supervised-pre-training-learning-a-visual-vocabulary" class="nav-link" data-scroll-target="#supervised-pre-training-learning-a-visual-vocabulary">Supervised Pre-training: Learning a Visual Vocabulary</a></li>
+  <li><a href="#domain-specific-fine-tuning-adapting-the-expert" id="toc-domain-specific-fine-tuning-adapting-the-expert" class="nav-link" data-scroll-target="#domain-specific-fine-tuning-adapting-the-expert">Domain-Specific Fine-tuning: Adapting the Expert</a></li>
+  <li><a href="#module-3-training-the-object-category-classifiers" id="toc-module-3-training-the-object-category-classifiers" class="nav-link" data-scroll-target="#module-3-training-the-object-category-classifiers">Module 3: Training the Object Category Classifiers</a></li>
+  <li><a href="#hard-negative-mining-and-the-svm-vs.-softmax-debate" id="toc-hard-negative-mining-and-the-svm-vs.-softmax-debate" class="nav-link" data-scroll-target="#hard-negative-mining-and-the-svm-vs.-softmax-debate">Hard Negative Mining and the SVM vs.&nbsp;Softmax Debate</a></li>
+  </ul></li>
+  <li><a href="#results-on-pascal-voc-2010-1" id="toc-results-on-pascal-voc-2010-1" class="nav-link" data-scroll-target="#results-on-pascal-voc-2010-1">2.4. Results on PASCAL VOC 2010-1</a>
+  <ul class="collapse">
+  <li><a href="#setting-the-stage-a-fair-fight" id="toc-setting-the-stage-a-fair-fight" class="nav-link" data-scroll-target="#setting-the-stage-a-fair-fight">Setting the Stage: A Fair Fight</a></li>
+  <li><a href="#the-head-to-head-battle-cnn-features-vs.-handcrafted-features" id="toc-the-head-to-head-battle-cnn-features-vs.-handcrafted-features" class="nav-link" data-scroll-target="#the-head-to-head-battle-cnn-features-vs.-handcrafted-features">The Head-to-Head Battle: CNN Features vs.&nbsp;Handcrafted Features</a></li>
+  </ul></li>
+  <li><a href="#results-on-ilsvrc2013-detection" id="toc-results-on-ilsvrc2013-detection" class="nav-link" data-scroll-target="#results-on-ilsvrc2013-detection">2.5. Results on ILSVRC2013 detection</a>
+  <ul class="collapse">
+  <li><a href="#a-commanding-victory-on-a-bigger-stage" id="toc-a-commanding-victory-on-a-bigger-stage" class="nav-link" data-scroll-target="#a-commanding-victory-on-a-bigger-stage">A Commanding Victory on a Bigger Stage</a></li>
+  <li><a href="#its-not-that-you-use-cnns-its-how-you-use-them" id="toc-its-not-that-you-use-cnns-its-how-you-use-them" class="nav-link" data-scroll-target="#its-not-that-you-use-cnns-its-how-you-use-them">It’s Not <em>That</em> You Use CNNs, It’s <em>How</em> You Use Them</a></li>
+  </ul></li>
+  <li><a href="#visualization-ablation-and-modes-of-error" id="toc-visualization-ablation-and-modes-of-error" class="nav-link" data-scroll-target="#visualization-ablation-and-modes-of-error">3. Visualization, Ablation, and Modes of Error</a>
+  <ul class="collapse">
+  <li><a href="#visualizing-learned-features" id="toc-visualizing-learned-features" class="nav-link" data-scroll-target="#visualizing-learned-features">3.1. Visualizing Learned Features</a></li>
+  <li><a href="#peeking-inside-the-brain-visualizing-the-pool5-layer" id="toc-peeking-inside-the-brain-visualizing-the-pool5-layer" class="nav-link" data-scroll-target="#peeking-inside-the-brain-visualizing-the-pool5-layer">Peeking Inside the Brain: Visualizing the <code>pool5</code> Layer</a></li>
+  </ul></li>
+  <li><a href="#ablation-studies-which-layers-matter-most" id="toc-ablation-studies-which-layers-matter-most" class="nav-link" data-scroll-target="#ablation-studies-which-layers-matter-most">3.2. Ablation Studies: Which Layers Matter Most?</a>
+  <ul class="collapse">
+  <li><a href="#performance-layer-by-layer-without-fine-tuning" id="toc-performance-layer-by-layer-without-fine-tuning" class="nav-link" data-scroll-target="#performance-layer-by-layer-without-fine-tuning">Performance Layer-by-Layer, Without Fine-Tuning</a></li>
+  <li><a href="#performance-layer-by-layer-with-fine-tuning" id="toc-performance-layer-by-layer-with-fine-tuning" class="nav-link" data-scroll-target="#performance-layer-by-layer-with-fine-tuning">Performance Layer-by-Layer, With Fine-Tuning</a></li>
+  <li><a href="#comparison-to-recent-feature-learning-methods" id="toc-comparison-to-recent-feature-learning-methods" class="nav-link" data-scroll-target="#comparison-to-recent-feature-learning-methods">Comparison to Recent Feature Learning Methods</a></li>
+  </ul></li>
+  <li><a href="#network-architectures" id="toc-network-architectures" class="nav-link" data-scroll-target="#network-architectures">3.3. Network Architectures</a>
+  <ul class="collapse">
+  <li><a href="#the-contenders-t-net-vs.-o-net" id="toc-the-contenders-t-net-vs.-o-net" class="nav-link" data-scroll-target="#the-contenders-t-net-vs.-o-net">The Contenders: T-Net vs.&nbsp;O-Net</a></li>
+  <li><a href="#the-result-a-new-state-of-the-art-with-a-catch" id="toc-the-result-a-new-state-of-the-art-with-a-catch" class="nav-link" data-scroll-target="#the-result-a-new-state-of-the-art-with-a-catch">The Result: A New State-of-the-Art, With a Catch</a></li>
+  <li><a href="#the-lasting-implication-a-future-proof-framework" id="toc-the-lasting-implication-a-future-proof-framework" class="nav-link" data-scroll-target="#the-lasting-implication-a-future-proof-framework">The Lasting Implication: A Future-Proof Framework</a></li>
+  </ul></li>
+  <li><a href="#detection-error-analysis" id="toc-detection-error-analysis" class="nav-link" data-scroll-target="#detection-error-analysis">3.4. Detection Error Analysis</a></li>
+  <li><a href="#bounding-box-regression" id="toc-bounding-box-regression" class="nav-link" data-scroll-target="#bounding-box-regression">3.5. Bounding-Box Regression</a></li>
+  <li><a href="#qualitative-results" id="toc-qualitative-results" class="nav-link" data-scroll-target="#qualitative-results">3.6. Qualitative Results</a></li>
+  <li><a href="#tackling-a-new-beast-the-ilsvrc2013-detection-dataset" id="toc-tackling-a-new-beast-the-ilsvrc2013-detection-dataset" class="nav-link" data-scroll-target="#tackling-a-new-beast-the-ilsvrc2013-detection-dataset">4. Tackling a New Beast: The ILSVRC2013 Detection Dataset</a>
+  <ul class="collapse">
+  <li><a href="#a-dataset-of-two-halves-understanding-the-splits" id="toc-a-dataset-of-two-halves-understanding-the-splits" class="nav-link" data-scroll-target="#a-dataset-of-two-halves-understanding-the-splits">4.1. A Dataset of Two Halves: Understanding the Splits</a></li>
+  <li><a href="#region-proposals-adapting-to-scale" id="toc-region-proposals-adapting-to-scale" class="nav-link" data-scroll-target="#region-proposals-adapting-to-scale">4.2. Region Proposals: Adapting to Scale</a></li>
+  <li><a href="#training-data-a-strategy-for-a-flawed-dataset" id="toc-training-data-a-strategy-for-a-flawed-dataset" class="nav-link" data-scroll-target="#training-data-a-strategy-for-a-flawed-dataset">4.3. Training Data: A Strategy for a Flawed Dataset</a></li>
+  <li><a href="#validation-and-evaluation-a-principled-approach" id="toc-validation-and-evaluation-a-principled-approach" class="nav-link" data-scroll-target="#validation-and-evaluation-a-principled-approach">4.4. Validation and Evaluation: A Principled Approach</a></li>
+  <li><a href="#ablation-study-deconstructing-the-ilsvrc-performance" id="toc-ablation-study-deconstructing-the-ilsvrc-performance" class="nav-link" data-scroll-target="#ablation-study-deconstructing-the-ilsvrc-performance">4.5. Ablation Study: Deconstructing the ILSVRC Performance</a></li>
+  <li><a href="#a-philosophical-showdown-r-cnn-vs.-overfeat" id="toc-a-philosophical-showdown-r-cnn-vs.-overfeat" class="nav-link" data-scroll-target="#a-philosophical-showdown-r-cnn-vs.-overfeat">4.6. A Philosophical Showdown: R-CNN vs.&nbsp;OverFeat</a></li>
+  </ul></li>
+  <li><a href="#beyond-boxes-applying-r-cnn-to-semantic-segmentation" id="toc-beyond-boxes-applying-r-cnn-to-semantic-segmentation" class="nav-link" data-scroll-target="#beyond-boxes-applying-r-cnn-to-semantic-segmentation">5. Beyond Boxes: Applying R-CNN to Semantic Segmentation</a>
+  <ul class="collapse">
+  <li><a href="#the-setup-a-plug-and-play-feature-extractor" id="toc-the-setup-a-plug-and-play-feature-extractor" class="nav-link" data-scroll-target="#the-setup-a-plug-and-play-feature-extractor">The Setup: A Plug-and-Play Feature Extractor</a></li>
+  <li><a href="#the-challenge-handling-non-rectangular-shapes" id="toc-the-challenge-handling-non-rectangular-shapes" class="nav-link" data-scroll-target="#the-challenge-handling-non-rectangular-shapes">The Challenge: Handling Non-Rectangular Shapes</a></li>
+  <li><a href="#the-result-a-resounding-success" id="toc-the-result-a-resounding-success" class="nav-link" data-scroll-target="#the-result-a-resounding-success">The Result: A Resounding Success</a></li>
+  </ul></li>
+  <li><a href="#conclusion-a-new-paradigm-for-computer-vision" id="toc-conclusion-a-new-paradigm-for-computer-vision" class="nav-link" data-scroll-target="#conclusion-a-new-paradigm-for-computer-vision">6. Conclusion: A New Paradigm for Computer Vision</a>
+  <ul class="collapse">
+  <li><a href="#shattering-the-plateau" id="toc-shattering-the-plateau" class="nav-link" data-scroll-target="#shattering-the-plateau">1. Shattering the Plateau</a></li>
+  <li><a href="#the-two-core-insights" id="toc-the-two-core-insights" class="nav-link" data-scroll-target="#the-two-core-insights">2. The Two Core Insights</a></li>
+  <li><a href="#a-unifying-philosophy" id="toc-a-unifying-philosophy" class="nav-link" data-scroll-target="#a-unifying-philosophy">3. A Unifying Philosophy</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">R-CNN: The Paper that Revolutionized Object Detection</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A deep dive into the seminal R-CNN paper that combined region proposals with convolutional neural networks to redefine the state-of-the-art in object detection.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 11, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-11-rcnn-reading-notes.png" class="img-fluid"></p>
+<p>In the world of computer vision, progress on object detection had hit a wall by the early 2010s. Existing methods were complex, incremental, and struggling to push performance forward. Then, in 2012, AlexNet and deep learning changed everything for image classification. This left a critical question hanging in the air: could the power of Convolutional Neural Networks (CNNs) be harnessed for the more complex task of localizing and classifying multiple objects within an image?</p>
+<p>Enter R-CNN. In their 2014 paper, “Rich feature hierarchies for accurate object detection and semantic segmentation,” Ross Girshick and his team at UC Berkeley didn’t just answer “yes”—they smashed the existing benchmarks, setting a new course for the entire field.</p>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-title.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-11-rcnn-reading-notes/paper-title.PNG" class="img-fluid"></a></p>
+<p>Let’s break down exactly how they did it, section by section.</p>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p><a href="images/2025-09-09-unet-reading-notes/paper-abstract.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-09-unet-reading-notes/paper-abstract.PNG" class="img-fluid"></a></p>
+<p>This abstract is the perfect elevator pitch. It crisply defines the problem, presents a groundbreaking solution, and quantifies its success with a staggering number. Let’s unpack the key points.</p>
+<section id="the-problem-a-performance-plateau" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem-a-performance-plateau">The Problem: A Performance Plateau</h3>
+<p>The authors open by stating that progress on the <strong>PASCAL VOC</strong> dataset—the benchmark for object detection at the time—had stalled. The top models were “complex ensemble systems” that mixed handcrafted features (like HOG and SIFT) with other contextual models. This is academic language for “we’re stuck building increasingly complicated systems just to squeeze out another fraction of a percentage point in accuracy.” The field was hungry for a breakthrough.</p>
+</section>
+<section id="the-solution-two-key-insights" class="level3">
+<h3 class="anchored" data-anchor-id="the-solution-two-key-insights">The Solution: Two Key Insights</h3>
+<p>The authors propose R-CNN, a method built on two simple but powerful ideas that, when combined, shattered the performance plateau.</p>
+<ol type="1">
+<li><p><strong>Regions + CNNs</strong>: The first insight is architectural. Instead of applying a computationally expensive CNN across an entire image in a sliding-window fashion, they propose a two-step process. First, use an efficient, traditional computer vision algorithm to generate a set of potential object locations, called <strong>“region proposals.”</strong> Then, and only then, run a powerful CNN feature extractor on these proposed regions.</p>
+<ul>
+<li><strong>Analogy:</strong> Imagine searching for a specific book in a massive library. The old “sliding window” approach is like reading the title of every single book on every shelf—thorough but incredibly slow. The R-CNN approach is like asking the librarian (the region proposal algorithm) to first point you to all the shelves that contain books about “computer science.” You then only need to apply your expert knowledge (the CNN) to these much smaller, more relevant sections. This is the core idea of “recognition using regions.”</li>
+</ul></li>
+<li><p><strong>Pre-training and Fine-Tuning</strong>: The second insight is about the training strategy. Object detection datasets, which require expensive bounding-box annotations, are much smaller than classification datasets. This makes training a “high-capacity” (i.e., very large) CNN from scratch on a detection dataset nearly impossible due to overfitting. The authors’ solution is a now-standard technique called <strong>transfer learning</strong>:</p>
+<ul>
+<li><strong>Supervised Pre-training:</strong> First, train a large CNN on an “auxiliary task” with abundant data—in this case, image classification using the massive ImageNet (ILSVRC) dataset. This teaches the network a rich hierarchy of visual features, from simple edges and colors to more complex textures and object parts.</li>
+<li><strong>Domain-specific Fine-tuning:</strong> Then, take this pre-trained network and continue training it (fine-tune it) on the smaller, domain-specific dataset (PASCAL VOC for object detection). This adapts the generic features learned from ImageNet to the specific task of detection.</li>
+</ul></li>
+</ol>
+</section>
+<section id="the-result-a-quantum-leap-in-accuracy" class="level3">
+<h3 class="anchored" data-anchor-id="the-result-a-quantum-leap-in-accuracy">The Result: A Quantum Leap in Accuracy</h3>
+<p>The result of these two insights is a massive performance gain. R-CNN achieved a <strong>mean Average Precision (mAP)</strong> of 53.3% on PASCAL VOC 2012. This represented a <strong>30% <em>relative</em> improvement</strong> over the previous state-of-the-art. In a field accustomed to incremental gains, this was a revolutionary jump that unequivocally demonstrated the power of deep learning features for object detection.</p>
+<p>Finally, the authors astutely compare R-CNN to a contemporary model, OverFeat, which also used CNNs but in a sliding-window fashion. By showing that R-CNN significantly outperforms OverFeat, they prove that their <em>approach</em>—combining region proposals with CNNs—is superior, not just the use of CNNs in general.</p>
+</section>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-1.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-2.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<section id="features-matter-from-handcrafted-to-learned-hierarchies" class="level3">
+<h3 class="anchored" data-anchor-id="features-matter-from-handcrafted-to-learned-hierarchies">Features Matter: From Handcrafted to Learned Hierarchies</h3>
+<p>The paper opens with a simple, powerful declaration: “Features matter.” In machine learning, a “feature” is a numerical representation of raw input data. For computer vision, this means converting a grid of pixels into a compact, informative vector that a model can learn from. The quality of these features dictates the performance of the entire system.</p>
+<p>For about a decade, the field was dominated by two titans of feature engineering:</p>
+<ul>
+<li><strong>SIFT (Scale-Invariant Feature Transform):</strong> An algorithm that identifies keypoints in an image and describes the local region around them based on gradient orientations. It’s robust to changes in scale and rotation.</li>
+<li><strong>HOG (Histogram of Oriented Gradients):</strong> An algorithm that divides an image into small cells, calculates a histogram of gradient directions within each cell, and then normalizes these histograms across larger blocks. This proved incredibly effective for detecting objects with well-defined shapes, like pedestrians.</li>
+</ul>
+<p>These handcrafted features were the engine of computer vision progress in the 2000s. But, as the authors point out, by 2010, progress on the benchmark PASCAL VOC object detection challenge had stagnated. Researchers were hitting a wall, creating complex “ensemble” systems that layered models on top of models just to eke out marginal improvements. The well of handcrafted features was running dry.</p>
+<p>The authors then make a brilliant analogy to neuroscience. They equate SIFT and HOG to the computations performed by complex cells in <strong>V1</strong>, the first processing area in the brain’s visual cortex. V1 is great at detecting basic elements like edges and orientations. But human vision doesn’t stop there; recognition is a <strong>hierarchical process</strong>. Information from V1 flows to V2, V4, and other areas that recognize more complex structures like shapes, textures, and eventually, whole objects.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2025-09-11-rcnn-reading-notes/v1-v2-hierarchy.jpg" class="img-fluid figure-img"></p>
+<figcaption><strong>Left</strong>: A typical hierarchical, feedforward model, where information processing starts at the retina, proceeds to the LGN, then to V1, V2, V4, and IT. Decisions about stimuli are made in the frontal cortex. <strong>Center</strong>: Lower visual areas have smaller receptive fields, while neurons in higher areas have gradually increasing receptive field sizes, integrating information over larger and larger regions of the visual field. <strong>Right</strong>: Lower visual areas, such as V1, code for basic features such as edges and lines. Higher-level neurons pool information over multiple low-level neurons with smaller receptive fields and code for more complex features. There is thus a hierarchy of features.</figcaption>
+</figure>
+</div>
+<p><em>Image source: <a href="https://www.frontiersin.org/journals/computational-neuroscience/articles/10.3389/fncom.2014.00135/full">Why vision is not both hierarchical and feedforward</a></em></p>
+<p>This analogy beautifully frames the problem. If the entire field was stuck using “V1-like” features, the logical next step was to build models capable of learning a richer, multi-stage feature hierarchy. This is the perfect setup to introduce Convolutional Neural Networks, which do precisely that.</p>
+</section>
+<section id="the-rise-of-convolutional-neural-networks-cnns" class="level3">
+<h3 class="anchored" data-anchor-id="the-rise-of-convolutional-neural-networks-cnns">The Rise of Convolutional Neural Networks (CNNs)</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-3.PNG" class="img-fluid"></a></p>
+<p>Having established the <em>need</em> for a hierarchical feature extractor, the authors now introduce the model that would eventually provide the solution: the Convolutional Neural Network. But they start with its ancestor, the <strong>Neocognitron</strong>, developed by Kunihiko Fukushima in 1980.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/fukushima.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Kunihiko Fukushima"><img src="images/2025-09-11-rcnn-reading-notes/fukushima.png" class="img-fluid figure-img" alt="Kunihiko Fukushima"></a></p>
+<figcaption>Kunihiko Fukushima</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/neocognition.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Neocognition model proposed architecture"><img src="images/2025-09-11-rcnn-reading-notes/neocognition.png" class="img-fluid figure-img" alt="Neocognition model proposed architecture"></a></p>
+<figcaption>Neocognition model proposed architecture</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>The Neocognitron was a visionary model. It directly mimicked the hierarchical structure of the visual cortex with layers of “S-cells” (simple cells) for feature extraction and “C-cells” (complex cells) for pooling, making it robust to shifts in the position of objects. It had the right architectural idea, but it was missing a critical component: an effective way to learn. As the paper notes, it “lacked a supervised training algorithm.” There was no efficient way to teach the model by showing it labeled examples and correcting its mistakes.</p>
+<p>The solution to this problem came from a different line of research. The breakthrough was <strong>backpropagation</strong>, an algorithm popularized by Rumelhart, Hinton, and Williams that allowed for efficient “end-to-end” training of multi-layered networks.</p>
+<ul>
+<li><strong>Backpropagation:</strong> In simple terms, this algorithm calculates the error (the difference between the network’s prediction and the correct label) and then propagates this error signal backward through the network. As the signal travels back, it tells each connection how much it contributed to the total error, allowing the network to adjust its internal parameters (weights) to make a better prediction next time.</li>
+</ul>
+<p>It was Yann LeCun who, in the late 1980s and early 1990s, fused the architecture of the Neocognitron with the training power of backpropagation. This combination created the modern <strong>Convolutional Neural Network (CNN)</strong>: a hierarchical, biologically-inspired model that could actually be trained effectively on real-world data.</p>
+</section>
+<section id="the-boom-bust-and-rebirth-of-cnns" class="level3">
+<h3 class="anchored" data-anchor-id="the-boom-bust-and-rebirth-of-cnns">The Boom, Bust, and Rebirth of CNNs</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-4.PNG" class="img-fluid"></a></p>
+<p>Here, the authors chart the rollercoaster history of CNNs.</p>
+<ul>
+<li><strong>The Boom (1990s):</strong> Thanks to Yann LeCun’s work, CNNs were successful in the 90s for specific, constrained tasks like recognizing handwritten zip codes (the famous LeNet-5 architecture).</li>
+<li><strong>The Bust (~2000-2012):</strong> CNNs then entered a so-called “AI winter.” Why? Training them was computationally brutal, and they required huge amounts of labeled data that simply didn’t exist yet. A more mathematically elegant and practical approach, the <strong>Support Vector Machine (SVM)</strong>, took over. When paired with powerful handcrafted features like SIFT and HOG, SVMs became the state-of-the-art for most computer vision tasks.</li>
+<li><strong>The Rebirth (2012):</strong> Everything changed in 2012. At the annual ImageNet Large Scale Visual Recognition Challenge (ILSVRC), a team from the University of Toronto led by Alex Krizhevsky (and including Geoffrey Hinton) unveiled a deep CNN, now famously known as <strong>AlexNet</strong>. It didn’t just win the competition; it demolished the competition. Its error rate was 15.3%, while the next best entry, which used traditional methods, was stuck at 26.2%. This was the moment the entire field was forced to pivot to deep learning.</li>
+</ul>
+<p>The authors highlight that AlexNet’s success wasn’t just about using an old idea. It was a perfect storm of three key ingredients:</p>
+<ol type="1">
+<li><strong>Big Data:</strong> The existence of the ImageNet dataset, with its 1.2 million labeled images, was crucial. For the first time, there was enough data to train a deep, high-capacity network without crippling overfitting.</li>
+<li><strong>Big Compute:</strong> The use of Graphics Processing Units (GPUs) made it feasible to train such a large network in a reasonable amount of time (days instead of months).</li>
+<li><strong>Algorithmic Tweaks:</strong> AlexNet introduced two simple but vital improvements:
+<ul>
+<li><strong>ReLU (Rectified Linear Unit):</strong> A new activation function (<code>max(0, x)</code>) that replaced the traditional sigmoid and tanh functions. Its simplicity and non-saturating nature allowed gradients to flow more easily during backpropagation, dramatically speeding up training.</li>
+<li><strong>Dropout:</strong> A regularization technique where a random fraction of neurons are ignored during each training step. This prevents the network from becoming too reliant on any single neuron and forces it to learn more robust and general features, significantly reducing overfitting.</li>
+</ul></li>
+</ol>
+</section>
+<section id="bridging-the-gap-from-classification-to-detection" class="level3">
+<h3 class="anchored" data-anchor-id="bridging-the-gap-from-classification-to-detection">Bridging the Gap: From Classification to Detection</h3>
+<blockquote class="blockquote">
+<p>The significance of the ImageNet result was vigorously debated during the ILSVRC 2012 workshop. The central issue can be distilled to the following: To what extent do the CNN classification results on ImageNet generalize to object detection results on the PASCAL VOC Challenge?</p>
+<p>We answer this question by bridging the gap between image classification and object detection. This paper is the first to show that a CNN can lead to dramatically higher object detection performance on PASCAL VOC as compared to systems based on simpler HOG-like features. To achieve this result, we focused on two problems: localizing objects with a deep network and training a high-capacity model with only a small quantity of annotated detection data.</p>
+</blockquote>
+<p>AlexNet’s victory was a seismic event, but it didn’t immediately solve all of computer vision’s problems. As the authors note, the community was buzzing with a critical question. Knowing a CNN could tell you <em>that</em> an image contains a cat (classification) is one thing. But can it tell you <em>where</em> the cat is by drawing a tight box around it (detection)? This is a fundamentally harder problem. Classification has one answer per image; detection can have many answers, each with precise spatial coordinates.</p>
+<p>The authors position their paper as the definitive answer to this debate. They explicitly state their goal is to bridge this gap. They then make a bold claim: this is the <em>first</em> paper to prove that a CNN can blow past the old HOG-based systems for object detection on the PASCAL VOC benchmark.</p>
+<p>To get there, they had to solve two specific, challenging problems that we saw foreshadowed in the abstract:</p>
+<ol type="1">
+<li><strong>The Localization Problem:</strong> How do you adapt a network built for whole-image analysis to pinpoint the location of potentially many, arbitrarily-sized objects? A naive sliding-window approach would be computationally prohibitive for a deep network like AlexNet.</li>
+<li><strong>The Data Scarcity Problem:</strong> How do you train a massive, data-hungry CNN for detection when the best available datasets (like PASCAL VOC) are orders of magnitude smaller than ImageNet?</li>
+</ol>
+</section>
+<section id="the-localization-challenge-rejecting-the-obvious" class="level3">
+<h3 class="anchored" data-anchor-id="the-localization-challenge-rejecting-the-obvious">The Localization Challenge: Rejecting the Obvious</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-7.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-7.PNG" class="img-fluid"></a></p>
+<p>Here, the authors systematically dismantle the two most intuitive ways to adapt a CNN for object detection, demonstrating why a new approach is necessary.</p>
+<section id="approach-1-bounding-box-regression-rejected" class="level4">
+<h4 class="anchored" data-anchor-id="approach-1-bounding-box-regression-rejected">Approach 1: Bounding Box Regression (Rejected)</h4>
+<p>The first idea is to treat localization as a <strong>regression problem</strong>. This means training the CNN to directly predict the coordinates of a bounding box—its x and y position, width, and height—as numerical values. The authors quickly dismiss this, not based on theory, but on empirical evidence. They point to a concurrent paper that tried this and achieved a mAP of 30.5%. By contrasting this with their own result of 58.5%, they make a powerful statement: direct regression wasn’t the way to go.</p>
+</section>
+<section id="approach-2-the-sliding-window-detector-rejected-for-deep-cnns" class="level4">
+<h4 class="anchored" data-anchor-id="approach-2-the-sliding-window-detector-rejected-for-deep-cnns">Approach 2: The Sliding Window Detector (Rejected for Deep CNNs)</h4>
+<p>The second, more traditional approach is the <strong>sliding window detector</strong>.</p>
+<ul>
+<li><strong>How it works:</strong> You take a small window (or patch) of a fixed size, slide it across the entire image, and run a classifier on each patch to see if it contains an object. To find objects of different sizes, you repeat this process with windows of different scales. This is a classic and robust technique.</li>
+</ul>
+<p>The authors acknowledge that this has been done with CNNs before, but with a critical caveat: it only worked well with <em>shallow</em> networks (e.g., just two layers). Why? Because shallow networks have high spatial resolution.</p>
+<p>This brings us to the core reason why the sliding window approach fails for a <em>deep</em> network like the one used in this paper (a variant of AlexNet). The problem lies in two key properties of deep CNNs:</p>
+<ul>
+<li><strong>Receptive Field:</strong> This is the size of the region in the input image that a single neuron in a given layer is “looking at.” As you go deeper into the network, each neuron’s receptive field grows exponentially. The authors state that neurons in their final convolutional layer have a massive receptive field of <strong>195x195 pixels</strong>. A single feature is summarizing a huge chunk of the image, making it very difficult to precisely locate a small object within that field.</li>
+<li><strong>Stride:</strong> This is the step size the network’s filter takes as it moves across the image. The deep network they use has a large stride of <strong>32x32 pixels</strong>. This means the “window” jumps 32 pixels at a time. This is great for classification, as it’s computationally efficient, but terrible for detection. An object could easily fall between the strides, leading to poor localization.</li>
+</ul>
+<p>Trying to use a deep CNN as a sliding window detector is like trying to perform delicate surgery with a shovel. The tool is too coarse for the fine-grained task of precise localization.</p>
+</section>
+</section>
+<section id="the-r-cnn-pipeline-a-simple-powerful-idea" class="level3">
+<h3 class="anchored" data-anchor-id="the-r-cnn-pipeline-a-simple-powerful-idea">The R-CNN Pipeline: A Simple, Powerful Idea</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-7b.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-7b.PNG" class="img-fluid"></a></p>
+<p>Instead of forcing a single, monolithic model to solve the entire detection problem, the authors propose a multi-stage pipeline. This “recognition using regions” approach cleverly combines the best of traditional computer vision with the raw power of deep learning. It’s a three-step process (plus a pre-processing step) that forms the core of the R-CNN algorithm.</p>
+<section id="step-1-propose-regions" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-propose-regions">Step 1: Propose Regions</h4>
+<p>First, the system needs to identify potential object locations. Instead of blindly scanning the image with a sliding window, R-CNN uses a <strong>region proposal algorithm</strong>.</p>
+<ul>
+<li><strong>What it is:</strong> These are algorithms from the pre-deep-learning era of computer vision designed to find “blobs” or regions in an image that are likely to contain an object, regardless of what that object is. The specific method used in the paper is <strong>Selective Search</strong>, but the R-CNN framework is agnostic to the choice.</li>
+<li><strong>Why it’s smart:</strong> This step is fast and efficient. It acts as a quick filter, narrowing down a near-infinite number of possible bounding boxes to a manageable list of about 2000 “interesting” candidates. It’s <strong>category-independent</strong>, meaning it doesn’t need to know what a “car” or a “person” is; it just looks for general object-like shapes, colors, and textures.</li>
+</ul>
+</section>
+<section id="step-2-warp-and-prepare" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-warp-and-prepare">Step 2: Warp and Prepare</h4>
+<p>Now we have ~2000 candidate regions of all different shapes and sizes. However, the CNN (AlexNet) requires a fixed-size input (227x227 pixels). To solve this, the authors use a simple, pragmatic approach: they warp every region proposal.</p>
+<ul>
+<li><strong>Affine Image Warping:</strong> This is a technical term for simply taking the pixels inside each rectangular region proposal and stretching or squishing them to fit the required 227x227 square, regardless of the original aspect ratio. A long, thin rectangle and a tall, skinny rectangle both get distorted to fill the same square shape.</li>
+</ul>
+</section>
+<section id="step-3-extract-features-with-a-cnn" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-extract-features-with-a-cnn">Step 3: Extract Features with a CNN</h4>
+<p>This is where the magic happens. Each of the ~2000 warped image regions is passed through the pre-trained CNN. However, the goal isn’t to use the network’s final classification output. Instead, R-CNN acts as a universal feature extractor.</p>
+<ul>
+<li><strong>The Process:</strong> The network processes the warped region, and the authors intercept the output from one of the last layers (specifically, the last fully connected layer before the classifier). This output is a <strong>4096-dimensional feature vector</strong>—a rich, numerical “fingerprint” that describes the content of the region. This vector is far more powerful and semantically meaningful than handcrafted features like HOG.</li>
+</ul>
+</section>
+<section id="step-4-classify-regions" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-classify-regions">Step 4: Classify Regions</h4>
+<p>At this point, the image has been transformed into a set of ~2000 feature vectors. The final step is to decide what object, if any, each vector represents. For this, the authors train a separate binary <strong>linear Support Vector Machine (SVM)</strong> for each object class.</p>
+<ul>
+<li><strong>How it works:</strong> There is one SVM for “person,” another for “car,” a third for “dog,” and so on. Each SVM is an expert at one thing: taking a 4096-d feature vector and outputting a score indicating its confidence that the region contains its specific class.</li>
+</ul>
+<p>This hybrid approach combines a state-of-the-art deep feature extractor (the CNN) with a powerful and well-understood classifier (the SVM). Finally, the name itself becomes clear: it’s a system that combines <strong>R</strong>egions with <strong>CNN</strong> features.</p>
+</section>
+</section>
+<section id="figure-1-the-r-cnn-pipeline-in-a-nutshell" class="level3">
+<h3 class="anchored" data-anchor-id="figure-1-the-r-cnn-pipeline-in-a-nutshell">Figure 1: The R-CNN Pipeline in a Nutshell</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-1.PNG" class="img-fluid"></a></p>
+<p>This single figure perfectly illustrates the four-step process at the heart of R-CNN and recaps its groundbreaking performance. Let’s walk through it.</p>
+<section id="step-1-input-image" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-input-image">Step 1: Input Image</h4>
+<p>It all starts with a single image. The example shows a person on a horse, a classic detection scenario.</p>
+</section>
+<section id="step-2-extract-region-proposals" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-extract-region-proposals">Step 2: Extract Region Proposals</h4>
+<p>This is the “where” module. The figure shows multiple yellow bounding boxes overlaid on the image, representing the ~2000 candidate object locations generated by the Selective Search algorithm. Notice that the proposals are of varying sizes and aspect ratios, and they cover many different parts of the image—some tightly enclosing the person, some capturing the horse, and many just covering the background. This step acts as a massive filter, narrowing down the search space for the computationally expensive steps to follow.</p>
+</section>
+<section id="step-3-compute-cnn-features" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-compute-cnn-features">Step 3: Compute CNN Features</h4>
+<p>This is the “what” module and the core of the R-CNN’s power. The figure visualizes what happens to one of the region proposals (the one around the person).</p>
+<ul>
+<li><strong>Warped Region:</strong> The rectangular proposal is extracted and then anisotropically warped (squished) into a square shape to fit the CNN’s required input size.</li>
+<li><strong>CNN Forward Pass:</strong> This warped region is then fed into the “large convolutional neural network.” The diagram shows the data flowing through the layers of the network. This process transforms the raw pixels of the warped region into a high-dimensional feature vector—the rich, semantic fingerprint that describes the region’s content.</li>
+</ul>
+</section>
+<section id="step-4-classify-regions-1" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-classify-regions-1">Step 4: Classify Regions</h4>
+<p>This is the “which” module. The feature vector computed in the previous step is now passed to the bank of linear SVMs. The diagram shows the outputs for three potential classes:</p>
+<ul>
+<li><code>aeroplane? no.</code></li>
+<li><code>person? yes.</code></li>
+<li><code>tvmonitor? no.</code></li>
+</ul>
+<p>Each SVM acts as a binary expert, giving a simple yes/no decision (in reality, a confidence score). This is done for every one of the ~2000 proposals, producing a final list of classified regions and their scores.</p>
+<p>The figure’s caption then serves as a compact summary of the paper’s entire argument, reinforcing the key performance numbers on both the PASCAL VOC and ILSVRC datasets and highlighting the massive leap over previous state-of-the-art methods like DPM and OverFeat.</p>
+</section>
+</section>
+<section id="proving-the-paradigm-r-cnn-vs.-overfeat" class="level3">
+<h3 class="anchored" data-anchor-id="proving-the-paradigm-r-cnn-vs.-overfeat">Proving the Paradigm: R-CNN vs.&nbsp;OverFeat</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-8.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-8.PNG" class="img-fluid"></a></p>
+<p>To prove that their “recognition using regions” paradigm was the right choice, the authors needed to compare it against a strong alternative. That alternative was <strong>OverFeat</strong>, another influential paper from the same era that also applied deep CNNs to detection.</p>
+<p>The crucial difference is that OverFeat used a highly optimized version of the <strong>sliding-window</strong> approach that the R-CNN authors had just argued against. This set up a perfect natural experiment: two systems using similar powerful CNNs but with fundamentally different localization strategies.</p>
+<p>The results on the large-scale ILSVRC2013 detection dataset were decisive. R-CNN achieved a mean Average Precision (mAP) of 31.4%, handily beating OverFeat’s 24.3%. This was powerful evidence that for deep networks, the R-CNN pipeline of “propose, warp, extract” was a more effective strategy than a brute-force (though clever) sliding window.</p>
+</section>
+<section id="the-training-recipe-pre-training-and-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="the-training-recipe-pre-training-and-fine-tuning">The Training Recipe: Pre-training and Fine-tuning</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-9.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-9.PNG" class="img-fluid"></a></p>
+<p>Here, the authors detail their solution to the data scarcity problem, which stands as their second major contribution. Training a network with millions of parameters (like AlexNet) on a dataset with only a few thousand labeled examples (like PASCAL VOC) is a recipe for massive overfitting.</p>
+<p>Their solution is a two-step process now known as <strong>transfer learning</strong>:</p>
+<ol type="1">
+<li><p><strong>Supervised Pre-training:</strong> First, they take the CNN architecture and train it on a massive, readily available dataset from a <em>different but related</em> task: image classification using the 1.2 million images in ImageNet. This isn’t about learning to detect objects directly. It’s about letting the network learn a powerful, general-purpose “visual vocabulary”—how to recognize edges, textures, patterns, shapes, and object parts. This step essentially primes the network with a rich understanding of the visual world.</p></li>
+<li><p><strong>Domain-Specific Fine-tuning:</strong> Next, they take this pre-trained network and continue training it, but now on the smaller PASCAL VOC dataset specifically for the detection task. Because the network already has a strong visual foundation, it only needs to make small adjustments to its parameters to adapt this knowledge to the new task. This is done with a much lower learning rate to avoid destroying the valuable features learned during pre-training.</p></li>
+</ol>
+<p>How effective is this strategy? The authors quantify it: fine-tuning alone boosts the mAP by a staggering <strong>8 percentage points</strong>.</p>
+<p>The final result is a knockout blow to the old guard. The fine-tuned R-CNN system achieves <strong>54% mAP</strong>, while the previous state-of-the-art, the highly engineered HOG-based Deformable Part Model (DPM), was stuck at 33%. This wasn’t just an incremental improvement; it was a paradigm shift.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+HOG-based Deformable Part Model (DPM)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Before R-CNN, the Deformable Part Model was the undisputed king of object detection, winning the PASCAL VOC challenge from 2007 to 2009. It was the pinnacle of the “handcrafted feature” era.</p>
+<ul>
+<li><strong>Core Idea:</strong> DPM recognized that objects aren’t rigid templates. A person, for example, can be in many different poses. DPM addresses this by modeling an object as a collection of parts arranged in a flexible configuration.</li>
+<li><strong>How it Worked:</strong>
+<ol type="1">
+<li><strong>Root Filter:</strong> It started with a main template (a “root filter”) based on HOG features that captured the coarse appearance of the entire object (e.g., a person’s torso).</li>
+<li><strong>Part Filters:</strong> It then defined several smaller part templates (e.g., for the head, arms, legs).</li>
+<li><strong>Spatial Model:</strong> The magic of DPM was that it learned a “spatial model” that defined how these parts could be positioned relative to the root filter. It learned, for instance, that the “head” part should be above the “torso” part, but it allowed for some “stretch” or deformation in their relative positions.</li>
+<li><strong>Detection:</strong> To find an object, DPM would search for the best-matching configuration of the root and its parts in the image.</li>
+</ol></li>
+</ul>
+<p><strong>Why it was great:</strong> Its ability to handle deformation made it incredibly robust to variations in object pose and viewpoint, which is why it dominated the field for so long. <strong>Its weakness:</strong> It was entirely reliant on HOG features. While powerful, HOG is a handcrafted feature that couldn’t capture the same level of rich, semantic information as the learned features from a deep CNN.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/hog-features.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="HOG Features"><img src="images/2025-09-11-rcnn-reading-notes/hog-features.PNG" class="img-fluid figure-img" alt="HOG Features"></a></p>
+<figcaption>HOG Features</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/dpm.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="DPM"><img src="images/2025-09-11-rcnn-reading-notes/dpm.png" class="img-fluid figure-img" alt="DPM"></a></p>
+<figcaption>DPM</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>OverFeat was developed around the same time as R-CNN and also recognized the power of CNNs for detection. However, it took a very different approach, aiming for an elegant, unified system.</p>
+<ul>
+<li><strong>Core Idea:</strong> OverFeat used a single, efficient CNN to perform classification, localization, and detection in one pass. It was a highly optimized, modern take on the classic sliding-window approach.</li>
+<li><strong>How it Worked:</strong>
+<ol type="1">
+<li><strong>Shared Convolutions:</strong> Instead of running a CNN on thousands of separate image patches, OverFeat ran the convolutional layers of the network <em>once</em> over the entire image at multiple scales. This created a set of rich feature maps.</li>
+<li><strong>Sliding Window on Features:</strong> The “sliding window” was then applied efficiently to these feature maps, not the raw pixels. This was much faster.</li>
+<li><strong>Unified Output:</strong> The network’s final layers were trained to simultaneously classify the object in the window and predict the bounding box coordinates for that object. This bounding box prediction was a regression task used to refine the coarse location from the sliding window.</li>
+</ol></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/overfeat.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16" title="Overfeat model"><img src="images/2025-09-11-rcnn-reading-notes/overfeat.png" class="img-fluid figure-img" alt="Overfeat model"></a></p>
+<figcaption>Overfeat model</figcaption>
+</figure>
+</div>
+<p>In order to improve precision, the network processes several sliding windows (at multiple resolution), each sliding window having a class score and a bounding box. The end result is obtained by combining all of these bounding boxes and scores.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-11-rcnn-reading-notes/overfeat-sliding-window.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17" title="Overfeat sliding window"><img src="images/2025-09-11-rcnn-reading-notes/overfeat-sliding-window.png" class="img-fluid figure-img" alt="Overfeat sliding window"></a></p>
+<figcaption>Overfeat sliding window</figcaption>
+</figure>
+</div>
+<p><em>Image source: <a href="https://vitalab.github.io/article/2017/04/18/overfeat.html">Overfeat : Integrated Recognition, Localization and Detection using Convolutional Networks</a></em></p>
+<p><strong>Why it was great:</strong> It was fast and elegant. The idea of a single, end-to-end network that could do everything was very appealing and would become a major theme in later object detectors. <strong>Its weakness (compared to R-CNN):</strong> The sliding window, even when applied efficiently on feature maps, produced a grid of low-quality, axis-aligned bounding boxes. R-CNN’s use of a sophisticated region proposal method (Selective Search) generated a much better set of candidate object locations from the start, allowing the powerful CNN classifier to focus on what mattered. This ultimately led to higher accuracy.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="efficiency-error-analysis-and-versatility" class="level3">
+<h3 class="anchored" data-anchor-id="efficiency-error-analysis-and-versatility">Efficiency, Error Analysis, and Versatility</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-1-10.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-1-10.PNG" class="img-fluid"></a></p>
+<p>Having established their method’s superior accuracy, the authors briefly address some practical considerations.</p>
+<section id="a-note-on-efficiency" class="level4">
+<h4 class="anchored" data-anchor-id="a-note-on-efficiency">1. A Note on Efficiency</h4>
+<p>While R-CNN was slow by modern standards, its design was surprisingly efficient for its time. The key insight is <strong>feature sharing</strong>. The two most expensive steps—generating region proposals and extracting CNN features for all ~2000 regions—are done only <em>once</em> per image. These rich 4096-dimensional feature vectors are then shared.</p>
+<p>The only “class-specific” computations are:</p>
+<ul>
+<li><strong>SVM Classification:</strong> For each class, a simple matrix-vector product is performed between the 2000x4096 feature matrix and the 4096x1 SVM weight vector. This is computationally very cheap.</li>
+<li><strong>Non-Maximum Suppression (NMS):</strong> After classification, you might have multiple overlapping bounding boxes that all detect the same object with high confidence. NMS is a simple algorithm that cleans this up by selecting the box with the highest score and suppressing all other boxes that have a high overlap with it.</li>
+</ul>
+<p>Furthermore, the 4096-d CNN features are “two orders of magnitude” (100x) smaller than the features used by previous region-based methods, making the entire classification step much faster and less memory-intensive.</p>
+</section>
+<section id="analyzing-the-errors-to-get-better" class="level4">
+<h4 class="anchored" data-anchor-id="analyzing-the-errors-to-get-better">2. Analyzing the Errors to Get Better</h4>
+<p>Great science isn’t just about celebrating high scores; it’s about understanding why the model is still wrong. The authors demonstrate this by using a formal error analysis tool to diagnose their system’s weaknesses.</p>
+<p>They discover that the <strong>dominant error mode is “mislocalization.”</strong> This means the model is good at identifying the correct object (e.g., it knows there’s a cat) but is often sloppy at drawing a precise bounding box around it. This makes sense, as the initial region proposals are just approximate candidates.</p>
+<p>Crucially, this insight directly leads to an improvement: they add a <strong>bounding-box regression</strong> model as a final post-processing step. This simple linear model learns to take the features from a proposed region and predict a small correction—shifting and resizing the box to better fit the actual object. As we will see later, this one addition provides a significant boost to the final mAP.</p>
+</section>
+<section id="more-than-just-detection-semantic-segmentation" class="level4">
+<h4 class="anchored" data-anchor-id="more-than-just-detection-semantic-segmentation">3. More Than Just Detection: Semantic Segmentation</h4>
+<p>Finally, the authors highlight the versatility of their “recognition using regions” framework. Because the system operates on object regions, it’s naturally suited for other region-based tasks. They show that with minor changes, they can apply R-CNN to <strong>semantic segmentation</strong>—the task of assigning a class label to every single pixel in an image—and achieve competitive results. This proves that R-CNN isn’t just a one-trick pony; it’s a powerful and flexible paradigm.</p>
+</section>
+</section>
+</section>
+<section id="object-detection-with-r-cnn" class="level2">
+<h2 class="anchored" data-anchor-id="object-detection-with-r-cnn">2. Object Detection with R-CNN</h2>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2-1.PNG" class="img-fluid"></a></p>
+<p>The authors kick off this section with a concise summary of the R-CNN architecture, formally breaking it down into three distinct modules. We’ve touched on these already, but it’s worth formally restating them as the authors do:</p>
+<ol type="1">
+<li><p><strong>Module 1: Region Proposal Generator.</strong> This is the “where” module. Its job is to look at an image and produce a list of potential object locations (bounding boxes). This process is “category-independent,” meaning it doesn’t know or care <em>what</em> is in the boxes, only that something <em>might</em> be there. This is the stage that allows R-CNN to avoid the brute-force sliding window.</p></li>
+<li><p><strong>Module 2: CNN Feature Extractor.</strong> This is the “what” module. It takes each of the proposed regions from Module 1, processes it, and converts it into a high-level feature vector. This vector is a rich numerical summary of the region’s content. This is the core of R-CNN’s power, replacing handcrafted features like HOG with deeply learned representations.</p></li>
+<li><p><strong>Module 3: Linear Classifiers.</strong> This is the “which” module. It takes the feature vector for each region and passes it to a set of classifiers (one for each object category). Each classifier makes a simple yes/no decision: “Does this feature vector represent a ‘person’?” “Does it represent a ‘car’?” and so on.</p></li>
+</ol>
+<p>This modular design is a key characteristic of R-CNN. It’s a pipeline where each stage has a clearly defined responsibility.</p>
+</section>
+<section id="module-design" class="level2">
+<h2 class="anchored" data-anchor-id="module-design">2.1. Module Design</h2>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2-2.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-21"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2-3.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<section id="module-1-region-proposals" class="level3">
+<h3 class="anchored" data-anchor-id="module-1-region-proposals">Module 1: Region Proposals</h3>
+<p>The R-CNN pipeline begins by generating a set of candidate object locations. The authors make two important points here.</p>
+<p>First, the R-CNN framework is <strong>agnostic</strong> about <em>how</em> these regions are generated. They list several available techniques from the time, like “objectness” and “CPMC,” to show that this is a plug-and-play module. Any algorithm that can produce a reasonably good set of candidate bounding boxes could theoretically be used.</p>
+<p>Second, for their experiments, they make a very deliberate choice: <strong>Selective Search</strong>.</p>
+<ul>
+<li><p><strong>What is Selective Search?</strong> It’s a traditional (non-deep-learning) computer vision algorithm that generates high-quality region proposals. It works in a bottom-up fashion by first grouping pixels into small segments and then iteratively merging these segments based on multiple criteria like color, texture, size, and how well they fill a rectangular space. The output is a list of bounding boxes that correspond to all the potential object locations it found during this hierarchical grouping process.</p></li>
+<li><p><strong>Why did they choose it?</strong> The reason is scientifically crucial. A major competing object detection system at the time (from Uijlings et al.) also used Selective Search as its first step but followed it up with traditional handcrafted features (like bag-of-visual-words). By using the <em>exact same</em> region proposal method, the R-CNN authors create a controlled experiment. Any performance gain they achieve can be directly attributed to their new feature extractor (the CNN), not to a better set of initial region proposals. This choice strengthens their claim that learned CNN features are fundamentally superior.</p></li>
+</ul>
+<p>This first module is the critical bridge that allows the coarse, high-level power of a deep CNN to be applied to the fine-grained problem of localization. It efficiently narrows down the search space from millions of possible windows to just a couple thousand promising candidates.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Look at the Alternative Region Proposal Methods
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The R-CNN framework is flexible enough to work with any region proposal generator. The authors chose Selective Search for their experiments, but it’s worth knowing about the other approaches they mention, as each has a different philosophy for finding potential objects.</p>
+<section id="objectness" class="level4">
+<h4 class="anchored" data-anchor-id="objectness">1. Objectness</h4>
+<ul>
+<li><strong>The Core Idea:</strong> Instead of generating proposals from scratch, the “Objectness” method focuses on creating a scoring system. It asks a simple question for any given window in an image: “How likely is this window to contain a complete object of <em>any</em> kind?”</li>
+<li><strong>How it Works:</strong> It calculates a score based on a variety of general object characteristics, such as color contrast with the background, edge density, saliency (how much it “pops out”), and how well it fills its bounding box. By densely sampling windows across the image and scoring each one, you can keep the high-scoring windows as your proposals.</li>
+<li><strong>In Short:</strong> It’s less about <em>finding</em> regions and more about <em>scoring</em> a large number of pre-defined windows to see which ones look the most “object-like.”</li>
+</ul>
+</section>
+<section id="constrained-parametric-min-cuts-cpmc" class="level4">
+<h4 class="anchored" data-anchor-id="constrained-parametric-min-cuts-cpmc">2. Constrained Parametric Min-Cuts (CPMC)</h4>
+<ul>
+<li><strong>The Core Idea:</strong> This method treats region proposal as a segmentation problem. It tries to find the best way to separate a foreground object from the background.</li>
+<li><strong>How it Works:</strong> CPMC models the image as a graph of pixels. It then uses a graph-cut algorithm (min-cut) to find an energy-efficient way to “cut” the graph into two pieces: a foreground segment and a background segment. By running this process thousands of times with different starting parameters (seeds), it generates a diverse pool of potential object segmentations, which are then converted into bounding boxes.</li>
+<li><strong>In Short:</strong> It generates proposals by repeatedly trying to segment the image into a foreground and a background.</li>
+</ul>
+</section>
+<section id="multi-scale-combinatorial-grouping-mcg" class="level4">
+<h4 class="anchored" data-anchor-id="multi-scale-combinatorial-grouping-mcg">3. Multi-scale Combinatorial Grouping (MCG)</h4>
+<ul>
+<li><strong>The Core Idea:</strong> MCG is a hierarchical grouping method, much like Selective Search, but generally considered more powerful and thorough.</li>
+<li><strong>How it Works:</strong> It operates at multiple image scales simultaneously. Like Selective Search, it starts with small image regions (superpixels) and iteratively merges them into larger and larger segments based on visual similarity. Its “combinatorial” nature allows it to explore a vast number of potential groupings, leading to very high-quality proposals (meaning it’s very likely to find the true objects). The trade-off is that it’s typically much slower than Selective Search.</li>
+<li><strong>In Short:</strong> Think of it as a more exhaustive and computationally expensive version of Selective Search, known for its high accuracy.</li>
+</ul>
+</section>
+<section id="cireșan-et-al.-a-special-case" class="level4">
+<h4 class="anchored" data-anchor-id="cireșan-et-al.-a-special-case">4. Cireșan et al.&nbsp;(A Special Case)</h4>
+<ul>
+<li><strong>The Core Idea:</strong> This isn’t a “smart” proposal method in the same vein as the others. The authors cite this work on detecting mitotic cells to make a clever point: a simple, dense grid of squares can be considered a rudimentary form of region proposals.</li>
+<li><strong>How it Works:</strong> It’s essentially the classic sliding-window approach. A CNN classifier is applied to a dense grid of regularly-spaced, fixed-size square crops across the image.</li>
+<li><strong>In Short:</strong> This is a brute-force grid search. The R-CNN authors include it to show that the sliding window is just a “special case” of the more general and flexible “recognition using regions” paradigm.</li>
+</ul>
+</section>
+</div>
+</div>
+</div>
+<p>You’ve got it. We are now at the core technical engine of the R-CNN system.</p>
+</section>
+<section id="module-2-feature-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="module-2-feature-extraction">Module 2: Feature Extraction</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-22"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2-4.PNG" class="img-fluid"></a></p>
+<p>With a set of ~2000 candidate regions in hand, the next step is the heavy lifting: converting each of these raw pixel regions into a rich, semantic feature vector. This is where the power of deep learning is unleashed.</p>
+<section id="the-engine-alexnet-via-caffe" class="level4">
+<h4 class="anchored" data-anchor-id="the-engine-alexnet-via-caffe">The Engine: AlexNet via Caffe</h4>
+<p>The authors specify that they use the CNN architecture from Krizhevsky et al.—the famous <strong>AlexNet</strong> that won the 2012 ImageNet challenge. They use the popular <strong>Caffe</strong> deep learning framework, which was one of the dominant tools of the era (akin to an early version of TensorFlow or PyTorch).</p>
+<p>The process is straightforward:</p>
+<ol type="1">
+<li><strong>Mean Subtraction:</strong> Before feeding an image region to the network, the average image value (calculated across the entire training set) is subtracted from each pixel. This is a standard normalization technique that centers the data around zero and helps the network train more effectively.</li>
+<li><strong>Forward Propagation:</strong> The normalized 227x227 image is passed through the network in a “forward pass.” This simply means the image data flows from the input layer, through the five convolutional layers and two fully connected layers, until it produces an output.</li>
+<li><strong>Feature Interception:</strong> Instead of taking the final 1000-class prediction from AlexNet, the authors “intercept” the output of the second-to-last layer. This layer produces the powerful <strong>4096-dimensional feature vector</strong> that serves as the semantic fingerprint for the input region.</li>
+</ol>
+</section>
+<section id="the-input-problem-anisotropic-warping" class="level4">
+<h4 class="anchored" data-anchor-id="the-input-problem-anisotropic-warping">The Input Problem: Anisotropic Warping</h4>
+<p>There is a significant practical challenge here. The region proposals from Selective Search come in all shapes and sizes (e.g., a tall, thin box for a person; a long, wide box for a car), but AlexNet demands a fixed, square input of 227x227 pixels.</p>
+<p>The authors’ solution is pragmatic and, as they say, “the simplest”: <strong>anisotropic warping</strong>. They take every bounding box, regardless of its original size and aspect ratio, and forcibly resize it to 227x227.</p>
+<ul>
+<li><strong>Analogy:</strong> Imagine having a collection of rectangular photos of different sizes and being told to fit each one perfectly into a square picture frame. You would have to stretch or squish each photo, distorting the contents. This is exactly what anisotropic warping does.</li>
+</ul>
+<p>This is a controversial choice because it can unnaturally distort the geometry of an object. However, the authors’ results would later prove that deep CNNs are surprisingly robust to this kind of deformation.</p>
+</section>
+<section id="a-key-detail-adding-context" class="level4">
+<h4 class="anchored" data-anchor-id="a-key-detail-adding-context">A Key Detail: Adding Context</h4>
+<p>Before warping, they perform one small but important step: they <strong>dilate</strong> the bounding box by adding a <code>p=16</code> pixel border of context around the original proposal. Why? Objects are often defined by their surroundings. Seeing a small piece of the road around a car or the branch a bird is perched on can provide valuable contextual clues to the CNN. This small padding ensures the network sees the object not in isolation, but with a bit of its surrounding environment, which was found to significantly improve accuracy.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Module 3: Object Category Classifiers is discussed later in the paper under heading 2.3 Training.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="test-time-detection" class="level2">
+<h2 class="anchored" data-anchor-id="test-time-detection">2.2. Test-time Detection</h2>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-23"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-1.PNG" class="img-fluid"></a></p>
+<p>Here, the authors lay out the step-by-step inference pipeline. This is exactly what happens when you give R-CNN a new image and ask it to find all the objects. It’s a clear sequence that ties all the modules together.</p>
+<ol type="1">
+<li><p><strong>Generate Proposals:</strong> Take the input image and run the Selective Search algorithm on it. This produces about 2000 candidate bounding boxes (region proposals). For speed, they use the “fast mode” of the algorithm.</p></li>
+<li><p><strong>Extract Features:</strong> For <em>each</em> of the ~2000 proposals:</p>
+<ul>
+<li>Add a 16-pixel border for context.</li>
+<li>Warp the region to a 227x227 square.</li>
+<li>Pass it through the CNN to get a 4096-dimensional feature vector.</li>
+<li>After this step, the image is no longer needed. We are left with a 2000 x 4096 matrix of features.</li>
+</ul></li>
+<li><p><strong>Score Regions:</strong> Now, we need to classify each of these 2000 feature vectors.</p>
+<ul>
+<li>For the “person” class, the “person” SVM scores all 2000 vectors.</li>
+<li>For the “car” class, the “car” SVM scores all 2000 vectors.</li>
+<li>This is repeated for every object class the model knows about. Each region now has a confidence score for every possible class.</li>
+</ul></li>
+<li><p><strong>Apply Non-Maximum Suppression (NMS):</strong> This is the crucial final clean-up step. At this point, the model has likely detected the same car multiple times with slightly different, overlapping bounding boxes. NMS tidies this up.</p>
+<ul>
+<li><strong>How it works (for a single class, e.g., “car”):</strong>
+<ol type="1">
+<li>Take all the bounding boxes that were scored as “car” above a certain confidence threshold.</li>
+<li>Find the box with the highest score and declare it a final detection.</li>
+<li>Look at all other “car” boxes. Calculate their <strong>Intersection-over-Union (IoU)</strong> with the highest-scoring box. IoU is a measure from 0 to 1 that tells you how much two boxes overlap.</li>
+<li>Any box with an IoU above a learned threshold (e.g., &gt; 0.5) is considered a duplicate of the highest-scoring box and is suppressed (discarded).</li>
+<li>Repeat this process with the remaining boxes until no boxes are left.</li>
+</ol></li>
+<li>This entire NMS process is run independently for each object class, resulting in a clean, final set of detections with no duplicates.</li>
+</ul></li>
+</ol>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/nms.png" class="lightbox" data-gallery="quarto-lightbox-gallery-24"><img src="images/2025-09-11-rcnn-reading-notes/nms.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/iou.png" class="lightbox" data-gallery="quarto-lightbox-gallery-25"><img src="images/2025-09-11-rcnn-reading-notes/iou.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p><em>Image source: <a href="https://blog.roboflow.com/how-to-code-non-maximum-suppression-nms-in-plain-numpy/">How to Code Non-Maximum Suppression (NMS) in Plain NumPy by roboflow</a></em></p>
+<p>This four-step pipeline, from raw pixels to final bounding boxes, defines the complete R-CNN detection system.</p>
+<section id="run-time-analysis-the-efficiency-of-shared-features" class="level3">
+<h3 class="anchored" data-anchor-id="run-time-analysis-the-efficiency-of-shared-features">Run-time Analysis: The Efficiency of Shared Features</h3>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-26"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-2.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-27"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-3.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>While R-CNN’s multi-step process might seem complex, the authors argue that it’s designed for efficiency, especially as the number of object categories grows. This efficiency stems from two key properties.</p>
+<section id="property-1-a-single-shared-feature-extractor" class="level4">
+<h4 class="anchored" data-anchor-id="property-1-a-single-shared-feature-extractor">Property 1: A Single, Shared Feature Extractor</h4>
+<p>The most computationally expensive part of the pipeline is running the forward pass of the deep CNN for each of the ~2000 region proposals. The crucial design choice is that there is only <strong>one CNN</strong>. This single network is responsible for generating features for all object categories.</p>
+<ul>
+<li><strong>Analogy:</strong> Think of a master chef preparing for a busy dinner service. Instead of making a separate sauce from scratch for every single dish ordered, they first prepare a large batch of a versatile “mother sauce.” This is the time-consuming step. Then, for each specific order, they can quickly add a few unique ingredients to a small amount of the mother sauce to finish the dish.</li>
+</ul>
+<p>The CNN is the mother sauce. It does the heavy lifting once, producing a set of rich feature vectors. The fast, cheap SVMs are the final seasonings, each one specialized for a particular “dish” or object class. This <strong>amortizes</strong> the cost of feature extraction; the initial 13-second investment on a GPU pays for itself across all object classes.</p>
+</section>
+<section id="property-2-low-dimensional-features" class="level4">
+<h4 class="anchored" data-anchor-id="property-2-low-dimensional-features">Property 2: Low-Dimensional Features</h4>
+<p>The second advantage is the compactness of the CNN features. The 4096-dimensional vector is incredibly information-rich for its size. The authors contrast this with the feature representation used by the competing UVA system, which was based on <strong>spatial pyramids with bag-of-visual-words (BoVW)</strong>.</p>
+<ul>
+<li><strong>BoVW in a Nutshell:</strong> This older technique creates a “visual vocabulary” of small image patches. It then describes an image region by creating a histogram of how many times each “visual word” appears. This often results in enormous, sparse feature vectors. As the paper notes, the UVA system’s features were <strong>360,000-dimensional</strong>, nearly 100 times larger than R-CNN’s 4,096-d vectors.</li>
+</ul>
+<p>Smaller features mean everything downstream is faster and requires less memory.</p>
+</section>
+<section id="the-result-efficient-scalable-classification" class="level4">
+<h4 class="anchored" data-anchor-id="the-result-efficient-scalable-classification">The Result: Efficient, Scalable Classification</h4>
+<p>The consequence of these two properties is that the only part of the system that depends on the number of classes (<code>N</code>) is computationally trivial. As the authors explain, classifying all 2000 regions for all <code>N</code> classes can be boiled down to a single, highly optimized <strong>matrix-matrix product</strong>:</p>
+<ul>
+<li>You have a <strong>Feature Matrix</strong> of size <code>[2000 regions × 4096 features]</code>.</li>
+<li>You have an <strong>SVM Weight Matrix</strong> of size <code>[4096 features × N classes]</code>.</li>
+<li>Multiplying them (<code>[2000 × 4096] * [4096 × N]</code>) yields a <strong>Score Matrix</strong> of size <code>[2000 regions × N classes]</code>.</li>
+</ul>
+<p>This operation is incredibly fast on modern hardware. This design means R-CNN can scale to thousands of object classes without a significant drop in performance, a claim that was difficult for previous systems to make.</p>
+</section>
+</section>
+<section id="putting-scalability-in-perspective" class="level3">
+<h3 class="anchored" data-anchor-id="putting-scalability-in-perspective">Putting Scalability in Perspective</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-28"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.2-4.PNG" class="img-fluid"></a></p>
+<p>The authors now put their efficiency claims into stark perspective with two powerful comparisons.</p>
+<section id="comparison-1-r-cnn-vs.-the-memory-hog-uva-system" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-1-r-cnn-vs.-the-memory-hog-uva-system">Comparison 1: R-CNN vs.&nbsp;The Memory Hog (UVA system)</h4>
+<p>To illustrate the benefit of their compact 4k-dimensional features, they run a thought experiment: what if we needed to scale to <strong>100,000 object classes</strong>?</p>
+<ul>
+<li><strong>R-CNN:</strong> The classification step (the matrix multiplication) would take just 10 seconds. Storing the 100,000 SVM models would require only <strong>1.5 GB of RAM</strong>.</li>
+<li><strong>UVA System:</strong> Due to its massive 360k-dimensional features, it would be 100x slower. More shockingly, just storing its 100,000 models would require a staggering <strong>134 GB of RAM</strong>, a prohibitive amount for most machines at the time.</li>
+</ul>
+<p>This demonstrates that the choice of a compact, powerful feature representation is critical for creating a system that is not just accurate, but also practical and scalable.</p>
+</section>
+<section id="comparison-2-r-cnn-vs.-the-compromise-dean-et-al." class="level4">
+<h4 class="anchored" data-anchor-id="comparison-2-r-cnn-vs.-the-compromise-dean-et-al.">Comparison 2: R-CNN vs.&nbsp;The Compromise (Dean et al.)</h4>
+<p>Next, they compare their method to a system from Google (Dean et al.) that was specifically designed for large-scale detection. This system took the best existing detector (DPM) and used clever tricks like <strong>hashing</strong> to make it scale. Hashing is a common approximation technique used to speed up computation, often at the cost of some accuracy.</p>
+<p>The results of this comparison are a home run for R-CNN:</p>
+<ul>
+<li><strong>Dean et al.&nbsp;(with 10k classes):</strong>
+<ul>
+<li>Speed: 5 minutes per image</li>
+<li>Accuracy: ~16% mAP</li>
+</ul></li>
+<li><strong>R-CNN (projected for 10k classes):</strong>
+<ul>
+<li>Speed: ~1 minute per image</li>
+<li>Accuracy: 59% mAP</li>
+</ul></li>
+</ul>
+<p>R-CNN is not only <strong>5 times faster</strong> but also <strong>3.5 times more accurate</strong>. The key takeaway is that R-CNN’s architecture is so fundamentally efficient that it achieves superior performance <em>without</em> needing to resort to the accuracy-compromising shortcuts that other systems required to operate at scale. It offers the best of both worlds: speed and precision.</p>
+</section>
+</section>
+</section>
+<section id="training" class="level2">
+<h2 class="anchored" data-anchor-id="training">2.3. Training</h2>
+<section id="supervised-pre-training-learning-a-visual-vocabulary" class="level3">
+<h3 class="anchored" data-anchor-id="supervised-pre-training-learning-a-visual-vocabulary">Supervised Pre-training: Learning a Visual Vocabulary</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-29"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-1.PNG" class="img-fluid"></a></p>
+<p>This first step is the solution to the “data scarcity” problem. A deep neural network has millions of parameters, and trying to learn them all from scratch on a small dataset like PASCAL VOC (which has only ~11,000 images with object annotations) would lead to immediate and severe overfitting. The network would simply memorize the training images instead of learning generalizable visual patterns.</p>
+<p>The authors’ solution is to first teach the network about the general visual world using a much larger dataset.</p>
+<ul>
+<li><strong>The Task:</strong> They pre-train their CNN on the <strong>ILSVRC 2012 classification</strong> task. This is the massive ImageNet dataset, containing over a million images, each with a single <strong>image-level label</strong> (e.g., “this entire image contains a cat”). Notice that this dataset does <em>not</em> have bounding box information; it’s a simpler, cheaper form of annotation.</li>
+<li><strong>The Goal:</strong> The purpose of this step is not to learn object detection. It is to initialize the weights of the CNN with a powerful set of generic feature detectors. By training on a million diverse images, the early layers of the network learn to recognize fundamental visual building blocks like edges, colors, and textures. The deeper layers learn to combine these into more complex and abstract concepts like object parts (“wheel,” “snout”) and textures (“fur,” “metal”).</li>
+<li><strong>The Result:</strong> This process turns a randomly initialized, “ignorant” network into a seasoned visual expert. The authors confirm that their pre-trained model is strong by noting that it achieves performance close to the original AlexNet on the ImageNet validation set. It’s now primed and ready to learn a more specific task.</li>
+</ul>
+<p>This “supervised pre-training” on a large classification dataset before moving to a smaller target task is one of the most enduring and impactful contributions of this paper, forming the foundation of modern transfer learning in computer vision.</p>
+</section>
+<section id="domain-specific-fine-tuning-adapting-the-expert" class="level3">
+<h3 class="anchored" data-anchor-id="domain-specific-fine-tuning-adapting-the-expert">Domain-Specific Fine-tuning: Adapting the Expert</h3>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-30"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-2.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-31"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-3.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>The pre-trained network is a powerful generalist, but it knows nothing about object detection specifically. Furthermore, it was trained on clean, whole images from ImageNet, not the distorted, warped region proposals it will see in the R-CNN pipeline. Fine-tuning adapts the network to this new task and new “domain” of input data. This process involves several critical steps.</p>
+<section id="architectural-surgery-the-head-swap" class="level4">
+<h4 class="anchored" data-anchor-id="architectural-surgery-the-head-swap">1. Architectural Surgery: The “Head Swap”</h4>
+<p>First, a small but essential modification is made to the network’s architecture. The final layer of the pre-trained AlexNet is a 1000-way classifier, designed specifically for the 1000 classes in ImageNet. This is useless for the PASCAL VOC task.</p>
+<ul>
+<li><strong>The solution:</strong> The authors perform a “head swap.” They chop off the final 1000-way layer and replace it with a new, randomly initialized classification layer. This new layer has <code>N + 1</code> outputs, where <code>N</code> is the number of object classes in the target dataset (e.g., 20 for VOC) and the crucial <code>+1</code> is for a generic <strong>“background”</strong> class.</li>
+</ul>
+</section>
+<section id="defining-the-curriculum-positive-vs.-negative-examples" class="level4">
+<h4 class="anchored" data-anchor-id="defining-the-curriculum-positive-vs.-negative-examples">2. Defining the Curriculum: Positive vs.&nbsp;Negative Examples</h4>
+<p>Next, the network needs to be shown examples of what to look for. This means defining what constitutes a “positive” example (an object) and a “negative” example (background).</p>
+<ul>
+<li><strong>Positives:</strong> A region proposal is labeled as a positive example for a specific class (e.g., “dog”) if its <strong>Intersection-over-Union (IoU)</strong> with a ground-truth “dog” bounding box is <strong>≥ 0.5</strong>. This is a key decision: it means that even boxes that are only a “pretty good” fit are used as positive training examples. This technique, sometimes called “jittering,” artificially expands the number of positive training samples and helps the network learn to be robust to slight misalignments.</li>
+<li><strong>Negatives:</strong> All other region proposals (those with &lt; 0.5 IoU with any ground-truth object) are labeled as “background.”</li>
+</ul>
+</section>
+<section id="the-training-process-a-gentle-touch" class="level4">
+<h4 class="anchored" data-anchor-id="the-training-process-a-gentle-touch">3. The Training Process: A Gentle Touch</h4>
+<p>With the new head in place and the data labeled, training (via Stochastic Gradient Descent or SGD) can resume. Two hyperparameters are critical here:</p>
+<ul>
+<li><strong>Low Learning Rate:</strong> The learning rate is set to 0.001, which is ten times smaller than the rate used for the initial pre-training. This is the “gentle touch.” The pre-trained weights are incredibly valuable, and a high learning rate would cause large, chaotic updates that could “clobber the initialization,” effectively destroying the knowledge learned from ImageNet. A low learning rate allows the network to make small, careful adjustments to adapt its existing knowledge to the new task.</li>
+<li><strong>Biased Mini-Batches:</strong> There is a massive class imbalance problem. In any given image, the vast majority of the ~2000 region proposals are background. If samples were chosen randomly for each training batch, the network would almost exclusively see negative examples and would quickly learn to just predict “background” for everything. To combat this, the authors create <strong>biased mini-batches</strong>. Each 128-example batch is constructed with a fixed ratio: <strong>32 positive</strong> windows and <strong>96 background</strong> windows. This ensures that every single batch contains a healthy number of positive examples, forcing the network to learn the features that distinguish objects from the background.</li>
+</ul>
+</section>
+</section>
+<section id="module-3-training-the-object-category-classifiers" class="level3">
+<h3 class="anchored" data-anchor-id="module-3-training-the-object-category-classifiers">Module 3: Training the Object Category Classifiers</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-32"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-4.PNG" class="img-fluid"></a></p>
+<p>Once the fine-tuned CNN has produced a set of 4096-dimensional feature vectors for all region proposals in the training set, the final step is to train the bank of SVMs. This seems straightforward, but the authors highlight a critical nuance: how you define “positive” and “negative” examples for these SVMs is different from how you defined them for the CNN fine-tuning, and this choice has a massive impact on performance.</p>
+<section id="the-gray-zone-problem" class="level4">
+<h4 class="anchored" data-anchor-id="the-gray-zone-problem">The “Gray Zone” Problem</h4>
+<p>For any given class, say “car,” some examples are easy to label:</p>
+<ul>
+<li>The actual, hand-labeled <strong>ground-truth bounding boxes</strong> for cars are definitely positive examples.</li>
+<li>A region proposal showing a patch of sky or grass is definitely a negative example.</li>
+</ul>
+<p>But what about a region proposal that contains just the front bumper of the car, or one that is shifted halfway off the car? This is the “gray zone,” and how these ambiguous examples are handled is key.</p>
+</section>
+<section id="a-stricter-definition-for-precision" class="level4">
+<h4 class="anchored" data-anchor-id="a-stricter-definition-for-precision">A Stricter Definition for Precision</h4>
+<p>The authors’ solution is to be very picky. They use an <strong>Intersection-over-Union (IoU)</strong> threshold to define what constitutes a negative example. Through careful experimentation (a grid search), they found the optimal threshold to be <strong>0.3</strong>.</p>
+<p>This leads to a very specific and strict labeling strategy for training the SVMs:</p>
+<ul>
+<li><strong>Positives:</strong> Only the perfect, ground-truth bounding boxes are used as positive examples for a given class. No “pretty good” overlaps are allowed.</li>
+<li><strong>Negatives:</strong> Any region proposal with an IoU less than 0.3 with a ground-truth box of that class is considered a hard negative.</li>
+<li><strong>The Ignored Zone:</strong> Any region with an IoU between 0.3 and 1.0 (but that isn’t the ground truth) is simply <strong>ignored</strong>. It is not used for training the SVMs at all.</li>
+</ul>
+</section>
+<section id="why-the-different-rules-svm-vs.-fine-tuning" class="level4">
+<h4 class="anchored" data-anchor-id="why-the-different-rules-svm-vs.-fine-tuning">Why the Different Rules? (SVM vs.&nbsp;Fine-tuning)</h4>
+<p>This is a critical point of confusion for many readers. Why use different IoU thresholds for fine-tuning the CNN (≥ 0.5 for positives) and training the SVMs (&lt; 0.3 for negatives)?</p>
+<p>The likely reason is that the two stages have different goals:</p>
+<ul>
+<li><strong>CNN Fine-tuning:</strong> The goal was to adapt a massive network with limited data. Using “jittered” examples (IoU ≥ 0.5) acted as a form of data augmentation, teaching the feature extractor to be robust and recognize objects even when they aren’t perfectly framed.</li>
+<li><strong>SVM Training:</strong> The goal is to train a high-precision linear classifier. The feature vectors are already extracted and fixed. At this stage, feeding the SVM ambiguous “gray zone” examples could confuse it and lead to a less precise decision boundary. By training only on the most definitive positive examples (the ground truth) and a set of clear negatives, the SVM learns to be a more discerning expert.</li>
+</ul>
+<p>The authors prove how crucial this choice is by showing that using a different threshold, like 0.5, would have cost them <strong>5 mAP points</strong>—a huge performance drop. This demonstrates that even with a powerful deep feature extractor, the classic machine learning principles of careful data curation are still paramount.</p>
+</section>
+</section>
+<section id="hard-negative-mining-and-the-svm-vs.-softmax-debate" class="level3">
+<h3 class="anchored" data-anchor-id="hard-negative-mining-and-the-svm-vs.-softmax-debate">Hard Negative Mining and the SVM vs.&nbsp;Softmax Debate</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-33"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-2.3-5.PNG" class="img-fluid"></a></p>
+<p>With the training data for the SVMs defined, the authors now detail the optimization process and, in doing so, raise two critical design questions.</p>
+<section id="why-use-hard-negative-mining" class="level4">
+<h4 class="anchored" data-anchor-id="why-use-hard-negative-mining">1. Why use Hard Negative Mining?</h4>
+<p>The first is a practical problem of scale. For a dataset like PASCAL VOC, we might have ~5000 images in the training set. With ~2000 region proposals per image, this results in roughly <strong>10 million feature vectors</strong>. Trying to load all of these into memory to train a single SVM is computationally infeasible.</p>
+<p>The solution is a clever and standard technique called <strong>Hard Negative Mining</strong>.</p>
+<ul>
+<li><strong>The Problem with Random Negatives:</strong> Most of the 10 million proposals are “easy” negatives. An SVM trained on a random sample of background patches (sky, road, walls) will learn to reject them very quickly. However, it will still be easily fooled by more challenging background patches that happen to look a bit like an object (e.g., a yellow fire hydrant that looks like a person in a yellow coat).</li>
+<li><strong>The Solution:</strong> Hard negative mining is a bootstrapping process for finding these challenging examples.
+<ol type="1">
+<li>Start by training an initial SVM on all the positive examples and a small, random subset of the negative examples.</li>
+<li>Use this “weak” SVM to classify all the remaining negative region proposals.</li>
+<li>The false positives—the background patches that the SVM incorrectly classified as objects—are the “hard negatives.”</li>
+<li>Add these hard negatives to the training set and retrain the SVM. Now it is forced to learn the features that separate the true objects from their most convincing look-alikes.</li>
+</ol></li>
+</ul>
+<p>The authors note that this process is highly effective and efficient, converging after just one pass over the dataset.</p>
+</section>
+<section id="why-train-svms-at-all" class="level4">
+<h4 class="anchored" data-anchor-id="why-train-svms-at-all">2. Why Train SVMs at All?</h4>
+<p>This raises a brilliant question: why bother with the SVMs at all? Remember, during the fine-tuning stage, the authors replaced the CNN’s 1000-class head with a new <code>N+1</code> class head (the softmax layer). This softmax layer is, itself, a classifier. Why throw it away just to train a separate set of SVMs?</p>
+<p>The authors acknowledge this is a non-obvious choice and point to a full discussion in the appendix. The short answer, which we will see in the results later, is that <strong>training separate SVMs yields significantly better performance</strong>. The likely reasons come down to the different training schemes we’ve just discussed:</p>
+<ul>
+<li><strong>Negative Samples:</strong> The CNN’s softmax classifier was trained on <em>randomly sampled</em> negative patches. The SVMs are trained on the <em>hardest</em> negative patches discovered through mining. The SVMs get a more challenging and focused education.</li>
+<li><strong>Positive Samples:</strong> The CNN was fine-tuned using “loose” positives (IoU ≥ 0.5) to encourage robustness. The SVMs are trained using “strict” positives (only the perfect ground-truth boxes) to encourage precision.</li>
+</ul>
+<p>This separation of concerns—using a fine-tuned CNN as a pure feature extractor and then training a more specialized set of SVMs for classification—is a key engineering decision that, while adding complexity, was critical to achieving R-CNN’s state-of-the-art results.</p>
+</section>
+</section>
+</section>
+<section id="results-on-pascal-voc-2010-1" class="level2">
+<h2 class="anchored" data-anchor-id="results-on-pascal-voc-2010-1">2.4. Results on PASCAL VOC 2010-1</h2>
+<blockquote class="blockquote">
+<p>Following the PASCAL VOC best practices [15], we validated all design decisions and hyperparameters on the VOC 2007 dataset (Section 3.2). For final results on the VOC 2010-12 datasets, we fine-tuned the CNN on VOC 2012 train and optimized our detection SVMs on VOC 2012 trainval. We submitted test results to the evaluation server only once for each of the two major algorithm variants (with and without bounding-box regression).</p>
+<p>Table 1 shows complete results on VOC 2010. We compare our method against four strong baselines, including SegDPM [18], which combines DPM detectors with the output of a semantic segmentation system [4] and uses additional inter-detector context and image-classifier rescoring. The most germane comparison is to the UVA system from Uijlings et al.&nbsp;[39], since our systems use the same region proposal algorithm. To classify regions, their method builds a four-level spatial pyramid and populates it with densely sampled SIFT, Extended OpponentSIFT, and RGB-SIFT descriptors, each vector quantized with 4000-word codebooks. Classification is performed with a histogram intersection kernel SVM. Compared to their multi-feature, non-linear kernel SVM approach, we achieve a large improvement in mAP, from 35.1% to 53.7% mAP, while also being much faster (Section 2.2). Our method achieves similar performance (53.3% mAP) on VOC 2011/12 test.</p>
+</blockquote>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-table-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-34"><img src="images/2025-09-11-rcnn-reading-notes/paper-table-1.PNG" class="img-fluid"></a></p>
+<p>After detailing their system’s architecture and training methodology, the authors present the definitive results on the PASCAL VOC 2010 dataset.</p>
+<section id="setting-the-stage-a-fair-fight" class="level3">
+<h3 class="anchored" data-anchor-id="setting-the-stage-a-fair-fight">Setting the Stage: A Fair Fight</h3>
+<p>Before even showing the numbers, the authors take care to establish the scientific rigor of their evaluation. They followed best practices by using the VOC 2007 dataset for all their design choices and parameter tuning, keeping the VOC 2010-12 test sets pristine for the final evaluation. This ensures their results are not a product of overfitting to the test data.</p>
+</section>
+<section id="the-head-to-head-battle-cnn-features-vs.-handcrafted-features" class="level3">
+<h3 class="anchored" data-anchor-id="the-head-to-head-battle-cnn-features-vs.-handcrafted-features">The Head-to-Head Battle: CNN Features vs.&nbsp;Handcrafted Features</h3>
+<p>The authors present a comparison table against several strong baselines, but they wisely direct our attention to the “most germane comparison”: their system versus the one from Uijlings et al.&nbsp;(the UVA system). As we discussed, this is a perfect controlled experiment. Both systems start with the exact same ~2000 region proposals generated by Selective Search. The only difference is what happens next.</p>
+<ul>
+<li><p><strong>The UVA System (Handcrafted Features):</strong> It employed a complex, state-of-the-art pipeline using spatial pyramids and massive bag-of-visual-words codebooks built from multiple variants of SIFT features. This represented the pinnacle of the pre-deep-learning era. It achieved a respectable <strong>35.1% mAP</strong>.</p></li>
+<li><p><strong>The R-CNN System (Learned Features):</strong> It took those same region proposals but used the fine-tuned CNN to extract a 4096-d feature vector for each one. The result was a stunning <strong>53.7% mAP</strong>.</p></li>
+</ul>
+<p>This isn’t an incremental improvement; it’s a seismic shift. This represents a staggering <strong>18.6 absolute point increase</strong>, which is a <strong>53% relative improvement</strong> over the previous best method using the same proposals.</p>
+<p>This single comparison was an unambiguous knockout blow. It proved, in a controlled and definitive way, that the rich, hierarchical features learned by a deep CNN were fundamentally superior to even the most sophisticated handcrafted features. Furthermore, as discussed in the run-time analysis, R-CNN achieved this while being significantly faster and more scalable.</p>
+<p>Finally, the authors show that this was no fluke. They achieved a nearly identical mAP of 53.3% on the VOC 2011/12 test sets, confirming the robustness and power of their new paradigm.</p>
+</section>
+</section>
+<section id="results-on-ilsvrc2013-detection" class="level2">
+<h2 class="anchored" data-anchor-id="results-on-ilsvrc2013-detection">2.5. Results on ILSVRC2013 detection</h2>
+<blockquote class="blockquote">
+<p>We ran R-CNN on the 200-class ILSVRC2013 detection dataset using the same system hyperparameters that we used for PASCAL VOC. We followed the same protocol of submitting test results to the ILSVRC2013 evaluation server only twice, once with and once without bounding-box regression.</p>
+<p>Figure 3 compares R-CNN to the entries in the ILSVRC 2013 competition and to the post-competition OverFeat result [34]. R-CNN achieves a mAP of 31.4%, which is significantly ahead of the second-best result of 24.3% from OverFeat. To give a sense of the AP distribution over classes, box plots are also presented and a table of per-class APs follows at the end of the paper in Table 8. Most of the competing submissions (OverFeat, NEC-MU, UvA-Euvision, Toronto A, and UIUC-IFP) used convolutional neural networks, indicating that there is significant nuance in how CNNs can be applied to object detection, leading to greatly varying outcomes.</p>
+</blockquote>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-35"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-3.PNG" class="img-fluid"></a></p>
+<p>If PASCAL VOC was the established arena for object detection, the ILSVRC detection challenge was the wild, sprawling new frontier. With <strong>200 object categories</strong> (compared to VOC’s 20), it represented a massive leap in scale and complexity. This was the ultimate stress test for the R-CNN paradigm.</p>
+<section id="a-commanding-victory-on-a-bigger-stage" class="level3">
+<h3 class="anchored" data-anchor-id="a-commanding-victory-on-a-bigger-stage">A Commanding Victory on a Bigger Stage</h3>
+<p>The results were once again decisive. R-CNN achieved a mean Average Precision (mAP) of <strong>31.4%</strong>. This wasn’t just a win; it established a commanding lead over the next-best competitor, OverFeat, which scored <strong>24.3%</strong>. A 7.1 absolute point difference on a challenge of this scale is a massive gap, representing a nearly <strong>30% relative improvement</strong>.</p>
+</section>
+<section id="its-not-that-you-use-cnns-its-how-you-use-them" class="level3">
+<h3 class="anchored" data-anchor-id="its-not-that-you-use-cnns-its-how-you-use-them">It’s Not <em>That</em> You Use CNNs, It’s <em>How</em> You Use Them</h3>
+<p>But the most crucial takeaway from this result isn’t just the score itself; it’s the context. The authors astutely point out that by 2013, the deep learning revolution was in full swing. <em>Most</em> of the top teams in the competition, including OverFeat, were already using Convolutional Neural Networks.</p>
+<p>This means the competition was no longer a simple battle between old-guard handcrafted features and new-school deep learning. It was a battle between different deep learning <em>strategies</em>. Specifically, it was a referendum on the best way to solve the localization problem:</p>
+<ul>
+<li><strong>The OverFeat Paradigm:</strong> An elegant, end-to-end, highly optimized sliding-window approach.</li>
+<li><strong>The R-CNN Paradigm:</strong> A multi-stage pipeline that combines a classic computer vision algorithm (region proposals) with a deep feature extractor.</li>
+</ul>
+<p>The decisive victory for R-CNN was a powerful validation of its hybrid approach. It proved that simply applying a CNN wasn’t enough; the architectural choice of how to combine the CNN’s classification power with a sound localization strategy was paramount.</p>
+<p>As a final testament to the robustness and generalizability of their method, the authors note that they achieved these state-of-the-art results using the exact same system hyperparameters they had tuned for the much smaller PASCAL VOC dataset. The method didn’t require finicky, dataset-specific adjustments; it just worked.</p>
+<p>Having proven <em>that</em> their system works phenomenally well on two major benchmarks, the authors next turn to the question of <em>why</em> it works and which parts of it are most important.</p>
+</section>
+</section>
+<section id="visualization-ablation-and-modes-of-error" class="level2">
+<h2 class="anchored" data-anchor-id="visualization-ablation-and-modes-of-error">3. Visualization, Ablation, and Modes of Error</h2>
+<p>Having established that their system achieves state-of-the-art performance, the authors now transition from engineering to science. The goal of this section is to dissect the R-CNN model to understand which components are most critical, what the network’s internal features are actually detecting, and where the system still fails.</p>
+<section id="visualizing-learned-features" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-learned-features">3.1. Visualizing Learned Features</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-3.1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-36"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-3.1-1.PNG" class="img-fluid"></a></p>
+<p>A common criticism of deep neural networks is that they are “black boxes.” We know they produce highly accurate outputs, but understanding their internal reasoning is challenging. The authors tackle this head-on by proposing a simple yet powerful method for visualizing what the network has learned.</p>
+<p>They first acknowledge that visualizing the filters in the <em>first</em> convolutional layer is easy—they consistently learn to detect simple patterns like oriented edges and color blobs. The real mystery lies in the deeper layers. While other sophisticated techniques like deconvolution (from Zeiler and Fergus) existed to project features back into pixel space, the R-CNN authors propose a more direct, non-parametric method.</p>
+<p>The core idea is to treat every individual neuron (or “unit”) in a deep layer as its own specialized object detector and then discover what it detects by showing it a massive number of images.</p>
+<p>Here’s how their visualization technique works:</p>
+<ol type="1">
+<li><strong>Select a Unit:</strong> They pick a single neuron from a deep layer (e.g., the <code>pool5</code> layer).</li>
+<li><strong>Create a Massive Test Set:</strong> They gather a huge dataset of about 10 million region proposals from the test set.</li>
+<li><strong>Find the Best Activations:</strong> They pass all 10 million regions through the CNN and record the activation score of their chosen neuron for each region.</li>
+<li><strong>Show the Top Hits:</strong> They sort the regions by this activation score, from highest to lowest. After applying non-maximum suppression to remove duplicates, they simply display the top-scoring image patches.</li>
+</ol>
+<p>This method is brilliant in its simplicity. Instead of trying to generate a synthetic image of what a neuron might like, it shows you the <em>actual real-world image patches</em> that cause it to fire most strongly. As the authors elegantly put it, this method lets the selected unit <strong>“speak for itself.”</strong></p>
+<p>By avoiding averaging and showing multiple top-scoring patches, they can also discover a unit’s different <strong>visual modes</strong>. For instance, a single neuron might learn to detect a general concept like “repeating dot patterns,” causing it to fire strongly for both a close-up of a person’s dotted shirt and the spots on a ladybug.</p>
+</section>
+<section id="peeking-inside-the-brain-visualizing-the-pool5-layer" class="level3">
+<h3 class="anchored" data-anchor-id="peeking-inside-the-brain-visualizing-the-pool5-layer">Peeking Inside the Brain: Visualizing the <code>pool5</code> Layer</h3>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-3.1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-37"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-3.1-2.PNG" class="img-fluid"></a></p>
+<p>The authors choose to visualize neurons from the <code>pool5</code> layer. This is a critical and deliberate choice. <code>pool5</code> is the final feature map produced by the convolutional base of the network before the data is flattened and passed to the fully connected layers. It represents the highest level of spatial feature abstraction the network learns.</p>
+<ul>
+<li><strong>Understanding the <code>pool5</code> Dimensions:</strong> The feature map is <code>6 x 6 x 256</code>. This can be interpreted as a grid of <code>6x6</code> “super-pixels,” where for each location in the grid, there are 256 different feature detectors (or channels) describing that location.</li>
+<li><strong>A Massive Receptive Field:</strong> Each of these <code>6x6</code> units has a receptive field of <strong>195x195 pixels</strong> on the input image. This is enormous! It means a single activation value in this layer is summarizing the content of a huge patch of the original image, making it a very high-level feature.</li>
+</ul>
+<section id="figure-4-a-gallery-of-learned-concepts" class="level4">
+<h4 class="anchored" data-anchor-id="figure-4-a-gallery-of-learned-concepts">Figure 4: A Gallery of Learned Concepts</h4>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-38"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-4.PNG" class="img-fluid"></a></p>
+<p>Figure 4 shows the top 16 image patches that cause six different <code>pool5</code> neurons to fire most strongly. The results are nothing short of remarkable.</p>
+<ul>
+<li><p><strong>Row 1 (People Detector):</strong> This unit has clearly learned to be a person/face detector. It activates strongly on a variety of human faces, demonstrating invariance to age, gender, lighting, and even headwear.</p></li>
+<li><p><strong>Row 2 (Dog Faces &amp; Dot Arrays):</strong> This is a fascinating example of a “multi-modal” neuron. It fires strongly for the faces of white, fluffy dogs (like terriers and corgis) but also for abstract patterns of repeating dark circles, like dot arrays and grids. This reveals that what the neuron has actually learned is a specific texture/pattern, not necessarily the semantic concept of “dog.”</p></li>
+<li><p><strong>Row 3 (Red Blob Detector):</strong> This unit is a simple but powerful color and shape detector. It fires on anything that is a prominent red blob: red flowers, red food, even a red traffic light.</p></li>
+<li><p><strong>Row 4 (Text Detector):</strong> This neuron has learned to specialize in detecting text. It activates on signs, license plates, and brand logos, showing it has learned a concept that is completely independent of object category.</p></li>
+<li><p><strong>Row 5 (Window/Facade Detector):</strong> This unit responds to abstract architectural patterns, specifically buildings with repeating windows and strong perspective lines.</p></li>
+<li><p><strong>Row 6 (Specular Reflection Detector):</strong> This unit has learned to detect a material property rather than an object. It fires on shiny surfaces, highlights on glass, reflections on cars, and even the shine on a bald head.</p></li>
+</ul>
+</section>
+<section id="the-grand-conclusion-a-rich-visual-vocabulary" class="level4">
+<h4 class="anchored" data-anchor-id="the-grand-conclusion-a-rich-visual-vocabulary">The Grand Conclusion: A Rich Visual Vocabulary</h4>
+<p>The visualizations in Figure 4 lead to a profound conclusion. The CNN isn’t just learning a simple template for each object class. Instead, it is learning a <strong>rich, distributed vocabulary of visual concepts</strong>. This vocabulary includes not only object-centric features (like faces), but also textures (dot arrays), colors (red blobs), abstract patterns (windows), and material properties (shininess).</p>
+<p>The <code>pool5</code> layer provides this powerful set of building blocks. The authors astutely note that the job of the next layer, the fully connected <code>fc6</code> layer, is to act as a composer, learning to combine these fundamental features into a vast number of compositions to recognize complex objects. For example, <code>fc6</code> might learn that a “wheel” feature plus a “shiny surface” feature plus a “window” feature, when found together, strongly indicates the presence of a “car.”</p>
+</section>
+</section>
+</section>
+<section id="ablation-studies-which-layers-matter-most" class="level2">
+<h2 class="anchored" data-anchor-id="ablation-studies-which-layers-matter-most">3.2. Ablation Studies: Which Layers Matter Most?</h2>
+<section id="performance-layer-by-layer-without-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="performance-layer-by-layer-without-fine-tuning">Performance Layer-by-Layer, Without Fine-Tuning</h3>
+<p>The first ablation study is designed to answer a simple question: where in the network do the best features for object detection come from? To isolate the effect of the pre-trained features, this first experiment is performed <strong>without any fine-tuning</strong>. The CNN is trained only on ImageNet and is then used as a “black-box” feature extractor on the PASCAL VOC dataset.</p>
+<p>The authors compare the performance using features from the last three layers of the network:</p>
+<ul>
+<li><strong><code>pool5</code>:</strong> The 9216-dimensional output of the final convolutional layer. This is a spatial feature map that retains some of the object’s 2D structure.</li>
+<li><strong><code>fc6</code>:</strong> The first fully connected layer. It takes the <code>pool5</code> features, flattens them, and projects them down to a 4096-dimensional vector. This layer has about 37 million parameters.</li>
+<li><strong><code>fc7</code>:</strong> The second fully connected layer. It takes the <code>fc6</code> features and projects them again to another 4096-dimensional vector. This is the final feature vector used in the full R-CNN system and contains about 16.8 million parameters.</li>
+</ul>
+<p>The results, shown in Table 2 of the paper, are fascinating and reveal two major surprises.</p>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-table-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-39"><img src="images/2025-09-11-rcnn-reading-notes/paper-table-2.PNG" class="img-fluid"></a></p>
+<section id="surprise-1-deeper-is-not-always-better-for-generalization" class="level4">
+<h4 class="anchored" data-anchor-id="surprise-1-deeper-is-not-always-better-for-generalization">Surprise #1: Deeper is Not Always Better for Generalization</h4>
+<ul>
+<li><strong><code>fc7</code> features are <em>worse</em> than <code>fc6</code> features.</strong> This is counterintuitive. One would expect the final, deepest layer to be the most semantically rich. However, the results show that <code>fc7</code> generalizes more poorly to the new task.</li>
+<li><strong>Why?</strong> The <code>fc7</code> layer was trained to be highly specific to the 1000 classes of ImageNet. Its purpose was to make the final classification decision. In contrast, the <code>fc6</code> layer is one step removed and appears to learn a more general, high-level representation of the object’s shape and content.</li>
+<li><strong>The Takeaway:</strong> This means that nearly 30% of the network’s parameters (the entire <code>fc7</code> layer, with its 16.8 million weights) can be chopped off, not only without hurting performance but actually <em>improving</em> it when transferring to a new task.</li>
+</ul>
+</section>
+<section id="surprise-2-the-power-is-in-the-convolutions" class="level4">
+<h4 class="anchored" data-anchor-id="surprise-2-the-power-is-in-the-convolutions">Surprise #2: The Power is in the Convolutions</h4>
+<ul>
+<li><strong><code>pool5</code> features are surprisingly powerful.</strong> The most shocking result is that even the features from <code>pool5</code>—before the massive fully connected layers—achieve a very respectable mAP.</li>
+<li><strong>Why is this shocking?</strong> The <code>pool5</code> features are generated using only the convolutional layers, which contain a mere <strong>6% of the network’s total parameters</strong>. The vast majority of the network’s complexity and parameters reside in the fully connected layers (<code>fc6</code> and <code>fc7</code>).</li>
+<li><strong>The Takeaway:</strong> This is a profound insight. It demonstrates that the true representational power of the CNN—its ability to learn a rich visual vocabulary—comes primarily from its <strong>convolutional base</strong>. The massive fully connected layers, while important for classification on the original task, are less critical for feature extraction.</li>
+</ul>
+<p>This final point leads the authors to a prescient suggestion. Since the convolutional layers are so powerful and produce a spatial feature map (<code>pool5</code>), it might be possible to use this feature map directly in a sliding-window fashion, perhaps even integrating it with classic detectors like DPM. This idea—running the convolutional base once over the entire image to create a rich feature map for downstream tasks—is precisely the insight that would lead to the development of the next generation of faster object detectors like Fast R-CNN and Faster R-CNN.</p>
+</section>
+</section>
+<section id="performance-layer-by-layer-with-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="performance-layer-by-layer-with-fine-tuning">Performance Layer-by-Layer, With Fine-Tuning</h3>
+<p>Now the authors repeat the previous experiment, but this time they use the CNN that has been fine-tuned on the PASCAL VOC dataset. The goal is to see how this domain-specific training affects the features at each layer.</p>
+<section id="the-headline-result-fine-tuning-is-a-game-changer" class="level4">
+<h4 class="anchored" data-anchor-id="the-headline-result-fine-tuning-is-a-game-changer">The Headline Result: Fine-Tuning is a Game-Changer</h4>
+<p>The first and most important result is the enormous overall performance boost. Fine-tuning the network increases the mAP by a massive <strong>8.0 percentage points</strong>, from 46.2% (the best result without fine-tuning, from <code>fc6</code>) to <strong>54.2%</strong>. This is not a minor tweak; it’s a critical step that validates the entire transfer learning paradigm. It proves that allowing the network to adapt its pre-trained knowledge to the new dataset is essential for achieving state-of-the-art performance.</p>
+</section>
+<section id="the-deeper-insight-general-vs.-specific-layers" class="level4">
+<h4 class="anchored" data-anchor-id="the-deeper-insight-general-vs.-specific-layers">The Deeper Insight: General vs.&nbsp;Specific Layers</h4>
+<p>The truly fascinating discovery comes from looking at <em>where</em> this 8-point improvement comes from. The authors note that the performance boost is much larger for the fully connected layers (<code>fc6</code> and <code>fc7</code>) than it is for the <code>pool5</code> layer.</p>
+<p>This observation leads to a profound and influential hypothesis about the nature of the layers in a deep neural network:</p>
+<ul>
+<li><p><strong>The Convolutional Layers (<code>pool5</code>) are General Feature Extractors:</strong> The features learned by the convolutional base of the network (like edges, textures, shapes, and object parts) are fundamental to vision. They are highly transferable from one task (ImageNet classification) to another (VOC detection). As a result, fine-tuning doesn’t need to change them very much. They are already excellent general-purpose visual descriptors.</p></li>
+<li><p><strong>The Fully Connected Layers (<code>fc6</code>, <code>fc7</code>) are Task-Specific Classifiers:</strong> These layers act as the “brain” of the network. Their job is to take the general features from <code>pool5</code> and learn how to combine them to make a decision about a specific task. The combination of <code>pool5</code> features needed to classify the 1000 highly specific ImageNet classes is very different from the combination needed to classify the 20 broader VOC classes. Therefore, these layers benefit the most from fine-tuning. Fine-tuning essentially retrains this “brain” to use the existing visual vocabulary from <code>pool5</code> to solve the new problem.</p></li>
+</ul>
+<p>In essence, the “pre-train, then fine-tune” strategy works so well because it wisely preserves the powerful, general knowledge in the convolutional layers while aggressively re-training the more specialized, task-specific knowledge in the fully connected layers.</p>
+</section>
+</section>
+<section id="comparison-to-recent-feature-learning-methods" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-to-recent-feature-learning-methods">Comparison to Recent Feature Learning Methods</h3>
+<blockquote class="blockquote">
+<p>Relatively few feature learning methods have been tried on PASCAL VOC detection. We look at two recent approaches that build on deformable part models. For reference, we also include results for the standard HOG-based DPM [20]…</p>
+<p>All R-CNN variants strongly outperform the three DPM baselines… Compared to the latest version of DPM, which uses only HOG features, our mAP is more than 20 percentage points higher: 54.2% vs.&nbsp;33.7%—a 61% relative improvement.</p>
+</blockquote>
+<p>The authors fairly point out that “feature learning” was not a new concept. While deep learning via CNNs was a revolutionary approach, other researchers had tried to move beyond static, handcrafted features like HOG by learning features from data. They compare R-CNN to two such methods that were designed to augment the powerful Deformable Part Model (DPM) framework.</p>
+<section id="alternative-1-dpm-with-sketch-tokens-dpm-st" class="level4">
+<h4 class="anchored" data-anchor-id="alternative-1-dpm-with-sketch-tokens-dpm-st">Alternative 1: DPM with Sketch Tokens (DPM ST)</h4>
+<ul>
+<li><strong>The Idea:</strong> This method enriches the standard HOG features by adding a new feature called <strong>“sketch tokens.”</strong> A sketch token is essentially a learned template for a small contour or edge shape.</li>
+<li><strong>How it Worked:</strong> A random forest classifier was trained on millions of small 35x35 pixel patches to categorize them into one of 150 different contour shapes (or “tokens”). At detection time, this classifier would run over the image, and the probability of each pixel belonging to a certain sketch token was used as an additional feature, alongside HOG, to feed into the DPM.</li>
+<li><strong>The Result:</strong> This learned feature provided a modest <strong>2.5 mAP point</strong> boost over the baseline HOG-only DPM.</li>
+</ul>
+</section>
+<section id="alternative-2-dpm-with-histograms-of-sparse-codes-dpm-hsc" class="level4">
+<h4 class="anchored" data-anchor-id="alternative-2-dpm-with-histograms-of-sparse-codes-dpm-hsc">Alternative 2: DPM with Histograms of Sparse Codes (DPM HSC)</h4>
+<ul>
+<li><strong>The Idea:</strong> This method takes a more radical approach, completely <strong>replacing</strong> HOG with a learned feature called <strong>Histograms of Sparse Codes (HSC)</strong>.</li>
+<li><strong>How it Worked:</strong> It first learned a “dictionary” of 100 small, 7x7 grayscale patterns (called “atoms”) from the data. To create the feature for a larger image patch, it would try to reconstruct that patch by using a sparse combination of these dictionary atoms. The resulting “activations” (which atoms were used and how much) were then turned into a histogram, which replaced HOG in the DPM pipeline.</li>
+<li><strong>The Result:</strong> This more advanced learned feature provided a <strong>4 mAP point</strong> improvement over the baseline HOG-only DPM.</li>
+</ul>
+</section>
+<section id="the-verdict-a-landslide-victory-for-r-cnn" class="level4">
+<h4 class="anchored" data-anchor-id="the-verdict-a-landslide-victory-for-r-cnn">The Verdict: A Landslide Victory for R-CNN</h4>
+<p>While both of these feature learning methods provided small, incremental gains over the already strong DPM baseline, they were completely blown out of the water by R-CNN.</p>
+<p>The final comparison is stark:</p>
+<ul>
+<li><strong>Standard DPM (HOG):</strong> 33.7% mAP</li>
+<li><strong>DPM with Sketch Tokens:</strong> ~36.2% mAP (estimated)</li>
+<li><strong>DPM with Sparse Codes:</strong> ~37.7% mAP (estimated)</li>
+<li><strong>R-CNN (fine-tuned):</strong> <strong>54.2% mAP</strong></li>
+</ul>
+<p>R-CNN is not just a little better; it’s in a completely different league. It provides a <strong>+20.5 point</strong> absolute improvement over the standard DPM, a <strong>61% relative improvement</strong>. This comparison decisively proves that the rich, hierarchical features learned end-to-end by a deep CNN are vastly more powerful than the shallow, patch-based features learned by these other contemporary methods.</p>
+</section>
+</section>
+</section>
+<section id="network-architectures" class="level2">
+<h2 class="anchored" data-anchor-id="network-architectures">3.3. Network Architectures</h2>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-3.3-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-40"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-3.3-1.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-3.3-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-41"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-3.3-2.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>One of the most elegant aspects of R-CNN’s modular design is that the feature extractor (Module 2) is a plug-and-play component. This allows the authors to perform a fascinating “engine swap” experiment to see if a more powerful backbone network can boost detection performance.</p>
+<section id="the-contenders-t-net-vs.-o-net" class="level3">
+<h3 class="anchored" data-anchor-id="the-contenders-t-net-vs.-o-net">The Contenders: T-Net vs.&nbsp;O-Net</h3>
+<p>The experiment pits two champion networks against each other within the R-CNN framework:</p>
+<ol type="1">
+<li><p><strong>T-Net (TorontoNet / AlexNet):</strong> The 8-layer network from the University of Toronto that won the ILSVRC 2012 challenge. This is the baseline architecture used for most of the paper’s results.</p></li>
+<li><p><strong>O-Net (OxfordNet / VGG-16):</strong> A much deeper, 16-layer network from the University of Oxford that was a top performer in the ILSVRC 2014 challenge. The VGG architecture is famous for its simple and homogeneous structure, consisting of stacked layers of small 3x3 convolutional filters. This design philosophy proved that sheer depth was a powerful way to increase a network’s representational capacity.</p></li>
+</ol>
+</section>
+<section id="the-result-a-new-state-of-the-art-with-a-catch" class="level3">
+<h3 class="anchored" data-anchor-id="the-result-a-new-state-of-the-art-with-a-catch">The Result: A New State-of-the-Art, With a Catch</h3>
+<p>The authors replaced the T-Net backbone with a pre-trained O-Net, fine-tuned it on the VOC dataset using the same protocol, and measured the performance. The results were spectacular:</p>
+<ul>
+<li><strong>R-CNN with T-Net (AlexNet):</strong> 58.5% mAP</li>
+<li><strong>R-CNN with O-Net (VGG-16):</strong> <strong>66.0% mAP</strong></li>
+</ul>
+<p>This is a massive <strong>7.5 absolute point increase</strong> in mean Average Precision. Just by swapping in a more powerful, off-the-shelf feature extractor, the authors achieved another huge leap in performance, setting a new state-of-the-art for object detection.</p>
+<p>However, this impressive accuracy gain came at a significant cost. The much deeper VGG-16 network was also much slower. The authors report that the forward pass—the core feature extraction step—was roughly <strong>7 times longer</strong> with O-Net compared to T-Net.</p>
+</section>
+<section id="the-lasting-implication-a-future-proof-framework" class="level3">
+<h3 class="anchored" data-anchor-id="the-lasting-implication-a-future-proof-framework">The Lasting Implication: A Future-Proof Framework</h3>
+<p>This experiment is arguably one of the most important in the paper. It demonstrates that the R-CNN <em>framework</em> is sound and that its performance is not tied to a single, specific architecture. More importantly, it shows that the accuracy of the detector scales directly with the power of the underlying image classification network.</p>
+<p>This established a powerful and enduring paradigm for the entire field: the race for better object detectors became intrinsically linked to the race for better image classifiers. Any new, state-of-the-art classification network (like ResNet, Inception, etc.) could now be immediately repurposed as the backbone for a state-of-the-art object detector, a trend that continues to this day.</p>
+</section>
+</section>
+<section id="detection-error-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="detection-error-analysis">3.4. Detection Error Analysis</h2>
+<blockquote class="blockquote">
+<p>We applied the excellent detection analysis tool from Hoiem et al.&nbsp;[23] in order to reveal our method’s error modes, understand how fine-tuning changes them, and to see how our error types compare with DPM…</p>
+</blockquote>
+<p>Good science isn’t just about achieving a high score; it’s about understanding the remaining sources of error. The authors demonstrate this by using a standardized analysis tool to dissect their model’s mistakes. Instead of just knowing <em>that</em> the model is wrong, they want to know <em>why</em> it’s wrong.</p>
+<p>The tool from Hoiem et al.&nbsp;categorizes every false positive into one of four types:</p>
+<ol type="1">
+<li><strong>Poor Localization (Loc):</strong> The model correctly classifies the object but draws an inaccurate bounding box (e.g., IoU with ground truth is between 0.1 and 0.5).</li>
+<li><strong>Confusion with Similar Class (Sim):</strong> The model confuses the object with a visually similar one (e.g., mistaking a cat for a dog).</li>
+<li><strong>Confusion with Other Class (Oth):</strong> The model confuses the object with a completely dissimilar one (e.g., mistaking a car for a cat).</li>
+<li><strong>Background (BG):</strong> The model detects an object where there is only background.</li>
+</ol>
+<p>As we will see in the figures later, this analysis revealed that R-CNN’s <strong>dominant error mode was poor localization</strong>. The powerful CNN features were so discriminative that the model rarely confused a car with the background or another object. Its main weakness was its reliance on the initial, imprecise region proposals.</p>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-42"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-5.PNG" class="img-fluid"></a></p>
+</section>
+<section id="bounding-box-regression" class="level2">
+<h2 class="anchored" data-anchor-id="bounding-box-regression">3.5. Bounding-Box Regression</h2>
+<blockquote class="blockquote">
+<p>Based on the error analysis, we implemented a simple method to reduce localization errors. Inspired by the bounding-box regression employed in DPM [17], we train a linear regression model to predict a new detection window given the <code>pool5</code> features for a selective search region proposal… Results in Table 1, Table 2, and Figure 5 show that this simple approach fixes a large number of mislocalized detections, boosting mAP by 3 to 4 points.</p>
+</blockquote>
+<p>This is a perfect example of data-driven science. The error analysis in the previous section diagnosed the problem (poor localization), and this section presents the cure.</p>
+<p>Inspired by a similar technique used in the DPM, the authors add a final, optional post-processing step: <strong>bounding-box regression</strong>.</p>
+<ul>
+<li><strong>The Idea:</strong> For each object class, they train a simple linear regression model. This model learns to predict a small correction to a given bounding box.</li>
+<li><strong>How it Works:</strong> The input to the regressor is the <code>pool5</code> feature vector of a high-scoring region proposal. The output is four small numbers (<code>dx, dy, dw, dh</code>) that represent a translation and a log-space scaling of the original box’s center point, width, and height. This new, refined bounding box becomes the final detection.</li>
+<li><strong>The Impact:</strong> This simple, computationally cheap addition yields a massive return. By cleaning up a large number of localization errors, bounding-box regression boosts the final mAP by <strong>3 to 4 absolute points</strong>. This is a huge gain for such a simple add-on and demonstrates the power of carefully analyzing and addressing a model’s specific failure modes.</li>
+</ul>
+</section>
+<section id="qualitative-results" class="level2">
+<h2 class="anchored" data-anchor-id="qualitative-results">3.6. Qualitative Results</h2>
+<blockquote class="blockquote">
+<p>Qualitative detection results on ILSVRC2013 are presented in Figure 8 and Figure 9 at the end of the paper… Note that these are not curated and give a realistic impression of the detectors in action. More qualitative results are presented in Figure 10 and Figure 11, but these have been curated.</p>
+</blockquote>
+<p>Finally, the authors move beyond quantitative metrics (like mAP) to <strong>qualitative results</strong>. They show a series of images with the model’s actual detections drawn on them. This gives readers an intuitive feel for the system’s performance, its strengths, and its remaining quirks.</p>
+<p>They responsibly present two types of results:</p>
+<ul>
+<li><strong>Uncurated (Figures 8 &amp; 9):</strong> Randomly sampled images from the validation set. This provides an honest, unbiased look at how the detector performs in the wild, including its successes and failures.</li>
+</ul>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-8.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-43"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-8.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-9.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-44"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-9.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Curated (Figures 10 &amp; 11):</strong> Images that were hand-picked by the authors because they were “interesting, surprising, or amusing.” These showcase the most impressive and sometimes unexpected successes of the model, providing a compelling demonstration of its capabilities.</li>
+</ul>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-10.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-45"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-10.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-fig-11.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-46"><img src="images/2025-09-11-rcnn-reading-notes/paper-fig-11.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="tackling-a-new-beast-the-ilsvrc2013-detection-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="tackling-a-new-beast-the-ilsvrc2013-detection-dataset">4. Tackling a New Beast: The ILSVRC2013 Detection Dataset</h2>
+<blockquote class="blockquote">
+<p>The ILSVRC2013 detection dataset is split into three sets: train (395,918), val (20,121), and test (40,152), where the number of images in each set is in parentheses. The val and test splits are drawn from the same image distribution… and are exhaustively annotated… The train set, in contrast, is drawn from the ILSVRC2013 classification image distribution… and are not exhaustively annotated… In any given train image, instances from the 200 classes may or may not be labeled.</p>
+</blockquote>
+<p>After demonstrating R-CNN’s success on the familiar PASCAL VOC benchmark, the authors turn their attention to a much greater challenge. This section is less about the R-CNN algorithm itself and more about the data engineering and strategic decisions required to make it work on a dataset that is not as clean or straightforward as VOC.</p>
+<section id="a-dataset-of-two-halves-understanding-the-splits" class="level3">
+<h3 class="anchored" data-anchor-id="a-dataset-of-two-halves-understanding-the-splits">4.1. A Dataset of Two Halves: Understanding the Splits</h3>
+<p>The first and most critical point is that the ILSVRC dataset is not homogeneous. It is essentially two different kinds of datasets cobbled together, which presents a major challenge for training.</p>
+<section id="the-val-and-test-splits-the-gold-standard" class="level4">
+<h4 class="anchored" data-anchor-id="the-val-and-test-splits-the-gold-standard">The <code>val</code> and <code>test</code> Splits: The Gold Standard</h4>
+<p>The validation (<code>val</code>) and test sets are what you would expect from a high-quality detection dataset. They are:</p>
+<ul>
+<li><strong>Scene-like:</strong> The images are complex, often containing multiple objects, clutter, and varied viewpoints, similar in spirit to PASCAL VOC.</li>
+<li><strong>Exhaustively Annotated:</strong> This is the crucial property. If an image contains an object from one of the 200 classes, it is guaranteed to have a labeled bounding box. This makes these splits a reliable and fair ground for evaluating a model’s performance.</li>
+</ul>
+</section>
+<section id="the-train-split-the-wild-west" class="level4">
+<h4 class="anchored" data-anchor-id="the-train-split-the-wild-west">The <code>train</code> Split: The Wild West</h4>
+<p>The training set is a completely different animal. It’s directly inherited from the ILSVRC <em>classification</em> challenge, which gives it two problematic properties:</p>
+<ol type="1">
+<li><strong>Different Distribution:</strong> The images are often “iconic,” featuring a single, large, centered object rather than a complex scene. Training on this data and testing on the scene-like <code>val</code> set is a classic domain shift problem.</li>
+<li><strong>NOT Exhaustively Annotated:</strong> This is the bombshell. An image in the <code>train</code> set might contain three dogs and a bicycle, but only have a label for one of the dogs. The other objects are simply unlabeled.</li>
+</ol>
+</section>
+<section id="the-core-challenge-poisoned-negatives" class="level4">
+<h4 class="anchored" data-anchor-id="the-core-challenge-poisoned-negatives">The Core Challenge: Poisoned Negatives</h4>
+<p>This lack of exhaustive annotation in the training set creates a fatal problem for a standard training technique: <strong>hard negative mining</strong>.</p>
+<p>Imagine you are training your “bicycle” detector. You run it on a training image that contains an unlabeled bicycle. Your detector correctly fires on the bicycle. However, because there is no ground-truth label, your training algorithm sees this as a mistake—a false positive. It then labels that bicycle patch as a “hard negative” and uses it to explicitly train your model <em>not</em> to detect bicycles. You are effectively poisoning your own training data.</p>
+<p>This single issue means the massive <code>train</code> set cannot be used for mining negative examples. The authors must therefore devise a clever strategy for how to use this enormous but flawed dataset, which is what they will explain in the following sections.</p>
+</section>
+</section>
+<section id="region-proposals-adapting-to-scale" class="level3">
+<h3 class="anchored" data-anchor-id="region-proposals-adapting-to-scale">4.2. Region Proposals: Adapting to Scale</h3>
+<blockquote class="blockquote">
+<p>We followed the same region proposal approach that was used for detection on PASCAL. Selective search [39] was run in “fast mode” on each image in val1, val2, and test (but not on images in train). One minor modification was required to deal with the fact that selective search is not scale invariant… ILSVRC image sizes range from very small to a few that are several mega-pixels, and so we resized each image to a fixed width (500 pixels) before running selective search… selective search resulted in an average of 2403 region proposals per image with a 91.6% recall… This recall is notably lower than in PASCAL… indicating significant room for improvement…</p>
+</blockquote>
+<p>For the first module of their pipeline, the authors stick with what worked on PASCAL: the Selective Search algorithm. However, they had to make one pragmatic adjustment to handle the massive variation in image sizes in the ILSVRC dataset.</p>
+<ul>
+<li><strong>The Problem:</strong> Selective Search is not scale-invariant, meaning its output can change dramatically depending on the input image resolution. A 3-megapixel image will produce a very different set of proposals than a 0.1-megapixel image.</li>
+<li><strong>The Solution:</strong> To ensure consistent behavior, they standardized all images by resizing them to a fixed width of 500 pixels before running Selective Search. This simple normalization step was crucial for applying the algorithm at scale.</li>
+</ul>
+<p>Interestingly, the authors note that on this more challenging dataset, Selective Search achieved a <strong>recall of 91.6%</strong>. This means that in 8.4% of cases, the <em>correct</em> bounding box was never even proposed to the CNN in the first place, setting a hard upper limit on the detector’s potential performance. This highlights a key bottleneck in the R-CNN pipeline and foreshadows the move towards learned region proposal networks in later models like Faster R-CNN.</p>
+</section>
+<section id="training-data-a-strategy-for-a-flawed-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="training-data-a-strategy-for-a-flawed-dataset">4.3. Training Data: A Strategy for a Flawed Dataset</h3>
+<blockquote class="blockquote">
+<p>For training data, we formed a set of images and boxes that includes all selective search and ground-truth boxes from val1 together with up to N ground-truth boxes per class from train… …Hard negative mining was performed on a randomly selected subset of 5000 images from val1… No negative examples were taken from train because the annotations are not exhaustive.</p>
+</blockquote>
+<p>This is the most critical strategic section. Given the “poisoned negative” problem in the <code>train</code> set, how can the authors best leverage all the available data? They devise a clever hybrid approach that relies heavily on the clean <code>val</code> set, augmenting it with only the “safe” information from the <code>train</code> set.</p>
+<p>First, they split the clean <code>val</code> set into two halves: <strong><code>val1</code></strong> and <strong><code>val2</code></strong>. This allows them to train on one half and validate their design choices on the other without contaminating the final <code>test</code> set.</p>
+<p>Their training data strategy then becomes:</p>
+<ul>
+<li><strong>Positive Examples:</strong> The set of positive examples is a combination of two sources:
+<ol type="1">
+<li>All the ground-truth boxes from the clean <strong><code>val1</code></strong> set.</li>
+<li>Up to <code>N</code> (e.g., 1000) ground-truth boxes per class from the massive <strong><code>train</code></strong> set. This is a safe operation because they are only using the <em>explicitly labeled positive</em> examples from <code>train</code>, which are guaranteed to be correct. This allows them to massively increase the number and diversity of their positive training samples.</li>
+</ol></li>
+<li><strong>Negative Examples:</strong> This is the crucial part. All negative examples for <strong>hard negative mining</strong> are drawn <em>exclusively</em> from a random 5000-image subset of the clean <strong><code>val1</code></strong> set. They completely ignore the <code>train</code> set when looking for negatives, neatly sidestepping the “poisoned data” problem of its non-exhaustive annotations.</li>
+</ul>
+<p>This carefully designed strategy allows them to get the best of both worlds: a huge and diverse set of positive examples drawn from all available data, and a clean, reliable set of hard negatives drawn only from the exhaustively annotated validation set.</p>
+</section>
+<section id="validation-and-evaluation-a-principled-approach" class="level3">
+<h3 class="anchored" data-anchor-id="validation-and-evaluation-a-principled-approach">4.4. Validation and Evaluation: A Principled Approach</h3>
+<blockquote class="blockquote">
+<p>Before submitting results to the evaluation server, we validated data usage choices and the effect of fine-tuning and bounding-box regression on the val2 set… All system hyperparameters… were fixed at the same values used for PASCAL… the goal of this work was to produce a preliminary R-CNN result on ILSVRC without extensive dataset tuning. After selecting the best choices on val2, we submitted exactly two result files to the ILSVRC2013 evaluation server.</p>
+</blockquote>
+<p>This section highlights the authors’ commitment to scientific rigor. Tackling a new, complex dataset like ILSVRC could have involved endless tweaking and tuning. Instead, they took a remarkably disciplined approach.</p>
+<ul>
+<li><strong>No Hyperparameter Tuning:</strong> They made the bold decision to use the <em>exact same hyperparameters</em> (learning rates, SVM settings, etc.) that they had already tuned for the much smaller PASCAL VOC dataset. This is a powerful statement. It demonstrates their confidence that the R-CNN method is robust and generalizable, not a fragile system that needs to be re-engineered for every new problem.</li>
+<li><strong>Disciplined Submission:</strong> They submitted their results to the official test server only twice: once for their baseline model, and once for the model with the bounding-box regression add-on. This is a crucial aspect of good scientific practice, as it prevents “overfitting to the test set” by repeatedly tweaking the model in response to test server feedback.</li>
+</ul>
+<p>This principled approach gives immense credibility to their final results. The performance they achieved was not the product of exhaustive, dataset-specific tuning, but rather the raw power of the core R-CNN paradigm.</p>
+</section>
+<section id="ablation-study-deconstructing-the-ilsvrc-performance" class="level3">
+<h3 class="anchored" data-anchor-id="ablation-study-deconstructing-the-ilsvrc-performance">4.5. Ablation Study: Deconstructing the ILSVRC Performance</h3>
+<blockquote class="blockquote">
+<p>Table 4 shows an ablation study of the effects of different amounts of training data, fine-tuning, and bounding-box regression… mAP on val2 matches mAP on test very closely. This gives us confidence that mAP on val2 is a good indicator of test set performance.</p>
+</blockquote>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-table-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-47"><img src="images/2025-09-11-rcnn-reading-notes/paper-table-4.PNG" class="img-fluid"></a></p>
+<p>Just as they did for PASCAL VOC, the authors now systematically build up their model’s performance on ILSVRC to show how much each component contributes. The results, summarized in Table 4, tell a compelling story:</p>
+<ol type="1">
+<li><strong>Baseline (ImageNet pre-trained CNN, trained only on <code>val1</code>):</strong> This is the starting point. It achieves <strong>20.9% mAP</strong>. This shows what a generic, off-the-shelf feature extractor can do with a very small amount of in-domain training data.</li>
+<li><strong>Add <code>train</code> positives (no fine-tuning):</strong> By augmenting the positive training data with examples from the massive <code>train</code> set, the performance jumps to <strong>24.1% mAP</strong>. This shows the clear benefit of having more diverse positive examples, even without adapting the network’s features.</li>
+<li><strong>Fine-tune (with <code>train</code> positives):</strong> This is the most critical step. Fine-tuning the network on the full set of positive examples (<code>val1</code> + <code>train</code>) provides a massive boost to <strong>29.7% mAP</strong>. The authors explicitly note that fine-tuning on <code>val1</code> alone gives only a modest improvement, likely due to overfitting. This proves that the combination of a large, diverse set of positive examples <em>and</em> domain-specific fine-tuning is essential for success.</li>
+<li><strong>Add Bounding-Box Regression:</strong> The final post-processing step fixes many localization errors, pushing the final score to <strong>31.0% mAP</strong> on <code>val2</code> (and the final <strong>31.4%</strong> on the test set).</li>
+</ol>
+<p>This step-by-step breakdown proves that every part of their complex training strategy was necessary. The final state-of-the-art result was not due to a single silver bullet, but to the careful combination of data augmentation, domain-specific fine-tuning, and error-correcting post-processing.</p>
+</section>
+<section id="a-philosophical-showdown-r-cnn-vs.-overfeat" class="level3">
+<h3 class="anchored" data-anchor-id="a-philosophical-showdown-r-cnn-vs.-overfeat">4.6. A Philosophical Showdown: R-CNN vs.&nbsp;OverFeat</h3>
+<blockquote class="blockquote">
+<p>There is an interesting relationship between R-CNN and OverFeat: OverFeat can be seen (roughly) as a special case of R-CNN. If one were to replace selective search region proposals with a multi-scale pyramid of regular square regions… then the systems would be very similar… It is worth noting that OverFeat has a significant speed advantage over R-CNN: it is about 9x faster… This speed comes from the fact that OverFeat’s sliding windows… are not warped at the image level and therefore computation can be easily shared…</p>
+</blockquote>
+<p>In this final, brilliant piece of analysis, the authors frame the relationship between R-CNN and its closest competitor, OverFeat. They make the bold claim that OverFeat is essentially a <strong>“special case of R-CNN.”</strong></p>
+<ul>
+<li><strong>The Argument:</strong> The R-CNN paradigm is “propose regions, then classify.” OverFeat also follows this paradigm. The key difference is the quality of the proposals. R-CNN uses a sophisticated algorithm (Selective Search) to generate a set of high-quality, object-like candidate regions. OverFeat, in contrast, uses a “dumb” proposal method: a simple, brute-force grid of multi-scale, square windows. From this perspective, R-CNN’s higher accuracy comes directly from the superiority of its “smart” region proposal stage.</li>
+</ul>
+<p>However, the authors honestly confront R-CNN’s greatest weakness: <strong>speed</strong>. They acknowledge that OverFeat is about <strong>9 times faster</strong>.</p>
+<ul>
+<li><strong>The Reason:</strong> OverFeat’s sliding-window approach allows for massive computational sharing. The convolutional layers are run only once over the entire image, and the sliding window is applied efficiently on the resulting feature maps. R-CNN, on the other hand, is brutally inefficient. It takes ~2000 largely overlapping regions and runs a full, independent CNN forward pass on each one, resulting in enormous redundant computation.</li>
+</ul>
+<p>This section perfectly encapsulates the fundamental trade-off of this era: <strong>R-CNN traded speed for accuracy</strong>. It achieved state-of-the-art results through its high-quality proposals and powerful features, but at a steep computational cost. This very weakness would directly motivate the development of the next generation of detectors, Fast R-CNN and Faster R-CNN, which aimed to get the best of both worlds.</p>
+</section>
+</section>
+<section id="beyond-boxes-applying-r-cnn-to-semantic-segmentation" class="level2">
+<h2 class="anchored" data-anchor-id="beyond-boxes-applying-r-cnn-to-semantic-segmentation">5. Beyond Boxes: Applying R-CNN to Semantic Segmentation</h2>
+<blockquote class="blockquote">
+<p>Region classification is a standard technique for semantic segmentation, allowing us to easily apply R-CNN to the PASCAL VOC segmentation challenge. To facilitate a direct comparison with the current leading semantic segmentation system (called O2P for “second-order pooling”) [4], we work within their open source framework… The high performance of their approach is due to the quality of the CPMC regions and the powerful second-order pooling of multiple feature types (enriched variants of SIFT and LBP).</p>
+<p>We evaluate three strategies for computing features on CPMC regions…</p>
+</blockquote>
+<p>Having demonstrated R-CNN’s dominance in object detection, the authors perform one final experiment to showcase the power and flexibility of their “recognition using regions” paradigm. They adapt R-CNN to tackle <strong>semantic segmentation</strong>, the task of assigning a class label to <em>every single pixel</em> in an image.</p>
+<section id="the-setup-a-plug-and-play-feature-extractor" class="level3">
+<h3 class="anchored" data-anchor-id="the-setup-a-plug-and-play-feature-extractor">The Setup: A Plug-and-Play Feature Extractor</h3>
+<p>To prove their point, the authors cleverly integrate R-CNN into the framework of the reigning segmentation champion, a system called <strong>O2P (Second-Order Pooling)</strong>. O2P was a state-of-the-art model known for its high-quality region proposals (using CPMC, not Selective Search) and its very powerful, but complex, handcrafted feature pipeline.</p>
+<p>The experiment is simple: they keep the O2P framework but replace its complex handcrafted feature module with the R-CNN feature extractor. If they can achieve competitive results, it will prove that the CNN features are a powerful, general-purpose drop-in replacement for older, more specialized feature types.</p>
+</section>
+<section id="the-challenge-handling-non-rectangular-shapes" class="level3">
+<h3 class="anchored" data-anchor-id="the-challenge-handling-non-rectangular-shapes">The Challenge: Handling Non-Rectangular Shapes</h3>
+<p>The core challenge is that segmentation regions (from CPMC) are not perfect rectangles; they are irregular, pixel-perfect masks. The standard R-CNN approach of simply warping the bounding box around the region would ignore this precise shape information. To address this, the authors test three different feature extraction strategies:</p>
+<ol type="1">
+<li><p><strong><code>full</code> (The Standard Approach):</strong> This is the exact same method used for detection. It ignores the region’s mask, draws a tight bounding box around it, and warps the entire box to 227x227. The hypothesis is that the contextual information within the box is valuable.</p></li>
+<li><p><strong><code>fg</code> (Foreground-Only):</strong> This method takes the region’s mask seriously. It first extracts the rectangular bounding box, but then it blanks out all background pixels, replacing them with the mean image value. This warped region, containing only the foreground object’s pixels, is then fed to the CNN. The hypothesis is that the precise shape of the object provides the strongest signal.</p></li>
+<li><p><strong><code>full+fg</code> (The Best of Both Worlds):</strong> This strategy computes features using <em>both</em> of the methods above and simply concatenates the two resulting 4096-d vectors to create a single 8192-d feature vector. The hypothesis is that both the object’s precise shape (<code>fg</code>) and its surrounding context (<code>full</code>) are informative, and the classifier should have access to both.</p></li>
+</ol>
+</section>
+<section id="the-result-a-resounding-success" class="level3">
+<h3 class="anchored" data-anchor-id="the-result-a-resounding-success">The Result: A Resounding Success</h3>
+<p>The results, shown in Table 5, are a powerful validation of the approach:</p>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-table-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-48"><img src="images/2025-09-11-rcnn-reading-notes/paper-table-5.PNG" class="img-fluid"></a></p>
+<ul>
+<li>The <strong><code>full+fg</code></strong> strategy performed the best, achieving <strong>47.9%</strong> mean accuracy on the validation set. This confirms the hypothesis that both the object’s shape and its context are valuable signals.</li>
+<li>This result modestly outperformed the highly specialized O2P system, which was the state-of-the-art at the time.</li>
+<li>Critically, training the classifiers on the compact R-CNN features took only <strong>one hour</strong>, compared to over <strong>ten hours</strong> for the complex, high-dimensional features of the O2P system.</li>
+</ul>
+<p>This final experiment is a brilliant closing argument. It proves that R-CNN is not just an object detector. It is a powerful, efficient, and general-purpose <strong>region classification engine</strong>. Its core contribution—the use of pre-trained deep CNNs as a “black-box” feature extractor—was so effective that it could be lifted out of its original context and dropped into an entirely different system for a different task, immediately achieving state-of-the-art performance with greater speed and simplicity.</p>
+</section>
+</section>
+<section id="conclusion-a-new-paradigm-for-computer-vision" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion-a-new-paradigm-for-computer-vision">6. Conclusion: A New Paradigm for Computer Vision</h2>
+<p><a href="images/2025-09-11-rcnn-reading-notes/paper-section-conclusion.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-49"><img src="images/2025-09-11-rcnn-reading-notes/paper-section-conclusion.PNG" class="img-fluid"></a></p>
+<p>The conclusion of the R-CNN paper serves as a perfect, concise summary of its monumental contribution to the field of computer vision. The authors distill their work down to three key takeaways.</p>
+<section id="shattering-the-plateau" class="level3">
+<h3 class="anchored" data-anchor-id="shattering-the-plateau">1. Shattering the Plateau</h3>
+<p>The paper’s headline achievement was breaking the years-long stagnation in object detection performance. By introducing a “simple and scalable” algorithm, they achieved a <strong>30% relative improvement</strong> on the PASCAL VOC benchmark, a massive leap forward that redefined what was possible and set a new, much higher bar for the entire field.</p>
+</section>
+<section id="the-two-core-insights" class="level3">
+<h3 class="anchored" data-anchor-id="the-two-core-insights">2. The Two Core Insights</h3>
+<p>This groundbreaking result was not achieved through a single trick, but through the combination of two powerful, foundational ideas:</p>
+<ul>
+<li><p><strong>The Architectural Insight (Regions + CNNs):</strong> R-CNN provided the crucial bridge between the classification power of deep CNNs and the localization requirements of object detection. By combining a classic computer vision technique (bottom-up region proposals) with a state-of-the-art feature extractor (a deep CNN), they created a hybrid system that got the best of both worlds: the efficient and precise localization proposals of the old guard, and the unparalleled semantic understanding of the new.</p></li>
+<li><p><strong>The Training Insight (Pre-train &amp; Fine-tune):</strong> R-CNN popularized the “supervised pre-training/domain-specific fine-tuning” paradigm, which has since become the default strategy for nearly all of computer vision. By first training a network on an abundant “auxiliary” dataset like ImageNet and then adapting that learned knowledge to a smaller, more specialized dataset, they provided a practical and highly effective solution to the problem of data scarcity that had long held back deep learning for niche tasks.</p></li>
+</ul>
+</section>
+<section id="a-unifying-philosophy" class="level3">
+<h3 class="anchored" data-anchor-id="a-unifying-philosophy">3. A Unifying Philosophy</h3>
+<p>Perhaps the most elegant and lasting message of the paper is its final one. In the early days of the deep learning revolution, there was often a sense of rivalry between the “old school” of classical computer vision and the “new school” of end-to-end deep learning.</p>
+<p>R-CNN brilliantly demonstrates that this is a false dichotomy. Its success is a direct result of <strong>combining</strong> tools from both worlds. It is a testament to the idea that deep learning and classical computer vision are not “opposing lines of scientific inquiry,” but rather “natural and inevitable partners.” This philosophy—of intelligently blending powerful, learned feature extractors with robust, time-tested algorithms—paved the way for the next decade of progress in the field.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
