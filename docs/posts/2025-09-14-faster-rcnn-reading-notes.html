@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-14">
+<meta name="description" content="In this post, we’ll dissect the seminal Faster R-CNN paper, exploring the architecture that solved the object detection speed bottleneck.">
+
+<title>Faster R-CNN: A Deep Dive into the Model that Revolutionized Object Detection – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Faster R-CNN: A Deep Dive into the Model that Revolutionized Object Detection – Random Thoughts">
+<meta property="og:description" content="In this post, we’ll dissect the seminal Faster R-CNN paper, exploring the architecture that solved the object detection speed bottleneck.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-14-faster-rcnn-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="Faster R-CNN: A Deep Dive into the Model that Revolutionized Object Detection – Random Thoughts">
+<meta name="twitter:description" content="In this post, we’ll dissect the seminal Faster R-CNN paper, exploring the architecture that solved the object detection speed bottleneck.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-14-faster-rcnn-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a>
+  <ul class="collapse">
+  <li><a href="#unpacking-the-story" id="toc-unpacking-the-story" class="nav-link" data-scroll-target="#unpacking-the-story">Unpacking the Story</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#setting-the-stage-the-object-detection-bottleneck" id="toc-setting-the-stage-the-object-detection-bottleneck" class="nav-link" data-scroll-target="#setting-the-stage-the-object-detection-bottleneck">Setting the Stage: The Object Detection Bottleneck</a></li>
+  <li><a href="#quantifying-the-problem-the-cost-of-traditional-proposals" id="toc-quantifying-the-problem-the-cost-of-traditional-proposals" class="nav-link" data-scroll-target="#quantifying-the-problem-the-cost-of-traditional-proposals">Quantifying the Problem: The Cost of Traditional Proposals</a></li>
+  <li><a href="#an-algorithmic-change-not-just-an-engineering-fix" id="toc-an-algorithmic-change-not-just-an-engineering-fix" class="nav-link" data-scroll-target="#an-algorithmic-change-not-just-an-engineering-fix">An Algorithmic Change, Not Just an Engineering Fix</a></li>
+  <li><a href="#the-core-idea-turning-feature-maps-into-proposals" id="toc-the-core-idea-turning-feature-maps-into-proposals" class="nav-link" data-scroll-target="#the-core-idea-turning-feature-maps-into-proposals">The Core Idea: Turning Feature Maps into Proposals</a></li>
+  <li><a href="#the-multi-scale-challenge-and-the-anchor-box-solution" id="toc-the-multi-scale-challenge-and-the-anchor-box-solution" class="nav-link" data-scroll-target="#the-multi-scale-challenge-and-the-anchor-box-solution">The Multi-Scale Challenge and the “Anchor” Box Solution</a></li>
+  <li><a href="#the-chicken-and-egg-problem-training-a-unified-network" id="toc-the-chicken-and-egg-problem-training-a-unified-network" class="nav-link" data-scroll-target="#the-chicken-and-egg-problem-training-a-unified-network">The Chicken-and-Egg Problem: Training a Unified Network</a></li>
+  <li><a href="#the-proof-and-the-payoff-a-new-state-of-the-art" id="toc-the-proof-and-the-payoff-a-new-state-of-the-art" class="nav-link" data-scroll-target="#the-proof-and-the-payoff-a-new-state-of-the-art">The Proof and the Payoff: A New State of the Art</a></li>
+  </ul></li>
+  <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">2. Related Work</a>
+  <ul class="collapse">
+  <li><a href="#object-proposal-methods" id="toc-object-proposal-methods" class="nav-link" data-scroll-target="#object-proposal-methods">Object Proposal Methods</a></li>
+  <li><a href="#deep-networks-for-object-detection" id="toc-deep-networks-for-object-detection" class="nav-link" data-scroll-target="#deep-networks-for-object-detection">Deep Networks for Object Detection</a></li>
+  </ul></li>
+  <li><a href="#faster-r-cnn-a-unified-architecture" id="toc-faster-r-cnn-a-unified-architecture" class="nav-link" data-scroll-target="#faster-r-cnn-a-unified-architecture">3. Faster R-CNN: A Unified Architecture</a>
+  <ul class="collapse">
+  <li><a href="#the-two-module-system" id="toc-the-two-module-system" class="nav-link" data-scroll-target="#the-two-module-system">The Two-Module System</a></li>
+  </ul></li>
+  <li><a href="#region-proposal-networks" id="toc-region-proposal-networks" class="nav-link" data-scroll-target="#region-proposal-networks">3.1 Region Proposal Networks</a>
+  <ul class="collapse">
+  <li><a href="#the-rpn-architecture-a-sliding-window-detector" id="toc-the-rpn-architecture-a-sliding-window-detector" class="nav-link" data-scroll-target="#the-rpn-architecture-a-sliding-window-detector">The RPN Architecture: A Sliding Window Detector</a></li>
+  <li><a href="#inside-the-rpn-a-mini-network-for-proposals" id="toc-inside-the-rpn-a-mini-network-for-proposals" class="nav-link" data-scroll-target="#inside-the-rpn-a-mini-network-for-proposals">Inside the RPN: A Mini-Network for Proposals</a></li>
+  <li><a href="#anchors-the-core-of-multi-scale-detection" id="toc-anchors-the-core-of-multi-scale-detection" class="nav-link" data-scroll-target="#anchors-the-core-of-multi-scale-detection">3.1.1 Anchors: The Core of Multi-Scale Detection</a></li>
+  <li><a href="#translation-invariant-anchors-a-key-advantage" id="toc-translation-invariant-anchors-a-key-advantage" class="nav-link" data-scroll-target="#translation-invariant-anchors-a-key-advantage">Translation-Invariant Anchors: A Key Advantage</a></li>
+  <li><a href="#multi-scale-anchors-as-regression-references-an-elegant-solution" id="toc-multi-scale-anchors-as-regression-references-an-elegant-solution" class="nav-link" data-scroll-target="#multi-scale-anchors-as-regression-references-an-elegant-solution">Multi-Scale Anchors as Regression References: An Elegant Solution</a></li>
+  <li><a href="#putting-it-all-together-the-faster-r-cnn-architecture" id="toc-putting-it-all-together-the-faster-r-cnn-architecture" class="nav-link" data-scroll-target="#putting-it-all-together-the-faster-r-cnn-architecture">Putting It All Together: The Faster R-CNN Architecture</a></li>
+  </ul></li>
+  <li><a href="#the-loss-function" id="toc-the-loss-function" class="nav-link" data-scroll-target="#the-loss-function">3.1.2 The Loss Function</a></li>
+  <li><a href="#training-the-rpn" id="toc-training-the-rpn" class="nav-link" data-scroll-target="#training-the-rpn">3.1.3 Training the RPN</a>
+  <ul class="collapse">
+  <li><a href="#initialization-and-fine-tuning" id="toc-initialization-and-fine-tuning" class="nav-link" data-scroll-target="#initialization-and-fine-tuning">Initialization and Fine-Tuning</a></li>
+  </ul></li>
+  <li><a href="#sharing-features-for-rpn-and-fast-r-cnn" id="toc-sharing-features-for-rpn-and-fast-r-cnn" class="nav-link" data-scroll-target="#sharing-features-for-rpn-and-fast-r-cnn">3.2 Sharing Features for RPN and Fast R-CNN</a>
+  <ul class="collapse">
+  <li><a href="#the-challenge-a-tug-of-war-for-shared-layers" id="toc-the-challenge-a-tug-of-war-for-shared-layers" class="nav-link" data-scroll-target="#the-challenge-a-tug-of-war-for-shared-layers">The Challenge: A Tug-of-War for Shared Layers</a></li>
+  <li><a href="#three-strategies-for-joint-training" id="toc-three-strategies-for-joint-training" class="nav-link" data-scroll-target="#three-strategies-for-joint-training">Three Strategies for Joint Training</a></li>
+  <li><a href="#the-chosen-method-4-step-alternating-training" id="toc-the-chosen-method-4-step-alternating-training" class="nav-link" data-scroll-target="#the-chosen-method-4-step-alternating-training">The Chosen Method: 4-Step Alternating Training</a></li>
+  </ul></li>
+  <li><a href="#implementation-details" id="toc-implementation-details" class="nav-link" data-scroll-target="#implementation-details">3.3 Implementation Details</a>
+  <ul class="collapse">
+  <li><a href="#image-and-anchor-scaling-a-pragmatic-choice-for-speed" id="toc-image-and-anchor-scaling-a-pragmatic-choice-for-speed" class="nav-link" data-scroll-target="#image-and-anchor-scaling-a-pragmatic-choice-for-speed">Image and Anchor Scaling: A Pragmatic Choice for Speed</a></li>
+  <li><a href="#handling-a-practical-problem-boundary-crossing-anchors" id="toc-handling-a-practical-problem-boundary-crossing-anchors" class="nav-link" data-scroll-target="#handling-a-practical-problem-boundary-crossing-anchors">Handling a Practical Problem: Boundary-Crossing Anchors</a></li>
+  </ul></li>
+  <li><a href="#experiments" id="toc-experiments" class="nav-link" data-scroll-target="#experiments">4. Experiments</a>
+  <ul class="collapse">
+  <li><a href="#experiments-on-pascal-voc" id="toc-experiments-on-pascal-voc" class="nav-link" data-scroll-target="#experiments-on-pascal-voc">4.1 Experiments on PASCAL VOC</a></li>
+  </ul></li>
+  <li><a href="#conclusion-a-paradigm-shift-in-object-detection" id="toc-conclusion-a-paradigm-shift-in-object-detection" class="nav-link" data-scroll-target="#conclusion-a-paradigm-shift-in-object-detection">5. Conclusion: A Paradigm Shift in Object Detection</a>
+  <ul class="collapse">
+  <li><a href="#the-core-breakthrough-unifying-the-pipeline" id="toc-the-core-breakthrough-unifying-the-pipeline" class="nav-link" data-scroll-target="#the-core-breakthrough-unifying-the-pipeline">The Core Breakthrough: Unifying the Pipeline</a></li>
+  <li><a href="#the-key-innovations-rpns-and-anchors" id="toc-the-key-innovations-rpns-and-anchors" class="nav-link" data-scroll-target="#the-key-innovations-rpns-and-anchors">The Key Innovations: RPNs and Anchors</a></li>
+  <li><a href="#the-lasting-impact" id="toc-the-lasting-impact" class="nav-link" data-scroll-target="#the-lasting-impact">The Lasting Impact</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Faster R-CNN: A Deep Dive into the Model that Revolutionized Object Detection</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this post, we’ll dissect the seminal Faster R-CNN paper, exploring the architecture that solved the object detection speed bottleneck.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 14, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-14-faster-rcnn-reading-notes.png" class="img-fluid"></p>
+<p>The family of R-CNN models marked a turning point for object detection, but speed remained a critical issue. The culprit? The slow, external systems used for generating region proposals. The Faster R-CNN paper, which we’ll explore in detail, presented an elegant and powerful solution: the Region Proposal Network (RPN). This innovation integrated region proposals directly into the neural network, paving the way for the first truly end-to-end, real-time object detector. Join us as we break down this seminal work, one section at a time.</p>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-title.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-title.PNG" class="img-fluid"></a></p>
+<p>Let’s break down exactly how they did it, section by section.</p>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-abstract.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-abstract.PNG" class="img-fluid"></a></p>
+<section id="unpacking-the-story" class="level3">
+<h3 class="anchored" data-anchor-id="unpacking-the-story">Unpacking the Story</h3>
+<p>The abstract tells a compelling story about a critical bottleneck in computer vision and the elegant solution that smashed through it. Let’s walk through the narrative.</p>
+<section id="the-context-the-r-cnn-family-and-the-emerging-bottleneck" class="level4">
+<h4 class="anchored" data-anchor-id="the-context-the-r-cnn-family-and-the-emerging-bottleneck">The Context: The R-CNN Family and the Emerging Bottleneck</h4>
+<p>To understand the genius of Faster R-CNN, we need to know the story of its predecessors. Object detection using deep learning was popularized by <strong>R-CNN</strong>. The original R-CNN worked in a multi-stage process:</p>
+<ol type="1">
+<li><strong>Propose Regions:</strong> Use an external, traditional computer vision algorithm (like Selective Search) to generate about 2,000 “region proposals”—bounding boxes that might contain an object.</li>
+<li><strong>Extract Features:</strong> For <em>each</em> of these 2,000 proposals, warp the image patch and feed it through a Convolutional Neural Network (CNN) to extract features.</li>
+<li><strong>Classify:</strong> Use a classifier (an SVM) to decide what object is in each feature patch.</li>
+</ol>
+<p>This was incredibly slow because it ran a CNN 2,000 times per image!</p>
+<p>The next major innovations, <strong>SPPnet</strong> and its successor <strong>Fast R-CNN</strong>, dramatically sped this up. Their key insight was to run the entire image through the deep CNN <em>only once</em> to get a single, rich feature map. Then, they would project the region proposals onto this feature map and use a special pooling layer (SPP or RoI Pooling) to extract features for each proposal. This was a monumental speedup.</p>
+<p>But, as the abstract states, these advances “exposed region proposal computation as a bottleneck.” The CNN part was now blazingly fast, but the model still had to wait for the slow, CPU-based Selective Search algorithm to generate proposals. The detection network was running on a powerful GPU, while the proposal mechanism was chugging along on the CPU. It was like putting a lawnmower engine in a Formula 1 car.</p>
+</section>
+<section id="the-solution-the-region-proposal-network-rpn" class="level4">
+<h4 class="anchored" data-anchor-id="the-solution-the-region-proposal-network-rpn">The Solution: The Region Proposal Network (RPN)</h4>
+<p>This is the core contribution of the paper. Instead of treating region proposals as an external, pre-processing step, the authors asked: “Can the network itself generate the proposals?”</p>
+<p>The answer was the <strong>Region Proposal Network (RPN)</strong>. The key ideas are:</p>
+<ol type="1">
+<li><strong>Feature Sharing:</strong> The RPN doesn’t need its own separate deep network. It plugs directly into the main detection network and <em>shares the same convolutional features</em>. This is why the authors call it “nearly cost-free”—the heavy lifting of feature extraction is already done.</li>
+<li><strong>Fully Convolutional:</strong> The RPN is a small, efficient network that slides over the feature map produced by the backbone (like VGG-16). At each location, it outputs two things:
+<ul>
+<li><strong>Objectness Score:</strong> The probability that a box at this location actually contains <em>any</em> object (as opposed to background).</li>
+<li><strong>Object Bounds:</strong> A regression prediction to refine the coordinates of the bounding box.</li>
+</ul></li>
+</ol>
+</section>
+<section id="the-unified-system-an-attention-mechanism" class="level4">
+<h4 class="anchored" data-anchor-id="the-unified-system-an-attention-mechanism">The Unified System: An “Attention” Mechanism</h4>
+<p>The final step is to merge the RPN with the Fast R-CNN detector. This creates a single, unified network. The authors beautifully frame this using the concept of <strong>attention</strong>. In neural networks, an attention mechanism is a component that allows the model to dynamically focus on the most relevant parts of the input.</p>
+<p>In this context, the RPN acts as the attention mechanism for the detector. It quickly scans the entire image’s feature map and tells the Fast R-CNN component, “Pay attention to <em>these</em> specific regions; they are the most likely to contain objects.”</p>
+</section>
+<section id="the-proof-speed-and-accuracy" class="level4">
+<h4 class="anchored" data-anchor-id="the-proof-speed-and-accuracy">The Proof: Speed and Accuracy</h4>
+<p>The results speak for themselves. The unified Faster R-CNN system achieved <strong>5 frames per second (fps)</strong>, a huge leap towards real-time performance, while also setting a new state-of-the-art accuracy on major benchmarks. Its dominance in top competitions solidified its place as the new gold standard for object detection.</p>
+</section>
+</section>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<section id="setting-the-stage-the-object-detection-bottleneck" class="level3">
+<h3 class="anchored" data-anchor-id="setting-the-stage-the-object-detection-bottleneck">Setting the Stage: The Object Detection Bottleneck</h3>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-1.PNG" class="img-fluid"></a></p>
+<p>The authors open by establishing the dominant paradigm in object detection at the time: a two-stage approach. Let’s break this down.</p>
+<p><strong>Stage 1: Region Proposal Methods</strong> Imagine you’re trying to find all the objects in a room. Before you can identify each object, you first need to just… <em>notice</em> them. You need to separate potential “things” from the background wallpaper. This is what <strong>region proposal methods</strong> do for a computer vision model. Algorithms like Selective Search [4] would scan an image and generate a few thousand candidate bounding boxes—or “proposals”—that were likely to contain an object, based on low-level features like color, texture, and edges. This is a <em>class-agnostic</em> process; it doesn’t know <em>what</em> the objects are, only <em>where</em> they might be.</p>
+<p><strong>Stage 2: Region-Based CNNs (R-CNNs)</strong> Once you have these proposals, you need to classify them. This is the job of a <strong>region-based convolutional neural network</strong>, a family of models kicked off by the original R-CNN [5]. The initial R-CNN approach was simple but brute-force: it took every single one of the ~2000 proposals from Selective Search and fed each one through a powerful CNN. While effective, this was incredibly slow and could take nearly a minute per image.</p>
+<p>The authors then reference the key optimization that changed the game: <strong>sharing convolutions</strong>. This was the central idea behind <strong>SPPnet</strong> [1] and <strong>Fast R-CNN</strong> [2]. Instead of running a CNN 2000 times, they ran the CNN just <em>once</em> on the entire image to create a single, powerful feature map. The region proposals were then applied to this feature map to pool features for each region. This was a massive speedup, making the CNN part of the detector “near real-time.”</p>
+<p>But here, the authors deliver the crucial punchline: “…<em>when ignoring the time spent on region proposals</em>.” By making the CNN so efficient, they revealed a new, glaring bottleneck. The object detector was now a hybrid system: a fast, GPU-based deep learning classifier was being fed by a slow, CPU-based classical computer vision algorithm (Selective Search). The proposal stage, once a minor part of the total computation time, was now the dominant bottleneck.</p>
+<p>This single paragraph masterfully sets the stage. It defines the problem not just as “object detection is slow,” but with surgical precision: “the <em>region proposal</em> part of object detection is the bottleneck.” And that is exactly the problem Faster R-CNN sets out to solve.</p>
+</section>
+<section id="quantifying-the-problem-the-cost-of-traditional-proposals" class="level3">
+<h3 class="anchored" data-anchor-id="quantifying-the-problem-the-cost-of-traditional-proposals">Quantifying the Problem: The Cost of Traditional Proposals</h3>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-2.PNG" class="img-fluid"></a></p>
+<p>Here, the authors dissect the nature of the problem. They explain that methods like Selective Search were designed to be “economical” in a world before deep learning dominated. They use <strong>“engineered low-level features”</strong>—this is a key term. It means that instead of <em>learning</em> features from data, human experts designed algorithms to extract features based on things like:</p>
+<ul>
+<li><strong>Color similarity:</strong> Grouping pixels of a similar color.</li>
+<li><strong>Texture:</strong> Finding patterns like stripes or dots.</li>
+<li><strong>Shape and size:</strong> Merging smaller regions into larger, more coherent shapes.</li>
+</ul>
+<p><strong>Selective Search</strong>, for instance, works by starting with tiny pixel clusters (superpixels) and greedily merging adjacent clusters that are most similar. It’s a clever, bottom-up approach, but it’s computationally intensive and fundamentally disconnected from the deep learning architecture.</p>
+<p>The paper then puts hard numbers to the problem:</p>
+<ul>
+<li><strong>Selective Search:</strong> Takes a whopping <strong>2 seconds per image</strong> on a CPU. A modern GPU can process dozens of images in that time.</li>
+<li><strong>EdgeBoxes:</strong> A faster alternative that focuses on object contours, providing a better speed/quality tradeoff at <strong>0.2 seconds (or 200 milliseconds) per image</strong>.</li>
+</ul>
+<p>While EdgeBoxes is 10x faster than Selective Search, the authors make a critical point: even 200ms is too slow. The highly optimized Fast R-CNN detector also takes about 200ms to do its job. This means that at best, the system spends 50% of its time just generating proposals. The promise of “real-time” detection is impossible when half the pipeline is stuck in the slow lane.</p>
+<p>This paragraph elegantly dismisses the idea of simply finding a slightly faster traditional proposal method. The problem isn’t that Selective Search is a bad algorithm; the problem is that the entire <em>paradigm</em> of using an external, CPU-bound proposal algorithm is flawed in the era of fast, GPU-based detectors. A more fundamental, integrated solution is required.</p>
+</section>
+<section id="an-algorithmic-change-not-just-an-engineering-fix" class="level3">
+<h3 class="anchored" data-anchor-id="an-algorithmic-change-not-just-an-engineering-fix">An Algorithmic Change, Not Just an Engineering Fix</h3>
+<p>In the following paragraph, the authors anticipate and dismantle a seemingly obvious solution before presenting their own, far more elegant approach.</p>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-3.PNG" class="img-fluid"></a></p>
+<p>The authors first address the elephant in the room: the CPU vs.&nbsp;GPU disparity. A fair critique of the speed comparison is that it’s an apples-to-oranges comparison. What if we just ported Selective Search or EdgeBoxes to run on a GPU? Wouldn’t that solve the problem?</p>
+<p>The authors’ response is brilliant. They concede this might work—calling it an “effective engineering solution”—but they argue it’s intellectually unsatisfying and inefficient. Why? Because it “misses important opportunities for sharing computation.”</p>
+<p>Think of it like this: The Fast R-CNN backbone (e.g., VGG-16) has already done the incredibly hard work of processing the entire image and creating a high-level map of abstract features—it knows where the edges, textures, and parts of objects are. A separate, GPU-based Selective Search would <em>completely ignore</em> this rich feature map and start from scratch, looking at the raw pixels again. This is fundamentally wasteful.</p>
+<p>This is the intellectual leap of the paper. The solution isn’t just to make the old methods faster; it’s to change the algorithm entirely. The authors propose the <strong>Region Proposal Network (RPN)</strong>, a small neural network designed specifically for this task.</p>
+<p>The genius of the RPN is that it doesn’t start from scratch. It builds directly on top of the shared convolutional feature map that the detector network already created. Because the most computationally expensive part is already done, the extra work required to generate proposals is minimal. The authors quantify this “marginal cost” at a mere <strong>10 milliseconds</strong>, a 20x improvement over the fastest alternative (EdgeBoxes). This isn’t just an optimization; it’s a paradigm shift that integrates the proposal mechanism directly into the deep learning pipeline, making it almost free.</p>
+</section>
+<section id="the-core-idea-turning-feature-maps-into-proposals" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-idea-turning-feature-maps-into-proposals">The Core Idea: Turning Feature Maps into Proposals</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="RPN Architecture"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-4.PNG" class="img-fluid figure-img" alt="RPN Architecture"></a></p>
+<figcaption>RPN Architecture</figcaption>
+</figure>
+</div>
+<p>This section explains the simple, powerful observation at the heart of the paper. The authors realized that the feature map produced by a network like VGG-16 isn’t just a jumble of numbers; it’s a rich, spatially-aware summary of the image. Each point on this feature grid corresponds to a specific patch of the input image and contains high-level information about what’s in that patch. They hypothesized that these same features, which are great for classifying objects, are also perfect for proposing where objects might be.</p>
+<p>Based on this insight, they designed the RPN to be a small, lightweight “head” that attaches to the main network’s body. Here’s how it works:</p>
+<ol type="1">
+<li><strong>Input:</strong> It takes the final feature map from the shared convolutional layers as its input.</li>
+<li><strong>Architecture:</strong> It consists of just a few extra convolutional layers that slide across this feature map. Because it only uses convolutional layers and no dense, fixed-size layers, it’s a <strong>Fully Convolutional Network (FCN)</strong>. This is a key design choice that allows it to efficiently process the feature map in a single pass, regardless of the input image’s size.</li>
+<li><strong>Dual Outputs:</strong> At every single location on the feature map, this sliding network performs two tasks simultaneously:
+<ul>
+<li><strong>Classification:</strong> It predicts an <strong>“objectness score.”</strong> This is a simple binary classification: does this location correspond to a foreground object, or is it just background?</li>
+<li><strong>Regression:</strong> It <strong>“regresses region bounds.”</strong> For locations that it thinks contain an object, it predicts four values that refine the coordinates (<code>x, y, width, height</code>) of the bounding box.</li>
+</ul></li>
+</ol>
+<p>Crucially, because the RPN is built with standard neural network layers, it can be <strong>“trained end-to-end.”</strong> This means the network learns the optimal way to propose regions directly from the data, guided by the final object detection loss. Unlike Selective Search, which is a fixed, handcrafted algorithm, the RPN is a flexible learner that gets better at its job during training.</p>
+</section>
+<section id="the-multi-scale-challenge-and-the-anchor-box-solution" class="level3">
+<h3 class="anchored" data-anchor-id="the-multi-scale-challenge-and-the-anchor-box-solution">The Multi-Scale Challenge and the “Anchor” Box Solution</h3>
+<p>A critical challenge in object detection is that objects appear in an image with a huge variety of sizes (scales) and shapes (aspect ratios). A car far away is small, while a car up close is large. A standing person is tall and thin, while a boat is wide and short. How can a network handle this efficiently?</p>
+<p>The authors first lay out the two conventional, but inefficient, ways to solve this problem, as shown in Figure 1.</p>
+<blockquote class="blockquote">
+<p>RPNs are designed to efficiently predict region proposals with a wide range of scales and aspect ratios. In contrast to prevalent methods [8], [9], [1], [2] that use pyramids of images (Figure 1, a) or pyramids of filters (Figure 1, b), we introduce novel “anchor” boxes that serve as references at multiple scales and aspect ratios. Our scheme can be thought of as a pyramid of regression references (Figure 1, c), which avoids enumerating images or filters of multiple scales or aspect ratios. This model performs well when trained and tested using single-scale images and thus benefits running speed.</p>
+</blockquote>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-fig-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-fig-1.PNG" class="img-fluid"></a></p>
+<p><strong>The Old Way 1: Image Pyramids (Figure 1a)</strong> This is the most straightforward, brute-force approach. You take the input image, resize it multiple times (e.g., a small, medium, and large version), and run your detector on each resized image. If you’re looking for a small object, it will be easier to find in the upscaled image. If you’re looking for a large object, the downscaled image is sufficient. The problem? You’ve just multiplied your computation time by the number of scales you use. It works, but it’s very slow.</p>
+<p><strong>The Old Way 2: Filter Pyramids (Figure 1b)</strong> This is a slightly more efficient approach. You create a single feature map from your image. Then, you slide filters (or “windows”) of multiple sizes across this feature map. For example, you might use a small 3x3 filter, a medium 5x5 filter, and a large 7x7 filter to detect objects of different sizes. This is better than an image pyramid, but it can still be computationally expensive and complex to manage filters of varying sizes.</p>
+<p><strong>The Faster R-CNN Way: A Pyramid of Anchors (Figure 1c)</strong> This is the paper’s brilliant and highly efficient solution. Instead of resizing the image or using multiple filter sizes, they introduce the concept of <strong>anchor boxes</strong>.</p>
+<p>An <strong>anchor box</strong> is a pre-defined reference bounding box with a specific scale and aspect ratio.</p>
+<p>Here’s the key idea: At <em>every single location</em> on the final convolutional feature map, the RPN places a set of these anchor boxes. For example, it might place 9 anchor boxes:</p>
+<ul>
+<li>3 scales (e.g., small, medium, large)</li>
+<li>3 aspect ratios (e.g., 1:1 square, 1:2 tall, 2:1 wide)</li>
+</ul>
+<p>The RPN then doesn’t have to predict a bounding box from scratch. Instead, for each of these 9 anchors at each location, it just asks two simple questions:</p>
+<ol type="1">
+<li><strong>Classification:</strong> What is the probability that this anchor contains a real object?</li>
+<li><strong>Regression:</strong> How do I need to slightly adjust the position and size of this anchor to make it fit the real object perfectly?</li>
+</ol>
+<p>The authors call this a <strong>“pyramid of regression references.”</strong> This is a beautiful analogy. The “pyramid” of different scales and shapes isn’t built by creating new images or new filters; it’s a <em>virtual</em> pyramid of reference boxes that exists at every feature map location. This allows the entire system to operate on a <strong>single-scale image</strong> and a <strong>single-scale feature map</strong>, which is the primary reason for its incredible speed.</p>
+</section>
+<section id="the-chicken-and-egg-problem-training-a-unified-network" class="level3">
+<h3 class="anchored" data-anchor-id="the-chicken-and-egg-problem-training-a-unified-network">The Chicken-and-Egg Problem: Training a Unified Network</h3>
+<p>The RPN and the Fast R-CNN detector are separate components, but they are designed to share a single “body” of convolutional layers. This creates a tricky training challenge:</p>
+<ul>
+<li>To learn how to propose good regions, the <strong>RPN</strong> needs a rich feature map.</li>
+<li>To learn how to create a rich feature map, the <strong>Fast R-CNN detector</strong> needs good region proposals.</li>
+</ul>
+<p>It’s a classic chicken-and-egg problem. If your initial proposals are random garbage, your detector won’t learn anything useful, and its features won’t improve. If your initial features are poor, your RPN will only propose garbage. The authors propose a pragmatic solution to break this cycle.</p>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-7.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-section-1-7.PNG" class="img-fluid"></a></p>
+<p>Their solution is a clever <strong>alternating training</strong> scheme. Instead of trying to train both network heads at once (which could be unstable), they have them take turns teaching each other. The process, which is detailed later in the paper, works roughly like this:</p>
+<ol type="1">
+<li><strong>Train the RPN:</strong> First, train the RPN to learn the basics of proposing objects. This also fine-tunes the shared convolutional layers to be somewhat good at this task.</li>
+<li><strong>Train the Detector:</strong> Use the proposals generated by the just-trained RPN to train the Fast R-CNN detector. This fine-tunes the shared layers again, this time optimizing them for classification accuracy.</li>
+<li><strong>Re-train the RPN:</strong> Now that the shared layers are better, go back and re-train <em>only</em> the unique layers of the RPN. It now has access to a more powerful feature map and can learn to generate even better proposals.</li>
+<li><strong>Re-train the Detector:</strong> Finally, using the improved proposals, re-train the unique layers of the Fast R-CNN detector one last time.</li>
+</ol>
+<p>By the end of this process, both components have converged, and you are left with a single, highly-optimized network where the shared convolutional layers are effective for both proposing regions <em>and</em> classifying the objects within them.</p>
+<p>(As a side note, the paper’s footnote mentions that they later found a simpler “joint training” method was also effective and is now more common, but this alternating approach was the original, robust method that proved the concept.)</p>
+</section>
+<section id="the-proof-and-the-payoff-a-new-state-of-the-art" class="level3">
+<h3 class="anchored" data-anchor-id="the-proof-and-the-payoff-a-new-state-of-the-art">The Proof and the Payoff: A New State of the Art</h3>
+<blockquote class="blockquote">
+<p>We comprehensively evaluate our method on the PASCAL VOC detection benchmarks [11] where RPNs with Fast R-CNNs produce detection accuracy better than the strong baseline of Selective Search with Fast R-CNNs. Meanwhile, our method waives nearly all computational burdens of Selective Search at test-time—the effective running time for proposals is just 10 milliseconds. Using the expensive very deep models of [3], our detection method still has a frame rate of 5fps (including all steps) on a GPU, and thus is a practical object detection system in terms of both speed and accuracy…</p>
+<p>In ILSVRC and COCO 2015 competitions, Faster R-CNN and RPN are the basis of several 1st-place entries [18]… These results suggest that our method is not only a cost-efficient solution for practical usage, but also an effective way of improving object detection accuracy.</p>
+</blockquote>
+<p>Having laid out the problem and the proposed solution, the authors conclude the introduction by summarizing the evidence. The key takeaways are:</p>
+<ol type="1">
+<li><strong>Higher Accuracy:</strong> On the standard PASCAL VOC benchmarks, the Faster R-CNN system was not just faster, but also <em>more accurate</em> than the previous state-of-the-art (Fast R-CNN with Selective Search). This proves that the learnable RPN is superior to handcrafted proposal algorithms.</li>
+<li><strong>Radical Speedup:</strong> The system achieves <strong>5 frames per second (fps)</strong>. While not blazing-fast by modern standards, this was a massive leap forward, crossing the threshold into what the authors call a “practical object detection system.” It made near real-time applications feasible for the first time.</li>
+<li><strong>Proven in the Field:</strong> The ultimate validation came from its dominant performance in the most prestigious computer vision competitions of the time, ILSVRC and COCO. The fact that many first-place winners built their systems on Faster R-CNN and RPNs cemented their status as the new industry standard.</li>
+<li><strong>A Foundation for Future Work:</strong> The authors note that the RPN framework is flexible and has been generalized to other complex computer vision tasks like instance segmentation and 3D object detection. This hints at the true power of the idea: it’s not just a single model, but a foundational component for perception systems.</li>
+</ol>
+<p>Perhaps the most important long-term advantage is that because the RPN learns its features, it automatically benefits from more powerful backbone networks. As CNNs got deeper and more expressive (e.g., with the introduction of ResNet), the performance of Faster R-CNN continued to improve, while the performance of static methods like Selective Search remained fixed. This “future-proof” quality is a key reason for its enduring impact on the field.</p>
+</section>
+</section>
+<section id="related-work" class="level2">
+<h2 class="anchored" data-anchor-id="related-work">2. Related Work</h2>
+<p>Before detailing their own architecture, the authors situate their work by reviewing the existing landscape of object proposal methods and deep learning detectors. This helps us understand what was standard at the time and highlights the specific gaps their work aims to fill.</p>
+<section id="object-proposal-methods" class="level3">
+<h3 class="anchored" data-anchor-id="object-proposal-methods">Object Proposal Methods</h3>
+<blockquote class="blockquote">
+<p>Object Proposals. There is a large literature on object proposal methods… Widely used object proposal methods include those based on grouping super-pixels (e.g., Selective Search [4]…) and those based on sliding windows (e.g., … EdgeBoxes [6]). Object proposal methods were adopted as external modules independent of the detectors (e.g., Selective Search [4] object detectors, R-CNN [5], and Fast R-CNN [2]).</p>
+</blockquote>
+<p>The authors first categorize the traditional proposal methods they’re competing against into two main families:</p>
+<ol type="1">
+<li><strong>Grouping Super-pixels:</strong> This is the family that includes Selective Search. The core idea is to first segment the image into many small, perceptually uniform regions called “super-pixels.” Then, a bottom-up process starts merging these small regions based on handcrafted rules (e.g., merge adjacent regions with similar color and texture). This is a clever but slow, iterative process.</li>
+</ol>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/selective-search-paper-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-09-14-faster-rcnn-reading-notes/selective-search-paper-1.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/selective-search-paper-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-09-14-faster-rcnn-reading-notes/selective-search-paper-2.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<ol start="2" type="1">
+<li><strong>Sliding Windows:</strong> This family includes methods like EdgeBoxes. These methods are more systematic, exhaustively evaluating windows at different locations and scales across the image. They typically use efficient, engineered features (like the density of edges within a window) to score whether a box is likely to contain an object.</li>
+</ol>
+<p>The most important phrase here is the last one: these methods were used as <strong>“external modules independent of the detectors.”</strong> This is the fundamental weakness Faster R-CNN attacks. They were completely separate pieces of code, often running on the CPU, that provided proposals to the deep learning model as a pre-processing step. There was no shared computation, no end-to-end learning, and a massive speed bottleneck.</p>
+</section>
+<section id="deep-networks-for-object-detection" class="level3">
+<h3 class="anchored" data-anchor-id="deep-networks-for-object-detection">Deep Networks for Object Detection</h3>
+<blockquote class="blockquote">
+<p>Deep Networks for Object Detection. The R-CNN method [5] trains CNNs end-to-end to classify the proposal regions… Its accuracy depends on the performance of the region proposal module… Several papers have proposed ways of using deep networks for predicting object bounding boxes… In the OverFeat method [9], a fully-connected layer is trained to predict the box coordinates… The MultiBox methods [26], [27] generate region proposals from a network… MultiBox does not share features between the proposal and detection networks.</p>
+</blockquote>
+<p>Next, the authors review how deep learning was being used for detection, highlighting other approaches that attempted to predict bounding boxes with a neural network. This clarifies the novelty of their own work.</p>
+<ul>
+<li><strong>R-CNN:</strong> The authors reiterate that the original R-CNN was just a classifier. It took proposals as a fixed, external input and did not predict box coordinates itself (other than a minor refinement step). Its performance was therefore capped by the quality of the external proposal method.</li>
+<li><strong>OverFeat:</strong> This was a pioneering one-stage detector. It used a sliding window approach directly on the CNN’s feature map to simultaneously classify and locate objects. However, it was primarily designed to find one dominant object and relied on a slow image pyramid to handle multiple scales.</li>
+<li><strong>MultiBox:</strong> This is a very important point of comparison. The MultiBox method was one of the first to use a neural network <em>specifically to propose regions</em>. It would predict a set of class-agnostic boxes, much like an RPN. However, the authors point out two key differences:
+<ol type="1">
+<li>MultiBox used a large fully-connected layer for its predictions, whereas the RPN uses a more efficient and flexible fully-convolutional design.</li>
+<li>Crucially, MultiBox was still treated as an external module. It did <em>not</em> share features with the downstream detection network.</li>
+</ol></li>
+</ul>
+<p>This final point is what truly separates Faster R-CNN. It takes the idea of “learning to propose” from MultiBox and the idea of “shared convolutional features” from Fast R-CNN and merges them into a single, elegant, end-to-end trainable system. It is the logical culmination of all the progress that came before it.</p>
+</section>
+</section>
+<section id="faster-r-cnn-a-unified-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-a-unified-architecture">3. Faster R-CNN: A Unified Architecture</h2>
+<section id="the-two-module-system" class="level3">
+<h3 class="anchored" data-anchor-id="the-two-module-system">The Two-Module System</h3>
+<blockquote class="blockquote">
+<p>Our object detection system, called Faster R-CNN, is composed of two modules. The first module is a deep fully convolutional network that proposes regions, and the second module is the Fast R-CNN detector [2] that uses the proposed regions. The entire system is a single, unified network for object detection (Figure 2). Using the recently popular terminology of neural networks with ‘attention’ [31] mechanisms, the RPN module tells the Fast R-CNN module where to look.</p>
+</blockquote>
+<p>At its core, the Faster R-CNN architecture is a brilliant marriage of two distinct modules that work in harmony: a <strong>Region Proposal Network (RPN)</strong> and a <strong>Fast R-CNN detector</strong>. The genius lies in how they are unified into a single, end-to-end network, as illustrated in the data flow of Figure 2.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-fig-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-fig-2.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/faster-rcnn-architecture.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-09-14-faster-rcnn-reading-notes/faster-rcnn-architecture.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>Let’s walk through the process step-by-step:</p>
+<ol type="1">
+<li><p><strong>Shared Feature Extraction:</strong> The process begins with a standard deep CNN backbone (like a VGG-16 or a ResNet). The input image is passed through this backbone <em>only once</em> to produce a high-level, spatially rich <strong>feature map</strong>. This is the most computationally intensive step, and crucially, it is shared by both modules.</p></li>
+<li><p><strong>The RPN Module (The “Where”):</strong> This feature map is then fed into the RPN. The RPN’s sole job is to look at this map and generate a set of high-quality <strong>region proposals</strong>. It slides across the feature map and, at each location, effectively asks, “Is there an object here? If so, what is its rough size and shape?” The output is a list of coordinates for boxes that likely contain objects.</p></li>
+<li><p><strong>The Fast R-CNN Module (The “What”):</strong> Now, the Fast R-CNN detector takes over. It receives two inputs:</p>
+<ul>
+<li>The original <strong>feature map</strong> from the backbone.</li>
+<li>The <strong>region proposals</strong> generated by the RPN.</li>
+</ul>
+<p>Using a mechanism called <strong>RoI Pooling</strong>, the detector extracts a small, fixed-size feature vector from the map for each proposal. These feature vectors are then fed into fully connected layers that perform the final tasks:</p>
+<ul>
+<li><strong>Classification:</strong> Assigning a specific class label (e.g., “person,” “cat,” “car”) to each proposal.</li>
+<li><strong>Bounding Box Regression:</strong> Making fine-tuned adjustments to the proposal’s coordinates to more tightly enclose the detected object.</li>
+</ul></li>
+</ol>
+<p>The authors provide the perfect analogy for this system: the RPN acts as an <strong>attention mechanism</strong>. It performs a quick, efficient scan of the entire image’s features to identify a small set of interesting regions, thereby directing the “attention” of the more powerful (and computationally expensive) classifier to only the parts of the image that matter most.</p>
+<p>This unified design, with its shared convolutional backbone, is the secret to Faster R-CNN’s efficiency. The expensive feature extraction is done once, and the lightweight RPN generates proposals almost for free.</p>
+</section>
+</section>
+<section id="region-proposal-networks" class="level2">
+<h2 class="anchored" data-anchor-id="region-proposal-networks">3.1 Region Proposal Networks</h2>
+<section id="the-rpn-architecture-a-sliding-window-detector" class="level3">
+<h3 class="anchored" data-anchor-id="the-rpn-architecture-a-sliding-window-detector">The RPN Architecture: A Sliding Window Detector</h3>
+<blockquote class="blockquote">
+<p>A Region Proposal Network (RPN) takes an image (of any size) as input and outputs a set of rectangular object proposals, each with an objectness score.³ … Because our ultimate goal is to share computation with a Fast R-CNN object detection network [2], we assume that both nets share a common set of convolutional layers. In our experiments, we investigate the Zeiler and Fergus model [32] (ZF), which has 5 shareable convolutional layers, and the Simonyan and Zisserman model [3] (VGG-16), which has 13 shareable convolutional layers.</p>
+</blockquote>
+<p>The authors begin by formally defining the RPN’s role: it’s a fully convolutional network whose job is to produce rectangular proposals. Each proposal comes with an <strong>objectness score</strong>, which is a crucial concept. This score does <em>not</em> say “this is a cat” or “this is a car.” It is class-agnostic. It simply estimates the probability that a proposal contains <em>any</em> kind of foreground object versus being just background.</p>
+<p>The key design principle, reiterated here, is that the RPN doesn’t exist in a vacuum. It’s designed to be a lightweight “head” that sits on top of a deep, pre-existing feature extractor like the VGG-16 network. This feature-sharing is the foundation of the system’s efficiency.</p>
+</section>
+<section id="inside-the-rpn-a-mini-network-for-proposals" class="level3">
+<h3 class="anchored" data-anchor-id="inside-the-rpn-a-mini-network-for-proposals">Inside the RPN: A Mini-Network for Proposals</h3>
+<p>The paper then describes the elegant mechanism at the heart of the RPN.</p>
+<blockquote class="blockquote">
+<p>To generate region proposals, we slide a small network over the convolutional feature map output by the last shared convolutional layer. This small network takes as input an n × n spatial window of the input convolutional feature map. Each sliding window is mapped to a lower-dimensional feature… This feature is fed into two sibling fully-connected layers—a box-regression layer (reg) and a box-classification layer (cls)… This architecture is naturally implemented with an n×n convolutional layer followed by two sibling 1 × 1 convolutional layers (for reg and cls, respectively).</p>
+</blockquote>
+<p>Conceptually, you can think of the RPN as a tiny network that slides over every location of the shared feature map. In this paper, they use a 3x3 window:</p>
+<ol type="1">
+<li><strong>Sliding Window:</strong> At a single location on the feature map (e.g., a map of size 14x14x512), the RPN looks at a 3x3 neighborhood of feature vectors. This 3x3 patch contains spatial context about a specific region of the original image.</li>
+<li><strong>Intermediate Layer:</strong> This 3x3 patch of features is first processed by a convolutional layer, creating an intermediate feature vector (e.g., 512-dimensional for VGG). This vector is a compact summary of the spatial features in the window.</li>
+<li><strong>Sibling Output Layers:</strong> This single summary vector is then fed into two parallel, separate layers (called “sibling” layers):
+<ul>
+<li><strong>Classification Layer (<code>cls</code>):</strong> This layer outputs the “objectness” score.</li>
+<li><strong>Regression Layer (<code>reg</code>):</strong> This layer outputs four numbers that represent the coordinate adjustments (<code>x, y, w, h</code>) needed to refine the bounding box.</li>
+</ul></li>
+</ol>
+<p>The authors then provide a crucial implementation detail. While it’s easy to <em>think</em> of this as a sliding mini-network, it’s actually implemented far more efficiently. The “3x3 sliding window” is simply a standard <strong>3x3 convolutional layer</strong>. The two “sibling fully-connected layers” that operate on the output are then implemented as two parallel <strong>1x1 convolutional layers</strong>. This fully convolutional design is extremely fast to run on a GPU and can process the entire feature map in one forward pass.</p>
+</section>
+<section id="anchors-the-core-of-multi-scale-detection" class="level3">
+<h3 class="anchored" data-anchor-id="anchors-the-core-of-multi-scale-detection">3.1.1 Anchors: The Core of Multi-Scale Detection</h3>
+<blockquote class="blockquote">
+<p>At each sliding-window location, we simultaneously predict multiple region proposals, where the number of maximum possible proposals for each location is denoted as k. So the reg layer has 4k outputs encoding the coordinates of k boxes, and the cls layer outputs 2k scores that estimate probability of object or not object for each proposal⁴. The k proposals are parameterized relative to k reference boxes, which we call anchors. An anchor is centered at the sliding window in question, and is associated with a scale and aspect ratio (Figure 3, left). By default we use 3 scales and 3 aspect ratios, yielding k = 9 anchors at each sliding position. For a convolutional feature map of a size W × H (typically ~2,400), there are WHk anchors in total.</p>
+</blockquote>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-fig-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-fig-3.PNG" class="img-fluid"></a></p>
+<p>This paragraph answers the critical question: how can a single 3x3 sliding window predict objects of wildly different sizes and shapes? The answer is that it doesn’t predict just one box; it predicts multiple boxes simultaneously.</p>
+<p>The key innovation is the <strong>anchor box</strong>. An anchor is a pre-defined bounding box, or a “template,” with a fixed scale (e.g., 128x128 pixels) and aspect ratio (e.g., 1:1 for a square).</p>
+<p>Here’s the workflow at a single position of the sliding window on the feature map:</p>
+<ol type="1">
+<li><strong>Place Anchors:</strong> The system places <code>k</code> of these anchor boxes, centered at the window’s location. The paper’s default setup uses <code>k=9</code> anchors (3 different sizes multiplied by 3 different shapes: tall, wide, and square).</li>
+<li><strong>Predict Relative to Anchors:</strong> The RPN’s sibling layers then make predictions <em>for each of the k anchors</em>.
+<ul>
+<li>The <strong><code>cls</code> layer</strong> outputs <code>2k</code> scores. For each of the <code>k</code> anchors, it produces two scores representing the probability of “object” vs.&nbsp;“not object.”</li>
+<li>The <strong><code>reg</code> layer</strong> outputs <code>4k</code> values. For each of the <code>k</code> anchors, it predicts four small adjustments (deltas) to refine its <code>x, y, width,</code> and <code>height</code>. The network isn’t learning to find a box from scratch; it’s learning to slightly nudge a good template into a great position.</li>
+</ul></li>
+</ol>
+<p>This design is incredibly efficient. Instead of running different networks or filters for different shapes, a single network pass produces predictions for a wide variety of object types. The final sentence drives this home: for a typical image, the feature map might be around 60x40. With <code>k=9</code> anchors at each spot, the network is densely evaluating <code>60 * 40 * 9 = 21,600</code> potential object locations of varying shapes and sizes in a single, parallelized forward pass.</p>
+</section>
+<section id="translation-invariant-anchors-a-key-advantage" class="level3">
+<h3 class="anchored" data-anchor-id="translation-invariant-anchors-a-key-advantage">Translation-Invariant Anchors: A Key Advantage</h3>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-section-3.1.1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-section-3.1.1-1.PNG" class="img-fluid"></a></p>
+<p>The authors make two powerful arguments here for why their anchor design is superior to competing methods like MultiBox, both stemming from the property of <strong>translation invariance</strong>.</p>
+<section id="a-more-robust-prediction-scheme" class="level4">
+<h4 class="anchored" data-anchor-id="a-more-robust-prediction-scheme">1. A More Robust Prediction Scheme</h4>
+<p>So, what is translation invariance? In simple terms, it means that if an object moves (is “translated”) in an image, the detection system should react in the exact same way. If the network can detect a cat on the left side of an image, it should be equally capable of detecting the same cat if it appears on the right side.</p>
+<ul>
+<li><p><strong>How RPN Achieves This:</strong> The RPN’s design guarantees this property. The set of <code>k=9</code> anchor shapes is the same at every single sliding-window location. Furthermore, because the prediction layers are convolutions, the <em>same function</em> (the same set of learned weights) is used to make predictions at every location. If the network learns a function that says “when you see features that look like a cat’s head, predict an object here and adjust the anchor like <em>this</em>,” that function is applied uniformly across the entire image.</p></li>
+<li><p><strong>The Flaw in MultiBox:</strong> The authors contrast this with MultiBox, which used k-means clustering on the training data’s ground-truth boxes to generate a fixed set of 800 anchors. These anchors are <em>not</em> translation-invariant. They are tied to absolute positions and sizes learned from the dataset’s statistics. For example, anchor #52 might be a “car-shaped box in the lower-center of the image,” because that’s where many cars appeared in the training set. If a car appears in the top-left corner during testing, anchor #52 is useless. MultiBox is not guaranteed to generate the same quality proposal if the object moves, making it less robust.</p></li>
+</ul>
+</section>
+<section id="a-dramatically-smaller-and-more-efficient-model" class="level4">
+<h4 class="anchored" data-anchor-id="a-dramatically-smaller-and-more-efficient-model">2. A Dramatically Smaller and More Efficient Model</h4>
+<p>This property also has a massive practical benefit: it drastically reduces the number of parameters the network needs to learn.</p>
+<ul>
+<li><p><strong>MultiBox:</strong> With its 800 fixed anchors, the output layer needs to predict <code>(4 coordinates + 1 objectness score) * 800 anchors</code> = 4000 values. Since this is a fully-connected layer, the number of weights is enormous, scaling with the size of the input features. The paper calculates this to be <strong>6.1 million parameters</strong>.</p></li>
+<li><p><strong>RPN:</strong> With its <code>k=9</code> anchors, the output layers predict <code>(4 coordinates + 2 objectness scores) * 9 anchors</code> = 54 values <em>at each location</em>. But because these are convolutional layers, the weights are <em>shared</em> across all locations. The network doesn’t need separate parameters for the top-left and bottom-right of the image. It only needs to learn the weights for the small convolutional filters. The paper calculates this to be just <strong>28,000 parameters</strong>.</p></li>
+</ul>
+<p>This is a staggering difference—the RPN’s output layers are over 200 times smaller! This efficiency means the model is faster to train, requires less memory, and, as the authors conclude, is far less likely to <strong>overfit</strong>. Overfitting is the risk of a model simply memorizing the training data instead of learning a generalizable rule. A smaller, more constrained model is forced to learn more robust and useful features, which is particularly important for smaller datasets like PASCAL VOC.</p>
+</section>
+</section>
+<section id="multi-scale-anchors-as-regression-references-an-elegant-solution" class="level3">
+<h3 class="anchored" data-anchor-id="multi-scale-anchors-as-regression-references-an-elegant-solution">Multi-Scale Anchors as Regression References: An Elegant Solution</h3>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/paper-section-3.1.1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-09-14-faster-rcnn-reading-notes/paper-section-3.1.1-2.PNG" class="img-fluid"></a></p>
+<p>Here, the authors formalize the comparison we saw in Figure 1, placing their anchor-based method in direct contrast with the two prevalent, but costly, paradigms for handling objects of varying sizes.</p>
+<p><strong>The Old, Inefficient Paradigms:</strong></p>
+<ol type="1">
+<li><strong>Image/Feature Pyramids:</strong> This brute-force method, used by classic models like the Deformable Part Model (DPM) and even early deep learning models, involves resizing the input image multiple times and computing features for each scale. It’s effective because it guarantees you’ll have a version of the image where the object of interest is at an ideal size, but it’s incredibly time-consuming.</li>
+<li><strong>Filter Pyramids:</strong> This method uses a single feature map but slides multiple filters of different sizes and shapes over it. For example, a tall, thin filter might be used to find pedestrians, while a wide, short filter finds cars. This is more efficient than an image pyramid but still requires designing, training, and running multiple specialized filters.</li>
+</ol>
+<p><strong>The New, Cost-Efficient Paradigm: A Pyramid of Anchors</strong> The RPN’s anchor-based method cleverly sidesteps the costs of the old paradigms. It achieves multi-scale detection while adhering to three critical efficiency principles:</p>
+<ul>
+<li>It processes an image of a <strong>single scale</strong>.</li>
+<li>It computes a feature map at a <strong>single scale</strong>.</li>
+<li>It uses a sliding window (filter) of a <strong>single size</strong> (3x3).</li>
+</ul>
+<p>Instead of making the <em>inputs</em> or the <em>filters</em> multi-scale, it makes the <em>references</em> multi-scale. At each location, the network doesn’t just ask, “Is there an object here?” It asks a much more specific set of questions: “Is there a large, square object here?”, “Is there a small, wide object here?”, “Is there a medium, tall object here?”, and so on for all <code>k</code> anchors. The network’s job is simply to classify (“yes/no”) and refine these pre-defined reference boxes.</p>
+<p>The final sentence of the paragraph is the ultimate takeaway. This anchor design is the <strong>“key component for sharing features without extra cost for addressing scales.”</strong> It’s the critical innovation that allows the network to handle the complexity of the real world (objects of all shapes and sizes) without sacrificing the massive speed benefits of the single-pass, feature-sharing architecture pioneered by Fast R-CNN.</p>
+<p>We are now ready to dive into the loss function that makes training this system possible.</p>
+</section>
+<section id="putting-it-all-together-the-faster-r-cnn-architecture" class="level3">
+<h3 class="anchored" data-anchor-id="putting-it-all-together-the-faster-r-cnn-architecture">Putting It All Together: The Faster R-CNN Architecture</h3>
+<p><a href="images/2025-09-14-faster-rcnn-reading-notes/faster-rcnn-architecture.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-09-14-faster-rcnn-reading-notes/faster-rcnn-architecture.PNG" class="img-fluid"></a></p>
+<p>The architecture can be broken down into three main stages:</p>
+<section id="stage-1-the-backbone-shared-feature-extractor" class="level4">
+<h4 class="anchored" data-anchor-id="stage-1-the-backbone-shared-feature-extractor">Stage 1: The Backbone (Shared Feature Extractor)</h4>
+<ul>
+<li><strong>As Seen in the Diagram:</strong> This is the section on the far left, labeled “VGG layers.”</li>
+<li><strong>The Process:</strong> An input image of any height (H) and width (W) is fed into a deep convolutional neural network (in this case, VGG-16). Through a series of convolutional and pooling layers, the network progressively downsamples the spatial dimensions while increasing the feature depth. The diagram correctly shows the output is a <code>H/16 x W/16</code> <strong>feature map</strong> that is much smaller than the original image but contains rich, high-level semantic information.</li>
+<li><strong>The Key Insight:</strong> This computationally expensive process is performed <strong>only once per image</strong>. The resulting feature map serves as a shared foundation for the next two stages.</li>
+</ul>
+</section>
+<section id="stage-2-the-rpn-the-where-module" class="level4">
+<h4 class="anchored" data-anchor-id="stage-2-the-rpn-the-where-module">Stage 2: The RPN (The “Where” Module)</h4>
+<ul>
+<li><strong>As Seen in the Diagram:</strong> This is the top-right block, labeled “Region Proposal Network.”</li>
+<li><strong>The Process:</strong> The shared feature map is fed into the RPN. The RPN’s own small convolutional network effectively slides across this feature map.
+<ol type="1">
+<li>At each location, a set of <strong><code>k</code> anchor boxes</strong> with different scales and aspect ratios are conceptually placed.</li>
+<li>This information is then passed to two sibling <strong>1x1 convolutional layers</strong>:
+<ul>
+<li><code>Conv_class</code> (the classification head) outputs the binary “objectness” score for each anchor.</li>
+<li><code>Conv_bbr</code> (the bounding box regression head) outputs the 4 coordinate refinements for each anchor.</li>
+</ul></li>
+</ol></li>
+<li><strong>The Output:</strong> The RPN produces a set of high-quality, class-agnostic proposals—what the diagram calls <strong>“Object-like regions proposed in feature map.”</strong></li>
+</ul>
+</section>
+<section id="stage-3-the-detector-head-the-what-module" class="level4">
+<h4 class="anchored">Stage 3: The Detector Head (The “What” Module)</h4>
+<ul>
+<li><strong>As Seen in the Diagram:</strong> This is the bottom-right block, labeled “Fast RCNN.”</li>
+<li><strong>The Process:</strong> This stage takes two inputs: the original shared <strong>feature map</strong> and the <strong>proposals</strong> from the RPN.
+<ol type="1">
+<li>For each proposed region, the <strong>RoI (Region of Interest) Pooling layer</strong> extracts a small, fixed-size feature vector from the shared feature map. This is a critical step because the subsequent fully-connected layers require a consistent input size, even though the proposals themselves are all different sizes.</li>
+<li>These fixed-size feature vectors are then passed through several <strong>Fully-Connected (FC) layers</strong>, which perform the final, high-level reasoning.</li>
+<li>Finally, two sibling output layers produce the final result for each region:
+<ul>
+<li>A <strong>Softmax layer</strong> performs multi-class classification, assigning a specific label like “person,” “cat,” or “background.”</li>
+<li>A <strong>Bounding box regressor</strong> performs a final, precise coordinate refinement for the classified object.</li>
+</ul></li>
+</ol></li>
+</ul>
+<p>This clear, three-stage process—extract features once, propose where objects are, and finally classify what they are—is the essence of Faster R-CNN’s elegant and efficient design.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="How to filter out background proposals?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How to filter out background proposals?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>If we look at the output of the RPN, it generates a large number of proposals. There is a sliding window over the feature map, and at each location, it generates <code>k</code> proposals (where <code>k</code> is the number of anchors). For a typical feature map size of <code>W x H</code>, this results in <code>W * H * k</code> proposals. Many of these proposals will correspond to background regions with no objects. So, how does the system filter out these background proposals before passing them to the Fast R-CNN detector?</strong></p>
+<p>That is an absolutely essential question, and it gets to the heart of how the RPN makes the whole system efficient. You are correct: the RPN generates a massive number of raw predictions (e.g., <code>~60 x 40 x 9 = 21,600</code> for a typical image), but the detector only needs a few hundred.</p>
+<p>There is a crucial filtering and refinement process that happens <em>between</em> the RPN’s raw output and the detector’s input. This process acts like a funnel, intelligently reducing the thousands of candidates down to the ~300 most promising ones.</p>
+<p>Here are the steps involved:</p>
+<section id="step-1-apply-box-regression-deltas" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-apply-box-regression-deltas">Step 1: Apply Box Regression Deltas</h4>
+<p>First, the raw <code>4k</code> regression outputs from the RPN are not absolute coordinates. They are small adjustments (deltas) in <code>x, y, width, height</code> relative to the anchor boxes. The first step is to apply these deltas to the <code>WHk</code> anchor boxes to get the actual coordinates of all the potential proposals.</p>
+</section>
+<section id="step-2-clip-proposals-to-image-boundaries" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-clip-proposals-to-image-boundaries">Step 2: Clip Proposals to Image Boundaries</h4>
+<p>Many of the resulting proposals, especially those from anchors near the edge of the image, may now exceed the image boundaries. These boxes are clipped so that they fit entirely within the image.</p>
+</section>
+<section id="step-3-remove-low-confidence-proposals" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-remove-low-confidence-proposals">Step 3: Remove Low-Confidence Proposals</h4>
+<p>Each of the <code>WHk</code> proposals has an “objectness score” from the RPN’s classification layer. The vast majority of these will correspond to background and will have very low scores. A simple and effective first filter is to discard any proposal with an objectness score below a certain small threshold (e.g., 0.01). This alone can drastically reduce the number of boxes.</p>
+</section>
+<section id="step-4-non-maximum-suppression-nms" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-non-maximum-suppression-nms">Step 4: Non-Maximum Suppression (NMS)</h4>
+<p>This is the most critical step. After Step 3, you might still have thousands of proposals. Many of them will be redundant, with multiple boxes heavily overlapping and pointing to the same object. The goal of <strong>Non-Maximum Suppression (NMS)</strong> is to eliminate these duplicates and keep only the single best proposal for each potential object.</p>
+<p>Here’s how NMS works:</p>
+<ol type="1">
+<li>Take the list of all remaining proposals and sort them in descending order based on their objectness scores.</li>
+<li>Select the proposal with the highest score and add it to your final, “clean” list of proposals.</li>
+<li>Now, compare this highest-scoring proposal with all other proposals in the list. Calculate the <strong>Intersection over Union (IoU)</strong> for each comparison.</li>
+<li>If the IoU of any other proposal with the highest-scoring proposal is above a certain threshold (the paper uses 0.7), it means they are significantly overlapping and likely refer to the same object. You “suppress” (discard) these overlapping proposals.</li>
+<li>Go back to the list of proposals that have not yet been selected or suppressed. Repeat the process: pick the one with the highest remaining score, add it to your clean list, and suppress its overlapping neighbors.</li>
+<li>Continue this process until your list of proposals is exhausted.</li>
+</ol>
+<p>The result of NMS is a much smaller set of proposals that do not significantly overlap, where each one represents the most confident prediction for a distinct object in the image.</p>
+</section>
+<section id="step-5-select-the-top-n-proposals" class="level4">
+<h4 class="anchored" data-anchor-id="step-5-select-the-top-n-proposals">Step 5: Select the Top-N Proposals</h4>
+<p>After NMS, you might still be left with more proposals than you want to feed to the detector (e.g., 2000). The final step is simply to take the top N proposals from the clean list, ranked by their objectness score. In the paper, the authors experiment with different values of N at test-time, but they find that using just <strong>N=300</strong> proposals provides an excellent balance of speed and high accuracy.</p>
+</section>
+<section id="summary-of-the-funnel" class="level3">
+<h3 class="anchored" data-anchor-id="summary-of-the-funnel">Summary of the Funnel</h3>
+<p>You can think of the entire process as a funnel:</p>
+<ol type="1">
+<li><strong>Start:</strong> ~21,600 raw predictions (anchors + deltas).</li>
+<li><strong>Filter by Score:</strong> Discard proposals with very low objectness scores. (Perhaps ~6000 remain).</li>
+<li><strong>NMS:</strong> Remove redundant, overlapping proposals. (Perhaps ~2000 remain).</li>
+<li><strong>Top-N:</strong> Select the 300 highest-scoring proposals from the remaining set.</li>
+<li><strong>Output:</strong> ~300 high-quality proposals are fed to the Fast R-CNN detector module.</li>
+</ol>
+<p>This intelligent filtering is what makes the whole system feasible. It allows the RPN to make a dense, exhaustive search across the image while ensuring the expensive detector module only focuses its attention on a small number of the most promising candidates.</p>
+</section>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="The RoI Pooling Algorithm">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The RoI Pooling Algorithm
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<section id="the-problem-fixed-size-input-for-fc-layers" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem-fixed-size-input-for-fc-layers">The Problem: Fixed-Size Input for FC Layers</h3>
+<p>The primary challenge that RoI Pooling solves is the <strong>fixed-input-size requirement</strong> of the final fully-connected (FC) layers. The FC layers at the end of the network act as the “brain” for classification. Like any brain, they have a fixed number of input neurons. They expect to receive a flattened feature vector of a specific, pre-determined length (e.g., 25,088 values, which comes from a 7x7x512 feature map being flattened).</p>
+<p>However, the region proposals coming from the RPN have <em>arbitrary</em> sizes. One proposal might be a tall, thin 30x100 pixel box, while another is a wide, short 200x50 pixel box. How can you get a fixed-size feature vector from these variable-sized regions?</p>
+<p>This is where RoI Pooling comes in.</p>
+</section>
+<section id="the-roi-pooling-algorithm-a-step-by-step-guide" class="level3">
+<h3 class="anchored" data-anchor-id="the-roi-pooling-algorithm-a-step-by-step-guide">The RoI Pooling Algorithm: A Step-by-Step Guide</h3>
+<p>RoI Pooling is an algorithm that takes a variable-sized region on the feature map and produces a fixed-size feature map. Let’s assume the desired fixed output size is <strong>7x7</strong>.</p>
+<p>Here is the process for a <em>single</em> RoI:</p>
+<p><strong>Step 1: Project the RoI onto the Feature Map</strong> The RoI’s coordinates are initially in the pixel space of the original input image (e.g., a box from <code>(x=50, y=100)</code> to <code>(x=150, y=200)</code>). The feature map is much smaller (e.g., 1/16th the size of the original image).</p>
+<p>The first step is to project the RoI’s coordinates onto the feature map’s coordinate system. This is done by dividing the RoI’s coordinates by the network’s total stride. For VGG-16, the stride is 16. So, <code>(50, 100)</code> becomes <code>(50/16, 100/16) = (3.125, 6.25)</code>, and so on.</p>
+<p><strong>Step 2: Quantize (Round) the RoI Coordinates</strong> The projected coordinates are floating-point numbers, but the feature map is a discrete grid. RoI Pooling rounds these coordinates to the nearest integer to snap the RoI to the feature map grid. This is a small but important detail, as it can introduce minor inaccuracies.</p>
+<p><strong>Step 3: Divide the RoI into a Grid</strong> The now-quantized RoI on the feature map is divided into a grid of sub-windows that matches the target output size. In our case, it’s divided into a <strong>7x7</strong> grid, resulting in 49 roughly equal-sized sections.</p>
+<ul>
+<li><em>Analogy:</em> Imagine placing a 7x7 grid of cookie cutters over the region of the feature map that corresponds to the proposal.</li>
+</ul>
+<p><strong>Step 4: Max-Pool Each Sub-Window</strong> For each of the 49 sub-windows in the grid, the algorithm finds the <strong>maximum activation value</strong> within that section. This max value becomes the output for that cell in the grid.</p>
+<p>This is the “pooling” step. It doesn’t matter if one sub-window covers a 2x2 area of the feature map and another covers a 3x2 area; the operation is the same—find the single largest number in that area.</p>
+<p><strong>Step 5: The Final Fixed-Size Feature Map</strong> After performing max-pooling on all 49 sections, the result is a perfectly sized <strong>7x7 feature map</strong>. This map has the same depth as the original feature map (e.g., 512 channels for VGG). This <code>7x7x512</code> block can now be flattened into a vector and fed directly into the FC layers for final classification and regression.</p>
+<p>This entire process is repeated for every single one of the ~300 proposals generated by the RPN.</p>
+</section>
+<section id="the-successor-roi-align" class="level3">
+<h3 class="anchored" data-anchor-id="the-successor-roi-align">The Successor: RoI Align</h3>
+<p>It’s worth noting that the quantization in Step 2 was identified as a source of error, especially for detecting small objects. The Mask R-CNN paper later introduced <strong>RoI Align</strong>, which avoids this rounding by using bilinear interpolation to compute the exact values of features at fractional locations, leading to more precise results. However, the fundamental concept of dividing the RoI into a grid and pooling remains the same.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="the-loss-function" class="level2">
+<h2 class="anchored" data-anchor-id="the-loss-function">3.1.2 The Loss Function</h2>
+<p>To train the RPN, we first need to define what a “correct” prediction looks like. Since the network makes predictions for thousands of anchors, we need a strategy to label each anchor as either a “good” proposal (positive) or a “bad” proposal (negative).</p>
+<section id="defining-positive-and-negative-anchors" class="level4">
+<h4 class="anchored" data-anchor-id="defining-positive-and-negative-anchors">Defining Positive and Negative Anchors</h4>
+<blockquote class="blockquote">
+<p>For training RPNs, we assign a binary class label (of being an object or not) to each anchor. We assign a positive label to two kinds of anchors: (i) the anchor/anchors with the highest Intersection-over-Union (IoU) overlap with a ground-truth box, or (ii) an anchor that has an IoU overlap higher than 0.7 with any ground-truth box… We assign a negative label to a non-positive anchor if its IoU ratio is lower than 0.3 for all ground-truth boxes. Anchors that are neither positive nor negative do not contribute to the training objective.</p>
+</blockquote>
+<p>The authors use the <strong>Intersection-over-Union (IoU)</strong> metric to assign ground-truth labels to the anchors. IoU measures the overlap between two bounding boxes: <code>IoU = Area of Overlap / Area of Union</code>. An IoU of 1 means a perfect match, and 0 means no overlap.</p>
+<p>Based on this, each anchor is assigned a label:</p>
+<ul>
+<li><p><strong>Positive Label (it’s an object):</strong> An anchor is considered “positive” if it meets one of two criteria:</p>
+<ol type="1">
+<li>It has the single highest IoU with a specific ground-truth object. This is a crucial rule that ensures <em>every object</em> in the image has at least one anchor responsible for detecting it, even if the overlap is not perfect.</li>
+<li>Its IoU with any ground-truth object is greater than 0.7. This allows multiple anchors to be considered positive for a single large object, providing more training examples.</li>
+</ol></li>
+<li><p><strong>Negative Label (it’s background):</strong> An anchor is definitively “negative” if its IoU with <em>all</em> ground-truth objects is less than 0.3. These are easy, unambiguous background examples.</p></li>
+<li><p><strong>Ignored:</strong> Anchors whose highest IoU is between 0.3 and 0.7 are ignored. These are ambiguous cases, and forcing the network to learn from them could lead to poor performance. It’s better to train on clear-cut examples.</p></li>
+</ul>
+</section>
+<section id="the-multi-task-loss" class="level4">
+<h4 class="anchored" data-anchor-id="the-multi-task-loss">The Multi-Task Loss</h4>
+<p>With these labels, the authors define a multi-task loss function, which is a combination of two separate losses—one for classification and one for regression. This is the same successful formula used in the Fast R-CNN paper.</p>
+<blockquote class="blockquote">
+<p>With these definitions, we minimize an objective function following the multi-task loss in Fast R-CNN [2]. Our loss function for an image is defined as: <span class="math display">\[ L(\{p_i\},\{t_i\}) = \frac{1}{N_{cls}}\sum_i L_{cls}(p_i, p_i^*) + \lambda\frac{1}{N_{reg}}\sum_i p_i^* L_{reg}(t_i, t_i^*) \]</span></p>
+</blockquote>
+<p>This equation looks complex, but it’s really just adding two costs together:</p>
+<ol type="1">
+<li><strong>Classification Loss (<code>L_cls</code>):</strong> This term measures the penalty for incorrect “objectness” predictions.
+<ul>
+<li><code>p_i</code> is the network’s predicted probability that anchor <code>i</code> is an object.</li>
+<li><code>p_i*</code> is the ground-truth label (1 if the anchor is positive, 0 if it’s negative).</li>
+<li><code>L_cls</code> is a standard Log Loss, which heavily penalizes confident but incorrect predictions. Its goal is to teach the RPN to be a good object vs.&nbsp;background classifier.</li>
+</ul></li>
+<li><strong>Regression Loss (<code>L_reg</code>):</strong> This term measures the penalty for inaccurate bounding box coordinate predictions.
+<ul>
+<li><code>t_i</code> is a vector representing the 4 predicted coordinates from the RPN.</li>
+<li><code>t_i*</code> is the ground-truth coordinate vector for the positive anchor.</li>
+<li><code>L_reg</code> is a Robust Loss (Smooth L1), which is less sensitive to outliers than the more common L2 loss.</li>
+</ul></li>
+</ol>
+<p>The most clever part of this equation is the <code>p_i*</code> term in the regression part. This acts as an <strong>on/off switch</strong>. The regression loss is only activated (<code>p_i* = 1</code>) for anchors that are labeled as positive. This makes perfect sense: you only want to penalize the network for getting box coordinates wrong if that box is actually supposed to contain an object. You don’t care about the predicted coordinates for background anchors. The <code>λ</code> term is simply a hyperparameter that balances the importance of the two tasks.</p>
+</section>
+<section id="bounding-box-regression-parameterization" class="level4">
+<h4 class="anchored" data-anchor-id="bounding-box-regression-parameterization">Bounding Box Regression Parameterization</h4>
+<p>Finally, the authors clarify what the regression targets <code>t_i</code> and <code>t_i*</code> actually represent. The network doesn’t predict absolute coordinates directly. Instead, it predicts four transformation deltas that map an anchor box to a ground-truth box.</p>
+<blockquote class="blockquote">
+<p>For bounding box regression, we adopt the parameterizations of the 4 coordinates following [5]: <span class="math display">\[ t_x = (x-x_a)/w_a, \quad t_y = (y-y_a)/h_a \]</span> <span class="math display">\[ t_w = \log(w/w_a), \quad t_h = \log(h/h_a) \]</span> …where x, y, w, and h denote the box’s center coordinates and its width and height. Variables x, x_a, and x* are for the predicted box, anchor box, and ground-truth box respectively… This can be thought of as bounding-box regression from an anchor box to a nearby ground-truth box.</p>
+</blockquote>
+<p>This is a standard and effective technique. The network predicts:</p>
+<ul>
+<li><code>t_x</code>, <code>t_y</code>: The center point’s shift as a fraction of the anchor’s width and height. This makes the prediction scale-invariant.</li>
+<li><code>t_w</code>, <code>t_h</code>: The log-space change in the anchor’s width and height. Using the log function makes the regression more stable and effective for objects of vastly different sizes.</li>
+</ul>
+<p>In essence, the network learns to answer the question: “How should I shift and scale this anchor to make it perfectly match the ground-truth object?”</p>
+</section>
+</section>
+<section id="training-the-rpn" class="level2">
+<h2 class="anchored" data-anchor-id="training-the-rpn">3.1.3 Training the RPN</h2>
+<blockquote class="blockquote">
+<p>The RPN can be trained end-to-end by back-propagation and stochastic gradient descent (SGD) [35]. We follow the “image-centric” sampling strategy from [2] to train this network. Each mini-batch arises from a single image that contains many positive and negative example anchors. It is possible to optimize for the loss functions of all anchors, but this will bias towards negative samples as they are dominate. Instead, we randomly sample 256 anchors in an image to compute the loss function of a mini-batch, where the sampled positive and negative anchors have a ratio of up to 1:1. If there are fewer than 128 positive samples in an image, we pad the mini-batch with negative ones.</p>
+</blockquote>
+<p>The RPN, being a standard neural network, is trained with the usual tools of backpropagation and SGD. However, a naive training approach would fail spectacularly due to a severe <strong>class imbalance</strong>.</p>
+<p><strong>The Problem: A Sea of Negatives</strong> Consider a typical image with a few objects. The RPN generates over 20,000 anchors. Of these, only a tiny fraction (perhaps a dozen) will be labeled as “positive.” If we were to train the network on all 20,000+ anchors at once, the negative (background) examples would overwhelmingly dominate the loss calculation. The network would quickly learn a simple, useless strategy: “always predict background.” It would achieve 99.9% accuracy but would be completely unable to find any objects.</p>
+<p><strong>The Solution: Image-Centric Sampling</strong> To solve this, the authors employ a clever sampling strategy to create balanced mini-batches for training:</p>
+<ol type="1">
+<li><strong>Image by Image:</strong> Instead of drawing random anchors from the entire dataset, each training mini-batch is built using anchors from just a <strong>single image</strong>.</li>
+<li><strong>Balanced Sampling:</strong> From that one image, they randomly sample a total of <strong>256 anchors</strong> to calculate the loss for that training step.</li>
+<li><strong>1:1 Ratio:</strong> They <em>try</em> to maintain a 1:1 ratio of positive to negative samples. This means they aim to sample 128 positive anchors and 128 negative anchors. This creates a “fair fight” where the network is forced to learn from both classes equally, preventing it from being biased towards the more common negative class.</li>
+<li><strong>Padding with Negatives:</strong> If an image contains fewer than 128 positive anchors (a very common scenario), the strategy is simple: take all the positive anchors there are, and then fill the rest of the 256-anchor mini-batch with randomly sampled negative anchors.</li>
+</ol>
+<p>This “image-centric” sampling is a simple but powerful technique to overcome the class imbalance problem and ensure stable, effective training.</p>
+<section id="initialization-and-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="initialization-and-fine-tuning">Initialization and Fine-Tuning</h3>
+<blockquote class="blockquote">
+<p>We randomly initialize all new layers by drawing weights from a zero-mean Gaussian distribution with standard deviation 0.01. All other layers (i.e., the shared convolutional layers) are initialized by pre-training a model for ImageNet classification [36], as is standard practice [5]. We tune all layers of the ZF net, and conv3_1 and up for the VGG net to conserve memory [2]. We use a learning rate of 0.001 for 60k mini-batches, and 0.0001 for the next 20k mini-batches… We use a momentum of 0.9 and a weight decay of 0.0005 [37].</p>
+</blockquote>
+<p>The final piece of the training puzzle is weight initialization. The authors follow a standard and highly effective two-pronged approach:</p>
+<ul>
+<li><strong>Shared Layers (The Backbone):</strong> These layers are not started from scratch. They are initialized with weights from a model that has already been trained on the massive ImageNet classification dataset. This is <strong>transfer learning</strong>. The network already has a powerful, built-in understanding of basic visual patterns like edges, textures, colors, and shapes, giving it a massive head start on the object detection task.</li>
+<li><strong>New Layers (The RPN Head):</strong> The few convolutional layers that are unique to the RPN are new and task-specific, so there are no pre-trained weights for them. These are initialized randomly from a standard, small Gaussian distribution, ready to be learned from scratch.</li>
+</ul>
+<p>The rest of the section simply lists the standard hyperparameters used for training, such as the learning rate schedule, momentum, and weight decay. These are typical values that demonstrate a standard, robust training setup.</p>
+</section>
+</section>
+<section id="sharing-features-for-rpn-and-fast-r-cnn" class="level2">
+<h2 class="anchored" data-anchor-id="sharing-features-for-rpn-and-fast-r-cnn">3.2 Sharing Features for RPN and Fast R-CNN</h2>
+<section id="the-challenge-a-tug-of-war-for-shared-layers" class="level3">
+<h3 class="anchored" data-anchor-id="the-challenge-a-tug-of-war-for-shared-layers">The Challenge: A Tug-of-War for Shared Layers</h3>
+<blockquote class="blockquote">
+<p>Thus far we have described how to train a network for region proposal generation, without considering the region-based object detection CNN that will utilize these proposals. For the detection network, we adopt Fast R-CNN [2]. Next we describe algorithms that learn a unified network composed of RPN and Fast R-CNN with shared convolutional layers (Figure 2).</p>
+<p>Both RPN and Fast R-CNN, trained independently, will modify their convolutional layers in different ways. We therefore need to develop a technique that allows for sharing convolutional layers between the two networks, rather than learning two separate networks.</p>
+</blockquote>
+<p>The authors now address the central training problem. We have two distinct tasks: proposing regions (RPN) and classifying those regions (Fast R-CNN). Both tasks rely on the same shared backbone, but they have different objectives. The RPN loss wants to tune the backbone to be good at finding “objectness,” while the Fast R-CNN loss wants to tune it to be good at fine-grained classification.</p>
+<p>If trained naively, this could create a “tug-of-war” where the gradient updates from the two losses pull the shared weights in conflicting directions, preventing the network from converging to a good solution. The paper explores three possible strategies to manage this.</p>
+</section>
+<section id="three-strategies-for-joint-training" class="level3">
+<h3 class="anchored" data-anchor-id="three-strategies-for-joint-training">Three Strategies for Joint Training</h3>
+<blockquote class="blockquote">
+<p>We discuss three ways for training networks with features shared:</p>
+</blockquote>
+<p>The authors outline three potential methods, showcasing their thought process before settling on the pragmatic one used in their experiments.</p>
+<ol type="1">
+<li><p><strong>Alternating Training:</strong> This is a “taking turns” approach. First, train the RPN. Then, use its proposals to train the Fast R-CNN detector. Then, go back and re-tune the RPN with the updated weights, and so on. This method is stable and conceptually straightforward. <strong>This is the primary method used in the paper.</strong></p></li>
+<li><p><strong>Approximate Joint Training:</strong> This is a simpler, faster method where the RPN and Fast R-CNN are combined into a single network from the start. During training, the RPN generates proposals, and these are immediately passed to the Fast R-CNN part of the network. The final loss is simply the sum of the RPN loss and the Fast R-CNN loss. It’s called “approximate” because it ignores a crucial detail: the coordinates of the proposal boxes are themselves outputs of the RPN. A theoretically pure backpropagation would need to calculate the gradient of the final loss with respect to these box coordinates, which is complex. This method simply “cuts” that gradient, treating the proposals as fixed boxes. The authors note this works surprisingly well and reduces training time by 25-50%.</p></li>
+<li><p><strong>Non-approximate Joint Training:</strong> This is the theoretically “correct” but much harder solution. It would require a special, fully differentiable “RoI warping” layer that knows how to backpropagate gradients through the box coordinates. The authors correctly state that this is a “nontrivial problem” and beyond the scope of their paper, though this idea would later be explored in subsequent research like Mask R-CNN’s RoI Align layer.</p></li>
+</ol>
+</section>
+<section id="the-chosen-method-4-step-alternating-training" class="level3">
+<h3 class="anchored" data-anchor-id="the-chosen-method-4-step-alternating-training">The Chosen Method: 4-Step Alternating Training</h3>
+<blockquote class="blockquote">
+<p>4-Step Alternating Training. In this paper, we adopt a pragmatic 4-step training algorithm to learn shared features via alternating optimization.</p>
+</blockquote>
+<p>The authors chose the first option for its stability and robustness, detailing a clear 4-step process to achieve a unified network with a well-optimized shared backbone.</p>
+<ul>
+<li><strong>Step 1: Train the RPN.</strong> An RPN is initialized with an ImageNet pre-trained model and trained end-to-end for the region proposal task. At this point, it is a standalone network.</li>
+<li><strong>Step 2: Train the Fast R-CNN Detector.</strong> A separate Fast R-CNN detector is also initialized with the ImageNet pre-trained model. It is trained using the proposals generated by the Step 1 RPN. At the end of this step, we have two distinct networks that <em>do not yet share any weights</em>.</li>
+<li><strong>Step 3: Fine-Tune the RPN.</strong> This is the first key step for unification. The RPN is re-initialized, but this time using the weights from the <em>detector</em> network trained in Step 2. The shared convolutional layers are <strong>frozen</strong> (not updated), and only the layers unique to the RPN are fine-tuned. Now, the RPN has learned to work with a feature map optimized for detection.</li>
+<li><strong>Step 4: Fine-Tune the Fast R-CNN Detector.</strong> Finally, keeping the shared layers frozen, the unique fully-connected layers of the detector are fine-tuned. The detector is now fed proposals from the improved RPN from Step 3.</li>
+</ul>
+<p>After these four steps, both the RPN and the Fast R-CNN detector are operating on the exact same set of convolutional layers, resulting in the final, unified, and efficient Faster R-CNN model.</p>
+</section>
+</section>
+<section id="implementation-details" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-details">3.3 Implementation Details</h2>
+<section id="image-and-anchor-scaling-a-pragmatic-choice-for-speed" class="level3">
+<h3 class="anchored" data-anchor-id="image-and-anchor-scaling-a-pragmatic-choice-for-speed">Image and Anchor Scaling: A Pragmatic Choice for Speed</h3>
+<blockquote class="blockquote">
+<p>We train and test both region proposal and object detection networks on images of a single scale [1], [2]. We re-scale the images such that their shorter side is s = 600 pixels [2]. Multi-scale feature extraction (using an image pyramid) may improve accuracy but does not exhibit a good speed-accuracy trade-off [2].</p>
+</blockquote>
+<p>This is one of the most important practical decisions in the paper. The authors explicitly reject the use of image pyramids in favor of a <strong>single-scale training and testing strategy</strong>.</p>
+<ul>
+<li><strong>The “Why”:</strong> As they state, using multiple scales simply doesn’t provide enough of an accuracy boost to justify the massive slowdown. The anchor mechanism is powerful enough to handle a wide range of object sizes on its own.</li>
+<li><strong>The “How”:</strong> To standardize the input, every image is resized so that its shortest side is 600 pixels. This provides a consistent baseline for the network’s feature extractor.</li>
+</ul>
+<p>The paper then specifies the default anchor setup that makes this single-scale approach possible.</p>
+<blockquote class="blockquote">
+<p>For anchors, we use 3 scales with box areas of 128², 256², and 512² pixels, and 3 aspect ratios of 1:1, 1:2, and 2:1. These hyper-parameters are not carefully chosen for a particular dataset… our algorithm allows predictions that are larger than the underlying receptive field.</p>
+</blockquote>
+<p>This gives us the famous default set of <code>k=9</code> anchors:</p>
+<ul>
+<li><strong>Scales (Sizes):</strong> Small (128x128), Medium (256x256), Large (512x512).</li>
+<li><strong>Aspect Ratios (Shapes):</strong> Square (1:1), Tall (1:2), Wide (2:1).</li>
+</ul>
+<p>The authors make two interesting points here:</p>
+<ol type="1">
+<li>These values are not the result of exhaustive tuning; they are sensible defaults that work well out-of-the-box. This suggests the method is robust.</li>
+<li>The network can predict boxes that are larger than its <strong>receptive field</strong>. The receptive field is the area of the input image that a single point on the feature map can “see.” A 3x3 window on the feature map might only see a 228x228 pixel patch of the input image, yet it can still successfully propose a 512x512 box. This is not as strange as it sounds. It’s like seeing just the torso of a person and being able to infer their full height and outline. The network learns to infer the whole from its parts.</li>
+</ol>
+</section>
+<section id="handling-a-practical-problem-boundary-crossing-anchors" class="level3">
+<h3 class="anchored" data-anchor-id="handling-a-practical-problem-boundary-crossing-anchors">Handling a Practical Problem: Boundary-Crossing Anchors</h3>
+<blockquote class="blockquote">
+<p>The anchor boxes that cross image boundaries need to be handled with care. During training, we ignore all cross-boundary anchors so they do not contribute to the loss… If the boundary-crossing outliers are not ignored in training, they introduce large, difficult to correct error terms in the objective, and training does not converge. During testing, however, we still apply the fully convolutional RPN to the entire image. This may generate cross-boundary proposal boxes, which we clip to the image boundary.</p>
+</blockquote>
+<p>This is a classic example of a seemingly small detail that is critical for making a model train successfully.</p>
+<ul>
+<li><strong>The Problem:</strong> At the edges of the feature map, many of the 9 anchors will be partially outside the bounds of the original image.</li>
+<li><strong>The Training Solution: Ignore Them.</strong> The authors found that trying to learn from these “broken” anchors was a bad idea. A boundary-crossing anchor has a distorted shape, and its IoU with a ground-truth box is ambiguous. Forcing the network to learn from these messy examples introduces a noisy, high-error signal into the loss, which can prevent the model from converging. The simplest and most effective solution is to just exclude them from the mini-batch sampling process entirely.</li>
+<li><strong>The Testing Solution: Clip Them.</strong> At test time, the goal is to find every object, and an object might be genuinely cut off at the edge of the frame. The RPN, being fully convolutional, naturally produces proposals across the entire feature map, including the edges. The strategy here is different: let the network generate the proposal, and then simply clip its coordinates so that the box fits within the image boundary.</li>
+</ul>
+<p>This distinction between the training and testing strategies is a key implementation detail that ensures both stable training and robust detection performance.</p>
+</section>
+</section>
+<section id="experiments" class="level2">
+<h2 class="anchored" data-anchor-id="experiments">4. Experiments</h2>
+<section id="experiments-on-pascal-voc" class="level3">
+<h3 class="anchored" data-anchor-id="experiments-on-pascal-voc">4.1 Experiments on PASCAL VOC</h3>
+<p>The authors choose the PASCAL VOC 2007 dataset as their primary proving ground. This was a standard and challenging benchmark for the time, containing 20 object categories. The key metric for success is <strong>mean Average Precision (mAP)</strong>, the gold standard for measuring object detection accuracy. A higher mAP is better.</p>
+<p>The core experiment is designed to answer one question: How does Faster R-CNN (using an RPN) compare to the previous state-of-the-art, Fast R-CNN (using an external proposal method like Selective Search)?</p>
+<section id="the-headline-result-better-and-faster" class="level4">
+<h4 class="anchored" data-anchor-id="the-headline-result-better-and-faster">The Headline Result: Better and Faster</h4>
+<blockquote class="blockquote">
+<p>Table 2 (top) shows Fast R-CNN results when trained and tested using various region proposal methods. These results use the ZF net. For Selective Search (SS) [4], we generate about 2000 proposals… RPN with Fast R-CNN achieves competitive results, with an mAP of 59.9% while using up to 300 proposals⁸. Using RPN yields a much faster detection system… because of shared convolutional computations; the fewer proposals also reduce the region-wise fully-connected layers’ cost.</p>
+</blockquote>
+<p>This first result, shown in the top rows of Table 2, is the paper’s knockout punch.</p>
+<ul>
+<li><strong>Baseline (Fast R-CNN + Selective Search):</strong> The established benchmark achieves <strong>58.7% mAP</strong>. This is a strong result, but it requires processing 2000 proposals per image.</li>
+<li><strong>Faster R-CNN (RPN + Fast R-CNN):</strong> The authors’ unified system achieves <strong>59.9% mAP</strong>.</li>
+</ul>
+<p>This is a remarkable outcome for two reasons:</p>
+<ol type="1">
+<li><strong>It’s More Accurate:</strong> The learnable RPN doesn’t just match the performance of the complex, handcrafted Selective Search algorithm; it surpasses it. This demonstrates that a deep network can learn to generate <em>better</em> proposals than the traditional methods.</li>
+<li><strong>It’s More Efficient:</strong> It achieves this higher accuracy while using only <strong>300 proposals</strong>—nearly a 7x reduction in the number of regions the final detector needs to process. This, combined with the “cost-free” nature of the RPN’s feature sharing, is what enables the massive speedup.</li>
+</ol>
+</section>
+<section id="ablation-studies-what-makes-the-rpn-tick" class="level4">
+<h4 class="anchored" data-anchor-id="ablation-studies-what-makes-the-rpn-tick">Ablation Studies: What Makes the RPN Tick?</h4>
+<p>The authors then perform a series of <strong>ablation studies</strong>—experiments where they systematically remove or alter parts of their model to understand which components are most critical to its success.</p>
+<blockquote class="blockquote">
+<p>To investigate the behavior of RPNs as a proposal method, we conducted several ablation studies.</p>
+</blockquote>
+<ol type="1">
+<li><p><strong>The Importance of Feature Sharing:</strong> They compare the final unified model (“shared” features, 59.9% mAP) to the model from Step 2 of their training process (“unshared” features, 58.7% mAP). The performance drop confirms that fine-tuning the RPN on the detector-optimized features (Steps 3 &amp; 4) is crucial. Sharing features isn’t just for speed; it actively improves the quality of the proposals and the final detection accuracy.</p></li>
+<li><p><strong>The Importance of Consistent Training/Testing:</strong> In another experiment, they train a Fast R-CNN detector using Selective Search proposals but then test it using RPN proposals. The mAP drops significantly to 56.8%. This shows that the detector learns to work best with the <em>specific kind of proposals</em> it was trained on. This highlights the benefit of a tightly integrated system where the proposer and detector are co-adapted.</p></li>
+<li><p><strong>Dissecting the RPN’s <code>cls</code> and <code>reg</code> Layers:</strong> This is perhaps the most insightful ablation.</p>
+<ul>
+<li><strong>Without the <code>cls</code> score:</strong> If they remove the objectness score and simply sample N random proposals, the mAP plummets. This proves that the RPN’s classification head is extremely effective at its job: the proposals it ranks highest are genuinely the most promising ones.</li>
+<li><strong>Without the <code>reg</code> refinement:</strong> If they remove the bounding box regression and just use the raw anchor boxes as proposals, the mAP drops to 52.1%. This proves that the anchors are just good starting points. The learned regression refinement, which slightly adjusts the position and size of each anchor, is absolutely essential for creating the accurate proposals needed for high-quality detection.</li>
+</ul></li>
+</ol>
+<p>In summary, these experiments definitively prove that the RPN is a superior proposal mechanism, and its success is a direct result of its key design features: shared convolutions, end-to-end training, and the dual heads for classification and regression.</p>
+</section>
+</section>
+</section>
+<section id="conclusion-a-paradigm-shift-in-object-detection" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion-a-paradigm-shift-in-object-detection">5. Conclusion: A Paradigm Shift in Object Detection</h2>
+<blockquote class="blockquote">
+<p>We have presented RPNs for efficient and accurate region proposal generation. By sharing convolutional features with the down-stream detection network, the region proposal step is nearly cost-free. Our method enables a unified, deep-learning-based object detection system to run at near real-time frame rates. The learned RPN also improves region proposal quality and thus the overall object detection accuracy.</p>
+</blockquote>
+<p>The paper’s conclusion is brief but dense with impact. It perfectly summarizes the monumental achievement of the work. Let’s unpack these contributions one last time and reflect on the paper’s lasting legacy.</p>
+<section id="the-core-breakthrough-unifying-the-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-breakthrough-unifying-the-pipeline">The Core Breakthrough: Unifying the Pipeline</h3>
+<p>Before this paper, state-of-the-art object detection was a hybrid affair. A slow, classical computer vision algorithm like Selective Search would propose regions, and a fast, powerful CNN would classify them. The system was fundamentally disjointed, and the proposal stage was a crippling bottleneck.</p>
+<p>The Faster R-CNN paper didn’t just optimize a part of the pipeline; it revolutionized the entire paradigm. By introducing the Region Proposal Network, the authors created the first truly <strong>end-to-end, unified deep learning object detector</strong>. The key was realizing that the rich feature map produced by the detector’s backbone contained all the necessary information to also propose regions. By sharing these features, the once-costly proposal step became, in the authors’ words, “nearly cost-free.”</p>
+</section>
+<section id="the-key-innovations-rpns-and-anchors" class="level3">
+<h3 class="anchored" data-anchor-id="the-key-innovations-rpns-and-anchors">The Key Innovations: RPNs and Anchors</h3>
+<p>This unification was made possible by two brilliant and now-foundational concepts:</p>
+<ol type="1">
+<li><strong>The Region Proposal Network (RPN):</strong> A lightweight, fully-convolutional network that slides over the shared feature map. Its dual-output structure—simultaneously classifying “objectness” and regressing box coordinates—allowed it to learn to generate high-quality proposals directly from the data.</li>
+<li><strong>Anchor Boxes:</strong> The elegant solution to the multi-scale, multi-shape object problem. Instead of relying on slow image pyramids or complex filter banks, the authors introduced a “pyramid of regression references.” This set of pre-defined anchor boxes allowed a single-sized filter operating on a single-scale feature map to detect objects of nearly any shape or size, which was the key to unlocking immense speed gains.</li>
+</ol>
+</section>
+<section id="the-lasting-impact" class="level3">
+<h3 class="anchored" data-anchor-id="the-lasting-impact">The Lasting Impact</h3>
+<p>The title “Faster R-CNN” is almost an understatement. While it did make the R-CNN family significantly faster—crossing the threshold into near real-time performance—its true impact was far greater.</p>
+<p>Faster R-CNN established a new gold standard. For years, it served as the powerful and reliable baseline against which new object detection architectures were measured. The core concepts it introduced, particularly the RPN and the use of anchors, became foundational building blocks for the next generation of computer vision models, including landmark architectures like Mask R-CNN for instance segmentation and influencing the design of countless one-stage and two-stage detectors that followed.</p>
+<p>By solving the region proposal bottleneck, the authors didn’t just make an existing model faster; they fundamentally redefined what an object detector could be: a single, elegant, and end-to-end trainable neural network.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
