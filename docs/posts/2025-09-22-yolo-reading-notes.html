@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-22">
+<meta name="description" content="A detailed, section-by-section breakdown of the revolutionary paper that introduced a unified, real-time approach to object detection.">
+
+<title>You Only Look Once: A Deep Dive into the YOLO Object Detection Algorithm – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="You Only Look Once: A Deep Dive into the YOLO Object Detection Algorithm – Random Thoughts">
+<meta property="og:description" content="A detailed, section-by-section breakdown of the revolutionary paper that introduced a unified, real-time approach to object detection.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-22-yolo-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="You Only Look Once: A Deep Dive into the YOLO Object Detection Algorithm – Random Thoughts">
+<meta name="twitter:description" content="A detailed, section-by-section breakdown of the revolutionary paper that introduced a unified, real-time approach to object detection.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-22-yolo-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-abstract" id="toc-the-abstract" class="nav-link active" data-scroll-target="#the-abstract">The Abstract</a>
+  <ul class="collapse">
+  <li><a href="#a-new-philosophy-detection-as-regression" id="toc-a-new-philosophy-detection-as-regression" class="nav-link" data-scroll-target="#a-new-philosophy-detection-as-regression">A New Philosophy: Detection as Regression</a></li>
+  <li><a href="#one-network-to-rule-them-all" id="toc-one-network-to-rule-them-all" class="nav-link" data-scroll-target="#one-network-to-rule-them-all">One Network to Rule Them All</a></li>
+  <li><a href="#speed-accuracy-and-generalization" id="toc-speed-accuracy-and-generalization" class="nav-link" data-scroll-target="#speed-accuracy-and-generalization">Speed, Accuracy, and Generalization</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#the-need-for-speed-and-accuracy" id="toc-the-need-for-speed-and-accuracy" class="nav-link" data-scroll-target="#the-need-for-speed-and-accuracy">The Need for Speed and Accuracy</a></li>
+  <li><a href="#the-problem-with-multi-stage-pipelines" id="toc-the-problem-with-multi-stage-pipelines" class="nav-link" data-scroll-target="#the-problem-with-multi-stage-pipelines">The Problem with Multi-Stage Pipelines</a></li>
+  <li><a href="#a-unified-approach-detection-as-regression" id="toc-a-unified-approach-detection-as-regression" class="nav-link" data-scroll-target="#a-unified-approach-detection-as-regression">A Unified Approach: Detection as Regression</a></li>
+  <li><a href="#the-three-core-benefits-of-yolo" id="toc-the-three-core-benefits-of-yolo" class="nav-link" data-scroll-target="#the-three-core-benefits-of-yolo">The Three Core Benefits of YOLO</a></li>
+  <li><a href="#acknowledging-the-trade-offs" id="toc-acknowledging-the-trade-offs" class="nav-link" data-scroll-target="#acknowledging-the-trade-offs">Acknowledging the Trade-offs</a></li>
+  </ul></li>
+  <li><a href="#unified-detection" id="toc-unified-detection" class="nav-link" data-scroll-target="#unified-detection">2. Unified Detection</a>
+  <ul class="collapse">
+  <li><a href="#the-s-x-s-grid-carving-up-the-image" id="toc-the-s-x-s-grid-carving-up-the-image" class="nav-link" data-scroll-target="#the-s-x-s-grid-carving-up-the-image">The S x S Grid: Carving Up the Image</a></li>
+  <li><a href="#what-does-each-grid-cell-predict" id="toc-what-does-each-grid-cell-predict" class="nav-link" data-scroll-target="#what-does-each-grid-cell-predict">What Does Each Grid Cell Predict?</a></li>
+  <li><a href="#the-final-output-tensor" id="toc-the-final-output-tensor" class="nav-link" data-scroll-target="#the-final-output-tensor">The Final Output Tensor</a></li>
+  </ul></li>
+  <li><a href="#network-design" id="toc-network-design" class="nav-link" data-scroll-target="#network-design">2.1. Network Design</a></li>
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">2.2. Training</a>
+  <ul class="collapse">
+  <li><a href="#step-1-pretraining-the-feature-extractor" id="toc-step-1-pretraining-the-feature-extractor" class="nav-link" data-scroll-target="#step-1-pretraining-the-feature-extractor">Step 1: Pretraining the Feature Extractor</a></li>
+  <li><a href="#step-2-adapting-the-model-for-detection" id="toc-step-2-adapting-the-model-for-detection" class="nav-link" data-scroll-target="#step-2-adapting-the-model-for-detection">Step 2: Adapting the Model for Detection</a></li>
+  <li><a href="#the-heart-of-the-matter-the-loss-function" id="toc-the-heart-of-the-matter-the-loss-function" class="nav-link" data-scroll-target="#the-heart-of-the-matter-the-loss-function">The Heart of the Matter: The Loss Function</a></li>
+  <li><a href="#training-hyperparameters-and-data-augmentation" id="toc-training-hyperparameters-and-data-augmentation" class="nav-link" data-scroll-target="#training-hyperparameters-and-data-augmentation">Training Hyperparameters and Data Augmentation</a></li>
+  </ul></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">2.3. Inference</a></li>
+  <li><a href="#limitations-of-yolo" id="toc-limitations-of-yolo" class="nav-link" data-scroll-target="#limitations-of-yolo">2.4. Limitations of YOLO</a>
+  <ul class="collapse">
+  <li><a href="#strong-spatial-constraints" id="toc-strong-spatial-constraints" class="nav-link" data-scroll-target="#strong-spatial-constraints">1. Strong Spatial Constraints</a></li>
+  <li><a href="#generalization-to-novel-aspect-ratios" id="toc-generalization-to-novel-aspect-ratios" class="nav-link" data-scroll-target="#generalization-to-novel-aspect-ratios">2. Generalization to Novel Aspect Ratios</a></li>
+  <li><a href="#coarse-features-and-localization-errors" id="toc-coarse-features-and-localization-errors" class="nav-link" data-scroll-target="#coarse-features-and-localization-errors">3. Coarse Features and Localization Errors</a></li>
+  <li><a href="#the-imperfect-loss-function" id="toc-the-imperfect-loss-function" class="nav-link" data-scroll-target="#the-imperfect-loss-function">4. The Imperfect Loss Function</a></li>
+  </ul></li>
+  <li><a href="#comparison-to-other-detection-systems" id="toc-comparison-to-other-detection-systems" class="nav-link" data-scroll-target="#comparison-to-other-detection-systems">3. Comparison to Other Detection Systems</a>
+  <ul class="collapse">
+  <li><a href="#deformable-parts-models-dpm" id="toc-deformable-parts-models-dpm" class="nav-link" data-scroll-target="#deformable-parts-models-dpm">Deformable Parts Models (DPM)</a></li>
+  <li><a href="#the-r-cnn-family" id="toc-the-r-cnn-family" class="nav-link" data-scroll-target="#the-r-cnn-family">The R-CNN Family</a></li>
+  <li><a href="#other-unified-approaches-overfeat-and-multibox" id="toc-other-unified-approaches-overfeat-and-multibox" class="nav-link" data-scroll-target="#other-unified-approaches-overfeat-and-multibox">Other Unified Approaches: OverFeat and MultiBox</a></li>
+  </ul></li>
+  <li><a href="#comparison-to-other-real-time-systems" id="toc-comparison-to-other-real-time-systems" class="nav-link" data-scroll-target="#comparison-to-other-real-time-systems">4.1. Comparison to Other Real-Time Systems</a>
+  <ul class="collapse">
+  <li><a href="#the-old-guard-dpm" id="toc-the-old-guard-dpm" class="nav-link" data-scroll-target="#the-old-guard-dpm">The Old Guard: DPM</a></li>
+  <li><a href="#the-accuracy-kings-r-cnn-and-its-successors" id="toc-the-accuracy-kings-r-cnn-and-its-successors" class="nav-link" data-scroll-target="#the-accuracy-kings-r-cnn-and-its-successors">The Accuracy Kings: R-CNN and its Successors</a></li>
+  <li><a href="#yolos-breakthrough" id="toc-yolos-breakthrough" class="nav-link" data-scroll-target="#yolos-breakthrough">YOLO’s Breakthrough</a></li>
+  </ul></li>
+  <li><a href="#voc-2007-error-analysis" id="toc-voc-2007-error-analysis" class="nav-link" data-scroll-target="#voc-2007-error-analysis">4.2. VOC 2007 Error Analysis</a>
+  <ul class="collapse">
+  <li><a href="#the-error-breakdown" id="toc-the-error-breakdown" class="nav-link" data-scroll-target="#the-error-breakdown">The Error Breakdown</a></li>
+  <li><a href="#the-tale-of-two-models-global-vs.-local" id="toc-the-tale-of-two-models-global-vs.-local" class="nav-link" data-scroll-target="#the-tale-of-two-models-global-vs.-local">The Tale of Two Models: Global vs.&nbsp;Local</a></li>
+  </ul></li>
+  <li><a href="#combining-fast-r-cnn-and-yolo" id="toc-combining-fast-r-cnn-and-yolo" class="nav-link" data-scroll-target="#combining-fast-r-cnn-and-yolo">4.3. Combining Fast R-CNN and YOLO</a>
+  <ul class="collapse">
+  <li><a href="#the-hypothesis-using-yolo-as-a-context-filter" id="toc-the-hypothesis-using-yolo-as-a-context-filter" class="nav-link" data-scroll-target="#the-hypothesis-using-yolo-as-a-context-filter">The Hypothesis: Using YOLO as a “Context Filter”</a></li>
+  <li><a href="#the-proof-is-in-the-performance" id="toc-the-proof-is-in-the-performance" class="nav-link" data-scroll-target="#the-proof-is-in-the-performance">The Proof Is in the Performance</a></li>
+  <li><a href="#the-crucial-control-experiment" id="toc-the-crucial-control-experiment" class="nav-link" data-scroll-target="#the-crucial-control-experiment">The Crucial Control Experiment</a></li>
+  </ul></li>
+  <li><a href="#voc-2012-results" id="toc-voc-2012-results" class="nav-link" data-scroll-target="#voc-2012-results">4.4. VOC 2012 Results</a>
+  <ul class="collapse">
+  <li><a href="#yolos-standalone-performance" id="toc-yolos-standalone-performance" class="nav-link" data-scroll-target="#yolos-standalone-performance">YOLO’s Standalone Performance</a></li>
+  <li><a href="#the-power-of-the-yolo-fast-r-cnn-combination" id="toc-the-power-of-the-yolo-fast-r-cnn-combination" class="nav-link" data-scroll-target="#the-power-of-the-yolo-fast-r-cnn-combination">The Power of the YOLO + Fast R-CNN Combination</a></li>
+  </ul></li>
+  <li><a href="#generalizability-person-detection-in-artwork" id="toc-generalizability-person-detection-in-artwork" class="nav-link" data-scroll-target="#generalizability-person-detection-in-artwork">4.5. Generalizability: Person Detection in Artwork</a>
+  <ul class="collapse">
+  <li><a href="#r-cnn-the-brittle-specialist" id="toc-r-cnn-the-brittle-specialist" class="nav-link" data-scroll-target="#r-cnn-the-brittle-specialist">R-CNN: The Brittle Specialist</a></li>
+  <li><a href="#dpm-the-shape-focused-model" id="toc-dpm-the-shape-focused-model" class="nav-link" data-scroll-target="#dpm-the-shape-focused-model">DPM: The Shape-Focused Model</a></li>
+  <li><a href="#yolo-the-robust-generalist" id="toc-yolo-the-robust-generalist" class="nav-link" data-scroll-target="#yolo-the-robust-generalist">YOLO: The Robust Generalist</a></li>
+  </ul></li>
+  <li><a href="#real-time-detection-in-the-wild" id="toc-real-time-detection-in-the-wild" class="nav-link" data-scroll-target="#real-time-detection-in-the-wild">5. Real-Time Detection In The Wild</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">6. Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">You Only Look Once: A Deep Dive into the YOLO Object Detection Algorithm</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A detailed, section-by-section breakdown of the revolutionary paper that introduced a unified, real-time approach to object detection.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 22, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-22-yolo-reading-notes.png" class="img-fluid"></p>
+<p>In the world of computer vision, the ability to detect objects in real-time is a game-changer. For years, top-performing models relied on complex, multi-stage pipelines that were powerful but notoriously slow. In 2016, a paper titled “You Only Look Once” challenged this paradigm by introducing YOLO, a unified model that framed object detection as a single regression problem, achieving incredible speeds. In this post, we will take a deep dive into this seminal paper, exploring its core ideas, architecture, and lasting impact on the field.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-title.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-22-yolo-reading-notes/paper-title.PNG" class="img-fluid"></a></p>
+<section id="the-abstract" class="level2">
+<h2 class="anchored" data-anchor-id="the-abstract">The Abstract</h2>
+<p>The abstract of any great paper tells a compelling story, and this one is no exception. In just a few paragraphs, the authors outline the problem with existing methods, introduce their groundbreaking solution, and present a series of bold claims about its performance.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-abstract.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-22-yolo-reading-notes/paper-abstract.PNG" class="img-fluid"></a></p>
+<section id="a-new-philosophy-detection-as-regression" class="level3">
+<h3 class="anchored" data-anchor-id="a-new-philosophy-detection-as-regression">A New Philosophy: Detection as Regression</h3>
+<blockquote class="blockquote">
+<p>We present YOLO, a new approach to object detection. Prior work on object detection repurposes classifiers to perform detection. Instead, we frame object detection as a regression problem to spatially separated bounding boxes and associated class probabilities.</p>
+</blockquote>
+<p>Right away, the authors establish a clear break from the past. Before YOLO, the dominant object detection paradigm was a multi-stage process. Let’s quickly define the terms here:</p>
+<ul>
+<li><strong>Classifier:</strong> A model that answers the question, “What is in this image?” For example, it might look at a picture and output “cat.”</li>
+<li><strong>Detector:</strong> A model that answers the questions, “What is in this image, and where is it?” It would output not only “cat” but also the coordinates of a bounding box around the cat.</li>
+</ul>
+<p>Older systems, like the popular R-CNN (Regions with Convolutional Neural Networks) family, “repurposed classifiers” by first generating a large number of potential object locations (region proposals) and then running a powerful classifier on each one. This is like searching for a face in a crowd by taking thousands of small snapshots and asking “Is there a face in this one?” over and over. It’s effective, but incredibly slow.</p>
+<p>YOLO’s radical idea is to reframe this. Instead of a complex, multi-step classification task, they treat it as a single <strong>regression problem</strong>.</p>
+<ul>
+<li><strong>Regression</strong> is a machine learning task where the goal is to predict continuous numerical values. For example, predicting the price of a house is a regression problem.</li>
+</ul>
+<p>In YOLO’s case, the model looks at the entire image just once and directly predicts a set of bounding boxes and class probabilities. The output isn’t just “cat,” but a list of numbers representing <code>[class_of_object, x_coordinate, y_coordinate, width, height]</code>. This is a fundamental philosophical shift.</p>
+</section>
+<section id="one-network-to-rule-them-all" class="level3">
+<h3 class="anchored" data-anchor-id="one-network-to-rule-them-all">One Network to Rule Them All</h3>
+<blockquote class="blockquote">
+<p>A single neural network predicts bounding boxes and class probabilities directly from full images in one evaluation. Since the whole detection pipeline is a single network, it can be optimized end-to-end directly on detection performance.</p>
+</blockquote>
+<p>This sentence contains two massive benefits that stem from the regression approach.</p>
+<ol type="1">
+<li><strong>“One evaluation”</strong>: This is the very soul of the name “You Only Look Once.” Unlike R-CNN, which might evaluate thousands of regions, YOLO’s network processes the entire image in a single forward pass.</li>
+<li><strong>“Optimized end-to-end”</strong>: In the older multi-stage pipelines, each component (region proposal, feature extraction, classification) was often trained separately. This makes it difficult to optimize the system as a whole. Because YOLO is a single, unified network, the entire architecture can be trained jointly. The error from the final prediction can be used to tweak weights throughout the entire network, leading to a more holistic and efficient learning process.</li>
+</ol>
+</section>
+<section id="speed-accuracy-and-generalization" class="level3">
+<h3 class="anchored" data-anchor-id="speed-accuracy-and-generalization">Speed, Accuracy, and Generalization</h3>
+<p>The rest of the abstract is dedicated to laying out the impressive results of this new approach.</p>
+<blockquote class="blockquote">
+<p>Our unified architecture is extremely fast. Our base YOLO model processes images in real-time at 45 frames per second. A smaller version of the network, Fast YOLO, processes an astounding 155 frames per second…</p>
+</blockquote>
+<p>This is the headline feature. Real-time video is typically 24-30 frames per second (FPS). At 45 FPS, YOLO was not just fast; it was a true real-time detector on a single GPU, something previously out of reach for models of this accuracy.</p>
+<blockquote class="blockquote">
+<p>Compared to state-of-the-art detection systems, YOLO makes more localization errors but is less likely to predict false positives on background.</p>
+</blockquote>
+<p>The authors are candid about the trade-offs. YOLO might not draw the tightest possible box around an object (a localization error), but it makes a different kind of error far less often. Because YOLO sees the entire image at once, it has global context. It’s less likely than region-based methods to mistake a patch of background for an object.</p>
+<blockquote class="blockquote">
+<p>Finally, YOLO learns very general representations of objects. It outperforms other detection methods, including DPM and R-CNN, when generalizing from natural images to other domains like artwork.</p>
+</blockquote>
+<p>This is a powerful final claim. The model’s understanding of objects is less brittle and more abstract. It learns the essential features of what makes a person a “person,” allowing it to detect people not just in photographs but also in paintings, a much harder task where colors and textures are completely different. This suggests a more robust and deeper form of learning.</p>
+</section>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<section id="the-need-for-speed-and-accuracy" class="level3">
+<h3 class="anchored" data-anchor-id="the-need-for-speed-and-accuracy">The Need for Speed and Accuracy</h3>
+<p>The authors begin by establishing why object detection is such a critical problem in computer vision. They draw a powerful parallel to the human visual system.</p>
+<blockquote class="blockquote">
+<p>Humans glance at an image and instantly know what objects are in the image, where they are, and how they interact. The human visual system is fast and accurate, allowing us to perform complex tasks like driving with little conscious thought.</p>
+</blockquote>
+<p>This isn’t just poetic framing; it’s a clear statement of the goal. The authors are aiming to build a system that mimics the speed and efficiency of human perception. They immediately ground this goal in practical, high-impact applications: self-driving cars, assistive devices for the visually impaired, and responsive robotics. The underlying message is that for computers to truly interact with the physical world, they need a visual system that is both fast and accurate.</p>
+</section>
+<section id="the-problem-with-multi-stage-pipelines" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem-with-multi-stage-pipelines">The Problem with Multi-Stage Pipelines</h3>
+<p>Next, the paper pivots to the core problem it aims to solve: the dominant object detection methods of the time were too slow and cumbersome. The authors group these methods into two main categories.</p>
+<p>First, they mention older systems like Deformable Parts Models (DPM).</p>
+<blockquote class="blockquote">
+<p>Systems like deformable parts models (DPM) use a sliding window approach where the classifier is run at evenly spaced locations over the entire image [10].</p>
+</blockquote>
+<p>The <strong>sliding window</strong> approach is exactly what it sounds like: a window of a fixed size slides across the image, and a classifier is run at every single location to determine if an object is present. To detect objects of different sizes, this process is repeated with different window scales. While exhaustive, this method is computationally expensive and inefficient.</p>
+<p>Second, they critique the more modern and powerful family of detectors based on R-CNN.</p>
+<blockquote class="blockquote">
+<p>More recent approaches like R-CNN use region proposal methods to first generate potential bounding boxes in an image and then run a classifier on these proposed boxes. … These complex pipelines are slow and hard to optimize because each individual component must be trained separately.</p>
+</blockquote>
+<p>This is the key critique. R-CNN and its successor, Fast R-CNN, broke the problem into distinct stages:</p>
+<ol type="1">
+<li><strong>Generate Proposals:</strong> Use an algorithm (like Selective Search) to identify a few thousand “regions of interest” that might contain an object.</li>
+<li><strong>Classify Regions:</strong> Run a powerful convolutional neural network (CNN) on each of these proposed regions to classify them.</li>
+<li><strong>Refine and Post-process:</strong> Clean up the results by refining the bounding box locations, removing duplicates (non-max suppression), and other steps.</li>
+</ol>
+<p>While more accurate than DPM, this pipeline was incredibly slow (the original R-CNN took ~47 seconds per image!) and clunky. Because each stage was a separate system trained independently, it was impossible to optimize the pipeline from end to end.</p>
+</section>
+<section id="a-unified-approach-detection-as-regression" class="level3">
+<h3 class="anchored" data-anchor-id="a-unified-approach-detection-as-regression">A Unified Approach: Detection as Regression</h3>
+<p>Having established the problem, the authors introduce their elegant solution.</p>
+<blockquote class="blockquote">
+<p>We reframe object detection as a single regression problem, straight from image pixels to bounding box coordinates and class probabilities. Using our system, you only look once (YOLO) at an image to predict what objects are present and where they are.</p>
+</blockquote>
+<p>This is the paper’s core thesis. Instead of a complex, multi-part pipeline, YOLO uses a <strong>single convolutional network</strong>. This network takes the entire image as input and, in a single forward pass, outputs the final detections. There are no separate steps for region proposals or classification. As Figure 1 in the paper illustrates, the pipeline is refreshingly simple: resize the image, run the network, and threshold the detections.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-fig-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-22-yolo-reading-notes/paper-fig-1.PNG" class="img-fluid"></a></p>
+<p>This unified design has two major advantages that we’ll see repeated throughout the paper: it’s incredibly fast, and it can be trained end-to-end, allowing the model to directly optimize for detection performance.</p>
+</section>
+<section id="the-three-core-benefits-of-yolo" class="level3">
+<h3 class="anchored" data-anchor-id="the-three-core-benefits-of-yolo">The Three Core Benefits of YOLO</h3>
+<p>The introduction concludes by laying out three specific, powerful benefits that stem from this unified design.</p>
+<ol type="1">
+<li><p><strong>Blazing Speed:</strong> The most immediate advantage is speed. By eliminating the complex pipeline, YOLO achieves performance that was previously unheard of for a deep learning detector.</p>
+<blockquote class="blockquote">
+<p>Our base network runs at 45 frames per second with no batch processing on a Titan X GPU and a fast version runs at more than 150 fps. This means we can process streaming video in real-time with less than 25 milliseconds of latency.</p>
+</blockquote></li>
+<li><p><strong>Global Context:</strong> This is a more subtle but crucial benefit. Unlike methods that analyze thousands of individual region proposals in isolation, YOLO sees the entire image during both training and inference.</p>
+<blockquote class="blockquote">
+<p>Unlike sliding window and region proposal-based techniques, YOLO sees the entire image during training and test time so it implicitly encodes contextual information about classes as well as their appearance.</p>
+</blockquote>
+<p>This global context makes YOLO much less likely to mistake a background patch for an object. The authors note that Fast R-CNN, a top detector at the time, makes more than double the number of background errors precisely because it lacks this broader context.</p></li>
+<li><p><strong>Superior Generalization:</strong> The features YOLO learns are more robust and generalizable. The authors present a compelling piece of evidence:</p>
+<blockquote class="blockquote">
+<p>When trained on natural images and tested on artwork, YOLO outperforms top detection methods like DPM and R-CNN by a wide margin.</p>
+</blockquote>
+<p>This suggests that YOLO isn’t just memorizing textures; it’s learning the more abstract spatial relationships and shapes that define an object, allowing it to perform well even in unfamiliar visual domains.</p></li>
+</ol>
+</section>
+<section id="acknowledging-the-trade-offs" class="level3">
+<h3 class="anchored" data-anchor-id="acknowledging-the-trade-offs">Acknowledging the Trade-offs</h3>
+<p>Finally, in a sign of good scientific practice, the authors are upfront about YOLO’s limitations.</p>
+<blockquote class="blockquote">
+<p>YOLO still lags behind state-of-the-art detection systems in accuracy. While it can quickly identify objects in images it struggles to precisely localize some objects, especially small ones.</p>
+</blockquote>
+<p>This establishes the central trade-off of the initial YOLO model: it sacrifices some localization accuracy for massive gains in speed and a reduction in background errors. This sets the stage for the experimental section, where these claims will be put to the test.</p>
+</section>
+</section>
+<section id="unified-detection" class="level2">
+<h2 class="anchored" data-anchor-id="unified-detection">2. Unified Detection</h2>
+<p>The authors begin this section by reiterating the core philosophy: unifying the complex, multi-stage pipeline of previous object detectors into a single, elegant neural network.</p>
+<blockquote class="blockquote">
+<p>We unify the separate components of object detection into a single neural network. Our network uses features from the entire image to predict each bounding box. It also predicts all bounding boxes across all classes for an image simultaneously. This means our network reasons globally about the full image and all the objects in the image.</p>
+</blockquote>
+<p>This isn’t just a minor tweak; it’s a complete reimagining of the problem. Let’s break down the ingenious mechanism they designed to achieve this.</p>
+<section id="the-s-x-s-grid-carving-up-the-image" class="level3">
+<h3 class="anchored" data-anchor-id="the-s-x-s-grid-carving-up-the-image">The S x S Grid: Carving Up the Image</h3>
+<p>The first and most critical concept to understand is the grid system.</p>
+<blockquote class="blockquote">
+<p>Our system divides the input image into an S × S grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.</p>
+</blockquote>
+<p>Imagine laying a chessboard over the input image. For this paper, the authors use a 7x7 grid, so imagine a 49-square grid. The core rule of YOLO is simple: whichever grid cell contains the center point of an object is solely “responsible” for detecting that object.</p>
+<p>This is a brilliant simplification. Instead of searching for an object everywhere in the image, the problem is now reduced to each of the 49 grid cells asking a much simpler set of questions: “Is there an object center in me? If so, where is its bounding box, and what class is it?”</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="How do we know the center of an object?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How do we know the center of an object?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>During <strong>inference</strong> (when the model is making predictions on a new, unseen image), the model <em>doesn’t</em> know where the center of the object is. Its job is to predict it.</p>
+<p>The concept of “the center of an object falls into a grid cell” is central to the <strong>training process</strong>.</p>
+<p>Here’s how it works:</p>
+<ol type="1">
+<li><p><strong>The Ground Truth Data:</strong> To train an object detector, you need a dataset of images that have been manually labeled by humans. This is called the “ground truth.” For each object in an image, the label consists of two things:</p>
+<ul>
+<li>The object’s class (e.g., “dog”).</li>
+<li>The coordinates of a tight bounding box around the object (e.g., <code>[x_min, y_min, x_max, y_max]</code>).</li>
+</ul></li>
+<li><p><strong>Calculating the Center:</strong> From the ground truth bounding box coordinates, we can easily calculate the true center of the object:</p>
+<ul>
+<li><code>center_x = (x_min + x_max) / 2</code></li>
+<li><code>center_y = (y_min + y_max) / 2</code></li>
+</ul></li>
+<li><p><strong>Assigning Responsibility:</strong> Now, during training, we take the input image and conceptually overlay our <code>S x S</code> grid (e.g., 7x7). We look at the calculated <code>(center_x, center_y)</code> for a specific ground truth object (e.g., the dog). We then determine which of the 49 grid cells that center point falls into.</p>
+<p><strong>That one specific grid cell is now designated as “responsible” for predicting the dog.</strong></p></li>
+<li><p><strong>The Role of the Loss Function:</strong> When the network makes its prediction for that image, we compare its output to the ground truth. The loss function (which we’ll get to in the training section) is structured to enforce this “responsibility” rule:</p>
+<ul>
+<li>For the grid cell that is responsible for the dog, the loss function will heavily penalize it if it fails to predict a good bounding box and the correct “dog” class.</li>
+<li>For all the <em>other</em> 48 grid cells that are <em>not</em> responsible for the dog, the loss function will penalize them if they predict that an object is present. It pushes their “objectness” or “confidence” scores towards zero.</li>
+</ul></li>
+</ol>
+<p><strong>Analogy:</strong> Imagine a classroom of 49 students (the grid cells) and you show them a picture of a dog. You point to the student sitting in the third row, second seat, and say, “You, and only you, are responsible for telling me everything about that dog. The rest of you must remain silent and say ‘no object here’.” During the test (training), you grade that one student on how well they describe the dog and you grade everyone else on how well they stayed quiet.</p>
+<p>Over thousands of training examples, each grid cell learns its job. It learns to look at the features within its receptive field and decide: “Based on the patterns I see, is an object’s center likely located within my boundaries? If so, what does that object look like (its <code>w</code> and <code>h</code>), and what class is it?”</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-22-yolo-reading-notes/yolo-grid-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-22-yolo-reading-notes/yolo-grid-1.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-22-yolo-reading-notes/yolo-grid-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-09-22-yolo-reading-notes/yolo-grid-2.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="What if a large object falls into multiple grids?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What if a large object falls into multiple grids?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The short answer is: <strong>It doesn’t matter how many grid cells the object’s body spans. The only thing that matters is the single grid cell that contains the object’s exact center point.</strong></p>
+<p>Let’s break this down with an example.</p>
+<p>Imagine a large object, like a bus, in a 7x7 grid. The body of the bus might cover 10 or 15 different grid cells.</p>
+<p>However, the bus has only <strong>one center point</strong>. Let’s say we calculate its center from the ground truth bounding box, and that point <code>(center_x, center_y)</code> falls inside the grid cell at row 4, column 3 (the red cell in the image).</p>
+<p>According to YOLO’s strict rule, <strong>only that single red grid cell is responsible for detecting the bus.</strong></p>
+<section id="how-does-that-one-cell-describe-the-whole-bus" class="level3">
+<h3 class="anchored" data-anchor-id="how-does-that-one-cell-describe-the-whole-bus">How Does That One Cell Describe the Whole Bus?</h3>
+<p>This is where the design of the bounding box prediction <code>(x, y, w, h)</code> becomes so important. Remember:</p>
+<ul>
+<li>The <code>(x, y)</code> coordinates pinpoint the center’s location <em>within</em> the red grid cell.</li>
+<li>The <code>(w, h)</code> (width and height) are predicted relative to the <em>entire image</em>.</li>
+</ul>
+<p>So, during training, the network learns to make the red grid cell predict:</p>
+<ol type="1">
+<li><strong>A high objectness score:</strong> “Yes, an object’s center is in me!”</li>
+<li><strong>The correct class:</strong> “The object is a bus.”</li>
+<li><strong>Bounding box parameters <code>(x, y, w, h)</code> that describe the whole bus.</strong> For example, it might predict a <code>w</code> of 0.8 (meaning the bus is 80% of the image’s width) and an <code>h</code> of 0.2 (20% of the image’s height).</li>
+</ol>
+<p>When these parameters are used to draw the final bounding box, it will be very large, starting from within the red cell but extending far out to cover the entire bus, spanning all the other 10-15 grid cells that the bus’s body touches.</p>
+</section>
+<section id="what-about-the-other-grid-cells-the-bus-touches" class="level3">
+<h3 class="anchored" data-anchor-id="what-about-the-other-grid-cells-the-bus-touches">What about the other grid cells the bus touches?</h3>
+<p>All the other grid cells that the bus body overlaps (the blue cells in the image) are trained to do the opposite. Since the bus’s <em>center</em> is not in them, their job is to predict <strong>“no object here.”</strong> The loss function will penalize them if they try to predict a bus, pushing their confidence scores toward zero.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/yolo-grid-3.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-09-22-yolo-reading-notes/yolo-grid-3.png" class="img-fluid"></a></p>
+</section>
+</div>
+</div>
+</div>
+</section>
+<section id="what-does-each-grid-cell-predict" class="level3">
+<h3 class="anchored" data-anchor-id="what-does-each-grid-cell-predict">What Does Each Grid Cell Predict?</h3>
+<p>Each of these <code>S x S</code> grid cells is tasked with predicting three key pieces of information:</p>
+<ol type="1">
+<li><strong>Bounding Boxes:</strong> Each cell predicts <code>B</code> potential bounding boxes for an object. The paper uses <code>B=2</code>.</li>
+<li><strong>Confidence Scores:</strong> For each of those <code>B</code> boxes, it predicts a confidence score.</li>
+<li><strong>Class Probabilities:</strong> For the cell as a whole, it predicts the probability of the object belonging to one of <code>C</code> classes (e.g., dog, cat, car).</li>
+</ol>
+<p>Let’s look at each of these in more detail.</p>
+<section id="bounding-box-predictions" class="level4">
+<h4 class="anchored" data-anchor-id="bounding-box-predictions">1. Bounding Box Predictions</h4>
+<p>Each of the <code>B</code> bounding boxes is described by a vector of 5 numbers: <code>(x, y, w, h, confidence)</code>.</p>
+<ul>
+<li><code>(x, y)</code>: These are the coordinates of the center of the bounding box. Crucially, they are predicted <em>relative to the bounds of the grid cell</em>. So, an (x, y) of (0.5, 0.5) would mean the center of the box is exactly in the middle of that grid cell. This keeps the values bounded between 0 and 1, which makes them easier for the network to learn.</li>
+<li><code>(w, h)</code>: These are the width and height of the bounding box. These are predicted <em>relative to the size of the whole image</em>. A <code>w</code> of 0.5 means the box is half the width of the entire image.</li>
+<li><code>confidence</code>: This score reflects how certain the model is that the box contains an object and how accurate it thinks the box is. This is important, so let’s give it its own section.</li>
+</ul>
+</section>
+<section id="the-confidence-score" class="level4">
+<h4 class="anchored" data-anchor-id="the-confidence-score">2. The Confidence Score</h4>
+<p>The confidence score is an elegant way to combine two pieces of information into one number.</p>
+<blockquote class="blockquote">
+<p>Formally we define confidence as Pr(Object) * IOU<sup>truth</sup><sub>pred</sub></p>
+</blockquote>
+<p>Let’s break that down:</p>
+<ul>
+<li><strong>Pr(Object):</strong> This is the probability that there is <em>any</em> object in the box.</li>
+<li><strong>IOU (Intersection over Union):</strong> This is a fundamental metric in object detection. It measures how much a predicted bounding box overlaps with the ground truth (the hand-labeled) bounding box. Imagine two overlapping squares of paper. The IOU is the area of their overlap divided by the total area they cover together. An IOU of 1 means a perfect match, and an IOU of 0 means no overlap.</li>
+</ul>
+<p>The confidence score is the product of these two values. If the model is certain no object exists in a cell (<code>Pr(Object)</code> is 0), the confidence score is 0. If an object does exist, the confidence score becomes equal to the IOU. This cleverly forces the model to learn to predict not just the presence of an object, but also bounding boxes that align well with it.</p>
+</section>
+<section id="conditional-class-probabilities" class="level4">
+<h4 class="anchored" data-anchor-id="conditional-class-probabilities">3. Conditional Class Probabilities</h4>
+<p>Finally, each grid cell predicts a set of class probabilities.</p>
+<blockquote class="blockquote">
+<p>Each grid cell also predicts C conditional class probabilities, Pr(Class<sub>i</sub>|Object). These probabilities are conditioned on the grid cell containing an object.</p>
+</blockquote>
+<p>This is another subtle but brilliant design choice. The network does <strong>not</strong> ask, “What is the probability of this being a cat?” Instead, it asks, “<em>Given that there is an object in this grid cell</em>, what is the probability of it being a cat?”</p>
+<p>This makes the learning process much more efficient. The network doesn’t waste its predictive power trying to distinguish between 20 different classes for a patch of empty sky.</p>
+<p>A key limitation is stated here:</p>
+<blockquote class="blockquote">
+<p>We only predict one set of class probabilities per grid cell, regardless of the number of boxes B.</p>
+</blockquote>
+<p>This means that even if a cell predicts two bounding boxes, it can only associate one class with them. This is why YOLO struggles to detect multiple small, nearby objects if their centers fall into the same grid cell (like a flock of birds).</p>
+</section>
+</section>
+<section id="the-final-output-tensor" class="level3">
+<h3 class="anchored" data-anchor-id="the-final-output-tensor">The Final Output Tensor</h3>
+<p>When you put all of this together, the network’s final output is a single, large 3D tensor of size <code>S x S x (B * 5 + C)</code>.</p>
+<p>Using the paper’s example for the PASCAL VOC dataset:</p>
+<ul>
+<li><code>S = 7</code> (the grid size)</li>
+<li><code>B = 2</code> (bounding boxes per cell)</li>
+<li><code>C = 20</code> (number of object classes)</li>
+</ul>
+<p>The output tensor size is <code>7 x 7 x (2 * 5 + 20)</code>, which simplifies to <strong>7 x 7 x 30</strong>. This tensor contains all the predictions for the bounding boxes, their confidence scores, and the class probabilities for the entire image, generated in a single pass.</p>
+</section>
+</section>
+<section id="network-design" class="level2">
+<h2 class="anchored" data-anchor-id="network-design">2.1. Network Design</h2>
+<p>To produce the <code>7 x 7 x 30</code> output tensor we just discussed, the authors needed to design a specific Convolutional Neural Network (CNN). The design is a masterclass in balancing performance and computational efficiency.</p>
+<blockquote class="blockquote">
+<p>We implement this model as a convolutional neural network… The initial convolutional layers of the network extract features from the image while the fully connected layers predict the output probabilities and coordinates.</p>
+</blockquote>
+<p>This describes the classic structure of a CNN for any vision task. The network is composed of two main parts:</p>
+<ol type="1">
+<li><strong>A Feature Extractor (Backbone):</strong> This is a series of convolutional layers that act like a set of increasingly sophisticated filters. Early layers might detect simple edges and colors, while deeper layers learn to recognize more complex textures and patterns like fur, eyes, or wheels.</li>
+<li><strong>A Prediction Head:</strong> This is a set of fully connected layers at the end of the network that takes the rich feature representation from the backbone and translates it into the desired output—in this case, the bounding box coordinates and class probabilities.</li>
+</ol>
+<section id="inspired-by-googlenet-simplified-for-speed" class="level4">
+<h4 class="anchored" data-anchor-id="inspired-by-googlenet-simplified-for-speed">Inspired by GoogLeNet, Simplified for Speed</h4>
+<p>The authors didn’t design their network in a vacuum. They drew inspiration from one of the top-performing image classification models of the era: GoogLeNet.</p>
+<blockquote class="blockquote">
+<p>Our network architecture is inspired by the GoogLeNet model for image classification [34]. … Instead of the inception modules used by GoogLeNet, we simply use 1 × 1 reduction layers followed by 3 × 3 convolutional layers…</p>
+</blockquote>
+<p>GoogLeNet was famous for its “Inception module,” a complex block that processed features at multiple scales simultaneously. The YOLO authors adopted GoogLeNet’s core idea of being computationally efficient but implemented it in a simpler way. They replaced the full Inception module with a simple two-step process:</p>
+<ol type="1">
+<li><strong>1x1 Reduction Layers:</strong> A 1x1 convolution is a clever technique used to reduce the number of channels (the depth) in the feature map. Imagine you have a stack of 256 feature maps. A 1x1 convolution can “compress” that stack down to, say, 128 maps. This is computationally much cheaper than running a larger filter over all 256 maps.</li>
+<li><strong>3x3 Convolutional Layers:</strong> After reducing the feature depth, they apply a standard 3x3 convolution to extract the spatial features.</li>
+</ol>
+<p>This <code>1x1 reduction -&gt; 3x3 extraction</code> pattern allows them to build a very deep network (24 convolutional layers) without the computational cost becoming unmanageable. It’s a pragmatic and effective design choice focused on speed.</p>
+</section>
+<section id="the-full-architecture" class="level4">
+<h4 class="anchored" data-anchor-id="the-full-architecture">The Full Architecture</h4>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-fig-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-09-22-yolo-reading-notes/paper-fig-3.PNG" class="img-fluid"></a></p>
+<p>As shown in Figure 3 of the paper, the network progressively downsamples the image while increasing the feature depth:</p>
+<ul>
+<li><strong>Input:</strong> A <code>448 x 448</code> image.</li>
+<li><strong>Convolutional Backbone:</strong> A series of convolutional and max pooling layers systematically reduce the spatial dimensions (<code>448 -&gt; 224 -&gt; 112 -&gt; 56 -&gt; 28 -&gt; 14 -&gt; 7</code>) while increasing the number of feature channels. This process squeezes the spatial information into an increasingly dense and rich feature representation.</li>
+<li><strong>Fully Connected Layers:</strong> Finally, the <code>7 x 7 x 1024</code> feature map from the last convolutional layer is flattened and passed to two fully connected layers to produce the final prediction.</li>
+<li><strong>Output:</strong> The network’s final output layer is shaped into the <strong><code>7 x 7 x 30</code></strong> tensor, which directly corresponds to the <code>S x S x (B*5 + C)</code> grid system we discussed earlier. The architecture is explicitly designed to produce this precise output shape.</li>
+</ul>
+</section>
+<section id="fast-yolo-the-lightweight-alternative" class="level4">
+<h4 class="anchored" data-anchor-id="fast-yolo-the-lightweight-alternative">Fast YOLO: The Lightweight Alternative</h4>
+<p>To push the boundaries of speed even further, the authors also created a smaller version of the network.</p>
+<blockquote class="blockquote">
+<p>We also train a fast version of YOLO designed to push the boundaries of fast object detection. Fast YOLO uses a neural network with fewer convolutional layers (9 instead of 24) and fewer filters in those layers.</p>
+</blockquote>
+<p>This is a straightforward trade-off. By reducing the network’s size and complexity, they achieve a massive speedup (from 45 FPS to 155 FPS), but at the cost of some accuracy. This provides users with a valuable option for applications where speed is the absolute highest priority.</p>
+</section>
+</section>
+<section id="training" class="level2">
+<h2 class="anchored" data-anchor-id="training">2.2. Training</h2>
+<p>A great network architecture is nothing without a solid training strategy. The authors of YOLO employ a multi-step process that combines standard deep learning practices with several novel solutions tailored specifically to the challenges of object detection.</p>
+<section id="step-1-pretraining-the-feature-extractor" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-pretraining-the-feature-extractor">Step 1: Pretraining the Feature Extractor</h3>
+<p>Training a deep neural network with 24 layers from scratch requires an enormous amount of data. To give their model a head start, the authors first pretrain the convolutional layers on a large-scale image classification task.</p>
+<blockquote class="blockquote">
+<p>We pretrain our convolutional layers on the ImageNet 1000-class competition dataset [30]. For pretraining we use the first 20 convolutional layers from Figure 3 followed by a average-pooling layer and a fully connected layer.</p>
+</blockquote>
+<p>This is a classic and highly effective technique called <strong>transfer learning</strong>. The idea is that the features a network learns for classifying objects in ImageNet—like edges, textures, shapes, and parts—are also incredibly useful for detecting objects. By pretraining on the massive ImageNet dataset, the network’s “backbone” already has a sophisticated visual understanding of the world before it ever sees a single bounding box. This makes the final detection training faster and more effective.</p>
+</section>
+<section id="step-2-adapting-the-model-for-detection" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-adapting-the-model-for-detection">Step 2: Adapting the Model for Detection</h3>
+<p>Once the feature extractor is pretrained, the model is converted for the detection task.</p>
+<blockquote class="blockquote">
+<p>We then convert the model to perform detection. …we add four convolutional layers and two fully connected layers with randomly initialized weights. Detection often requires fine-grained visual information so we increase the input resolution of the network from 224 × 224 to 448 × 448.</p>
+</blockquote>
+<p>Two key changes happen here:</p>
+<ol type="1">
+<li><strong>New Layers:</strong> Four new convolutional layers and two fully connected layers are added to the end of the pretrained backbone. These new layers are responsible for learning the detection-specific tasks: predicting bounding box coordinates and class probabilities for each grid cell.</li>
+<li><strong>Higher Resolution:</strong> The input image size is nearly doubled. While <code>224x224</code> is standard for ImageNet classification, object detection benefits from higher resolution. A <code>448x448</code> input allows the model to see more detail, which is crucial for accurately localizing smaller objects.</li>
+</ol>
+<p>The final layer of the network is configured to produce the <code>7x7x30</code> tensor output we discussed previously. An important detail is that the authors normalize the bounding box parameters to fall between 0 and 1, which helps stabilize the training process.</p>
+</section>
+<section id="the-heart-of-the-matter-the-loss-function" class="level3">
+<h3 class="anchored" data-anchor-id="the-heart-of-the-matter-the-loss-function">The Heart of the Matter: The Loss Function</h3>
+<p>The most critical component of training is the loss function. This function measures how “wrong” the model’s predictions are compared to the ground truth labels. The entire goal of training is to adjust the network’s weights to minimize this loss.</p>
+<p>The authors start with a simple choice: <strong>sum-squared error (SSE)</strong>. However, they quickly point out that a naive SSE is not suitable for object detection due to several major challenges. Their solutions to these challenges are what make YOLO’s training so effective.</p>
+<section id="challenge-1-the-object-imbalance" class="level4">
+<h4 class="anchored" data-anchor-id="challenge-1-the-object-imbalance">Challenge 1: The Object Imbalance</h4>
+<blockquote class="blockquote">
+<p>…in every image many grid cells do not contain any object. This pushes the “confidence” scores of those cells towards zero, often overpowering the gradient from cells that do contain objects.</p>
+</blockquote>
+<p>In a typical image, only a few of the 49 grid cells will contain an object. The vast majority will be background. If we penalize all errors equally, the model will be overwhelmed by signals from the “no object” cells. It will quickly learn that the safest bet is to always predict “no object,” and training will fail.</p>
+<p><strong>Solution:</strong> The authors introduce two weighting parameters, <code>λ_coord</code> and <code>λ_noobj</code>.</p>
+<ul>
+<li>They <strong>increase the loss</strong> from bounding box coordinate predictions (<code>λ_coord = 5</code>). This tells the model that getting the box location right for an actual object is very important.</li>
+<li>They <strong>decrease the loss</strong> from confidence predictions for cells that <em>don’t</em> contain objects (<code>λ_noobj = 0.5</code>). This tells the model, “Don’t worry so much about these background cells; focus your learning on the cells that actually contain objects.”</li>
+</ul>
+</section>
+<section id="challenge-2-the-box-size-imbalance" class="level4">
+<h4 class="anchored" data-anchor-id="challenge-2-the-box-size-imbalance">Challenge 2: The Box Size Imbalance</h4>
+<blockquote class="blockquote">
+<p>Sum-squared error also equally weights errors in large boxes and small boxes. Our error metric should reflect that small deviations in large boxes matter less than in small boxes.</p>
+</blockquote>
+<p>A 5-pixel error in a bounding box for a huge car is negligible. That same 5-pixel error for a tiny bird could be the difference between a good detection and a complete miss. A simple SSE treats both errors as equally bad.</p>
+<p><strong>Solution:</strong> This is one of the most clever tricks in the paper. Instead of predicting the width and height (<code>w</code>, <code>h</code>) directly, the network predicts their <strong>square root</strong> (<code>√w</code>, <code>√h</code>). The loss is then calculated on these square root values.</p>
+<p>Why does this work? The square root function compresses the range of large numbers more than small numbers. For example, the difference between <code>√10</code> and <code>√20</code> is ~1.3, while the difference between <code>√100</code> and <code>√110</code> is only ~0.5. This mathematical property means that the same amount of prediction error results in a much larger loss for small boxes than for large ones, effectively forcing the model to be more precise with small objects.</p>
+</section>
+<section id="challenge-3-the-responsible-predictor" class="level4">
+<h4 class="anchored" data-anchor-id="challenge-3-the-responsible-predictor">Challenge 3: The “Responsible” Predictor</h4>
+<blockquote class="blockquote">
+<p>At training time we only want one bounding box predictor to be responsible for each object.</p>
+</blockquote>
+<p>Each grid cell proposes <code>B=2</code> bounding boxes. When we train the model on an image with an object in that cell, which of the two predictors should we train?</p>
+<p><strong>Solution:</strong> For a given ground truth object, they compare both of the cell’s predicted boxes to the ground truth box and calculate the IOU for each. The predictor that produces the box with the <strong>highest IOU</strong> is designated “responsible” for that object. The loss function is then only applied to that specific predictor. The other predictor is ignored for this specific object. This encourages specialization over time; one predictor in a cell might get better at detecting tall, thin objects, while the other gets better at short, wide ones, improving the model’s overall recall.</p>
+</section>
+</section>
+<section id="training-hyperparameters-and-data-augmentation" class="level3">
+<h3 class="anchored" data-anchor-id="training-hyperparameters-and-data-augmentation">Training Hyperparameters and Data Augmentation</h3>
+<p>Finally, the authors lay out the specific parameters for training:</p>
+<ul>
+<li><strong>Epochs:</strong> 135</li>
+<li><strong>Batch Size:</strong> 64</li>
+<li><strong>Momentum:</strong> 0.9 and a decay of 0.0005</li>
+<li><strong>Learning Rate Schedule:</strong> They use a careful schedule, starting the learning rate low, gradually raising it, keeping it high for a period, and then decreasing it for the final stages. This “warm-up” prevents early instability and allows for fine tuning at the end.</li>
+<li><strong>Overfitting Prevention:</strong> They use standard techniques to prevent the model from simply memorizing the training data. This includes <strong>dropout</strong> (randomly turning off neurons during training to force the network to be more robust) and extensive <strong>data augmentation</strong> (randomly scaling, translating, and adjusting the exposure and saturation of the training images).</li>
+</ul>
+<p>This comprehensive training strategy, especially the carefully crafted loss function, is what enables the simple and elegant YOLO architecture to become a powerful and fast object detector.</p>
+</section>
+</section>
+<section id="inference" class="level2">
+<h2 class="anchored" data-anchor-id="inference">2.3. Inference</h2>
+<p>After countless hours of training, the YOLO network is a lean, mean, detection machine. The process of using this trained network to make predictions on a new image is called <strong>inference</strong>, and its elegance and speed are YOLO’s defining features.</p>
+<blockquote class="blockquote">
+<p>Just like in training, predicting detections for a test image only requires one network evaluation. … YOLO is extremely fast at test time since it only requires a single network evaluation, unlike classifier-based methods.</p>
+</blockquote>
+<p>This is the punchline. All the complex, multi-stage work of older systems is replaced by a single, blazing-fast forward pass through the network. However, the raw output of this pass isn’t a clean list of objects; it’s the <code>7x7x30</code> tensor we’ve discussed. The inference process involves a few simple but crucial post-processing steps to turn this tensor into the final detections.</p>
+<p>Here’s the step-by-step breakdown:</p>
+<section id="step-1-the-forward-pass" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-the-forward-pass">Step 1: The Forward Pass</h4>
+<p>An input image is fed into the network. In a single pass, the network outputs the <code>7x7x30</code> tensor of predictions. This tensor contains the raw data for 98 potential bounding boxes (<code>7x7</code> cells * <code>2</code> boxes/cell).</p>
+</section>
+<section id="step-2-calculating-class-specific-confidence-scores" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-calculating-class-specific-confidence-scores">Step 2: Calculating Class-Specific Confidence Scores</h4>
+<p>The raw tensor contains separate predictions for bounding box confidence (<code>Pr(Object) * IOU</code>) and conditional class probabilities (<code>Pr(Class | Object)</code>). To get a final score for each box that tells us both <em>what</em> it is and <em>how confident</em> the model is, we need to combine them.</p>
+<p>For each of the 98 boxes, we calculate a set of class-specific confidence scores using the formula from Figure 2:</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-fig-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-09-22-yolo-reading-notes/paper-fig-2.PNG" class="img-fluid"></a></p>
+<p><code>Score_for_class_i = Pr(Class_i | Object) * (Pr(Object) * IOU)</code></p>
+<p>This gives us a final score for each box and each possible class (e.g., box 1’s score for “dog”, box 1’s score for “cat”, etc.).</p>
+</section>
+<section id="step-3-thresholding" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-thresholding">Step 3: Thresholding</h4>
+<p>Many of these 98 boxes will have very low confidence scores, corresponding to background or junk detections. The first cleanup step is to discard any box whose maximum class-specific score is below a certain threshold (e.g., 0.25). This quickly filters out the vast majority of irrelevant predictions.</p>
+</section>
+<section id="step-4-non-maximal-suppression-nms" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-non-maximal-suppression-nms">Step 4: Non-Maximal Suppression (NMS)</h4>
+<p>After thresholding, we might still have a problem. The paper explains:</p>
+<blockquote class="blockquote">
+<p>…some large objects or objects near the border of multiple cells can be well localized by multiple cells. Non-maximal suppression can be used to fix these multiple detections.</p>
+</blockquote>
+<p>Imagine a large dog whose body spans two grid cells. It’s possible that both cells will produce a high-confidence bounding box for the dog, resulting in two overlapping detections for the same object. We only want one.</p>
+<p><strong>Non-Maximal Suppression (NMS)</strong> is a standard algorithm in computer vision for cleaning up this kind of duplicate. Here’s how it works for a specific class (e.g., “dog”):</p>
+<ol type="1">
+<li>Take the list of all “dog” detections that survived the thresholding step.</li>
+<li>Find the detection with the highest confidence score and add it to your final list of predictions.</li>
+<li>Now, compare this highest-scoring box to all other “dog” boxes. Calculate their IOU (Intersection over Union).</li>
+<li>If the IOU for any other box is high (e.g., &gt; 0.5), it means it’s detecting the same object. You “suppress” this lower-scoring box by discarding it.</li>
+<li>Go back to step 2 and repeat the process with the remaining boxes until none are left.</li>
+</ol>
+<p>This simple procedure ensures that for each object, you are left with only the single best bounding box.</p>
+<p>The authors make a fascinating point that NMS, while helpful (adding 2-3% in mAP), is less critical for YOLO than for models like R-CNN. This is because YOLO’s grid system, which assigns only one cell to be responsible for each object, already enforces “spatial diversity” and naturally suppresses many duplicate detections. In contrast, region-proposal methods like R-CNN start with thousands of overlapping proposals and would be completely unusable without aggressive NMS.</p>
+<p>After these post-processing steps, we are left with a clean, final list of objects and their bounding boxes, all generated in real-time.</p>
+</section>
+</section>
+<section id="limitations-of-yolo" class="level2">
+<h2 class="anchored" data-anchor-id="limitations-of-yolo">2.4. Limitations of YOLO</h2>
+<p>No single model is perfect, and YOLO’s revolutionary design for speed comes with a specific set of trade-offs. The authors dedicate this section to candidly discussing the model’s inherent limitations, which are direct consequences of its architecture.</p>
+<section id="strong-spatial-constraints" class="level3">
+<h3 class="anchored" data-anchor-id="strong-spatial-constraints">1. Strong Spatial Constraints</h3>
+<p>The grid system is YOLO’s greatest strength and its most significant weakness. By dividing the image into a <code>7x7</code> grid, the model makes strong assumptions about the spatial distribution of objects.</p>
+<blockquote class="blockquote">
+<p>YOLO imposes strong spatial constraints on bounding box predictions since each grid cell only predicts two boxes and can only have one class. This spatial constraint limits the number of nearby objects that our model can predict. Our model struggles with small objects that appear in groups, such as flocks of birds.</p>
+</blockquote>
+<p>This is the most critical limitation to understand. If the centers of two different objects fall into the exact same grid cell, YOLO is architecturally incapable of detecting both. It only has one set of class predictions for that cell. Furthermore, with only <code>B=2</code> bounding box predictors per cell, it has a hard cap on the number of objects it can identify within that small region.</p>
+<p>This is why YOLO performs poorly on datasets with many small, clustered objects, like a flock of birds or a crowd of people. An R-CNN style model, which evaluates thousands of independent region proposals, does not have this same architectural constraint and can handle such scenes more effectively.</p>
+</section>
+<section id="generalization-to-novel-aspect-ratios" class="level3">
+<h3 class="anchored" data-anchor-id="generalization-to-novel-aspect-ratios">2. Generalization to Novel Aspect Ratios</h3>
+<p>YOLO learns to predict bounding boxes directly from the data it sees during training. This means its performance is tied to the common shapes and sizes present in the training set.</p>
+<blockquote class="blockquote">
+<p>Since our model learns to predict bounding boxes from data, it struggles to generalize to objects in new or unusual aspect ratios or configurations.</p>
+</blockquote>
+<p>If the training data primarily contains upright people and wide cars, the model’s bounding box predictors will become specialized for those aspect ratios. It will have a harder time detecting a person lying down or a car flipped on its side because those configurations are “surprising” based on its training.</p>
+</section>
+<section id="coarse-features-and-localization-errors" class="level3">
+<h3 class="anchored" data-anchor-id="coarse-features-and-localization-errors">3. Coarse Features and Localization Errors</h3>
+<p>The network architecture, which is designed for speed, involves multiple downsampling layers that reduce the input image’s spatial resolution.</p>
+<blockquote class="blockquote">
+<p>Our model also uses relatively coarse features for predicting bounding boxes since our architecture has multiple downsampling layers from the input image.</p>
+</blockquote>
+<p>The network takes a <code>448x448</code> image and eventually makes its final prediction from a <code>7x7</code> feature map. This aggressive downsampling is efficient but loses fine-grained spatial information. Trying to predict a precise bounding box from such a coarse representation is inherently difficult. This is the root cause of one of YOLO’s main error types.</p>
+<blockquote class="blockquote">
+<p>Our main source of error is incorrect localizations.</p>
+</blockquote>
+<p>While YOLO is good at identifying that an object is present, it often struggles to draw a perfectly tight bounding box around it. This contrasts with region-based methods, which often analyze a higher-resolution feature map for their final box prediction, leading to better localization accuracy.</p>
+</section>
+<section id="the-imperfect-loss-function" class="level3">
+<h3 class="anchored" data-anchor-id="the-imperfect-loss-function">4. The Imperfect Loss Function</h3>
+<p>Finally, the authors revisit a point from the training section: the loss function, while cleverly designed, doesn’t perfectly align with the final detection metric (mean Average Precision, or mAP).</p>
+<blockquote class="blockquote">
+<p>…our loss function treats errors the same in small bounding boxes versus large bounding boxes. A small error in a large box is generally benign but a small error in a small box has a much greater effect on IOU.</p>
+</blockquote>
+<p>While the “square root of width and height” trick helps mitigate this, it doesn’t solve the problem completely. The sum-squared error metric fundamentally struggles to capture the perceptual importance of localization errors for objects of different scales. This mismatch contributes to YOLO’s overall localization inaccuracy.</p>
+<p>In summary, YOLO’s limitations are the logical flip side of its strengths. The unified grid-based architecture that makes it so fast also imposes constraints that affect its accuracy on small, clustered objects and its ability to perfectly localize every object.</p>
+</section>
+</section>
+<section id="comparison-to-other-detection-systems" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-to-other-detection-systems">3. Comparison to Other Detection Systems</h2>
+<p>YOLO did not appear in a vacuum. It was an answer to the limitations of a long line of object detection models. In this section, the authors meticulously compare their unified approach to the dominant paradigms of the day, making a compelling case for why a fundamental shift was necessary.</p>
+<p>The traditional detection pipeline, as the authors note, involved two main stages: first, extracting robust features from an image (using methods like SIFT, HOG, or even CNNs), and second, running a classifier or localizer over those features to identify objects. YOLO challenges this entire disjointed process.</p>
+<section id="deformable-parts-models-dpm" class="level3">
+<h3 class="anchored" data-anchor-id="deformable-parts-models-dpm">Deformable Parts Models (DPM)</h3>
+<p>DPM was a highly successful model that predated the deep learning revolution. It represented a pinnacle of “classic” computer vision techniques.</p>
+<blockquote class="blockquote">
+<p>Deformable parts models (DPM) use a sliding window approach to object detection [10]. DPM uses a disjoint pipeline to extract static features, classify regions, predict bounding boxes for high scoring regions, etc.</p>
+</blockquote>
+<p>The key takeaways for DPM are:</p>
+<ul>
+<li><strong>Sliding Window:</strong> It exhaustively scans the image at multiple scales.</li>
+<li><strong>Disjoint Pipeline:</strong> Feature extraction, classification, and bounding box refinement are all separate, hand-tuned components.</li>
+<li><strong>Static Features:</strong> It typically used hand-crafted features like HOG (Histograms of Oriented Gradients), which were not learned from the data.</li>
+</ul>
+<p>YOLO represents a complete philosophical departure.</p>
+<blockquote class="blockquote">
+<p>Our system replaces all of these disparate parts with a single convolutional neural network. The network performs feature extraction, bounding box prediction, non-maximal suppression, and contextual reasoning all concurrently. … Our unified architecture leads to a faster, more accurate model than DPM.</p>
+</blockquote>
+<p>Instead of separate steps, YOLO is one unified, end-to-end process. Crucially, the features are not static; they are learned <em>in-line</em> and optimized specifically for the task of detection.</p>
+</section>
+<section id="the-r-cnn-family" class="level3">
+<h3 class="anchored" data-anchor-id="the-r-cnn-family">The R-CNN Family</h3>
+<p>R-CNN and its successors (Fast R-CNN, Faster R-CNN) were the reigning state-of-the-art deep learning detectors when YOLO was introduced. They replaced the sliding window with a more efficient two-stage “propose-then-classify” approach.</p>
+<blockquote class="blockquote">
+<p>R-CNN and its variants use region proposals instead of sliding windows to find objects in images. … Each stage of this complex pipeline must be precisely tuned independently and the resulting system is very slow, taking more than 40 seconds per image at test time [14].</p>
+</blockquote>
+<p>The R-CNN pipeline worked as follows:</p>
+<ol type="1">
+<li><strong>Propose Regions:</strong> Use an external algorithm like Selective Search to generate ~2000 potential bounding boxes (“regions of interest”).</li>
+<li><strong>Extract Features:</strong> Warp each of these 2000 regions and feed them through a CNN to extract features.</li>
+<li><strong>Classify:</strong> Use a set of Support Vector Machines (SVMs) to classify the features for each region.</li>
+<li><strong>Refine Boxes:</strong> Use a linear regression model to tighten the bounding boxes.</li>
+</ol>
+<p>While powerful, this pipeline was the definition of complexity. It was slow, difficult to train, and impossible to optimize end-to-end.</p>
+<p>YOLO shares some conceptual similarities with R-CNN. As the authors note, “Each grid cell proposes potential bounding boxes and scores those boxes using convolutional features.” However, YOLO’s approach is vastly more streamlined:</p>
+<ul>
+<li><strong>Fewer Proposals:</strong> YOLO proposes only 98 boxes (<code>7x7x2</code>) per image, compared to R-CNN’s ~2000.</li>
+<li><strong>Unified Model:</strong> All components are combined into a single, jointly optimized network. There are no separate SVMs or linear models.</li>
+<li><strong>Inherent Constraints:</strong> The grid system naturally enforces spatial constraints that help reduce duplicate detections of the same object.</li>
+</ul>
+<p>The paper also addresses R-CNN’s faster successors, <strong>Fast R-CNN</strong> and <strong>Faster R-CNN</strong>. While these models made significant speedups by sharing computation, the authors argue they still “fall short of real-time performance.” YOLO’s core advantage remains: it doesn’t just optimize a complex pipeline; it throws the pipeline out entirely.</p>
+</section>
+<section id="other-unified-approaches-overfeat-and-multibox" class="level3">
+<h3 class="anchored" data-anchor-id="other-unified-approaches-overfeat-and-multibox">Other Unified Approaches: OverFeat and MultiBox</h3>
+<p>YOLO wasn’t the only model attempting to unify parts of the detection process. The authors compare their work to two other notable systems:</p>
+<ul>
+<li><strong>OverFeat:</strong> This model also used a single CNN for localization and detection but did so using an efficient sliding window approach. The authors critique it as a “disjoint system” because the localizer was optimized for localization, not overall detection performance. More importantly, because it only ever saw local regions, “OverFeat cannot reason about global context.”</li>
+<li><strong>Deep MultiBox:</strong> This model used a CNN to directly predict bounding box proposals, similar to the region proposal network later used in Faster R-CNN. The key difference highlighted by the authors is that MultiBox was <em>not</em> a complete detection system. It was a proposal generator that still required a second classification stage.</li>
+</ul>
+<p>In both cases, the conclusion is the same: <strong>YOLO is a complete, end-to-end detection system that reasons globally about the image in a single pass.</strong> It doesn’t just unify some components; it unifies the entire process from pixels to final detections.</p>
+</section>
+</section>
+<section id="comparison-to-other-real-time-systems" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-to-other-real-time-systems">4.1. Comparison to Other Real-Time Systems</h2>
+<p>Before YOLO, the object detection landscape was starkly divided. You could have high accuracy (with models like Fast R-CNN) or you could have high speed (with models like GPU-accelerated DPM), but you couldn’t have both in a single model. This section is all about showing how YOLO carves out a new, powerful niche right in the middle.</p>
+<p>The authors first set a clear benchmark for what “real-time” means:</p>
+<blockquote class="blockquote">
+<p>…only Sadeghi et al.&nbsp;actually produce a detection system that runs in real-time (30 frames per second or better) [31]. We compare YOLO to their GPU implementation of DPM which runs either at 30Hz or 100Hz.</p>
+</blockquote>
+<p>This is a critical point. Many papers claimed their models were “fast,” but they didn’t meet the 30 FPS threshold required for smooth, real-time video processing. YOLO is being compared against the few systems that could legitimately make that claim.</p>
+<p>The core evidence is presented in Table 1, which compares various detectors on two critical metrics:</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-table-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-09-22-yolo-reading-notes/paper-table-1.PNG" class="img-fluid"></a></p>
+<ul>
+<li><strong>mAP (mean Average Precision):</strong> The standard metric for accuracy in object detection on the PASCAL VOC 2007 dataset. Higher is better.</li>
+<li><strong>FPS (Frames Per Second):</strong> The measure of speed. Higher is better.</li>
+</ul>
+<p>Let’s break down the story this table tells.</p>
+<section id="the-old-guard-dpm" class="level3">
+<h3 class="anchored" data-anchor-id="the-old-guard-dpm">The Old Guard: DPM</h3>
+<p>The only other real-time systems listed are versions of DPM. The 30Hz DPM achieves an mAP of 26.1, and the 100Hz version drops even further to 16.0. These numbers establish the baseline: historically, achieving real-time speed meant accepting very low accuracy.</p>
+</section>
+<section id="the-accuracy-kings-r-cnn-and-its-successors" class="level3">
+<h3 class="anchored" data-anchor-id="the-accuracy-kings-r-cnn-and-its-successors">The Accuracy Kings: R-CNN and its Successors</h3>
+<p>At the other end of the spectrum is the R-CNN family. Fast R-CNN achieves a very high 70.0 mAP, but at a glacial pace of <strong>0.5 FPS</strong>. That’s two seconds per image. The more advanced Faster R-CNN is quicker, with its fastest version hitting 18 FPS, but it’s still well below the 30 FPS real-time barrier and is less accurate than the base YOLO model. This highlights the fundamental trade-off: state-of-the-art accuracy was simply not usable for live applications.</p>
+</section>
+<section id="yolos-breakthrough" class="level3">
+<h3 class="anchored" data-anchor-id="yolos-breakthrough">YOLO’s Breakthrough</h3>
+<p>This is where YOLO completely changes the game, offering two distinct operating points on the speed-accuracy curve.</p>
+<ol type="1">
+<li><p><strong>Fast YOLO: The Speed Champion</strong></p>
+<blockquote class="blockquote">
+<p>Fast YOLO is the fastest object detection method on PASCAL; as far as we know, it is the fastest extant object detector. With 52.7% mAP, it is more than twice as accurate as prior work on real-time detection.</p>
+</blockquote>
+<p>At an incredible <strong>155 FPS</strong>, Fast YOLO is in a league of its own for speed. But more importantly, its 52.7 mAP isn’t just a little better than the DPM baselines; it’s a massive, game-changing leap in accuracy. It proves that a real-time system doesn’t have to be inaccurate.</p></li>
+<li><p><strong>YOLO (Base Model): The Balanced Performer</strong></p>
+<blockquote class="blockquote">
+<p>YOLO pushes mAP to 63.4% while still maintaining real-time performance.</p>
+</blockquote>
+<p>The standard YOLO model offers the best of both worlds. It runs at a fluid <strong>45 FPS</strong>, comfortably above the real-time threshold. In exchange for a reduction in speed compared to Fast YOLO, it delivers a significant accuracy boost to 63.4 mAP. This is an accuracy level that is competitive with the much slower “less than real-time” models, but at a speed they cannot hope to match.</p></li>
+</ol>
+<p>For the first time, a single architecture offered a viable solution for applications that needed both respectable accuracy <em>and</em> true real-time processing.</p>
+</section>
+</section>
+<section id="voc-2007-error-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="voc-2007-error-analysis">4.2. VOC 2007 Error Analysis</h2>
+<p>A single number like mAP can tell you which model is better, but it can’t tell you <em>why</em>. To truly understand the behavior of their new model, the authors perform a detailed error analysis, comparing YOLO’s mistakes against those of Fast R-CNN, one of the top-performing detectors at the time. This analysis reveals that the two models are not just different in speed, but in their fundamental character.</p>
+<section id="the-error-breakdown" class="level3">
+<h3 class="anchored" data-anchor-id="the-error-breakdown">The Error Breakdown</h3>
+<p>Using a standard methodology for analyzing detection errors, every prediction is classified into one of the following categories:</p>
+<ul>
+<li><strong>Correct:</strong> The model correctly identifies the object class and the bounding box has a high IOU (Intersection over Union) with the ground truth (IOU &gt; 0.5).</li>
+<li><strong>Localization Error:</strong> The model predicts the correct object class, but the bounding box is inaccurate (0.1 &lt; IOU &lt; 0.5). It found the right thing but drew a sloppy box.</li>
+<li><strong>Similar Class Error:</strong> The model predicts a class that is similar to the ground truth (e.g., mistaking a “sofa” for a “chair”).</li>
+<li><strong>Other Class Error:</strong> The model predicts a completely incorrect class.</li>
+<li><strong>Background Error:</strong> The model predicts an object where there is nothing but background (IOU &lt; 0.1 for any object). It “hallucinated” an object.</li>
+</ul>
+<p>The results of this analysis are visualized in Figure 4, and they tell a fascinating story.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-fig-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-09-22-yolo-reading-notes/paper-fig-4.PNG" class="img-fluid"></a></p>
+</section>
+<section id="the-tale-of-two-models-global-vs.-local" class="level3">
+<h3 class="anchored" data-anchor-id="the-tale-of-two-models-global-vs.-local">The Tale of Two Models: Global vs.&nbsp;Local</h3>
+<p>The error profiles for YOLO and Fast R-CNN are almost mirror images of each other, perfectly illustrating the architectural trade-offs each model made.</p>
+<section id="fast-r-cnn-the-meticulous-specialist" class="level4">
+<h4 class="anchored" data-anchor-id="fast-r-cnn-the-meticulous-specialist">Fast R-CNN: The Meticulous Specialist</h4>
+<blockquote class="blockquote">
+<p>Fast R-CNN makes much fewer localization errors but far more background errors. 13.6% of it’s top detections are false positives that don’t contain any objects. Fast R-CNN is almost 3x more likely to predict background detections than YOLO.</p>
+</blockquote>
+<p>Fast R-CNN’s strength is its precision. Because it operates on a set of ~2000 high-quality region proposals, it can dedicate significant computational power to classifying and refining each one. This results in excellent localization (only 8.6% of errors).</p>
+<p>However, its weakness is its lack of context. It examines each proposed region in isolation. If a patch of textured carpet happens to look like an animal’s fur, Fast R-CNN has no easy way of knowing it’s just a carpet because it can’t see the whole room. This leads to its primary failure mode: a high number of background false positives. It is easily fooled by tricky background patches.</p>
+</section>
+<section id="yolo-the-big-picture-generalist" class="level4">
+<h4 class="anchored" data-anchor-id="yolo-the-big-picture-generalist">YOLO: The Big-Picture Generalist</h4>
+<blockquote class="blockquote">
+<p>YOLO struggles to localize objects correctly. Localization errors account for more of YOLO’s errors than all other sources combined.</p>
+</blockquote>
+<p>YOLO’s story is the exact opposite. Its biggest weakness is localization, which accounts for 19.0% of its errors—more than double that of Fast R-CNN. This is a direct consequence of its architecture. Making predictions from a coarse <code>7x7</code> feature map makes it difficult to draw perfectly tight bounding boxes.</p>
+<p>But YOLO’s greatest strength is its global context. Since it sees the entire image at once during its single forward pass, it learns not just what objects look like, but also the context in which they typically appear. It understands the “big picture.” This makes it remarkably robust against background errors. Its background error rate of 4.75% is nearly three times lower than Fast R-CNN’s. It’s much less likely to hallucinate an object where there isn’t one.</p>
+<p>This analysis is brilliant because it proves a key claim from the introduction: YOLO’s unified design and global view of the image give it a fundamentally different and, in some ways, more robust understanding of the scene. Its mistakes are different, which leads to a very interesting possibility explored in the next section: what if we could combine the strengths of both models?</p>
+</section>
+</section>
+</section>
+<section id="combining-fast-r-cnn-and-yolo" class="level2">
+<h2 class="anchored" data-anchor-id="combining-fast-r-cnn-and-yolo">4.3. Combining Fast R-CNN and YOLO</h2>
+<p>The error analysis in the previous section revealed a tantalizing possibility. We have two models: Fast R-CNN, which is a precise localizer but is easily fooled by background noise, and YOLO, which is a less precise localizer but has a robust, global understanding of the scene. What if we could combine them to get the best of both worlds?</p>
+<p>This is exactly what the authors set out to do, demonstrating that YOLO’s unique error profile provides a new kind of value to the object detection ecosystem.</p>
+<section id="the-hypothesis-using-yolo-as-a-context-filter" class="level3">
+<h3 class="anchored" data-anchor-id="the-hypothesis-using-yolo-as-a-context-filter">The Hypothesis: Using YOLO as a “Context Filter”</h3>
+<p>The core idea is simple and elegant: use YOLO to suppress the background false positives that plague Fast R-CNN.</p>
+<blockquote class="blockquote">
+<p>YOLO makes far fewer background mistakes than Fast R-CNN. By using YOLO to eliminate background detections from Fast R-CNN we get a significant boost in performance. For every bounding box that R-CNN predicts we check to see if YOLO predicts a similar box. If it does, we give that prediction a boost…</p>
+</blockquote>
+<p>The process can be thought of as a re-scoring mechanism. Fast R-CNN acts as the primary detector, generating high-quality, precise bounding boxes. Then, YOLO provides a “second opinion.”</p>
+<ol type="1">
+<li>Fast R-CNN makes a prediction (e.g., “I’m 95% sure this is a cat”).</li>
+<li>We look at YOLO’s predictions for the same image. Does YOLO also predict a “cat” in a similar location (i.e., with high IOU)?</li>
+<li>If YOLO agrees, we boost the confidence of the Fast R-CNN prediction.</li>
+<li>If YOLO disagrees, and confidently predicts “background” in that area, we can penalize or discard the Fast R-CNN prediction.</li>
+</ol>
+<p>This effectively uses YOLO’s global context to sanity check Fast R-CNN’s local decisions, weeding out the false positives.</p>
+</section>
+<section id="the-proof-is-in-the-performance" class="level3">
+<h3 class="anchored" data-anchor-id="the-proof-is-in-the-performance">The Proof Is in the Performance</h3>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-table-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-09-22-yolo-reading-notes/paper-table-2.PNG" class="img-fluid"></a></p>
+<p>The results of this experiment, shown in Table 2, are striking.</p>
+<ul>
+<li>The best Fast R-CNN model on its own achieves a strong mAP of <strong>71.8%</strong>.</li>
+<li>When combined with YOLO, its performance jumps to <strong>75.0% mAP</strong>.</li>
+</ul>
+<p>A <strong>+3.2%</strong> increase in mAP on a competitive benchmark like PASCAL VOC is a massive improvement. This demonstrates that YOLO is contributing significant, valuable information that the state-of-the-art model was missing.</p>
+</section>
+<section id="the-crucial-control-experiment" class="level3">
+<h3 class="anchored" data-anchor-id="the-crucial-control-experiment">The Crucial Control Experiment</h3>
+<p>To prove that this boost was truly due to YOLO’s unique strengths, the authors performed a brilliant control experiment. They tried combining the top Fast R-CNN model with <em>other versions of Fast R-CNN</em>.</p>
+<p>The results were telling: these ensembles produced only tiny gains of 0.3% to 0.6%. This is a classic case of diminishing returns. Because all the Fast R-CNN models are architecturally similar, they tend to make the same kinds of mistakes. Combining them doesn’t add much new information.</p>
+<p>The authors make this point explicitly:</p>
+<blockquote class="blockquote">
+<p>The boost from YOLO is not simply a byproduct of model ensembling since there is little benefit from combining different versions of Fast R-CNN. Rather, it is precisely because YOLO makes different kinds of mistakes at test time that it is so effective at boosting Fast R-CNN’s performance.</p>
+</blockquote>
+<p>This is the definitive proof. YOLO’s massive performance boost comes from the fact that its global, unified view of the world is fundamentally different from the local, region-based view of R-CNN. It is not just another detector; it is a detector with a completely different perspective.</p>
+<p>Of course, the authors note that this combined model is not real-time, as it requires running both slow and fast models. However, as an academic exercise, it powerfully validates the unique strengths of YOLO’s design.</p>
+</section>
+</section>
+<section id="voc-2012-results" class="level2">
+<h2 class="anchored" data-anchor-id="voc-2012-results">4.4. VOC 2012 Results</h2>
+<p>The PASCAL VOC 2007 dataset is a classic benchmark, but by 2016, the more challenging VOC 2012 dataset had become the standard for measuring state-of-the-art performance. To prove its mettle, YOLO had to perform well here, too. The results in this section further cement YOLO’s role in the object detection landscape.</p>
+<p>The full results are presented in the massive Table 3, which shows the per-class average precision for a wide range of top models.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-table-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-09-22-yolo-reading-notes/paper-table-3.PNG" class="img-fluid"></a></p>
+<section id="yolos-standalone-performance" class="level3">
+<h3 class="anchored" data-anchor-id="yolos-standalone-performance">YOLO’s Standalone Performance</h3>
+<blockquote class="blockquote">
+<p>On the VOC 2012 test set, YOLO scores 57.9% mAP. This is lower than the current state of the art, closer to the original R-CNN using VGG-16…</p>
+</blockquote>
+<p>How does this stack up? The authors are refreshingly honest: on pure accuracy alone, YOLO is not at the top of the leaderboard. Its performance is respectable but is comparable to older, much slower models like the original R-CNN. This is a critical finding that reinforces the paper’s central narrative: YOLO is not designed to be the undisputed accuracy champion; it’s designed to be the <strong>real-time champion</strong>.</p>
+<p>Diving into the per-class results, the authors find patterns consistent with the model’s known limitations:</p>
+<blockquote class="blockquote">
+<p>Our system struggles with small objects compared to its closest competitors. On categories like <code>bottle</code>, <code>sheep</code>, and <code>tv/monitor</code> YOLO scores 8-10% lower than R-CNN or Feature Edit.</p>
+</blockquote>
+<p>This is exactly what we would expect. Small objects are a challenge for YOLO’s coarse <code>7x7</code> grid, and this is where its performance suffers most compared to the more precise, region-based methods.</p>
+<p>However, the authors also note areas where it excels:</p>
+<blockquote class="blockquote">
+<p>However, on other categories like <code>cat</code> and <code>train</code> YOLO achieves higher performance.</p>
+</blockquote>
+<p>This suggests that for certain object categories—perhaps those with more distinct shapes or strong contextual cues—YOLO’s global view of the image provides a tangible advantage over other methods.</p>
+</section>
+<section id="the-power-of-the-yolo-fast-r-cnn-combination" class="level3">
+<h3 class="anchored" data-anchor-id="the-power-of-the-yolo-fast-r-cnn-combination">The Power of the YOLO + Fast R-CNN Combination</h3>
+<p>Once again, the most compelling story emerges when YOLO is combined with its conceptual rival, Fast R-CNN.</p>
+<blockquote class="blockquote">
+<p>Our combined Fast R-CNN + YOLO model is one of the highest performing detection methods. Fast R-CNN gets a 2.3% improvement from the combination with YOLO, boosting it 5 spots up on the public leaderboard.</p>
+</blockquote>
+<p>This is a hugely significant result. The massive +3.2% mAP boost seen on the VOC 2007 dataset was not a one-off fluke. The combination proves its worth again on the more difficult VOC 2012 set, providing a +2.3% mAP improvement. This is enough to propel the combined model into the absolute top tier of the public leaderboard.</p>
+<p>This result strongly validates the conclusion from the error analysis: YOLO’s architectural differences are not just a curiosity; they are a source of genuine, complementary value. Its global context provides information that even the best region-based detectors are missing, and this holds true across multiple challenging benchmarks.</p>
+</section>
+</section>
+<section id="generalizability-person-detection-in-artwork" class="level2">
+<h2 class="anchored" data-anchor-id="generalizability-person-detection-in-artwork">4.5. Generalizability: Person Detection in Artwork</h2>
+<p>The ultimate goal of computer vision is to create models that can operate reliably in the messy, unpredictable real world. A common pitfall of machine learning models is that they perform brilliantly on the clean, academic datasets they were trained on, but fail spectacularly when faced with new data that looks even slightly different. This is a test of <strong>generalizability</strong>.</p>
+<p>The authors devise a brilliant and intuitive experiment to measure this: they train their models on real-world photographs and test them on artwork.</p>
+<blockquote class="blockquote">
+<p>Academic datasets for object detection draw the training and testing data from the same distribution. In real-world applications it is hard to predict all possible use cases and the test data can diverge from what the system has seen before [3]. We compare YOLO to other detection systems on the Picasso Dataset [12] and the People-Art Dataset [3], two datasets for testing person detection on artwork.</p>
+</blockquote>
+<p>This is a fantastic stress test. A model that has only learned to associate the specific textures and colors of photographs with objects will fail. A model that has learned a deeper, more abstract concept of what constitutes a “person”—their shape, their parts, and their relationship to other objects—should perform much better.</p>
+<p>The results, shown in Figure 5, are incredibly revealing and perfectly summarize the core philosophies of each model.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-fig-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-09-22-yolo-reading-notes/paper-fig-5.PNG" class="img-fluid"></a></p>
+<section id="r-cnn-the-brittle-specialist" class="level3">
+<h3 class="anchored" data-anchor-id="r-cnn-the-brittle-specialist">R-CNN: The Brittle Specialist</h3>
+<p>On the standard VOC 2007 dataset, R-CNN performs well. However, its performance falls off a cliff when applied to artwork.</p>
+<blockquote class="blockquote">
+<p>R-CNN has high AP on VOC 2007. However, R-CNN drops off considerably when applied to artwork. R-CNN uses Selective Search for bounding box proposals which is tuned for natural images. The classifier step in R-CNN only sees small regions and needs good proposals.</p>
+</blockquote>
+<p>R-CNN fails for two key reasons that expose its brittleness:</p>
+<ol type="1">
+<li><strong>Fragile Proposals:</strong> Its region proposal algorithm, Selective Search, is designed around the statistical properties of natural images (e.g., color, texture, edges). These properties are completely different in paintings. As a result, Selective Search fails to propose good bounding boxes, so the classifier is doomed from the start.</li>
+<li><strong>Local View:</strong> The R-CNN classifier looks at isolated patches. It has learned to associate “person” with the fine-grained textures of skin and clothing in photographs. When it sees the brushstrokes of a Cubist painting, these learned associations completely break down.</li>
+</ol>
+</section>
+<section id="dpm-the-shape-focused-model" class="level3">
+<h3 class="anchored" data-anchor-id="dpm-the-shape-focused-model">DPM: The Shape-Focused Model</h3>
+<p>DPM, the older model based on hand-crafted features, starts with a lower accuracy on photographs but proves to be surprisingly resilient.</p>
+<blockquote class="blockquote">
+<p>DPM maintains its AP well when applied to artwork. Prior work theorizes that DPM performs well because it has strong spatial models of the shape and layout of objects.</p>
+</blockquote>
+<p>DPM uses HOG features, which primarily capture the geometry of edges and gradients. It cares less about texture and color and more about shape and form. Since the general shape of a person is similar in both photographs and paintings, DPM’s performance degrades far less than R-CNN’s. It has learned a more abstract, shape-based representation.</p>
+</section>
+<section id="yolo-the-robust-generalist" class="level3">
+<h3 class="anchored" data-anchor-id="yolo-the-robust-generalist">YOLO: The Robust Generalist</h3>
+<p>YOLO emerges as the clear winner in this test, achieving both the highest initial accuracy and the most graceful degradation.</p>
+<blockquote class="blockquote">
+<p>YOLO has good performance on VOC 2007 and its AP degrades less than other methods when applied to artwork. Like DPM, YOLO models the size and shape of objects, as well as relationships between objects and where objects commonly appear.</p>
+</blockquote>
+<p>YOLO succeeds because it combines the best aspects of the other models while adding its own unique advantage:</p>
+<ul>
+<li><strong>Learns Shape and Spatial Layout:</strong> Like DPM, YOLO learns robust spatial models. It doesn’t just learn what a person looks like, but also that a head tends to be above a torso. These spatial relationships hold true even in artwork.</li>
+<li><strong>Learns Powerful Features:</strong> Unlike DPM, it uses a deep CNN to learn these features, making its baseline model far more powerful and accurate.</li>
+<li><strong>Reasons Globally:</strong> Unlike R-CNN, YOLO sees the entire image at once. It’s not just looking at a confusing patch of paint; it’s seeing that patch in the context of the entire canvas. This global context allows it to make more robust inferences.</li>
+</ul>
+<p>This experiment is perhaps the most compelling argument in the entire paper. It proves that YOLO’s unified architecture and global reasoning don’t just make it fast; they lead to a more generalized and fundamentally robust understanding of the visual world.</p>
+<p><a href="images/2025-09-22-yolo-reading-notes/paper-fig-6.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-09-22-yolo-reading-notes/paper-fig-6.PNG" class="img-fluid"></a></p>
+</section>
+</section>
+<section id="real-time-detection-in-the-wild" class="level2">
+<h2 class="anchored" data-anchor-id="real-time-detection-in-the-wild">5. Real-Time Detection In The Wild</h2>
+<p>This short but impactful section serves as a practical demonstration of the paper’s core claims. All the tables and metrics are important, but seeing the system in action provides a different, more visceral kind of proof.</p>
+<blockquote class="blockquote">
+<p>YOLO is a fast, accurate object detector, making it ideal for computer vision applications. We connect YOLO to a webcam and verify that it maintains real-time performance, including the time to fetch images from the camera and display the detections.</p>
+</blockquote>
+<p>This is the capstone demonstration. The authors aren’t just measuring frames per second in a sterile, offline environment. They hook the system up to a live webcam and confirm that it works as advertised in a real-world scenario. This proves that YOLO isn’t just “fast in theory”; it’s a practical tool that can be deployed for live video processing.</p>
+<blockquote class="blockquote">
+<p>The resulting system is interactive and engaging. While YOLO processes images individually, when attached to a webcam it functions like a tracking system, detecting objects as they move around and change in appearance.</p>
+</blockquote>
+<p>This observation highlights an emergent property of the system. Even though YOLO has no explicit “tracking” mechanism and processes each frame independently, its high speed creates the <em>illusion</em> of a sophisticated tracking system. This makes it feel responsive and intelligent, opening the door for a new class of interactive computer vision applications that simply weren’t possible with the slow, multi-second detectors that preceded it.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">6. Conclusion</h2>
+<blockquote class="blockquote">
+<p>We introduce YOLO, a unified model for object detection. Our model is simple to construct and can be trained directly on full images. Unlike classifier-based approaches, YOLO is trained on a loss function that directly corresponds to detection performance and the entire model is trained jointly. Fast YOLO is the fastest general-purpose object detector in the literature and YOLO pushes the state-of-the-art in real-time object detection. YOLO also generalizes well to new domains making it ideal for applications that rely on fast, robust object detection.</p>
+</blockquote>
+<p>This final statement is the perfect summary. The authors position YOLO not as a model that beats every other detector on every single metric, but as a revolutionary new tool that opened up an entirely new quadrant of the speed-accuracy landscape. It established a new state-of-the-art for real-time detection and proved that speed, accuracy, and robust generalization could coexist in a single, elegant model. This paper didn’t just introduce a new model; it introduced a whole new philosophy of object detection that would influence the field for years to come.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
