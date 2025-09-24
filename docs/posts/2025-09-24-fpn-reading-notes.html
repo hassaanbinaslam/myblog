@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-24">
+<meta name="description" content="An in-depth look at how Feature Pyramid Networks create powerful, multi-scale feature representations within a single ConvNet to dramatically improve object detection.">
+
+<title>A Deep Dive into Feature Pyramid Networks for Object Detection – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="A Deep Dive into Feature Pyramid Networks for Object Detection – Random Thoughts">
+<meta property="og:description" content="An in-depth look at how Feature Pyramid Networks create powerful, multi-scale feature representations within a single ConvNet to dramatically improve object detection.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-24-fpn-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="A Deep Dive into Feature Pyramid Networks for Object Detection – Random Thoughts">
+<meta name="twitter:description" content="An in-depth look at how Feature Pyramid Networks create powerful, multi-scale feature representations within a single ConvNet to dramatically improve object detection.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-24-fpn-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#the-fundamental-challenge-of-scale" id="toc-the-fundamental-challenge-of-scale" class="nav-link" data-scroll-target="#the-fundamental-challenge-of-scale">The Fundamental Challenge of Scale</a></li>
+  <li><a href="#the-rise-of-convnets-and-the-compromise-of-single-scale-detection" id="toc-the-rise-of-convnets-and-the-compromise-of-single-scale-detection" class="nav-link" data-scroll-target="#the-rise-of-convnets-and-the-compromise-of-single-scale-detection">The Rise of ConvNets and the Compromise of Single-Scale Detection</a></li>
+  <li><a href="#the-prohibitive-cost-of-image-pyramids" id="toc-the-prohibitive-cost-of-image-pyramids" class="nav-link" data-scroll-target="#the-prohibitive-cost-of-image-pyramids">The Prohibitive Cost of Image Pyramids</a></li>
+  <li><a href="#the-free-pyramid-inside-every-convnet" id="toc-the-free-pyramid-inside-every-convnet" class="nav-link" data-scroll-target="#the-free-pyramid-inside-every-convnet">The ‘Free’ Pyramid Inside Every ConvNet</a></li>
+  <li><a href="#a-step-in-the-right-direction-the-single-shot-detector-ssd" id="toc-a-step-in-the-right-direction-the-single-shot-detector-ssd" class="nav-link" data-scroll-target="#a-step-in-the-right-direction-the-single-shot-detector-ssd">A Step in the Right Direction: The Single Shot Detector (SSD)</a></li>
+  <li><a href="#the-solution-a-top-down-pathway-with-lateral-connections" id="toc-the-solution-a-top-down-pathway-with-lateral-connections" class="nav-link" data-scroll-target="#the-solution-a-top-down-pathway-with-lateral-connections">The Solution: A Top-Down Pathway with Lateral Connections</a></li>
+  <li><a href="#a-pyramid-of-predictions-not-a-single-high-resolution-map" id="toc-a-pyramid-of-predictions-not-a-single-high-resolution-map" class="nav-link" data-scroll-target="#a-pyramid-of-predictions-not-a-single-high-resolution-map">A Pyramid of Predictions, Not a Single High-Resolution Map</a></li>
+  <li><a href="#the-fpn-advantage-claims-and-contributions" id="toc-the-fpn-advantage-claims-and-contributions" class="nav-link" data-scroll-target="#the-fpn-advantage-claims-and-contributions">The FPN Advantage: Claims and Contributions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A Deep Dive into Feature Pyramid Networks for Object Detection</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    An in-depth look at how Feature Pyramid Networks create powerful, multi-scale feature representations within a single ConvNet to dramatically improve object detection.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 24, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-24-fpn-reading-notes.png" class="img-fluid"></p>
+<p>In the world of computer vision, one of the most persistent challenges is detecting objects that appear at vastly different scales within the same image. A model might easily spot a car filling the frame but completely miss a tiny car in the distance. The classic solution involved creating an image pyramid, resizing the input image into multiple scales and searching for objects at each level. While effective, this approach is computationally expensive, especially for modern deep learning models. In their 2017 paper, Lin et al.&nbsp;from Facebook AI Research introduced the Feature Pyramid Network (FPN), an elegant architecture that provides the benefits of a pyramid representation without the prohibitive cost.</p>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-title.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-24-fpn-reading-notes/paper-title.PNG" class="img-fluid"></a></p>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-abstract.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-24-fpn-reading-notes/paper-abstract.PNG" class="img-fluid"></a></p>
+<p>The abstract immediately sets the stage by identifying a fundamental problem in object detection: recognizing objects at various scales. The authors remind us of the classic solution, the <strong>feature pyramid</strong>, but highlight why modern deep learning models have largely abandoned it: it’s too slow and memory-hungry.</p>
+<p>The core insight of the paper is presented as an elegant solution to this dilemma. Instead of building an <em>image pyramid</em> by resizing the input image multiple times, the authors propose to use the pyramid that naturally exists <em>inside</em> a Convolutional Network (ConvNet).</p>
+<p>Let’s break that down:</p>
+<ul>
+<li><strong>Inherent Pyramidal Hierarchy:</strong> As an image passes through a ConvNet, it goes through a series of layers. Pooling or strided convolutional layers progressively shrink the spatial dimensions of the feature maps. For example, an input of 224x224 might become 112x112, then 56x56, and so on. This creates a natural pyramid of feature maps within the network.</li>
+<li><strong>The Problem with the Natural Pyramid:</strong> The issue is that while the final, small feature maps are rich in semantic information (they know <em>what</em> object is present), they have poor spatial resolution (they’ve lost information about <em>exactly where</em> it is). Conversely, the initial, large feature maps have precise spatial information but are semantically weak (they only represent low-level features like edges and textures). Simply making predictions from these different layers doesn’t work well, especially for small objects.</li>
+</ul>
+<p>This is where the authors’ key architectural innovation comes in. They propose a <strong>Feature Pyramid Network (FPN)</strong> that combines the best of both worlds. It uses a “top-down pathway” to carry the strong semantic information from the deep layers back to the shallower layers, and “lateral connections” to merge this with the high-resolution spatial information from those shallower layers. The result is a set of feature maps that are rich in semantic meaning at every single scale.</p>
+<p>The authors then state their results in a way that underscores the power and practicality of their method:</p>
+<ul>
+<li>They integrated FPN into a standard Faster R-CNN detector.</li>
+<li>They achieved state-of-the-art results on the challenging COCO benchmark, even beating the winners of the 2016 competition.</li>
+<li>They did this “without bells and whistles,” meaning the improvement comes directly from the FPN architecture itself, not from other common tricks.</li>
+<li>The model runs at 6 FPS, making it a practical and efficient solution.</li>
+</ul>
+<p>In essence, the abstract promises a method that delivers the power of a feature pyramid without the high computational cost, solving a long-standing problem in a simple and effective way.</p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-1.PNG" class="img-fluid"></a></p>
+<section id="the-fundamental-challenge-of-scale" class="level3">
+<h3 class="anchored" data-anchor-id="the-fundamental-challenge-of-scale">The Fundamental Challenge of Scale</h3>
+<p>The authors begin by framing the core problem they aim to solve, a classic and difficult one in computer vision: how can a model detect an object regardless of its size in the image? The traditional and intuitive way to solve this is by using an <strong>image pyramid</strong>. This simply means taking the input image and repeatedly resizing it to create a stack of images at different scales, from large to small.</p>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-fig-1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-24-fpn-reading-notes/paper-fig-1-1.PNG" class="img-fluid"></a></p>
+<p>From this image pyramid, a <strong>featurized image pyramid</strong> is built. As illustrated in Figure 1(a) of the paper, this involves running a feature extractor (in the past, this would have been something like SIFT or HOG; with deep learning, it’s a ConvNet) on <em>each and every level</em> of the image pyramid.</p>
+<p>The power of this technique lies in a property called <strong>scale-invariance</strong>. Imagine a detector trained to find a cat that is 100x100 pixels. If it’s given an image with a tiny 25x25 pixel cat, it will likely fail. But in an image pyramid, that small cat might appear as a 100x100 pixel cat in one of the upscaled versions of the image. Conversely, a giant 400x400 cat might be scaled down to 100x100 in a different level of the pyramid.</p>
+<p>The key idea is that the detector only has to be good at recognizing the object at a single, canonical scale. The pyramid structure transforms the problem of handling scale variation into simply choosing the right pyramid level to look at. This is what the authors mean when they say an object’s scale change is “offset by shifting its level in the pyramid.” This robust approach formed the bedrock of many successful object detection systems before the deep learning era.</p>
+</section>
+<section id="the-rise-of-convnets-and-the-compromise-of-single-scale-detection" class="level3">
+<h3 class="anchored" data-anchor-id="the-rise-of-convnets-and-the-compromise-of-single-scale-detection">The Rise of ConvNets and the Compromise of Single-Scale Detection</h3>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-2.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-3.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>“Featurized image pyramids were heavily used in the era of hand-engineered features [5, 25]. … For recognition tasks, engineered features have largely been replaced with features computed by deep convolutional networks (ConvNets) [19, 20].”</p>
+</blockquote>
+<p>The authors first provide some historical context. Before deep learning, object detectors relied on <strong>hand-engineered features</strong> like HOG (Histograms of Oriented Gradients) and SIFT (Scale-Invariant Feature Transform). These feature extractors were clever, but not very robust to changes in scale. To get good results, detectors like DPM (Deformable Part Models) had to process the image at many different scales (e.g., “10 scales per octave,” meaning 10 different image sizes just to cover a doubling of object size). This made them powerful but very slow.</p>
+<p>Then came the deep learning revolution. ConvNets replaced these hand-engineered features for two key reasons:</p>
+<ol type="1">
+<li><strong>They learn higher-level semantics:</strong> Instead of just capturing simple patterns like edges and gradients, ConvNets learn a hierarchy of features. Deeper layers can represent complex concepts like “a wheel” or “an eye,” making them far more powerful for recognition.</li>
+<li><strong>They are more robust to scale variance:</strong> Thanks to mechanisms like pooling layers and large receptive fields, a ConvNet can recognize an object even if its size varies a bit.</li>
+</ol>
+<blockquote class="blockquote">
+<p>“Aside from being capable of representing higher-level semantics, ConvNets are also more robust to variance in scale and thus facilitate recognition from features computed on a single input scale [15, 11, 29] (Fig. 1(b)). But even with this robustness, pyramids are still needed to get the most accurate results.”</p>
+</blockquote>
+<p>This improved robustness led to a major simplification in object detection architectures. Models like Fast R-CNN and Faster R-CNN abandoned the computationally expensive image pyramid. Instead, they adopted a much faster approach: feed a single, fixed-size image to the ConvNet and extract features from just one of its layers (as shown in Figure 1(b)). This was a practical trade-off, sacrificing some accuracy for a massive gain in speed.</p>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-fig-1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-09-24-fpn-reading-notes/paper-fig-1-2.PNG" class="img-fluid"></a></p>
+<p>However, the authors deliver a crucial punchline: this trade-off is a compromise. The highest-performing models in top competitions like ImageNet and COCO still use the old-school, slow-and-steady approach of featurized image pyramids at test time. This is strong evidence that, while single-scale detection is fast, it leaves accuracy on the table.</p>
+<blockquote class="blockquote">
+<p>“The principle advantage of featurizing each level of an image pyramid is that it produces a multi-scale feature representation in which all levels are semantically strong, including the high-resolution levels.”</p>
+</blockquote>
+<p>This sentence perfectly captures the “gold standard” that the authors are trying to replicate. When you run a powerful ConvNet on every level of an image pyramid, you get a set of feature maps at different scales. Crucially, every single one of these feature maps is <strong>semantically strong</strong>, because the full power of the ConvNet was used to create it. The high-resolution feature maps are just as “smart” as the low-resolution ones. This is the ideal scenario, but as we’ll see next, it comes with a heavy price.</p>
+</section>
+<section id="the-prohibitive-cost-of-image-pyramids" class="level3">
+<h3 class="anchored" data-anchor-id="the-prohibitive-cost-of-image-pyramids">The Prohibitive Cost of Image Pyramids</h3>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-4.PNG" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-5.PNG" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>“Nevertheless, featurizing each level of an image pyramid has obvious limitations. Inference time increases considerably (e.g., by four times [11]), making this approach impractical for real applications.”</p>
+</blockquote>
+<p>While using a featurized image pyramid gives the best accuracy, it comes with a crippling downside: it is incredibly slow. <strong>Inference time</strong> refers to the time it takes for a trained model to make a prediction on a new image. If you build an image pyramid with four different scales, you have to run the entire, massive ConvNet four separate times. This linear increase in computation makes the approach far too slow for real-world applications like autonomous driving or video analysis where speed is essential.</p>
+<blockquote class="blockquote">
+<p>“Moreover, training deep networks end-to-end on an image pyramid is infeasible in terms of memory…”</p>
+</blockquote>
+<p>If inference is slow, training is even worse. In fact, the authors state it is <strong>infeasible</strong>. During training, a network not only performs a forward pass through the data but also a backward pass (backpropagation) to calculate gradients and update its weights. This requires storing the “activations” (the output feature maps) from every layer in GPU memory. Modern GPUs have a limited amount of memory, and trying to process a whole batch of multi-scale image pyramids at once would cause it to run out of memory almost instantly.</p>
+<blockquote class="blockquote">
+<p>“…and so, if exploited, image pyramids are used only at test time [15, 11, 16, 35], which creates an inconsistency between train/test-time inference.”</p>
+</blockquote>
+<p>Because end-to-end training on an image pyramid is impossible, researchers have relied on a workaround. They train the model on single-scale images (which is memory-efficient) and then, at test time, they apply this model to a multi-scale image pyramid.</p>
+<p>This creates a significant problem: a <strong>train-test discrepancy</strong>. The model is being evaluated in a way it was never trained. It has learned to detect objects at the scale distribution present in the single-scale training images, but it’s being tested on objects at different scales created by the pyramid. This inconsistency can prevent the model from achieving its full potential.</p>
+<p>For all these reasons—slow inference, infeasible training, and the train-test discrepancy—the default configurations of influential models like <strong>Fast R-CNN</strong> and <strong>Faster R-CNN</strong> abandoned image pyramids entirely in favor of a faster, single-scale approach. This set the stage for a new solution, one that could provide the power of a pyramid without its crippling costs.</p>
+</section>
+<section id="the-free-pyramid-inside-every-convnet" class="level3">
+<h3 class="anchored" data-anchor-id="the-free-pyramid-inside-every-convnet">The ‘Free’ Pyramid Inside Every ConvNet</h3>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-6.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-6.PNG" class="img-fluid"></a></p>
+<blockquote class="blockquote">
+<p>“However, image pyramids are not the only way to compute a multi-scale feature representation. A deep ConvNet computes a feature hierarchy layer by layer, and with subsampling layers the feature hierarchy has an inherent multi-scale, pyramidal shape.”</p>
+</blockquote>
+<p>Having established that building an image pyramid is too expensive, the authors present a powerful alternative that has been hiding in plain sight. Every standard deep ConvNet, like a ResNet or VGG, already contains a pyramid. This is the <strong>in-network feature hierarchy</strong>.</p>
+<p>As an image is processed through a ConvNet, it passes through sequential layers. Some of these layers, like max-pooling or strided convolutions, are <strong>subsampling layers</strong>. Their job is to reduce the spatial dimensions (height and width) of the feature maps. For example, a 256x256 feature map might become 128x128, then 64x64, and so on, as it gets deeper into the network. This process naturally creates a pyramid of feature maps of decreasing size, all from a single input image and a single forward pass. This pyramid is computationally “free” because the network has to compute these feature maps anyway.</p>
+<p>This seems like a perfect solution, but there’s a major catch.</p>
+<blockquote class="blockquote">
+<p>“This in-network feature hierarchy produces feature maps of different spatial resolutions, but introduces large semantic gaps caused by different depths. The high-resolution maps have low-level features that harm their representational capacity for object recognition.”</p>
+</blockquote>
+<p>This is the crucial problem with the “free” pyramid. The different levels of this pyramid are not created equal. There is a <strong>large semantic gap</strong> between them.</p>
+<ul>
+<li><strong>Shallow Layers (e.g., conv2):</strong> These early layers produce large, high-resolution feature maps. However, they are <strong>semantically weak</strong>. They represent very simple, low-level features like edges, corners, and textures. They have precise location information (“there is an edge <em>here</em>”) but have no concept of what object those edges belong to.</li>
+<li><strong>Deep Layers (e.g., conv5):</strong> These final layers produce small, low-resolution feature maps. They are <strong>semantically strong</strong>. Having processed the entire image through many layers, they represent high-level concepts like “car” or “person.” They know <em>what</em> is in the image, but due to repeated subsampling, they’ve lost precise information about <em>where</em> it is.</li>
+</ul>
+<p>Using this pyramid directly for object detection is problematic. If you try to detect small objects using the early, high-resolution layers, you will fail because those layers don’t have strong enough semantic information to actually recognize the object. This is the core challenge the authors are about to solve: how to make every level of this “free” in-network pyramid semantically strong.</p>
+</section>
+<section id="a-step-in-the-right-direction-the-single-shot-detector-ssd" class="level3">
+<h3 class="anchored" data-anchor-id="a-step-in-the-right-direction-the-single-shot-detector-ssd">A Step in the Right Direction: The Single Shot Detector (SSD)</h3>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-7.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-7.PNG" class="img-fluid"></a></p>
+<blockquote class="blockquote">
+<p>“The Single Shot Detector (SSD) [22] is one of the first attempts at using a ConvNet’s pyramidal feature hierarchy as if it were a featurized image pyramid (Fig. 1(c)).”</p>
+</blockquote>
+<p>Before presenting their own solution, the authors acknowledge a key predecessor: the Single Shot Detector, or SSD. SSD was a clever and influential model that recognized the potential of using the “free” in-network feature pyramid. Instead of making predictions from just one layer (like Faster R-CNN), SSD made predictions from multiple layers at different depths and scales, all within a single forward pass of the network.</p>
+<p>This sounds like a great idea, but it ran headfirst into the “semantic gap” problem we just discussed. The SSD authors knew that the early, high-resolution feature maps were semantically weak and not suitable for accurate object classification.</p>
+<blockquote class="blockquote">
+<p>“But to avoid using low-level features SSD foregoes reusing already computed layers and instead builds the pyramid starting from high up in the network (e.g., conv4_3 of VGG nets [36]) and then by adding several new layers.”</p>
+</blockquote>
+<p>SSD’s solution was a compromise. It decided to completely ignore the early, high-resolution layers of the network (like <code>conv2</code> or <code>conv3</code>) because their features were too primitive. Instead, it started making predictions from a deeper layer (like <code>conv4_3</code>), which already had reasonably strong semantic information. To get feature maps for detecting even larger objects, SSD didn’t use the even deeper layers directly; it appended a new series of smaller convolutional layers to the end of the backbone network.</p>
+<p>This is a crucial point. SSD doesn’t reuse the full, existing pyramid. It throws away the bottom, high-resolution levels and builds a new, smaller pyramid on top of the network, as shown in Figure 1(c).</p>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-fig-1-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-09-24-fpn-reading-notes/paper-fig-1-3.PNG" class="img-fluid"></a></p>
+<blockquote class="blockquote">
+<p>“Thus it misses the opportunity to reuse the higher-resolution maps of the feature hierarchy. We show that these are important for detecting small objects.”</p>
+</blockquote>
+<p>Here, the authors deliver their core critique of SSD’s design. By discarding the high-resolution feature maps from the early layers, SSD handicaps its ability to detect small objects. Small objects require fine-grained spatial information to be located and recognized, and that information is most present in the early layers. SSD’s decision to avoid these layers due to their weak semantics means it pays a heavy price in performance on small objects.</p>
+<p>This sets the stage perfectly for the FPN. The authors have identified a clear gap: we need a way to make those high-resolution maps from the early layers semantically strong, so we can use them to accurately detect small objects.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Semantic Gap in SSD approach?">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Semantic Gap in SSD approach?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In the context of a ConvNet, the <strong>semantic gap</strong> refers to the large difference in the <em>meaning</em> of the information carried by low-level and high-level feature maps.</p>
+<p>Let’s use a more detailed analogy: imagine an intelligence agency analyzing satellite photos to find enemy tanks.</p>
+<section id="the-low-level-analyst-early-convnet-layers" class="level3">
+<h3 class="anchored" data-anchor-id="the-low-level-analyst-early-convnet-layers">1. The Low-Level Analyst (Early ConvNet Layers)</h3>
+<p>This analyst is a junior photo interpreter. Their job is to look at a high-resolution photo and identify very basic shapes and textures.</p>
+<ul>
+<li><strong>What they report:</strong> “I see a dark green blob here.” “There is a long, straight line at these coordinates.” “This area has a repeating, metallic texture.”</li>
+<li><strong>Strengths:</strong> Their report is incredibly precise spatially. They can give you the exact pixel coordinates of the line or blob. This is <strong>high resolution</strong>.</li>
+<li><strong>Weakness:</strong> Their report has almost no <em>meaning</em> or <em>semantics</em>. The straight line could be a gun barrel, a fence post, or a road. The green blob could be a tank, a bush, or a tent. They have no context. This is <strong>semantically weak</strong>.</li>
+</ul>
+<p>These are the features in <code>conv1</code> or <code>conv2</code> of a network. They are great for localization but terrible for recognition.</p>
+</section>
+<section id="the-high-level-strategist-deep-convnet-layers" class="level3">
+<h3 class="anchored" data-anchor-id="the-high-level-strategist-deep-convnet-layers">2. The High-Level Strategist (Deep ConvNet Layers)</h3>
+<p>This is the senior general who receives reports from hundreds of analysts. They don’t look at the raw photos. Instead, they look at a summary map where information has been processed and condensed.</p>
+<ul>
+<li><strong>What they report:</strong> “The enemy is concentrating armor in the northern sector.” “There is a 95% probability of a tank platoon hiding in this forest.”</li>
+<li><strong>Strengths:</strong> Their reports are packed with high-level meaning. They understand the concept of a “tank platoon” and “concentrating armor.” This is <strong>semantically strong</strong>.</li>
+<li><strong>Weakness:</strong> Their information is spatially coarse. They know the tanks are <em>somewhere</em> in the northern sector, but they can’t point to the exact tree they are hiding behind. The process of summarizing all the data has lost that fine-grained detail. This is <strong>low resolution</strong>.</li>
+</ul>
+<p>These are the features in <code>conv5</code> of a network. They are great for recognition but terrible for precise localization.</p>
+</section>
+<section id="the-semantic-gap" class="level3">
+<h3 class="anchored" data-anchor-id="the-semantic-gap">The Semantic Gap</h3>
+<p>The <strong>semantic gap</strong> is the vast difference between the junior analyst’s report and the general’s understanding.</p>
+<ul>
+<li>You can’t just hand the analyst’s report (“there’s a line at pixel X,Y”) to the general. It’s too low-level and lacks the context for making a strategic decision.</li>
+<li>You can’t ask the general to draw a precise box around a tank. They only have the summarized, low-resolution view.</li>
+</ul>
+<p>This is the exact problem SSD faced. It couldn’t use the early, high-resolution layers because they were semantically weak (the junior analyst). So, it started its work much higher up the chain of command, where the features were already semantically meaningful (the mid-level officers and the general).</p>
+<p>The genius of FPN is that it creates a way for the <strong>general’s high-level understanding</strong> to flow back down to the <strong>junior analyst</strong>, giving them the context to understand that the “straight line” they see is actually a gun barrel and the “green blob” is a tank. It enriches the high-resolution maps with high-level semantics, bridging the semantic gap.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+<section id="the-solution-a-top-down-pathway-with-lateral-connections" class="level3">
+<h3 class="anchored" data-anchor-id="the-solution-a-top-down-pathway-with-lateral-connections">The Solution: A Top-Down Pathway with Lateral Connections</h3>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-8.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-8.PNG" class="img-fluid"></a></p>
+<blockquote class="blockquote">
+<p>“The goal of this paper is to naturally leverage the pyramidal shape of a ConvNet’s feature hierarchy while creating a feature pyramid that has strong semantics at all scales.”</p>
+</blockquote>
+<p>After meticulously outlining the problem, the authors now state their goal with perfect clarity. They want to take the “free” but flawed pyramid that exists inside a ConvNet and transform it into a new pyramid where every single level is semantically powerful and useful for object recognition.</p>
+<p>To do this, they propose an architecture designed to explicitly bridge the semantic gap.</p>
+<blockquote class="blockquote">
+<p>“To achieve this goal, we rely on an architecture that combines low-resolution, semantically strong features with high-resolution, semantically weak features via a top-down pathway and lateral connections (Fig. 1(d)).”</p>
+</blockquote>
+<p>This single sentence is the architectural heart of the entire paper. Let’s define the two key components they introduce:</p>
+<ol type="1">
+<li><p><strong>Top-Down Pathway:</strong> This is the process of propagating information from the deepest, most semantically rich layers of the network back down towards the shallower layers. It starts at the top of the pyramid (the small, semantically strong feature map) and progressively upsamples it to increase its spatial resolution. The purpose of this pathway is to carry the high-level semantic information downwards, like a supervisor giving high-level context to their team.</p></li>
+<li><p><strong>Lateral Connections:</strong> These are the merge points. As the top-down pathway brings high-level semantic information to a larger scale, the lateral connection takes the corresponding feature map from the original feedforward pass (the one that is high-resolution but semantically weak) and merges it with the upsampled map. This fusion is the crucial step. It enriches the spatially precise features from the shallower layers with the powerful semantic context from the deeper layers.</p></li>
+</ol>
+<blockquote class="blockquote">
+<p>“The result is a feature pyramid that has rich semantics at all levels and is built quickly from a single input image scale. In other words, we show how to create in-network feature pyramids that can be used to replace featurized image pyramids without sacrificing representational power, speed, or memory.”</p>
+</blockquote>
+<p>The final result, as shown in Figure 1(d), is a brand new set of feature maps. This new pyramid has the best of both worlds: each level has both strong semantic features and high spatial resolution, making it ideal for detecting objects across a wide range of scales.</p>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-fig-1-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-09-24-fpn-reading-notes/paper-fig-1-4.PNG" class="img-fluid"></a></p>
+<p>Crucially, this entire structure is built inside the network from a single input image. It solves all the problems of the classic featurized image pyramid:</p>
+<ul>
+<li>It’s <strong>fast</strong> because it requires only one forward pass through the network.</li>
+<li>It’s <strong>memory-efficient</strong>, allowing the model to be trained end-to-end.</li>
+<li>It has no <strong>train-test discrepancy</strong>.</li>
+</ul>
+<p>The authors are making a bold claim: they have found a way to get the accuracy benefits of a feature pyramid without paying the computational price.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Summary of Key Concepts and Narrative">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Summary of Key Concepts and Narrative
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li><p><strong>The Fundamental Problem:</strong> The core challenge is detecting objects at vastly different scales. A robust detector must be able to find a tiny object in the distance just as well as a large one up close.</p></li>
+<li><p><strong>The Classic Solution (And Its Failures):</strong> The traditional method is the <strong>featurized image pyramid</strong>.</p>
+<ul>
+<li><strong>How it works:</strong> You create scaled copies of the input image and run your feature extractor (e.g., a ConvNet) on each one.</li>
+<li><strong>Its Strength:</strong> It achieves “scale invariance,” making it very accurate.</li>
+<li><strong>Its Flaws:</strong> This approach is a computational nightmare. It’s incredibly slow for inference, uses too much GPU memory to train end-to-end, and often leads to a mismatch between how the model is trained and how it’s tested.</li>
+</ul></li>
+<li><p><strong>The “Free” In-Network Pyramid (And Its Flaw):</strong> Every standard ConvNet naturally creates a pyramid of feature maps as data flows through it and gets subsampled. This pyramid is computationally free, but it’s deeply flawed due to the <strong>semantic gap</strong>.</p>
+<ul>
+<li><strong>Semantically Weak Features:</strong> Found in the early layers, these feature maps have high spatial resolution (they know <em>where</em> things are) but only represent simple patterns like edges and textures (they don’t know <em>what</em> things are).</li>
+<li><strong>Semantically Strong Features:</strong> Found in the deep layers, these feature maps have low spatial resolution but represent high-level concepts (they know <em>what</em> things are, but not precisely <em>where</em>).</li>
+</ul></li>
+<li><p><strong>Previous Attempts to Bridge the Gap:</strong></p>
+<ul>
+<li><strong>Single-Scale Detectors (e.g., Faster R-CNN):</strong> Ignored the problem for speed. They used only one semantically strong, low-resolution map from the end of the network, which compromised accuracy, especially on small objects.</li>
+<li><strong>The Single Shot Detector (SSD):</strong> Acknowledged the problem. It made predictions from multiple layers but, to avoid the semantically weak early layers, it discarded them. This decision handicapped its ability to detect small objects.</li>
+</ul></li>
+<li><p><strong>The FPN’s Proposed Solution:</strong> The core idea of this paper is to fix the “free” in-network pyramid.</p>
+<ul>
+<li><strong>The Goal:</strong> Create a new feature pyramid where every single level is both <strong>semantically strong</strong> and has <strong>high spatial resolution</strong>.</li>
+<li><strong>The Mechanism:</strong> An architecture with two key components:
+<ul>
+<li>A <strong>top-down pathway</strong> to bring the high-level semantic information from the deep layers back up.</li>
+<li><strong>Lateral connections</strong> to merge this semantic information with the spatially precise information in the shallower layers.</li>
+</ul></li>
+</ul></li>
+</ol>
+</div>
+</div>
+</div>
+</section>
+<section id="a-pyramid-of-predictions-not-a-single-high-resolution-map" class="level3">
+<h3 class="anchored" data-anchor-id="a-pyramid-of-predictions-not-a-single-high-resolution-map">A Pyramid of Predictions, Not a Single High-Resolution Map</h3>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-section-1-9.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-09-24-fpn-reading-notes/paper-section-1-9.PNG" class="img-fluid"></a></p>
+<blockquote class="blockquote">
+<p>“Similar architectures adopting top-down and skip connections are popular in recent research [28, 17, 8, 26]. Their goals are to produce a single high-level feature map of a fine resolution on which the predictions are to be made (Fig. 2 top).”</p>
+</blockquote>
+<p>The authors are aware that they weren’t the first to use a top-down pathway with skip/lateral connections. This architectural pattern, often called an “encoder-decoder” or “hourglass” structure, is famously used in models like <strong>U-Net</strong> for biomedical image segmentation and <strong>Stacked Hourglass Networks</strong> for human pose estimation.</p>
+<p><a href="images/2025-09-24-fpn-reading-notes/paper-fig-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-09-24-fpn-reading-notes/paper-fig-2.PNG" class="img-fluid"></a></p>
+<p>Here’s how those models work, as illustrated in Figure 2 (top) of the paper:</p>
+<ol type="1">
+<li><strong>Encoder (Downsampling Path):</strong> They first process the input image through a standard ConvNet, progressively shrinking the feature maps while increasing their semantic depth. This is the “contracting” path.</li>
+<li><strong>Decoder (Upsampling Path):</strong> They then take the final, small, semantically strong feature map and progressively upsample it back to the original image resolution.</li>
+<li><strong>Skip Connections:</strong> At each upsampling step, they use skip connections to bring in the high-resolution feature maps from the corresponding stage of the encoder. This helps the decoder recover the fine-grained spatial detail that was lost during downsampling.</li>
+</ol>
+<p>The crucial point is the <strong>end goal</strong>: these architectures work to produce <strong>one single, final feature map</strong> that is both high-resolution and semantically strong. All predictions (e.g., a segmentation mask) are then made based on this final, unified output.</p>
+<blockquote class="blockquote">
+<p>“On the contrary, our method leverages the architecture as a feature pyramid where predictions (e.g., object detections) are independently made on each level (Fig. 2 bottom). Our model echoes a featurized image pyramid, which has not been explored in these works.”</p>
+</blockquote>
+<p>This is where FPN takes a completely different philosophical path. The fundamental difference lies not in the architectural components (top-down path, lateral connections), but in their <em>purpose</em>.</p>
+<p>FPN does <strong>not</strong> aim to create a single, massive, high-resolution output map. Instead, it uses the top-down and lateral connections to create a <strong>set of new feature maps at multiple scales</strong>. Each of these maps is semantically rich. The key insight is to then make predictions <strong>independently on each of these levels</strong>.</p>
+<p>Think of it like this:</p>
+<ul>
+<li><strong>U-Net Style (Fig. 2 top):</strong> Weave one giant, fine-meshed fishing net to catch all fish, big and small. The final net is the only thing you use.</li>
+<li><strong>FPN Style (Fig. 2 bottom):</strong> Create a set of specialized nets. Use a large-mesh net to catch big fish (large objects on the low-resolution P5 map), a medium-mesh net for medium fish (medium objects on P4), and a fine-mesh net for small fish (small objects on the high-resolution P3/P2 maps).</li>
+</ul>
+<p>By making independent predictions at each level of its new pyramid, FPN is directly mimicking the behavior of the classic (but slow) featurized image pyramid. This is a novel use of the hourglass structure, tailored specifically for the multi-scale nature of object detection.</p>
+</section>
+<section id="the-fpn-advantage-claims-and-contributions" class="level3">
+<h3 class="anchored" data-anchor-id="the-fpn-advantage-claims-and-contributions">The FPN Advantage: Claims and Contributions</h3>
+<blockquote class="blockquote">
+<p>“We evaluate our method, called a Feature Pyramid Network (FPN), in various systems for detection and segmentation… Without bells and whistles, we report a state-of-the-art single-model result on the challenging COCO detection benchmark [21] simply based on FPN and a basic Faster R-CNN detector [29], surpassing all existing heavily-engineered single-model entries…”</p>
+</blockquote>
+<p>Having established their architectural novelty, the authors now lay out the tangible results. They officially name their architecture the <strong>Feature Pyramid Network (FPN)</strong> and state that its benefits are not theoretical. When plugged into a standard Faster R-CNN framework, the FPN module alone is powerful enough to achieve state-of-the-art results on the difficult COCO dataset.</p>
+<p>The phrase <strong>“without bells and whistles”</strong> is a statement of confidence. It means their success isn’t due to a complex ensemble of models or dozens of small engineering tricks (like specialized data augmentation or context modeling). The performance gain comes directly from the strength of the FPN architecture itself. They even provide concrete numbers for the improvement over a very strong baseline (Faster R-CNN with a ResNet backbone):</p>
+<ul>
+<li>A massive <strong>8.0 point increase in Average Recall (AR)</strong> for the Region Proposal Network (RPN), meaning it’s much better at finding potential objects.</li>
+<li>A significant <strong>2.3 point increase in COCO-style Average Precision (AP)</strong> for the final detector, a direct measure of improved detection accuracy.</li>
+</ul>
+<blockquote class="blockquote">
+<p>“In addition, our pyramid structure can be trained end-to-end with all scales and is used consistently at train/test time… Moreover, this improvement is achieved without increasing testing time over the single-scale baseline.”</p>
+</blockquote>
+<p>Finally, the authors circle back to the practical problems they identified at the start of the introduction and explain how FPN solves them. This paragraph highlights the practical genius of their approach:</p>
+<ul>
+<li><strong>End-to-End Training:</strong> Unlike classic image pyramids, the FPN is efficient enough to be trained as a single, unified system.</li>
+<li><strong>No Train/Test Discrepancy:</strong> Because it can be trained end-to-end, the network sees a multi-scale representation during both training and inference, eliminating this key inconsistency.</li>
+<li><strong>No Speed Penalty:</strong> This is perhaps the most impressive claim. FPN delivers the accuracy benefits of a multi-scale pyramid representation <strong>without slowing down inference time</strong> compared to the standard single-scale baseline detector.</li>
+</ul>
+<p>The introduction concludes by framing FPN not just as a new model, but as a fundamental and practical tool that can advance computer vision research.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
