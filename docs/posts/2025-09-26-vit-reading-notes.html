@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-26">
+<meta name="description" content="A detailed breakdown of the groundbreaking model that treats images like sentences to achieve state-of-the-art results in computer vision.">
+
+<title>An Image is Worth 16x16 Words: A Deep Dive into the Vision Transformer (ViT) – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="An Image is Worth 16x16 Words: A Deep Dive into the Vision Transformer (ViT) – Random Thoughts">
+<meta property="og:description" content="A detailed breakdown of the groundbreaking model that treats images like sentences to achieve state-of-the-art results in computer vision.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-26-vit-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="An Image is Worth 16x16 Words: A Deep Dive into the Vision Transformer (ViT) – Random Thoughts">
+<meta name="twitter:description" content="A detailed breakdown of the groundbreaking model that treats images like sentences to achieve state-of-the-art results in computer vision.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-26-vit-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#the-nlp-success-story-transformers-at-scale" id="toc-the-nlp-success-story-transformers-at-scale" class="nav-link" data-scroll-target="#the-nlp-success-story-transformers-at-scale">The NLP Success Story: Transformers at Scale</a></li>
+  <li><a href="#the-computer-vision-kingdom-convolutional-networks" id="toc-the-computer-vision-kingdom-convolutional-networks" class="nav-link" data-scroll-target="#the-computer-vision-kingdom-convolutional-networks">The Computer Vision Kingdom: Convolutional Networks</a></li>
+  <li><a href="#the-core-idea-images-as-sequences-of-patches" id="toc-the-core-idea-images-as-sequences-of-patches" class="nav-link" data-scroll-target="#the-core-idea-images-as-sequences-of-patches">The Core Idea: Images as Sequences of Patches</a></li>
+  <li><a href="#the-catch-the-vision-transformers-hunger-for-data" id="toc-the-catch-the-vision-transformers-hunger-for-data" class="nav-link" data-scroll-target="#the-catch-the-vision-transformers-hunger-for-data">The Catch: The Vision Transformer’s Hunger for Data</a></li>
+  <li><a href="#the-power-of-scale-data-trumps-inductive-bias" id="toc-the-power-of-scale-data-trumps-inductive-bias" class="nav-link" data-scroll-target="#the-power-of-scale-data-trumps-inductive-bias">The Power of Scale: Data Trumps Inductive Bias</a></li>
+  </ul></li>
+  <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">2. Related Work</a>
+  <ul class="collapse">
+  <li><a href="#transformers-in-nlp-the-gold-standard" id="toc-transformers-in-nlp-the-gold-standard" class="nav-link" data-scroll-target="#transformers-in-nlp-the-gold-standard">Transformers in NLP: The Gold Standard</a></li>
+  <li><a href="#the-challenge-of-applying-self-attention-to-images" id="toc-the-challenge-of-applying-self-attention-to-images" class="nav-link" data-scroll-target="#the-challenge-of-applying-self-attention-to-images">The Challenge of Applying Self-Attention to Images</a></li>
+  <li><a href="#the-closest-predecessor-attention-on-patches" id="toc-the-closest-predecessor-attention-on-patches" class="nav-link" data-scroll-target="#the-closest-predecessor-attention-on-patches">The Closest Predecessor: Attention on Patches</a></li>
+  <li><a href="#positioning-vit-a-survey-of-the-landscape" id="toc-positioning-vit-a-survey-of-the-landscape" class="nav-link" data-scroll-target="#positioning-vit-a-survey-of-the-landscape">Positioning ViT: A Survey of the Landscape</a></li>
+  </ul></li>
+  <li><a href="#method-building-the-vision-transformer" id="toc-method-building-the-vision-transformer" class="nav-link" data-scroll-target="#method-building-the-vision-transformer">3. Method: Building the Vision Transformer</a>
+  <ul class="collapse">
+  <li><a href="#the-philosophy-keep-it-simple" id="toc-the-philosophy-keep-it-simple" class="nav-link" data-scroll-target="#the-philosophy-keep-it-simple">The Philosophy: Keep It Simple</a></li>
+  <li><a href="#from-pixels-to-patches-the-input-pipeline" id="toc-from-pixels-to-patches-the-input-pipeline" class="nav-link" data-scroll-target="#from-pixels-to-patches-the-input-pipeline">From Pixels to Patches: The Input Pipeline</a></li>
+  <li><a href="#figure-1-the-vision-transformer-architecture-at-a-glance" id="toc-figure-1-the-vision-transformer-architecture-at-a-glance" class="nav-link" data-scroll-target="#figure-1-the-vision-transformer-architecture-at-a-glance">Figure 1: The Vision Transformer Architecture at a Glance</a></li>
+  <li><a href="#the-role-of-the-cls-token-and-positional-embeddings" id="toc-the-role-of-the-cls-token-and-positional-embeddings" class="nav-link" data-scroll-target="#the-role-of-the-cls-token-and-positional-embeddings">The Role of the [CLS] Token and Positional Embeddings</a></li>
+  <li><a href="#the-transformer-encoder-block" id="toc-the-transformer-encoder-block" class="nav-link" data-scroll-target="#the-transformer-encoder-block">The Transformer Encoder Block</a></li>
+  <li><a href="#model-equations-and-the-inductive-bias-trade-off" id="toc-model-equations-and-the-inductive-bias-trade-off" class="nav-link" data-scroll-target="#model-equations-and-the-inductive-bias-trade-off">Model Equations and the Inductive Bias Trade-off</a></li>
+  <li><a href="#fine-tuning-and-higher-resolution" id="toc-fine-tuning-and-higher-resolution" class="nav-link" data-scroll-target="#fine-tuning-and-higher-resolution">3.2 Fine-tuning and Higher Resolution</a></li>
+  </ul></li>
+  <li><a href="#experiments" id="toc-experiments" class="nav-link" data-scroll-target="#experiments">4. Experiments</a>
+  <ul class="collapse">
+  <li><a href="#putting-the-theory-to-the-test" id="toc-putting-the-theory-to-the-test" class="nav-link" data-scroll-target="#putting-the-theory-to-the-test">Putting the Theory to the Test</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">4.1 Setup</a></li>
+  <li><a href="#the-competitors-vit-bit-and-hybrid-models" id="toc-the-competitors-vit-bit-and-hybrid-models" class="nav-link" data-scroll-target="#the-competitors-vit-bit-and-hybrid-models">The Competitors: ViT, BiT, and Hybrid Models</a></li>
+  <li><a href="#training-fine-tuning-and-evaluation-metrics" id="toc-training-fine-tuning-and-evaluation-metrics" class="nav-link" data-scroll-target="#training-fine-tuning-and-evaluation-metrics">Training, Fine-tuning, and Evaluation Metrics</a></li>
+  </ul></li>
+  <li><a href="#comparison-to-state-of-the-art" id="toc-comparison-to-state-of-the-art" class="nav-link" data-scroll-target="#comparison-to-state-of-the-art">4.2 Comparison to State of the Art</a>
+  <ul class="collapse">
+  <li><a href="#the-main-event-beating-the-best" id="toc-the-main-event-beating-the-best" class="nav-link" data-scroll-target="#the-main-event-beating-the-best">The Main Event: Beating the Best</a></li>
+  <li><a href="#a-deeper-look-performance-on-diverse-tasks-vtab" id="toc-a-deeper-look-performance-on-diverse-tasks-vtab" class="nav-link" data-scroll-target="#a-deeper-look-performance-on-diverse-tasks-vtab">A Deeper Look: Performance on Diverse Tasks (VTAB)</a></li>
+  </ul></li>
+  <li><a href="#pre-training-data-requirements" id="toc-pre-training-data-requirements" class="nav-link" data-scroll-target="#pre-training-data-requirements">4.3 Pre-training Data Requirements</a>
+  <ul class="collapse">
+  <li><a href="#experiment-1-the-crossover-point" id="toc-experiment-1-the-crossover-point" class="nav-link" data-scroll-target="#experiment-1-the-crossover-point">Experiment 1: The Crossover Point</a></li>
+  <li><a href="#experiment-2-scaling-curves-on-data-subsets" id="toc-experiment-2-scaling-curves-on-data-subsets" class="nav-link" data-scroll-target="#experiment-2-scaling-curves-on-data-subsets">Experiment 2: Scaling Curves on Data Subsets</a></li>
+  <li><a href="#the-overarching-conclusion" id="toc-the-overarching-conclusion" class="nav-link" data-scroll-target="#the-overarching-conclusion">The Overarching Conclusion</a></li>
+  </ul></li>
+  <li><a href="#the-scaling-study" id="toc-the-scaling-study" class="nav-link" data-scroll-target="#the-scaling-study">4.4 The Scaling Study</a>
+  <ul class="collapse">
+  <li><a href="#the-setup-a-fair-race-on-a-level-playing-field" id="toc-the-setup-a-fair-race-on-a-level-playing-field" class="nav-link" data-scroll-target="#the-setup-a-fair-race-on-a-level-playing-field">The Setup: A Fair Race on a Level Playing Field</a></li>
+  <li><a href="#the-three-key-findings" id="toc-the-three-key-findings" class="nav-link" data-scroll-target="#the-three-key-findings">The Three Key Findings</a></li>
+  </ul></li>
+  <li><a href="#inspecting-the-vision-transformer" id="toc-inspecting-the-vision-transformer" class="nav-link" data-scroll-target="#inspecting-the-vision-transformer">4.5 Inspecting the Vision Transformer</a>
+  <ul class="collapse">
+  <li><a href="#the-first-layer-learning-meaningful-basis-functions" id="toc-the-first-layer-learning-meaningful-basis-functions" class="nav-link" data-scroll-target="#the-first-layer-learning-meaningful-basis-functions">The First Layer: Learning Meaningful “Basis Functions”</a></li>
+  <li><a href="#the-position-embeddings-re-learning-the-2d-grid" id="toc-the-position-embeddings-re-learning-the-2d-grid" class="nav-link" data-scroll-target="#the-position-embeddings-re-learning-the-2d-grid">The Position Embeddings: Re-learning the 2D Grid</a></li>
+  <li><a href="#the-attention-mechanism-from-local-to-global" id="toc-the-attention-mechanism-from-local-to-global" class="nav-link" data-scroll-target="#the-attention-mechanism-from-local-to-global">The Attention Mechanism: From Local to Global</a></li>
+  </ul></li>
+  <li><a href="#a-glimpse-into-self-supervised-learning" id="toc-a-glimpse-into-self-supervised-learning" class="nav-link" data-scroll-target="#a-glimpse-into-self-supervised-learning">4.6 A Glimpse into Self-Supervised Learning</a>
+  <ul class="collapse">
+  <li><a href="#the-experiment-masked-patch-prediction" id="toc-the-experiment-masked-patch-prediction" class="nav-link" data-scroll-target="#the-experiment-masked-patch-prediction">The Experiment: Masked Patch Prediction</a></li>
+  <li><a href="#the-results-promising-but-not-yet-state-of-the-art" id="toc-the-results-promising-but-not-yet-state-of-the-art" class="nav-link" data-scroll-target="#the-results-promising-but-not-yet-state-of-the-art">The Results: Promising but Not Yet State-of-the-Art</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">5. Conclusion</a>
+  <ul class="collapse">
+  <li><a href="#the-core-contribution-simplicity-and-scale" id="toc-the-core-contribution-simplicity-and-scale" class="nav-link" data-scroll-target="#the-core-contribution-simplicity-and-scale">The Core Contribution: Simplicity and Scale</a></li>
+  <li><a href="#the-road-ahead-challenges-and-future-directions" id="toc-the-road-ahead-challenges-and-future-directions" class="nav-link" data-scroll-target="#the-road-ahead-challenges-and-future-directions">The Road Ahead: Challenges and Future Directions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">An Image is Worth 16x16 Words: A Deep Dive into the Vision Transformer (ViT)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A detailed breakdown of the groundbreaking model that treats images like sentences to achieve state-of-the-art results in computer vision.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 26, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-26-vit-reading-notes.png" class="img-fluid"></p>
+<p>For years, the worlds of Natural Language Processing (NLP) and Computer Vision (CV) have run on different tracks. NLP was conquered by the Transformer architecture, while CV remained the kingdom of Convolutional Neural Networks (CNNs). In 2020, researchers from Google asked a bold question: what if we could apply a standard Transformer directly to an image? The result was the Vision Transformer (ViT), a model that challenges the necessity of convolutions for vision tasks. In this post, we will break down the influential paper, “An Image Is Worth 16x16 Words,” to understand how this paradigm shift was achieved.</p>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-title.PNG" class="img-fluid"></p>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-abstract.PNG" class="img-fluid"></p>
+<p>The abstract immediately establishes the context and the core argument of the paper. Before this work, the deep learning world was largely split into two domains:</p>
+<ul>
+<li><strong>Natural Language Processing (NLP):</strong> Dominated by the <strong>Transformer</strong> architecture. Transformers, with their powerful <code>self-attention</code> mechanism, excel at finding contextual relationships between words in a sequence (e.g., a sentence).</li>
+<li><strong>Computer Vision (CV):</strong> Dominated by <strong>Convolutional Neural Networks (CNNs)</strong>. CNNs are built on the idea of convolutional filters, small kernels that slide across an image to detect local patterns like edges, corners, and textures. This gives them a built-in “inductive bias” for understanding images.</li>
+</ul>
+<p>The authors point out that previous attempts to bring attention mechanisms to vision were cautious. They either attached an attention module to a standard CNN or replaced a few convolutional layers with attention, but kept the overall CNN structure.</p>
+<p>The central claim of this paper, stated boldly in the abstract, is that this caution is misplaced. They propose getting rid of the CNN structure entirely. Their revolutionary idea is to reframe a computer vision problem as a natural language processing problem. How? By treating an image not as a grid of pixels, but as a sequence of “words”. The title gives it away: “An Image is Worth 16x16 Words.” They propose a simple, direct approach:</p>
+<ol type="1">
+<li>Split an image into fixed-size patches (e.g., 16x16 pixels).</li>
+<li>Treat this sequence of patches just like a sequence of words in a sentence.</li>
+<li>Feed this sequence directly into a standard Transformer.</li>
+</ol>
+<p>The abstract concludes with a teaser of the results, which contains a crucial caveat: this method only works well “when pre-trained on large amounts of data.” When this condition is met, their Vision Transformer (ViT) not only achieves state-of-the-art results but does so with fewer computational resources for training compared to its CNN-based rivals. This sets the stage for the rest of the paper: they have made a bold claim, and now they must prove it.</p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-section-1-1.PNG" class="img-fluid"></p>
+<section id="the-nlp-success-story-transformers-at-scale" class="level3">
+<h3 class="anchored" data-anchor-id="the-nlp-success-story-transformers-at-scale">The NLP Success Story: Transformers at Scale</h3>
+<blockquote class="blockquote">
+<p>“Self-attention-based architectures, in particular Transformers (Vaswani et al., 2017), have become the model of choice in natural language processing (NLP). The dominant approach is to pre-train on a large text corpus and then fine-tune on a smaller task-specific dataset (Devlin et al., 2019).”</p>
+</blockquote>
+<p>The authors begin by reminding us of the revolution that happened in NLP. The key player is the <strong>Transformer</strong>, an architecture built around a mechanism called <strong>self-attention</strong>. In simple terms, self-attention allows a model to look at other words in a sentence when processing a single word, weighing their importance to better understand the context. For example, in the sentence “The robot picked up the ball because it was heavy,” self-attention helps the model understand that “it” refers to the “ball,” not the “robot.”</p>
+<p>This architecture enabled a powerful two-stage training recipe that has become standard practice:</p>
+<ol type="1">
+<li><strong>Pre-training:</strong> A massive Transformer model is trained on an enormous dataset of text (e.g., the entire internet). The goal is not to solve a specific task, but to learn the statistical patterns of language in a self-supervised way. This is like learning a general understanding of a language.</li>
+<li><strong>Fine-tuning:</strong> The pre-trained model, now full of general knowledge, is then trained further on a smaller, task-specific dataset (e.g., classifying movie reviews as positive or negative). Because the model already understands language, it can learn this new task with much less data and achieve incredible performance.</li>
+</ol>
+<p>The most important point the authors make here is about <strong>scalability</strong>. Transformers are computationally efficient, allowing researchers to train models with hundreds of billions of parameters (like GPT-3). The bigger the model and the more data it’s pre-trained on, the better it performs, with “no sign of saturating performance.” This sets up a key question: can this recipe for success be transferred to computer vision?</p>
+</section>
+<section id="the-computer-vision-kingdom-convolutional-networks" class="level3">
+<h3 class="anchored" data-anchor-id="the-computer-vision-kingdom-convolutional-networks">The Computer Vision Kingdom: Convolutional Networks</h3>
+<blockquote class="blockquote">
+<p>“In computer vision, however, convolutional architectures remain dominant (LeCun et al., 1989; Krizhevsky et al., 2012; He et al., 2016). … Therefore, in large-scale image recognition, classic ResNet-like architectures are still state of the art…”</p>
+</blockquote>
+<p>Next, the authors pivot to computer vision, which has been dominated by a different kind of architecture: the Convolutional Neural Network (CNN). CNNs have powerful <strong>inductive biases</strong> for images. An inductive bias is essentially a set of assumptions a model has about the data. For CNNs, these are:</p>
+<ul>
+<li><strong>Locality:</strong> The assumption that nearby pixels are strongly related. A small convolutional filter processes a local patch of an image, which is a very effective way to find patterns like edges or textures.</li>
+<li><strong>Translation Equivariance:</strong> The assumption that a feature is the same regardless of where it appears in the image. A cat is a cat whether it’s in the top left or bottom right corner. CNNs achieve this by applying the same filter across the entire image.</li>
+</ul>
+<p>These built-in assumptions make CNNs very data-efficient. They don’t need to learn these properties from scratch.</p>
+<p>Inspired by the success of Transformers in NLP, vision researchers had already tried to incorporate self-attention. These attempts, as the authors note, fell into two categories:</p>
+<ol type="1">
+<li><strong>Hybrid Models:</strong> Combining CNNs with self-attention modules.</li>
+<li><strong>Pure Attention Models:</strong> Replacing convolutions entirely.</li>
+</ol>
+<p>While theoretically promising, the pure attention models had a critical flaw: they relied on “specialized attention patterns” that were not efficient on modern hardware (like GPUs/TPUs). As a result, when it came to large-scale, real-world image recognition, the battle-tested ResNet (a famous CNN architecture) was still king.</p>
+<p>This is the gap the paper aims to fill. They are arguing that previous attempts to apply Transformers to vision were perhaps too complex. Their hypothesis is that a <em>standard</em> Transformer, with minimal changes, can succeed where these specialized models failed, provided it’s given enough data to overcome its lack of image-specific inductive biases.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Note on Inductive Bias: The Secret Ingredient of Deep Learning
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In machine learning, “inductive bias” is a technical term for a simple but powerful idea: <strong>the set of assumptions a model makes about the data <em>before</em> it starts learning.</strong></p>
+<p>Think of it as giving your model a “head start” or a set of “prior beliefs.” These built-in assumptions guide the model toward a certain type of solution, making it much more efficient at learning from data.</p>
+<section id="an-analogy-the-two-chefs" class="level4">
+<h4 class="anchored" data-anchor-id="an-analogy-the-two-chefs">An Analogy: The Two Chefs</h4>
+<p>Imagine you hire two brilliant but inexperienced chefs and give them the same task: make a classic pizza.</p>
+<ul>
+<li><p><strong>Chef A (The CNN)</strong> is given a detailed recipe. The recipe says: “First, make a flat, round dough base. Second, spread tomato sauce on the base. Third, add cheese and toppings. Finally, bake in a hot oven.” This recipe is a strong <strong>inductive bias</strong>. The chef doesn’t have to waste time figuring out that you shouldn’t bake the dough before adding the sauce. The recipe provides a powerful structure that guides them to a good solution quickly, even with a limited pantry of ingredients (data).</p></li>
+<li><p><strong>Chef B (The Vision Transformer)</strong> is given no recipe. They are simply shown a pile of ingredients (flour, water, tomatoes, cheese, pepperoni) and told, “Make something delicious.” This chef has a very weak <strong>inductive bias</strong>. They might try boiling the flour or putting the cheese down first. With a small pantry (small dataset), they will likely fail and produce something much worse than Chef A.</p></li>
+</ul>
+<p>But what if you give Chef B a massive, industrial-sized warehouse full of ingredients (a huge dataset) and let them experiment for months (pre-training)? Through millions of trials, they might not only re-discover the recipe for pizza but might also invent entirely new and better dishes that were never in Chef A’s recipe book.</p>
+</section>
+<section id="connecting-the-analogy-to-vision-models" class="level4">
+<h4 class="anchored" data-anchor-id="connecting-the-analogy-to-vision-models">Connecting the Analogy to Vision Models</h4>
+<p>This is the exact dynamic at play in the ViT paper:</p>
+<ul>
+<li><strong>The CNN is Chef A.</strong> Its “recipe” is its architecture, which has two core assumptions baked in:
+<ol type="1">
+<li><strong>Locality:</strong> The assumption that nearby pixels are related. A convolutional filter that looks at a small 3x3 or 5x5 patch is the physical embodiment of this bias.</li>
+<li><strong>Translation Equivariance:</strong> The assumption that an object is the same regardless of where it appears in the image. Applying the same filter across the entire image enforces this bias. This recipe makes CNNs incredibly <strong>data-efficient</strong>.</li>
+</ol></li>
+<li><strong>The Vision Transformer is Chef B.</strong> It has almost no recipe.
+<ol type="1">
+<li>The self-attention mechanism is <strong>global</strong>. It has no built-in knowledge that patch #2 is “closer” to patch #3 than it is to patch #100.</li>
+<li>It must learn the concepts of locality and spatial relationships entirely from scratch by observing patterns in the data. This makes the ViT <strong>data-hungry</strong> but also incredibly <strong>flexible and scalable</strong>.</li>
+</ol></li>
+</ul>
+</section>
+<section id="the-grand-trade-off" class="level4">
+<h4 class="anchored" data-anchor-id="the-grand-trade-off">The Grand Trade-off</h4>
+<p>The central drama of this paper revolves around the trade-off between these two approaches:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 41%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Approach</th>
+<th>Strong Inductive Bias (CNN)</th>
+<th>Weak Inductive Bias (ViT)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Pros</strong></td>
+<td><strong>Data-Efficient:</strong> Learns well on smaller datasets.</td>
+<td><strong>Flexible &amp; Scalable:</strong> Can learn more complex patterns.</td>
+</tr>
+<tr class="even">
+<td><strong>Cons</strong></td>
+<td><strong>Less Flexible:</strong> The built-in assumptions might be limiting.</td>
+<td><strong>Data-Hungry:</strong> Performs poorly without massive datasets.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</div>
+</div>
+</div>
+</section>
+<section id="the-core-idea-images-as-sequences-of-patches" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-idea-images-as-sequences-of-patches">The Core Idea: Images as Sequences of Patches</h3>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-section-1-2.PNG" class="img-fluid"></p>
+<p>Here, the authors lay out their elegantly simple and radical proposal. The central problem is that Transformers are designed to process 1D sequences of data (like words in a sentence), while images are inherently 2D grids of pixels. Instead of inventing a complex 2D-aware attention mechanism, the authors take a much more direct route: they change the input, not the model.</p>
+<p>The process is as follows:</p>
+<ol type="1">
+<li><strong>Split the Image into Patches:</strong> An image is sliced up into a grid of smaller, fixed-size square patches. For example, a standard 224x224 pixel image might be split into 196 patches, each 16x16 pixels. This single step converts the 2D grid into a collection of small image chunks.</li>
+<li><strong>Flatten and Embed the Patches:</strong> Each patch is then “flattened” into a single long vector of numbers. For a 16x16 patch with 3 color channels (RGB), this results in a vector of 16 * 16 * 3 = 768 values. This vector is then passed through a standard linear layer, which projects it into a consistent vector size that the Transformer can work with. This output vector is called a <strong>patch embedding</strong>.</li>
+<li><strong>Create a Sequence:</strong> This process results in a sequence of patch embeddings. If we had 196 patches, we now have a sequence of 196 vectors.</li>
+</ol>
+<p>This sequence is the crucial final product. The authors explicitly state that “Image patches are treated the same way as tokens (words)”. This is the conceptual breakthrough. The Transformer doesn’t know or care that its input came from an image; it just sees a sequence of vectors, exactly like it would if it were processing a sentence. The first patch is like the first word, the second patch is like the second word, and so on. This simple reframing allows the authors to use the powerful, scalable, and highly optimized standard Transformer architecture “off the shelf”.</p>
+</section>
+<section id="the-catch-the-vision-transformers-hunger-for-data" class="level3">
+<h3 class="anchored" data-anchor-id="the-catch-the-vision-transformers-hunger-for-data">The Catch: The Vision Transformer’s Hunger for Data</h3>
+<blockquote class="blockquote">
+<p>“When trained on mid-sized datasets such as ImageNet without strong regularization, these models yield modest accuracies of a few percentage points below ResNets of comparable size. This seemingly discouraging outcome may be expected: Transformers lack some of the inductive biases inherent to CNNs, such as translation equivariance and locality, and therefore do not generalize well when trained on insufficient amounts of data.”</p>
+</blockquote>
+<p>The authors now present the results of their first, seemingly discouraging, experiment. They trained their Vision Transformer (ViT) on ImageNet, the most famous benchmark in computer vision, which contains over a million images. The result? It performed <em>worse</em> than a standard ResNet (a popular CNN architecture) of a similar size.</p>
+<p>This is a critical moment in the paper. An honest researcher must explain not just successes, but also failures. The authors explain that this result is not surprising. It’s a direct consequence of the trade-off between inductive bias and model flexibility.</p>
+<ul>
+<li>A <strong>CNN</strong> comes pre-packaged with knowledge about how images work (locality and translation equivariance). This gives it a significant head start, allowing it to learn effectively even on a “mid-sized” dataset like ImageNet.</li>
+<li>A <strong>ViT</strong>, by contrast, has almost no built-in knowledge about images. It doesn’t inherently know that the pixels in a patch are spatially related, or that a patch in the top-left corner should be treated similarly to a patch in the bottom-right. It has to learn all these spatial relationships from scratch, just by looking at the data.</li>
+</ul>
+<p>Because of this, ImageNet, despite its size, is simply not enough data for the ViT to learn these fundamental visual patterns and catch up to the built-in advantages of a CNN.</p>
+</section>
+<section id="the-power-of-scale-data-trumps-inductive-bias" class="level3">
+<h3 class="anchored" data-anchor-id="the-power-of-scale-data-trumps-inductive-bias">The Power of Scale: Data Trumps Inductive Bias</h3>
+<blockquote class="blockquote">
+<p>“However, the picture changes if the models are trained on larger datasets (14M-300M images). We find that large scale training trumps inductive bias. Our Vision Transformer (ViT) attains excellent results when pre-trained at sufficient scale…”</p>
+</blockquote>
+<p>This is the paper’s main punchline. The weakness of the ViT—its lack of inductive bias—becomes its greatest strength when exposed to an enormous amount of data. The solution to the problem isn’t a more complex model, but simply more data. <em>A lot</em> more.</p>
+<p>The authors pre-trained their models on massive internal and public datasets:</p>
+<ul>
+<li><strong>ImageNet-21k:</strong> A public dataset with 14 million images and 21,000 classes.</li>
+<li><strong>JFT-300M:</strong> A private Google dataset with a staggering 300 million images.</li>
+</ul>
+<p>When the ViT is pre-trained on these huge datasets, it finally has enough examples to learn the foundational rules of vision on its own. After this extensive pre-training, the model is then fine-tuned on the smaller benchmark datasets (like the original ImageNet). The results are spectacular. The ViT not only catches up to but “approaches or beats state of the art” CNNs.</p>
+<p>The phrase <strong>“large scale training trumps inductive bias”</strong> is the central thesis of this work. It suggests that with a sufficiently flexible and scalable model (the Transformer), you can achieve superior performance by learning patterns directly from massive amounts of data, rather than relying on hand-crafted architectural assumptions.</p>
+</section>
+</section>
+<section id="related-work" class="level2">
+<h2 class="anchored" data-anchor-id="related-work">2. Related Work</h2>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-section-2-1.PNG" class="img-fluid"></p>
+<section id="transformers-in-nlp-the-gold-standard" class="level3">
+<h3 class="anchored" data-anchor-id="transformers-in-nlp-the-gold-standard">Transformers in NLP: The Gold Standard</h3>
+<blockquote class="blockquote">
+<p>“Transformers were proposed by Vaswani et al.&nbsp;(2017) for machine translation, and have since become the state of the art method in many NLP tasks. Large Transformer-based models are often pre-trained on large corpora and then fine-tuned for the task at hand: BERT (Devlin et al., 2019) uses a denoising self-supervised pre-training task, while the GPT line of work uses language modeling as its pre-training task (Radford et al., 2018; 2019; Brown et al., 2020).”</p>
+</blockquote>
+<p>The authors start the related work by once again anchoring their ideas in the proven success of Transformers in NLP. They mention two of the most influential model families, <strong>BERT</strong> and <strong>GPT</strong>, which established the “pre-train then fine-tune” paradigm. It’s helpful to understand their distinct pre-training objectives, as this highlights the versatility of Transformers:</p>
+<ul>
+<li><p><strong>BERT (Bidirectional Encoder Representations from Transformers):</strong> BERT’s pre-training task is known as “masked language modeling.” It works by taking a sentence, masking out a random word (e.g., “The cat [MASK] on the mat”), and then training the model to predict the missing word (“sat”). Because the model can see the words both before and after the mask, it learns a deep, <em>bidirectional</em> understanding of language context. This makes it exceptionally good for tasks that require understanding the whole sentence, like sentiment analysis.</p></li>
+<li><p><strong>GPT (Generative Pre-trained Transformer):</strong> GPT’s pre-training task is standard “language modeling.” It’s trained to predict the very next word in a sentence (e.g., given “The cat sat on the,” predict “mat”). This is an <em>autoregressive</em> approach, as it only looks at past context. This training objective makes GPT models incredibly powerful at generating coherent text.</p></li>
+</ul>
+<p>By citing these seminal works, the authors are not just giving credit; they are making a strategic point. The core Transformer architecture is so flexible that it can excel with different self-supervised objectives to achieve state-of-the-art results. This reinforces their argument that such a powerful and flexible architecture should be applicable to domains beyond text, like computer vision.</p>
+</section>
+<section id="the-challenge-of-applying-self-attention-to-images" class="level3">
+<h3 class="anchored" data-anchor-id="the-challenge-of-applying-self-attention-to-images">The Challenge of Applying Self-Attention to Images</h3>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-section-2-2.PNG" class="img-fluid"></p>
+<blockquote class="blockquote">
+<p>“Naive application of self-attention to images would require that each pixel attends to every other pixel. With quadratic cost in the number of pixels, this does not scale to realistic input sizes.”</p>
+</blockquote>
+<p>The authors first explain <em>why</em> you cannot just throw a standard image into a Transformer. Self-attention works by comparing every element in a sequence to every other element. For a sentence with 500 words, this is computationally manageable (500 x 500 = 250,000 comparisons). But for an image, the “elements” are pixels. A tiny 224x224 image has 50,176 pixels. A self-attention mechanism would need to perform over 2.5 billion comparisons (50,176 x 50,176), which is computationally infeasible for a single layer, let alone a deep network. This is the <strong>quadratic cost</strong> problem, and it’s the central technical barrier.</p>
+<p>To get around this, previous research took several clever but complex approaches:</p>
+<ul>
+<li><strong>Local Attention:</strong> Instead of having a pixel attend to <em>every</em> other pixel, some models restricted the attention to a small local window around the pixel (e.g., <code>Parmar et al., 2018</code>). This is conceptually similar to a convolution, where a filter only processes a local neighborhood. It solves the computational problem but sacrifices the key benefit of self-attention: its ability to capture long-range, global relationships.</li>
+<li><strong>Sparse or Axial Attention:</strong> Other approaches tried to approximate global attention in more efficient ways. For example, “axial attention” (<code>Ho et al., 2019</code>) would first perform attention across all the rows of an image and then separately across all the columns. This is much cheaper than full attention but is an approximation. <code>Sparse Transformers</code> (<code>Child et al., 2019</code>) used even more intricate patterns to reduce the number of comparisons.</li>
+</ul>
+<p>The authors’ key critique of these methods is captured in the final sentence: “…many of these specialized attention architectures demonstrate promising results on computer vision tasks, but require complex engineering to be implemented efficiently on hardware accelerators.” In other words, these methods were theoretically sound but practically cumbersome. They required custom code and were not as fast on standard hardware as the highly optimized convolution operations in CNNs.</p>
+<p>This critique is crucial for their narrative. They are arguing that the field had become focused on inventing complex, specialized attention mechanisms to fit the image problem. Their own approach, which we will see in detail later, sidesteps this complexity entirely by changing the input representation (from pixels to patches), allowing them to use the simple, fast, and scalable <em>standard</em> Transformer.</p>
+</section>
+<section id="the-closest-predecessor-attention-on-patches" class="level3">
+<h3 class="anchored" data-anchor-id="the-closest-predecessor-attention-on-patches">The Closest Predecessor: Attention on Patches</h3>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-section-2-3.PNG" class="img-fluid"></p>
+<p>Good research always builds on what came before, and here the authors acknowledge their closest predecessor. A paper by Cordonnier and colleagues had, in the same year, proposed an architecture that was conceptually almost identical to ViT: they also split an image into patches and fed them into a Transformer.</p>
+<p>So, if the core idea was already out there, what is the novel contribution of the ViT paper? The authors highlight two key differentiators:</p>
+<ol type="1">
+<li><p><strong>The Emphasis on Scale:</strong> This is the most important distinction. Cordonnier et al.&nbsp;showed that the <em>architecture</em> was viable. The ViT authors, however, were the first to demonstrate that this architecture, when paired with the NLP-style “pre-train on a massive dataset” strategy, could become a true competitor to elite CNNs. The key ingredient they added was not a change to the model, but a change in the training methodology, proving that <strong>scale</strong> was the secret to unlocking the Transformer’s potential for vision.</p></li>
+<li><p><strong>Practical Application to Higher-Resolution Images:</strong> The second difference lies in a crucial implementation detail: the patch size. Cordonnier et al.&nbsp;used very small 2x2 patches. For a standard 224x224 image, this would create a sequence of (224/2) * (224/2) = 12,544 patches. This is an extremely long sequence, making their model computationally expensive and only practical for very small images (like CIFAR-10, which is 32x32). The ViT, by using larger 16x16 patches, creates a much more manageable sequence of 14x14 = 196 patches. This design choice was essential for scaling the approach to the medium-resolution images used in standard benchmarks.</p></li>
+</ol>
+<p>In essence, the authors are positioning their work as taking a promising but limited idea and being the first to demonstrate how to make it truly scalable and competitive at the highest level.</p>
+</section>
+<section id="positioning-vit-a-survey-of-the-landscape" class="level3">
+<h3 class="anchored" data-anchor-id="positioning-vit-a-survey-of-the-landscape">Positioning ViT: A Survey of the Landscape</h3>
+<p>To round out their survey, the authors cover two other major lines of research to clearly delineate their own contribution.</p>
+<section id="hybrid-cnn-transformer-models" class="level4">
+<h4 class="anchored" data-anchor-id="hybrid-cnn-transformer-models">1. Hybrid CNN-Transformer Models</h4>
+<blockquote class="blockquote">
+<p>“There has also been a lot of interest in combining convolutional neural networks (CNNs) with forms of self-attention, e.g.&nbsp;by augmenting feature maps for image classification (Bello et al., 2019) or by further processing the output of a CNN using self-attention, e.g.&nbsp;for object detection (Hu et al., 2018; Carion et al., 2020)…”</p>
+</blockquote>
+<p>Here, the authors acknowledge the large body of work focused on creating hybrid models that try to get the best of both worlds. These approaches didn’t try to eliminate CNNs; instead, they used self-attention to enhance them. The two main strategies were:</p>
+<ul>
+<li><p><strong>Attention as a CNN Layer:</strong> In this approach, an attention mechanism is inserted somewhere in the middle of a CNN. After a few convolutional layers process the image and create intermediate representations called <strong>feature maps</strong>, an attention layer is applied to these maps. This helps the network re-weigh the importance of different features, essentially telling the subsequent layers which parts of the image to focus on. It’s like adding a “focus booster” to a standard CNN.</p></li>
+<li><p><strong>Attention as a Processing Head:</strong> A more recent and powerful approach was to use a CNN as a feature extractor “backbone.” The image is first passed through a powerful CNN (like a ResNet), which outputs a rich, structured representation of the image. This representation is then fed into a Transformer-based “head” which performs the final task, such as object detection. The most famous example of this is the DETR (DEtection TRansformer) model (<code>Carion et al., 2020</code>), which showed that this approach could simplify the object detection pipeline significantly.</p></li>
+</ul>
+<p>The key takeaway is that these methods still relied heavily on the convolutional architecture to handle the initial image processing. This reinforces the core argument of the ViT paper: that this reliance on CNNs might not be necessary.</p>
+</section>
+<section id="generative-transformers-and-the-trend-of-scaling-data" class="level4">
+<h4 class="anchored" data-anchor-id="generative-transformers-and-the-trend-of-scaling-data">2. Generative Transformers and The Trend of Scaling Data</h4>
+<blockquote class="blockquote">
+<p>“Another recent related model is image GPT (iGPT) (Chen et al., 2020a), which applies Transformers to image pixels after reducing image resolution and color space… achieving a maximal accuracy of 72% on ImageNet.”</p>
+<p>“Our work adds to the increasing collection of papers that explore image recognition at larger scales than the standard ImageNet dataset… Moreover, Sun et al.&nbsp;(2017) study how CNN performance scales with dataset size, and Kolesnikov et al.&nbsp;(2020); Djolonga et al.&nbsp;(2020) perform an empirical exploration of CNN transfer learning from large scale datasets such as ImageNet-21k and JFT-300M. We focus on these two latter datasets as well, but train Transformers instead of ResNet-based models used in prior works.”</p>
+</blockquote>
+<p>This final passage makes two critical points to perfectly frame the authors’ contribution.</p>
+<p>First, they mention <strong>Image GPT (iGPT)</strong>. This model also applied a Transformer to images, but with key differences. It was a <em>generative</em> model, trained unsupervised to predict the next pixel in a sequence, much like how GPT for text predicts the next word. To make this computationally feasible, it had to work on heavily downsampled images with a reduced color palette. While innovative, its performance on classification tasks like ImageNet was not state-of-the-art (72%). By citing this, the ViT authors subtly contrast iGPT’s generative approach and moderate performance with their own supervised, classification-focused approach that achieves much higher scores.</p>
+<p>Second, and most importantly, they identify the other major trend their work builds on: <strong>the move to massive-scale pre-training in computer vision</strong>. Researchers were already discovering that the performance of CNNs continued to improve when they were pre-trained on datasets far larger than the standard 1.3M-image ImageNet. The “Big Transfer” (BiT) paper (<code>Kolesnikov et al., 2020</code>) was a landmark study showing how to effectively pre-train large ResNets on datasets like JFT-300M and transfer that knowledge to smaller tasks.</p>
+<p>This is the final, crucial piece of the puzzle. The authors’ contribution can be summarized as the intersection of these two worlds:</p>
+<ol type="1">
+<li>They took the <strong>standard Transformer architecture</strong> from NLP.</li>
+<li>They applied the <strong>massive-scale pre-training methodology</strong> that had recently been proven effective for CNNs.</li>
+</ol>
+<p>Their novel experiment was to replace the ResNet used in the BiT paper with a standard Transformer. By doing so, they are directly testing the hypothesis that a general-purpose, scalable architecture can outperform a specialized one if given enough data. This concludes the setup for the rest of the paper, where they will detail their model and prove this hypothesis correct.</p>
+</section>
+</section>
+</section>
+<section id="method-building-the-vision-transformer" class="level2">
+<h2 class="anchored" data-anchor-id="method-building-the-vision-transformer">3. Method: Building the Vision Transformer</h2>
+<section id="the-philosophy-keep-it-simple" class="level3">
+<h3 class="anchored" data-anchor-id="the-philosophy-keep-it-simple">The Philosophy: Keep It Simple</h3>
+<blockquote class="blockquote">
+<p>“In model design we follow the original Transformer (Vaswani et al., 2017) as closely as possible. An advantage of this intentionally simple setup is that scalable NLP Transformer architectures – and their efficient implementations – can be used almost out of the box.”</p>
+</blockquote>
+<p>Before detailing the model, the authors state their guiding principle: simplicity. They are not inventing a new, complex “vision-specific” Transformer. Their goal is to make the <em>fewest possible changes</em> to the original, standard Transformer architecture that took the NLP world by storm.</p>
+<p>This is a powerful design choice. By sticking to the standard, they can leverage years of research, highly optimized code, and well-understood scaling properties from the NLP community. This decision is a direct response to the “complex engineering” required by previous vision-attention models they critiqued in the related work section.</p>
+</section>
+<section id="from-pixels-to-patches-the-input-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="from-pixels-to-patches-the-input-pipeline">From Pixels to Patches: The Input Pipeline</h3>
+<blockquote class="blockquote">
+<p>“The standard Transformer receives as input a 1D sequence of token embeddings. To handle 2D images, we reshape the image x ∈ R<sup>H×W×C</sup> into a sequence of flattened 2D patches x<sub>p</sub> ∈ R<sup>N×(P<sup>2</sup>·C)</sup>…”</p>
+</blockquote>
+<p>Here, the authors detail the critical process of converting a 2D image into the 1D sequence a Transformer expects. Let’s break down this pipeline step-by-step with a concrete example.</p>
+<ol type="1">
+<li><strong>Start with an Image Tensor:</strong> An image is represented as a tensor of shape <code>H x W x C</code>, where:
+<ul>
+<li><code>H</code> is the height of the image (e.g., 224 pixels).</li>
+<li><code>W</code> is the width of the image (e.g., 224 pixels).</li>
+<li><code>C</code> is the number of channels (e.g., 3 for RGB).</li>
+</ul></li>
+<li><strong>Patching:</strong> The image is divided into a grid of smaller, non-overlapping patches. Each patch has a resolution of <code>P x P</code> (e.g., 16x16 pixels). The total number of patches, <code>N</code>, is calculated as <code>(H * W) / (P * P)</code>.
+<ul>
+<li>For our example: <code>N = (224 * 224) / (16 * 16) = 196</code>. So, our image is now a sequence of 196 patches. <code>N</code> is now the “sequence length” for the Transformer.</li>
+</ul></li>
+<li><strong>Flattening:</strong> Each of these 2D patches is then flattened into a 1D vector. The size of this vector is <code>P * P * C</code>.
+<ul>
+<li>For our example: <code>16 * 16 * 3 = 768</code>. So, each of our 196 patches is now represented by a vector of 768 numbers.</li>
+</ul></li>
+<li><strong>Linear Projection (Embedding):</strong> The Transformer architecture maintains a constant vector size, <code>D</code>, throughout its layers. This is often called the “latent dimension” or “embedding dimension”. To get our flattened patches into this required size, we pass them through a standard, trainable linear projection layer. This layer learns to map the raw patch data (our 768-dimensional vector) into the model’s working dimension <code>D</code> (e.g., 768 for ViT-Base).
+<ul>
+<li>The output of this step is what the authors call the <strong>patch embeddings</strong>. This is a sequence of <code>N</code> vectors, each of size <code>D</code>.</li>
+</ul></li>
+</ol>
+<p>This entire process is the direct visual analog of how text is handled in NLP. In NLP, a sentence is broken into words (tokens), and then an embedding layer maps each word to a vector of size <code>D</code>. Here, the image is broken into patches, and a linear projection layer maps each patch to a vector of size <code>D</code>. This elegant pipeline is the key that unlocks the ability to use a standard Transformer for vision.</p>
+</section>
+<section id="figure-1-the-vision-transformer-architecture-at-a-glance" class="level3">
+<h3 class="anchored" data-anchor-id="figure-1-the-vision-transformer-architecture-at-a-glance">Figure 1: The Vision Transformer Architecture at a Glance</h3>
+<p>The authors provide a fantastic diagram that visualizes the entire process. Let’s walk through the flow of data from left to right, corresponding to the model’s forward pass.</p>
+<p><a href="images/2025-09-26-vit-reading-notes/paper-fig-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-26-vit-reading-notes/paper-fig-1.PNG" class="img-fluid"></a></p>
+<section id="the-main-architecture-left-side-of-figure" class="level4">
+<h4 class="anchored" data-anchor-id="the-main-architecture-left-side-of-figure">The Main Architecture (Left Side of Figure)</h4>
+<p>This diagram shows the end-to-end pipeline, which we can break down into five key steps:</p>
+<ol type="1">
+<li><p><strong>Image to Patches:</strong> At the very bottom, we see the input image being split into a grid of patches. This is the first step we discussed in the method section.</p></li>
+<li><p><strong>Patches to Embeddings:</strong> The patches are flattened and then passed through the “Linear Projection of Flattened Patches” layer. This produces our sequence of patch embeddings, shown as the numbered vectors (1, 2, 3, …).</p></li>
+<li><p><strong>Prepending the [class] Token:</strong> This is a crucial and non-intuitive step borrowed directly from the famous BERT model in NLP. Notice the extra vector at the beginning of the sequence, labeled <code>0*</code>. This is a special, learnable vector that is added to the sequence of patch embeddings. It’s often called the <strong><code>[class]</code> token</strong> or <strong><code>[CLS]</code> token</strong>. Its purpose is to serve as a kind of “representation aggregator.” The self-attention mechanism in the Transformer will allow this token to exchange information with all the image patch tokens. The idea is that by the end, the final output vector corresponding to this special token will contain a summary of the entire image, which is perfect for a classification task.</p></li>
+<li><p><strong>Adding Positional Embeddings:</strong> Before the sequence of tokens is fed into the main encoder, a <strong>positional embedding</strong> is added to each one. This is absolutely critical. A standard Transformer is “permutation-invariant,” meaning it treats a sequence as a simple bag of tokens with no inherent order. Without positional embeddings, the model would have no idea where each patch came from in the original image. By adding a learnable vector that represents the position (e.g., token 1 is at position 1, token 2 at position 2, etc.), we give the model the spatial information it needs to understand the image’s structure.</p></li>
+<li><p><strong>The Transformer Encoder:</strong> The prepared sequence of vectors (patch embeddings + <code>[CLS]</code> token + positional embeddings) is then fed into the core of the model: the Transformer Encoder. This is the large gray block where the main computation happens.</p></li>
+<li><p><strong>The MLP Head:</strong> After the sequence is processed by the encoder, we <em>discard all the outputs for the image patches</em>. We only take the final, transformed vector that corresponds to our special <code>[CLS]</code> token. This single vector is then fed into a standard Multi-Layer Perceptron (MLP), which acts as the classification “head.” This head maps the learned representation to the final class probabilities (e.g., “Bird”, “Ball”, “Car”).</p></li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Note on the [CLS] Token: Why Discard the Other Outputs?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>It might seem strange that after all the complex processing in the Transformer Encoder, we simply throw away the output vectors for every single image patch and only use the one corresponding to the <code>[CLS]</code> token. Why do we do this? And what information are we discarding?</p>
+<p><strong>What do the other tokens represent?</strong></p>
+<p>After passing through the multiple layers of self-attention, each of the original patch embeddings has been transformed into a new, “contextualized” embedding. The output vector for patch #5, for example, no longer just represents the content of that specific patch. It now contains a rich representation of patch #5 <em>in the context of the entire image</em>. It has gathered information from the sky, the ground, and every other patch, weighted by relevance, to enrich its own meaning. You can think of these output patch vectors as highly informative, context-aware feature representations for each local region of the image.</p>
+<p><strong>So why discard them for classification?</strong></p>
+<p>The primary reason is to create a simple and fixed-size representation for the entire image that can be easily fed into a classification head.</p>
+<ol type="1">
+<li><p><strong>The Aggregation Problem:</strong> For an image classification task, we need a single, holistic prediction. This requires aggregating information from all the patches into one representative vector. How should we do this? We could try <strong>global average pooling</strong>—simply averaging all the output patch vectors. While this can work, it treats every patch region as equally important for the final decision.</p></li>
+<li><p><strong>The [CLS] Token Solution:</strong> The <code>[CLS]</code> token provides a more flexible and powerful alternative. By introducing a dedicated “summary” token from the beginning, we are giving the model a specific place to accumulate the most important information for the classification task. The self-attention mechanism allows the <code>[CLS]</code> token to act like a query, asking each patch: “What information do you have that is relevant for classifying this image as a whole?” The model <em>learns</em> the best way to perform this aggregation during training, rather than being forced to use a simple average. It can learn to pay more attention to the patches that make up the main object and less to the background, for instance.</p></li>
+</ol>
+<p>In short, we discard the individual patch outputs for the classification task because the <code>[CLS]</code> token has already learned to do the job of summarizing them for us. For other, more granular tasks like image segmentation (where you need a prediction for every pixel), these output patch vectors would be incredibly valuable and would not be discarded. But for the single-label classification goal of this paper, the <code>[CLS]</code> token provides a clean and effective mechanism.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="inside-the-transformer-encoder-right-side-of-figure" class="level4">
+<h4 class="anchored" data-anchor-id="inside-the-transformer-encoder-right-side-of-figure">Inside the Transformer Encoder (Right Side of Figure)</h4>
+<p>The diagram on the right is a zoom-in on the internal structure of the Transformer Encoder. The encoder is not a single block, but a stack of <code>L</code> identical layers. Each layer consists of two main sub-blocks:</p>
+<ol type="1">
+<li><p><strong>Multi-Head Self-Attention (MSA):</strong> This is the heart of the Transformer. In this block, every token in the sequence looks at every other token to compute attention scores. This allows information to be mixed and propagated across the entire image, even in the very first layer. A patch representing the sky can “talk” to a patch representing a wheel, allowing the model to learn global relationships. “Multi-head” simply means that this process is done in parallel with different learned transformations, allowing the model to capture different types of relationships simultaneously.</p></li>
+<li><p><strong>Multi-Layer Perceptron (MLP):</strong> The second block is a standard feed-forward neural network. Unlike the MSA block, which mixes information <em>between</em> tokens, the MLP block processes each token’s representation <em>independently</em>. It acts as a rich feature transformation for each patch.</p></li>
+</ol>
+<p>Notice the <strong>Norm layers</strong> (Layer Normalization) before each block and the <strong>residual connections</strong> (the arrows that skip over the blocks). These are standard components in deep learning that are crucial for stabilizing the training of very deep networks (i.e., when <code>L</code> is large).</p>
+<p>Perfect. This section puts the concepts from the diagram into words and adds some important details. Let’s break it down.</p>
+</section>
+</section>
+<section id="the-role-of-the-cls-token-and-positional-embeddings" class="level3">
+<h3 class="anchored" data-anchor-id="the-role-of-the-cls-token-and-positional-embeddings">The Role of the [CLS] Token and Positional Embeddings</h3>
+<blockquote class="blockquote">
+<p>“Similar to BERT’s [class] token, we prepend a learnable embedding to the sequence of embedded patches… whose state at the output of the Transformer encoder … serves as the image representation y…”</p>
+</blockquote>
+<p>Here, the authors formally describe the purpose of the special <code>[CLS]</code> token we saw in the diagram. This is a clever trick borrowed from NLP. Instead of trying to aggregate information from all the patch tokens at the end (for example, by averaging them), they add a dedicated slot to the sequence from the very beginning. The Transformer’s self-attention layers are then responsible for populating this slot with a rich summary of the entire image. After passing through all <code>L</code> layers of the encoder, the output vector corresponding to this initial <code>[CLS]</code> token is considered the final representation of the image. This single vector is then passed to a simple MLP head for the final classification.</p>
+<blockquote class="blockquote">
+<p>“Position embeddings are added to the patch embeddings to retain positional information. We use standard learnable 1D position embeddings, since we have not observed significant performance gains from using more advanced 2D-aware position embeddings…”</p>
+</blockquote>
+<p>This paragraph addresses a critical aspect of the design. By flattening the image into a sequence of patches, we lose all explicit 2D spatial information. The model doesn’t know that patch #1 is to the left of patch #2, or that patch #15 is directly below patch #1. To solve this, <strong>position embeddings</strong> are added to the patch embeddings. These are simply learnable vectors, where each vector corresponds to a specific position in the sequence (e.g., a unique vector for position 1, another for position 2, and so on). The model learns the meaning of these positions during training.</p>
+<p>The authors make a very interesting point here: they tried more complex, “2D-aware” position embeddings that explicitly encode the row and column of each patch. Surprisingly, these did not provide a significant performance boost over the simple 1D embeddings. This suggests that the Transformer is powerful enough to learn the 2D spatial relationships between patches on its own, just from the 1D positional information, as long as it’s given enough data. This finding reinforces their overall philosophy of keeping the model as simple and standard as possible.</p>
+</section>
+<section id="the-transformer-encoder-block" class="level3">
+<h3 class="anchored" data-anchor-id="the-transformer-encoder-block">The Transformer Encoder Block</h3>
+<blockquote class="blockquote">
+<p>“The Transformer encoder … consists of alternating layers of multiheaded self-attention (MSA) … and MLP blocks … Layernorm (LN) is applied before every block, and residual connections after every block…”</p>
+</blockquote>
+<p>This final part just re-iterates the structure of the Transformer encoder shown in the diagram. It’s a stack of identical layers, each containing two main components: Multi-Head Self-Attention (MSA) and a Multi-Layer Perceptron (MLP). They also specify the exact arrangement of the supporting components: Layer Normalization is applied <em>before</em> each block (a “pre-norm” configuration), and residual connections are used <em>after</em> each block. This specific arrangement is a small but important detail that is known to help stabilize training in very deep Transformers.</p>
+</section>
+<section id="model-equations-and-the-inductive-bias-trade-off" class="level3">
+<h3 class="anchored" data-anchor-id="model-equations-and-the-inductive-bias-trade-off">Model Equations and the Inductive Bias Trade-off</h3>
+<section id="the-vit-in-four-equations" class="level4">
+<h4 class="anchored">The ViT in Four Equations</h4>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-section-3-3.PNG" class="img-fluid"></p>
+<p>Let’s quickly translate these equations into the concepts we’ve already covered:</p>
+<ul>
+<li><strong>Equation 1:</strong> This is the complete input preparation step. It shows the creation of the sequence <code>z_0</code> by concatenating the learnable <code>[CLS]</code> token (<code>x_class</code>) with the projected patch embeddings (<code>x_p * E</code>) and then adding the positional embeddings (<code>E_pos</code>).</li>
+<li><strong>Equations 2 &amp; 3:</strong> These two equations define a single layer of the Transformer encoder. Equation 2 shows the Multi-Head Self-Attention (MSA) block, complete with its pre-LayerNorm (LN) and residual connection (<code>+ z_{l-1}</code>). Equation 3 shows the subsequent MLP block, which also has a pre-LayerNorm and a residual connection. This pair of operations is repeated <code>L</code> times.</li>
+<li><strong>Equation 4:</strong> This describes how to get the final output. It takes the 0-th element (the <code>[CLS]</code> token) from the output of the final layer <code>L</code>, passes it through one last LayerNorm, and the result, <code>y</code>, is the final image representation that is fed to the classification head.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Equations in more detail">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Equations in more detail
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<section id="equation-1-assembling-your-ingredients" class="level3">
+<h3 class="anchored" data-anchor-id="equation-1-assembling-your-ingredients">Equation 1: Assembling Your Ingredients</h3>
+<blockquote class="blockquote">
+<p><strong>z</strong><sub>0</sub> = [<strong>x</strong><sub>class</sub>; <strong>x</strong><sub>p</sub><sup>1</sup><strong>E</strong>; <strong>x</strong><sub>p</sub><sup>2</sup><strong>E</strong>; … ; <strong>x</strong><sub>p</sub><sup>N</sup><strong>E</strong>] + <strong>E</strong><sub>pos</sub></p>
+</blockquote>
+<p><strong>Intuitive Meaning:</strong> “Prepare the input sequence.”</p>
+<p>This equation is all about getting your input ready for the main event. It’s like a chef doing <em>mise en place</em> (getting all ingredients prepped before cooking).</p>
+<ol type="1">
+<li><strong>Chop the Image:</strong> First, you take your image and chop it into <code>N</code> little patches.</li>
+<li><strong>Turn Patches into “Words”:</strong> Each patch is a bunch of pixels. You need to turn it into a single, standardized vector that your model understands. That’s what <code>x_p * E</code> does. It’s a “linear projection” that acts like a dictionary, turning a raw patch into a meaningful vector (a “patch embedding”). You do this for all <code>N</code> patches.</li>
+<li><strong>Add a “Blank Page”:</strong> At the very beginning of your sequence of patch-words, you add a special, extra “word” called the <code>[CLS]</code> token (<code>x_class</code>). Think of this as a blank page at the front of a notebook. The model will use this page to write its summary of the entire image later on.</li>
+<li><strong>Stamp Each Word with its Location:</strong> Now you have a sequence of words: <code>[CLS], patch1, patch2, ...</code>. But the model doesn’t know their order. To fix this, you add a “location stamp” to each word. This is the <strong>positional embedding</strong> (<code>E_pos</code>). It’s like adding “1st,” “2nd,” “3rd,” etc., to your words so the model knows their original positions.</li>
+</ol>
+<p>The final result, <code>z_0</code>, is your fully prepared input sequence, ready to be processed.</p>
+</section>
+<section id="equations-2-3-the-processing-machine" class="level3">
+<h3 class="anchored" data-anchor-id="equations-2-3-the-processing-machine">Equations 2 &amp; 3: The Processing Machine</h3>
+<blockquote class="blockquote">
+<p><strong>z</strong>’<sub><em>l</em></sub> = MSA(LN(<strong>z</strong><sub><em>l</em>-1</sub>)) + <strong>z</strong><sub><em>l</em>-1</sub></p>
+<p><strong>z</strong><sub><em>l</em></sub> = MLP(LN(<strong>z</strong>’<sub><em>l</em></sub>)) + <strong>z</strong>’<sub><em>l</em></sub></p>
+</blockquote>
+<p><strong>Intuitive Meaning:</strong> “Process the sequence through one layer of the Transformer.”</p>
+<p>These two equations describe one round of processing. The Transformer is made of <code>L</code> identical layers stacked on top of each other, and this is what happens in each one.</p>
+<ul>
+<li><p><strong>Equation 2 (The Communication Step):</strong> This is the <strong>Multi-Head Self-Attention</strong> (MSA) part. Imagine all your words (the <code>[CLS]</code> token and all the patch-words) are in a room together. In this step, every word gets to look at every other word and decide which ones are most important to it. A “sky” patch might pay attention to a “cloud” patch. The <code>[CLS]</code> token (our summary page) looks at all the patches to start gathering information. After this step, each word’s vector is updated with context from all the other words. This is the “global communication” step.</p></li>
+<li><p><strong>Equation 3 (The Thinking Step):</strong> This is the <strong>MLP</strong> part. After all the words have talked to each other, they each need to “think” about what they’ve learned. The MLP is like a small brain for each individual word. It takes the updated vector for that word and does some complex processing on it <em>independently</em>. It finds deeper patterns and features within that word’s new, contextualized representation.</p></li>
+</ul>
+<p>The <code>LN</code> (LayerNorm) and the <code>+ z</code> (residual connection) parts are just engineering tricks to make sure the process is stable and the model learns effectively, layer after layer. You repeat this two-step process (communicate, then think) for all <code>L</code> layers.</p>
+</section>
+<section id="equation-4-the-final-answer" class="level3">
+<h3 class="anchored" data-anchor-id="equation-4-the-final-answer">Equation 4: The Final Answer</h3>
+<blockquote class="blockquote">
+<p><strong>y</strong> = LN(<strong>z</strong><sub><em>L</em></sub><sup>0</sup>)</p>
+</blockquote>
+<p><strong>Intuitive Meaning:</strong> “Read the summary page.”</p>
+<p>After the input has gone through all <code>L</code> layers of communication and thinking, the process is done. Now you need the final answer for the whole image.</p>
+<p>Remember that blank page, the <code>[CLS]</code> token we added at the beginning? Through all <code>L</code> layers, it has been gathering information from all the image patches, constantly updating its own vector to become the best possible summary of the image for the task of classification.</p>
+<p>This equation says:</p>
+<ol type="1">
+<li>Go to the final output of the last layer (<code>z_L</code>).</li>
+<li>Ignore all the vectors for the image patches.</li>
+<li>Just take the very first vector (<code>z_L^0</code>), the one that corresponds to your <code>[CLS]</code> token.</li>
+</ol>
+<p>This single vector, <code>y</code>, is the model’s final, rich representation of the entire image. You can now pass this one vector to a simple classifier to get your final prediction: “This is an image of a cat.”</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+<section id="inductive-bias-the-vits-greatest-weakness-and-strength" class="level4">
+<h4 class="anchored" data-anchor-id="inductive-bias-the-vits-greatest-weakness-and-strength">Inductive Bias: The ViT’s Greatest Weakness and Strength</h4>
+<blockquote class="blockquote">
+<p>“We note that Vision Transformer has much less image-specific inductive bias than CNNs. In CNNs, locality, two-dimensional neighborhood structure, and translation equivariance are baked into each layer throughout the whole model. In ViT, only MLP layers are local and translationally equivariant, while the self-attention layers are global.”</p>
+</blockquote>
+<p>This is one of the most important conceptual paragraphs in the entire paper. The authors explicitly state the fundamental difference between a ViT and a CNN.</p>
+<ul>
+<li>An <strong>inductive bias</strong> is a set of assumptions a model makes about the data it will process. These assumptions give the model a “head start” on learning.</li>
+<li><strong>CNNs</strong> have strong inductive biases for images. Their core operation, the convolution, assumes that local groups of pixels are important (<strong>locality</strong>) and that the same features can appear anywhere in the image (<strong>translation equivariance</strong>). These assumptions are hard-coded into the architecture and are present in every single layer.</li>
+<li><strong>ViTs</strong>, on the other hand, have very weak inductive biases. The self-attention mechanism is global; it doesn’t inherently assume that patch #2 is more related to patch #3 than it is to patch #100. The only truly local part of a ViT is the MLP block, which processes each patch’s representation independently.</li>
+</ul>
+<p>The only places the ViT is given any information about the 2D structure of the image are:</p>
+<ol type="1">
+<li>At the very beginning, when the image is cut into patches.</li>
+<li>During fine-tuning, when the position embeddings might be adjusted for different image resolutions.</li>
+</ol>
+<p>Beyond that, the model starts as a blank slate. It must learn the concept of locality and all other spatial relationships between the patches entirely from the data. This is why ViT needs so much data to perform well: it has to learn the fundamental rules of vision that are given to a CNN for free.</p>
+</section>
+<section id="the-hybrid-alternative-a-cnn-backbone" class="level4">
+<h4 class="anchored" data-anchor-id="the-hybrid-alternative-a-cnn-backbone">The Hybrid Alternative: A CNN Backbone</h4>
+<blockquote class="blockquote">
+<p>“As an alternative to raw image patches, the input sequence can be formed from feature maps of a CNN… In this hybrid model, the patch embedding projection E (Eq. 1) is applied to patches extracted from a CNN feature map.”</p>
+</blockquote>
+<p>Recognizing the trade-off with inductive bias, the authors propose a <strong>Hybrid Architecture</strong> as a middle ground. This is an important experimental control to test their hypotheses. The idea is to combine the strengths of both architectures:</p>
+<ol type="1">
+<li>First, an image is fed into a standard CNN (like a ResNet).</li>
+<li>Instead of taking the final class prediction, we stop partway through the network and extract the intermediate <strong>feature maps</strong>. These are no longer raw pixels but representations of higher-level features like edges, textures, and object parts.</li>
+<li>This 2D feature map is then treated as the “image.” It is broken into “patches” (which could be as small as 1x1, meaning each vector in the feature map becomes a token), flattened into a sequence, and fed into the Transformer.</li>
+</ol>
+<p>The motivation is clear: let the CNN do what it does best (efficiently learn a hierarchy of local features thanks to its strong inductive bias), and then let the Transformer do what it does best (use its global self-attention mechanism to find complex relationships between these high-level features). This provides a powerful baseline to compare against the pure Transformer approach.</p>
+</section>
+</section>
+<section id="fine-tuning-and-higher-resolution" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-and-higher-resolution">3.2 Fine-tuning and Higher Resolution</h3>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-section-3-4.PNG" class="img-fluid"></p>
+<section id="adapting-the-model-for-downstream-tasks" class="level4">
+<h4 class="anchored" data-anchor-id="adapting-the-model-for-downstream-tasks">Adapting the Model for Downstream Tasks</h4>
+<blockquote class="blockquote">
+<p>“Typically, we pre-train ViT on large datasets, and fine-tune to (smaller) downstream tasks. For this, we remove the pre-trained prediction head and attach a zero-initialized D × K feedforward layer, where K is the number of downstream classes.”</p>
+</blockquote>
+<p>This describes the standard procedure for transfer learning. Once the model has been pre-trained on a massive dataset like JFT-300M (which has 18,000 classes), its general knowledge is locked into the main body of the Transformer. To adapt it to a new task, like classifying CIFAR-100 (which has only 100 classes), we perform a simple surgery:</p>
+<ol type="1">
+<li><strong>Remove the Head:</strong> The original classification head (the final MLP layer) that was trained to predict 18,000 classes is chopped off and discarded.</li>
+<li><strong>Attach a New Head:</strong> A brand new, randomly initialized linear layer is attached in its place. This new layer takes the <code>D</code>-dimensional output from the <code>[CLS]</code> token and projects it to <code>K</code> outputs, where <code>K</code> is the number of classes in our new task (e.g., 100 for CIFAR-100). “Zero-initialized” is a small implementation detail that can sometimes help stabilize the beginning of the fine-tuning process.</li>
+<li><strong>Fine-tune:</strong> The entire model (the Transformer body and the new head) is then trained on the new dataset, but typically with a much lower learning rate. This gently adjusts the pre-trained weights to specialize them for the new task without catastrophically forgetting the powerful general features learned during pre-training.</li>
+</ol>
+</section>
+<section id="the-challenge-and-opportunity-of-higher-resolution" class="level4">
+<h4 class="anchored" data-anchor-id="the-challenge-and-opportunity-of-higher-resolution">The Challenge and Opportunity of Higher Resolution</h4>
+<blockquote class="blockquote">
+<p>“It is often beneficial to fine-tune at higher resolution than pre-training… When feeding images of higher resolution, we keep the patch size the same, which results in a larger effective sequence length. The Vision Transformer can handle arbitrary sequence lengths … however, the pre-trained position embeddings may no longer be meaningful.”</p>
+</blockquote>
+<p>This is a clever trick used to boost performance, but it introduces a fascinating technical challenge unique to the ViT. It’s common practice in computer vision to pre-train on, say, 224x224 images and then fine-tune on higher-resolution 384x384 images. This provides the model with more detail to work with, often leading to better accuracy.</p>
+<p>For a ViT, this has a direct consequence:</p>
+<ul>
+<li>A 224x224 image with 16x16 patches creates a sequence of <code>14x14 = 196</code> patches.</li>
+<li>A 384x384 image with the <em>same</em> 16x16 patches creates a sequence of <code>24x24 = 576</code> patches.</li>
+</ul>
+<p>The core Transformer architecture is flexible and can handle this longer sequence. However, there’s a problem: the model was pre-trained with <strong>position embeddings</strong> that only accounted for 196 positions. What should the model do with the new patch positions from 197 to 576?</p>
+<blockquote class="blockquote">
+<p>“We therefore perform 2D interpolation of the pre-trained position embeddings, according to their location in the original image.”</p>
+</blockquote>
+<p>The authors’ solution is elegant. They treat the learned positional embeddings not as a simple list, but as a representation of a 14x14 grid. They then use standard 2D interpolation techniques to “stretch” this learned 14x14 grid into a new 24x24 grid. This allows them to intelligently initialize the positional embeddings for the new, larger image size, preserving the spatial understanding the model learned during pre-training.</p>
+<p>Finally, the authors make a sharp observation: this interpolation step is one of the only places in the entire model where an explicit “inductive bias about the 2D structure of the images is manually injected.” It’s a small but necessary concession to the 2D nature of images, required to make this high-resolution fine-tuning strategy work.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Deeper Look: How to “Stretch” Positional Embeddings
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>That’s a fantastic question, and it’s a subtle but really clever part of the paper. Let’s clarify: they aren’t stretching the image patches themselves (those stay fixed at 16x16 pixels). Instead, they are stretching the <strong>grid of positional embeddings</strong>—the learned vectors that tell the model <em>where</em> each patch came from.</p>
+<p>The best analogy is creating a <strong>weather map</strong>.</p>
+<p><strong>Step 1: The Original, Sparse Weather Map</strong></p>
+<ul>
+<li>Imagine during pre-training (on 224x224 images), you have weather stations in a <code>14x14</code> grid of cities. You have exactly <code>196</code> stations.</li>
+<li>Each station has a very detailed weather report (this is the 768-dimensional positional embedding vector).</li>
+<li>During training, the model doesn’t just learn the report for each city; it learns the <em>relationships between them</em>. It learns that the weather in “City (1,1)” is similar to “City (1,2)” because they are neighbors. It learns the pattern of how the weather changes as you go from north to south or west to east across the map. This is the learned “spatial understanding.”</li>
+</ul>
+<p><strong>Step 2: The New, High-Definition Map</strong></p>
+<ul>
+<li>Now, for fine-tuning, you switch to a much larger map (representing the 384x384 image). You want to create a high-definition weather map with a <code>24x24</code> grid, which requires <code>576</code> weather data points.</li>
+<li><strong>The Problem:</strong> You only have data from your original 196 stations. How do you intelligently guess the weather for the 380 new locations on your hi-def map?</li>
+</ul>
+<p><strong>Step 3: The Interpolation Solution (The “Stretching”)</strong></p>
+<p>You use <strong>interpolation</strong>. For any new point on your <code>24x24</code> map, you do the following:</p>
+<ol type="1">
+<li><p><strong>Find its Location on the Old Map:</strong> You find where this new point would have been on the original, sparse <code>14x14</code> map. It won’t be exactly on a station; it will be in a square <em>between four</em> of your original stations.</p></li>
+<li><p><strong>Perform a Weighted Average:</strong> To estimate the weather for this new point, you look at the detailed weather reports (the embedding vectors) of the four surrounding stations. You then calculate a weighted average of these four reports.</p></li>
+<li><p><strong>The Weights are Key:</strong> The average is weighted by <strong>proximity</strong>.</p>
+<ul>
+<li>If your new point is very, very close to the “top-left” station, its weather report will be almost identical to the top-left station’s report.</li>
+<li>If your new point is dead center in the middle of all four stations, its weather report will be an equal mix (a simple average) of all four reports.</li>
+</ul></li>
+</ol>
+<p>This process is repeated for every one of the 576 points on the new <code>24x24</code> grid. The result is a smooth, complete, high-definition map where the weather patterns logically transition between the locations of the original stations.</p>
+<p><img src="images/2025-09-26-vit-reading-notes/interpolation.PNG" class="img-fluid"></p>
+<p><em>Image source <a href="https://medium.com/@ryassminh/understanding-the-vision-transformer-that-works-with-any-resolution-d4ecec6ce3f1">Understanding the Vision Transformer That Works with Any Resolution by Rayan Yassminh</a></em></p>
+<p><strong>Why is this “Intelligent”?</strong></p>
+<p>This method preserves the crucial spatial relationships the model already learned. The concepts of “up,” “down,” “left,” “right,” and “center” that were learned on the 14x14 map are now smoothly scaled up to the 24x24 map.</p>
+<p>This gives the model a fantastic starting point for fine-tuning. Instead of having to re-learn the spatial layout of the image from scratch, it starts with an intelligently “resized” map of positions and only needs to make minor adjustments. It’s vastly more efficient than initializing the new positions randomly.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="experiments" class="level2">
+<h2 class="anchored" data-anchor-id="experiments">4. Experiments</h2>
+<section id="putting-the-theory-to-the-test" class="level3">
+<h3 class="anchored" data-anchor-id="putting-the-theory-to-the-test">Putting the Theory to the Test</h3>
+<blockquote class="blockquote">
+<p>“We evaluate the representation learning capabilities of ResNet, Vision Transformer (ViT), and the hybrid. To understand the data requirements of each model, we pre-train on datasets of varying size and evaluate many benchmark tasks. When considering the computational cost of pre-training the model, ViT performs very favourably…”</p>
+</blockquote>
+<p>Having detailed their model, the authors now lay out the roadmap for their experimental validation. The goal is not just to show that ViT works, but to rigorously test the core hypotheses of the paper. Their experiments are designed to answer three key questions:</p>
+<ol type="1">
+<li><strong>Architecture:</strong> How does a pure Vision Transformer stack up against a state-of-the-art CNN (ResNet) and the proposed Hybrid model?</li>
+<li><strong>Scale:</strong> Is it true that “data trumps inductive bias”? How does the performance of ViT change as the size of the pre-training dataset grows from medium (ImageNet) to massive (JFT-300M)?</li>
+<li><strong>Efficiency:</strong> How does the ViT compare in terms of computational cost? Does it achieve better performance with less training compute?</li>
+</ol>
+<p>This comprehensive approach ensures that their claims are tested from multiple angles.</p>
+</section>
+<section id="setup" class="level3">
+<h3 class="anchored" data-anchor-id="setup">4.1 Setup</h3>
+<section id="the-datasets-a-three-tiered-approach-to-pre-training" class="level4">
+<h4 class="anchored" data-anchor-id="the-datasets-a-three-tiered-approach-to-pre-training">The Datasets: A Three-Tiered Approach to Pre-training</h4>
+<blockquote class="blockquote">
+<p>“To explore model scalability, we use the ILSVRC-2012 ImageNet dataset with 1k classes and 1.3M images… its superset ImageNet-21k with 21k classes and 14M images… and JFT with 18k classes and 303M high-resolution images.”</p>
+</blockquote>
+<p>To test the effect of scale, the authors use a “good, better, best” strategy for their pre-training data:</p>
+<ul>
+<li><strong>ImageNet (1.3M images):</strong> The standard, ubiquitous benchmark. This serves as their “mid-sized” baseline.</li>
+<li><strong>ImageNet-21k (14M images):</strong> A public dataset that is an order of magnitude larger than the standard ImageNet. This is their “large” dataset.</li>
+<li><strong>JFT-300M (303M images):</strong> A massive, private dataset. At over 200 times the size of standard ImageNet, this is the “extra-large” dataset that will truly test the limits of the model and its ability to learn from data alone.</li>
+</ul>
+<p>After pre-training on one of these three datasets, the models are then fine-tuned and evaluated on a suite of standard “downstream” tasks. These include the original ImageNet, CIFAR-10/100, and datasets for classifying pets and flowers. Using a diverse set of tasks is crucial for testing the <em>generality</em> of the learned representations. A truly powerful pre-trained model should be a good starting point for solving many different kinds of visual problems.</p>
+</section>
+<section id="ensuring-a-fair-fight" class="level4">
+<h4 class="anchored" data-anchor-id="ensuring-a-fair-fight">Ensuring a Fair Fight</h4>
+<blockquote class="blockquote">
+<p>“We de-duplicate the pre-training datasets w.r.t. the test sets of the downstream tasks following Kolesnikov et al.&nbsp;(2020)… For these datasets, pre-processing follows Kolesnikov et al.&nbsp;(2020).”</p>
+</blockquote>
+<p>This is a subtle but critically important detail for scientific rigor.</p>
+<ol type="1">
+<li><p><strong>De-duplication:</strong> The authors ensure that no images from the final test sets appear in their massive pre-training datasets. This prevents the model from “cheating” by having seen the answers to the test during its training. It’s the academic equivalent of making sure a student studying for a final exam doesn’t have a copy of the exam questions in their study materials.</p></li>
+<li><p><strong>Identical Pre-processing:</strong> They use the exact same data pre-processing pipeline as the “Big Transfer” (BiT) paper, which is their primary CNN-based competitor. This ensures an apples-to-apples comparison, where any performance difference can be attributed to the model architecture (ViT vs.&nbsp;ResNet), not to a difference in how the input data was prepared.</p></li>
+</ol>
+</section>
+</section>
+<section id="the-competitors-vit-bit-and-hybrid-models" class="level3">
+<h3 class="anchored" data-anchor-id="the-competitors-vit-bit-and-hybrid-models">The Competitors: ViT, BiT, and Hybrid Models</h3>
+<section id="vit-model-variants" class="level4">
+<h4 class="anchored" data-anchor-id="vit-model-variants">ViT Model Variants</h4>
+<blockquote class="blockquote">
+<p>“We base ViT configurations on those used for BERT … The”Base” and “Large” models are directly adopted from BERT and we add the larger “Huge” model. In what follows we use brief notation to indicate the model size and the input patch size: for instance, ViT-L/16 means the “Large” variant with 16 × 16 input patch size.”</p>
+</blockquote>
+<p>Again, the authors emphasize their strategy of borrowing directly from NLP. Instead of designing new model sizes from scratch, they adopt the well-established configurations from BERT, a famous Transformer model for language. This gives them three primary sizes to experiment with:</p>
+<ul>
+<li><strong>ViT-Base:</strong> A moderately sized model.</li>
+<li><strong>ViT-Large:</strong> A significantly deeper and wider model.</li>
+<li><strong>ViT-Huge:</strong> An even larger model, created to push the limits of performance.</li>
+</ul>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-table-1.PNG" class="img-fluid"></p>
+<p>They also introduce a simple and important naming convention: <code>Model-Size/Patch-Size</code>. So, <code>ViT-L/16</code> refers to the “Large” ViT model using a patch size of 16x16 pixels.</p>
+<p>The authors make a critical point about the trade-off between patch size and computational cost: “…the Transformer’s sequence length is inversely proportional to the square of the patch size, thus models with smaller patch size are computationally more expensive.” Let’s break this down:</p>
+<ul>
+<li><strong>ViT-L/32:</strong> Using a 32x32 patch size on a 224x224 image creates a <code>(224/32)^2 = 7x7 = 49</code> patch sequence. This is a very short sequence, making the model fast.</li>
+<li><strong>ViT-L/16:</strong> Using a 16x16 patch size creates a <code>(224/16)^2 = 14x14 = 196</code> patch sequence. This longer sequence requires more computation in the self-attention layers.</li>
+<li><strong>ViT-L/14:</strong> Using a 14x14 patch size creates a <code>(224/14)^2 = 16x16 = 256</code> patch sequence. This is even more computationally expensive.</li>
+</ul>
+<p>This trade-off is central to the ViT’s design. A smaller patch size gives the model a more fine-grained view of the image but comes at a significant computational cost.</p>
+</section>
+<section id="the-cnn-baseline-big-transfer-bit" class="level4">
+<h4 class="anchored" data-anchor-id="the-cnn-baseline-big-transfer-bit">The CNN Baseline: Big Transfer (BiT)</h4>
+<blockquote class="blockquote">
+<p>“For the baseline CNNs, we use ResNet … but replace the Batch Normalization layers with Group Normalization … and used standardized convolutions … we denote the modified model”ResNet (BiT)“.”</p>
+</blockquote>
+<p>To ensure a fair and powerful comparison, the authors don’t just use a standard, off-the-shelf ResNet. Instead, they use the state-of-the-art ResNet variant from the “Big Transfer” (BiT) paper. This version includes modern improvements that make ResNets perform better, especially in the transfer learning setting:</p>
+<ul>
+<li><strong>Group Normalization instead of Batch Normalization:</strong> This is a technical detail, but Group Normalization tends to work better with the small batch sizes often used during fine-tuning.</li>
+<li><strong>Standardized Convolutions:</strong> Another modification that helps stabilize training and improve performance.</li>
+</ul>
+<p>By using this souped-up ResNet as their baseline, the authors are setting a very high bar. If ViT can beat BiT, it’s beating one of the strongest CNN-based models available at the time.</p>
+</section>
+<section id="the-hybrid-model-details" class="level4">
+<h4 class="anchored" data-anchor-id="the-hybrid-model-details">The Hybrid Model Details</h4>
+<blockquote class="blockquote">
+<p>“For the hybrids, we feed the intermediate feature maps into ViT with patch size of one ‘pixel’.”</p>
+</blockquote>
+<p>Finally, they provide more detail on the Hybrid models. A ResNet is used as a feature extractor. The feature maps produced by the ResNet are then fed into the ViT. They use a “patch size” of one, which simply means that each spatial location in the feature map becomes a single token in the sequence for the Transformer. This is the most direct way to convert a feature map into a sequence. They also experiment with a variation that creates a 4x longer sequence to give the Transformer more information to work with, at the cost of more computation.</p>
+</section>
+</section>
+<section id="training-fine-tuning-and-evaluation-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="training-fine-tuning-and-evaluation-metrics">Training, Fine-tuning, and Evaluation Metrics</h3>
+<section id="pre-training-forging-the-generalist" class="level4">
+<h4 class="anchored" data-anchor-id="pre-training-forging-the-generalist">Pre-training: Forging the Generalist</h4>
+<blockquote class="blockquote">
+<p>“We train all models, including ResNets, using Adam … with β₁ = 0.9, β₂ = 0.999, a batch size of 4096 and apply a high weight decay of 0.1, which we found to be useful for transfer of all models… Adam works slightly better than SGD for ResNets in our setting).”</p>
+</blockquote>
+<p>This paragraph details the recipe for the large-scale pre-training phase.</p>
+<ul>
+<li><strong>Optimizer:</strong> They use the <strong>Adam</strong> optimizer. This is the standard choice for training Transformers, but it’s an interesting choice for ResNets, which are more commonly trained with <strong>SGD</strong> (Stochastic Gradient Descent). The authors explicitly note that they found Adam to work slightly better for their ResNet baselines in this specific transfer learning setup. This is a mark of careful research; they optimized the training process for their competitors to ensure the comparison was as fair as possible.</li>
+<li><strong>Batch Size:</strong> A batch size of 4096 is enormous. This is a key ingredient for stable training on massive datasets and is only feasible on large-scale hardware like TPUs.</li>
+<li><strong>Regularization:</strong> They use a very high <strong>weight decay</strong> of 0.1. Weight decay is a regularization technique that prevents the model’s weights from growing too large, which helps prevent overfitting. A high value like this indicates that strong regularization is necessary to ensure the features learned on the massive pre-training dataset are general enough to be useful for other tasks.</li>
+</ul>
+</section>
+<section id="fine-tuning-creating-the-specialist" class="level4">
+<h4 class="anchored" data-anchor-id="fine-tuning-creating-the-specialist">Fine-tuning: Creating the Specialist</h4>
+<blockquote class="blockquote">
+<p>“For fine-tuning we use SGD with momentum, batch size 512, for all models… For ImageNet results in Table 2, we fine-tuned at higher resolution: 512 for ViT-L/16 and 518 for ViT-H/14, and also used Polyak &amp; Juditsky averaging…”</p>
+</blockquote>
+<p>When specializing the model for a downstream task, the recipe changes significantly.</p>
+<ul>
+<li><strong>Optimizer Switch:</strong> They switch to <strong>SGD with momentum</strong> for fine-tuning. This is a common and effective practice. While Adam is excellent for converging quickly during pre-training, many practitioners find that the simpler SGD can find a better, more robust minimum during the delicate fine-tuning phase. It’s like using a power tool for the rough construction and a hand tool for the finishing details.</li>
+<li><strong>Polyak-Juditsky Averaging:</strong> This is a technique, also known as model weight averaging, used to squeeze out a final bit of performance. Instead of taking the model’s weights from the very last training step, this method calculates an exponential moving average of the model’s weights over the last several steps. This helps to smooth out the noise from the optimization process and often results in a final model that is more stable and generalizes slightly better.</li>
+</ul>
+</section>
+<section id="measuring-success-fine-tuning-vs.-few-shot-accuracy" class="level4">
+<h4 class="anchored" data-anchor-id="measuring-success-fine-tuning-vs.-few-shot-accuracy">Measuring Success: Fine-tuning vs.&nbsp;Few-shot Accuracy</h4>
+<blockquote class="blockquote">
+<p>“We report results on downstream datasets either through few-shot or fine-tuning accuracy… Though we mainly focus on fine-tuning performance, we sometimes use linear few-shot accuracies for fast on-the-fly evaluation where fine-tuning would be too costly.”</p>
+</blockquote>
+<p>The authors use two distinct methods to evaluate how good the learned representations are:</p>
+<ol type="1">
+<li><p><strong>Fine-tuning Accuracy (The Main Metric):</strong> This is the gold standard. The entire pre-trained model is trained end-to-end on the new task (with a new classification head). This measures the model’s maximum performance potential on that task. It answers the question: “After full specialization, how good can this model be?”</p></li>
+<li><p><strong>Linear Few-shot Accuracy (The Quick Check):</strong> This is a much faster, lower-cost evaluation. Here, the main body of the pre-trained model is <strong>frozen</strong>—its weights are not updated. Only a single linear layer placed on top of the frozen features is trained, and it’s trained on very little data (a “few shots” per class). This metric doesn’t measure the model’s ultimate performance, but it’s an excellent proxy for the <em>quality of the pre-trained features</em>. If the features are good, even a simple linear classifier should be able to separate the classes well. The authors use this for quick, intermediate evaluations where running a full fine-tuning cycle would be too time-consuming.</p></li>
+</ol>
+</section>
+</section>
+</section>
+<section id="comparison-to-state-of-the-art" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-to-state-of-the-art">4.2 Comparison to State of the Art</h2>
+<section id="the-main-event-beating-the-best" class="level3">
+<h3 class="anchored" data-anchor-id="the-main-event-beating-the-best">The Main Event: Beating the Best</h3>
+<blockquote class="blockquote">
+<p>“We first compare our largest models – ViT-H/14 and ViT-L/16 – to state-of-the-art CNNs from the literature. The first comparison point is Big Transfer (BiT), which performs supervised transfer learning with large ResNets. The second is Noisy Student, which is a large EfficientNet trained using semi-supervised learning… All models were trained on TPUv3 hardware, and we report the number of TPUv3-core-days taken to pre-train each of them…”</p>
+</blockquote>
+<p>The authors set up a high-stakes comparison against two formidable opponents:</p>
+<ol type="1">
+<li><strong>Big Transfer (BiT):</strong> The best <em>supervised</em> pre-training model at the time. This is a heavily optimized ResNet, representing the pinnacle of the classical CNN approach. Beating BiT means proving that a Transformer can be a better architecture for supervised learning in vision.</li>
+<li><strong>Noisy Student:</strong> The overall state-of-the-art model on ImageNet at the time. It uses a different CNN architecture (EfficientNet) and a complex <em>semi-supervised</em> training strategy, which leverages a huge amount of unlabeled data. Matching Noisy Student means ViT is competitive with the absolute best, regardless of training methodology.</li>
+</ol>
+<p>Crucially, the authors don’t just compare accuracy; they also compare the total computational cost required for pre-training, measured in <strong>TPUv3-core-days</strong>. This metric is essentially (number of TPU cores used) x (number of days trained). A lower number is better, signifying greater efficiency.</p>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-table-2.PNG" class="img-fluid"></p>
+<p>The results presented in Table 2 are the paper’s primary evidence, and they are striking. Let’s break down the key takeaways:</p>
+<ul>
+<li><p><strong>ViT-L/16 vs.&nbsp;BiT-L (Apples-to-Apples):</strong> This is the most direct comparison. Both are “Large” models pre-trained on the same JFT-300M dataset. The results show that <strong>ViT-L/16 outperforms the best ResNet (BiT-L) on every single benchmark.</strong> This is a major victory. But the truly staggering result is the computational cost: ViT-L/16 required only <strong>680 TPU-core-days</strong>, whereas BiT-L required <strong>9,900</strong>. The Vision Transformer achieves superior performance while using roughly <strong>14 times less compute</strong>.</p></li>
+<li><p><strong>The Power of Scale (ViT-H/14):</strong> The larger ViT-H/14 model further improves performance across the board, achieving a remarkable <strong>88.55%</strong> on ImageNet. This demonstrates that, as hypothesized, the Transformer architecture continues to benefit from increased scale. Even this huge model was significantly cheaper to train (2,500 TPU-core-days) than both BiT-L (9.9k) and Noisy Student (12.3k).</p></li>
+<li><p><strong>Matching the Overall SOTA:</strong> ViT-H/14’s 88.55% on ImageNet directly matches the performance of the complex Noisy Student model. This proves that a pure Transformer, trained with a straightforward supervised learning approach, can reach the absolute peak of image classification performance, without needing complex semi-supervised techniques.</p></li>
+<li><p><strong>Strong Public Model:</strong> The authors also report results for ViT-L/16 pre-trained on the smaller, public ImageNet-21k dataset. Even this model performs exceptionally well, often outperforming the BiT-L model that was trained on the much larger JFT-300M dataset, and it does so at a tiny fraction of the computational cost (230 vs 9,900 TPU-core-days). This showed the approach was viable even without access to Google’s massive private dataset.</p></li>
+</ul>
+</section>
+<section id="a-deeper-look-performance-on-diverse-tasks-vtab" class="level3">
+<h3 class="anchored" data-anchor-id="a-deeper-look-performance-on-diverse-tasks-vtab">A Deeper Look: Performance on Diverse Tasks (VTAB)</h3>
+<p><img src="images/2025-09-26-vit-reading-notes/paper-fig-2.PNG" class="img-fluid"></p>
+<p>To further test the generality of the learned features, the authors evaluate their models on the Visual Task Adaptation Benchmark (VTAB). This benchmark consists of 19 diverse tasks, grouped into three categories:</p>
+<ul>
+<li><strong>Natural:</strong> Standard image classification tasks (pets, flowers, etc.).</li>
+<li><strong>Specialized:</strong> Tasks involving domain-specific images, like medical or satellite imagery.</li>
+<li><strong>Structured:</strong> Tasks that require geometric or structural understanding (e.g., counting objects, measuring distance).</li>
+</ul>
+<p>Figure 2 shows that the flagship <strong>ViT-H/14 outperforms the previous SOTA (BiT) on the Natural and Structured task groups</strong>, and performs competitively on Specialized tasks. The strong performance on “Structured” tasks is particularly interesting. It suggests that even without the built-in geometric priors of a CNN, the Transformer can learn these concepts effectively from data, refuting a potential criticism of the architecture.</p>
+</section>
+</section>
+<section id="pre-training-data-requirements" class="level2">
+<h2 class="anchored" data-anchor-id="pre-training-data-requirements">4.3 Pre-training Data Requirements</h2>
+<p>Having demonstrated that ViT can achieve state-of-the-art results when pre-trained on a massive dataset, the authors now investigate the most crucial question: just how important is the size of that dataset? This section provides the direct evidence for the trade-off between a model’s inductive bias and its hunger for data. They perform two key experiments.</p>
+<section id="experiment-1-the-crossover-point" class="level3">
+<h3 class="anchored" data-anchor-id="experiment-1-the-crossover-point">Experiment 1: The Crossover Point</h3>
+<blockquote class="blockquote">
+<p>“First, we pre-train ViT models on datasets of increasing size: ImageNet, ImageNet-21k, and JFT-300M… Figure 3 shows the results after fine-tuning to ImageNet.”</p>
+</blockquote>
+<p>In the first experiment, they take ViT models of different sizes (Base, Large, Huge) and pre-train them on the three datasets of escalating size. They then compare their performance on the standard ImageNet benchmark against strong ResNet (BiT) baselines.</p>
+<p><a href="images/2025-09-26-vit-reading-notes/paper-fig-3.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-26-vit-reading-notes/paper-fig-3.PNG" class="img-fluid"></a></p>
+<p>Figure 3 tells a crystal-clear story:</p>
+<ul>
+<li><strong>On ImageNet (1.3M images):</strong> When pre-trained on a “small” dataset, the ViT models (the colored lines) perform noticeably <em>worse</em> than the ResNet (BiT) baselines (the shaded gray area). The larger the ViT model, the worse it performs. This confirms the initial finding: without their built-in inductive biases, Transformers struggle to learn from limited data.</li>
+<li><strong>On ImageNet-21k (14M images):</strong> With an order of magnitude more data, the picture changes. The ViT models’ performance improves dramatically, and they become competitive with the ResNets.</li>
+<li><strong>On JFT-300M (303M images):</strong> This is the punchline. When pre-trained on a massive dataset, the ViT models shine. They now clearly <strong>outperform</strong> the ResNet baselines. The larger ViT models, which were the worst performers on ImageNet, are now the best performers, demonstrating their superior scaling capacity.</li>
+</ul>
+<p>This graph beautifully visualizes the <strong>crossover point</strong>. There is a certain data threshold beyond which the scalability and flexibility of the Transformer architecture overcome the head start provided by the CNN’s inductive bias.</p>
+</section>
+<section id="experiment-2-scaling-curves-on-data-subsets" class="level3">
+<h3 class="anchored" data-anchor-id="experiment-2-scaling-curves-on-data-subsets">Experiment 2: Scaling Curves on Data Subsets</h3>
+<blockquote class="blockquote">
+<p>“Second, we train our models on random subsets of 9M, 30M, and 90M as well as the full JFT-300M dataset… Figure 4 contains the results.”</p>
+</blockquote>
+<p>The second experiment provides an even more controlled look at how the different architectures absorb data. Instead of using different datasets, they use random subsets of the JFT dataset, ensuring the data distribution is consistent. Here, they use linear few-shot accuracy as a fast proxy for the quality of the learned features.</p>
+<p><a href="images/2025-09-26-vit-reading-notes/paper-fig-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-26-vit-reading-notes/paper-fig-4.PNG" class="img-fluid"></a></p>
+<p>Figure 4 reinforces the same conclusion from a different angle:</p>
+<ul>
+<li><strong>ResNets (BiT):</strong> The ResNet models (gray lines) start with higher accuracy on the smallest 9M subset. Their inductive bias gives them a clear advantage when data is scarce. However, as the dataset size increases, their performance begins to <strong>plateau</strong>. They gain less and less benefit from additional data.</li>
+<li><strong>Vision Transformers (ViT):</strong> The ViT models (blue and green lines) start with lower accuracy. They are less data-efficient. However, their performance curves are much steeper and show <strong>no sign of plateauing</strong>. They continuously and effectively learn from more data. The ViT-L/16 model eventually overtakes the comparable ResNet, and its trajectory suggests it would gain even more with a 1B-image dataset.</li>
+</ul>
+</section>
+<section id="the-overarching-conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="the-overarching-conclusion">The Overarching Conclusion</h3>
+<p>Together, these two experiments provide compelling evidence for the paper’s central thesis. The inductive biases of CNNs are a very useful “shortcut” for learning on smaller datasets. However, this same architectural constraint appears to limit their ability to scale with truly massive datasets. The Vision Transformer, by contrast, sacrifices this initial data efficiency for a more flexible and scalable architecture that can leverage vast amounts of data more effectively.</p>
+</section>
+</section>
+<section id="the-scaling-study" class="level2">
+<h2 class="anchored" data-anchor-id="the-scaling-study">4.4 The Scaling Study</h2>
+<p>After establishing that ViT excels with large datasets, the authors perform a controlled experiment to answer a different, but equally important, question: which architecture is the most compute-efficient? In other words, if you have a fixed budget for training (e.g., a certain number of GPU/TPU hours), which model will give you the best performance for that cost?</p>
+<section id="the-setup-a-fair-race-on-a-level-playing-field" class="level3">
+<h3 class="anchored" data-anchor-id="the-setup-a-fair-race-on-a-level-playing-field">The Setup: A Fair Race on a Level Playing Field</h3>
+<blockquote class="blockquote">
+<p>“We perform a controlled scaling study of different models by evaluating transfer performance from JFT-300M. In this setting data size does not bottleneck the models’ performances, and we assess performance versus pre-training cost of each model.”</p>
+</blockquote>
+<p>The setup for this experiment is crucial. By using the massive JFT-300M dataset for all models, the authors ensure that performance is limited by the model’s own architectural capacity, not by a lack of data. This creates a fair race where they can directly compare the “return on investment” for different architectures. They pit a whole family of ResNets, Vision Transformers, and Hybrids of varying sizes against each other.</p>
+<p>The results are plotted in Figure 5, which might be the most important graph for practitioners. It plots model performance (transfer accuracy) against the total pre-training compute (measured in exaFLOPs). A model that is higher and further to the left is better—it achieves higher accuracy for less compute.</p>
+<p><a href="images/2025-09-26-vit-reading-notes/paper-fig-5.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-26-vit-reading-notes/paper-fig-5.PNG" class="img-fluid"></a></p>
+</section>
+<section id="the-three-key-findings" class="level3">
+<h3 class="anchored" data-anchor-id="the-three-key-findings">The Three Key Findings</h3>
+<p>The graph reveals three clear and compelling patterns:</p>
+<p><strong>1. ViTs Dominate the Performance/Compute Trade-off</strong></p>
+<blockquote class="blockquote">
+<p>“First, Vision Transformers dominate ResNets on the performance/compute trade-off. ViT uses approximately 2–4x less compute to attain the same performance (average over 5 datasets).”</p>
+</blockquote>
+<p>The blue squares (ViTs) are consistently above and to the left of the gray squares (ResNets). This is a decisive victory in terms of efficiency. For any given performance level, a ViT can achieve it with significantly less computational cost. This finding has huge practical implications, as it means faster experimentation and lower energy and hardware costs for training state-of-the-art models.</p>
+<p><strong>2. Hybrids Offer a Small Boost at Small Scale</strong></p>
+<blockquote class="blockquote">
+<p>“Second, hybrids slightly outperform ViT at small computational budgets, but the difference vanishes for larger models. This result is somewhat surprising, since one might expect convolutional local feature processing to assist ViT at any size.”</p>
+</blockquote>
+<p>At the very low end of the compute budget (the far left of the graph), the orange plus (Hybrids) are slightly above the pure ViTs. This suggests that when the model is small, the inductive bias from the CNN backbone provides a helpful “head start.” However, as the models get bigger, this advantage disappears entirely, and the pure ViT matches or surpasses the Hybrid. The takeaway is that the CNN acts like a set of training wheels: useful when the Transformer is small and still learning to “balance,” but unnecessary once the Transformer is large and powerful enough to learn the relevant visual features on its own.</p>
+<p><strong>3. ViTs Show No Signs of Saturation</strong></p>
+<blockquote class="blockquote">
+<p>“Third, Vision Transformers appear not to saturate within the range tried, motivating future scaling efforts.”</p>
+</blockquote>
+<p>Perhaps most excitingly, the performance curve for the ViT models shows no signs of leveling off. The largest ViT is the best-performing model, and its position on the graph suggests that training an even larger ViT would likely yield even better results. This points to the architecture’s incredible scalability and hints at a promising future for Transformer-based vision models.</p>
+</section>
+</section>
+<section id="inspecting-the-vision-transformer" class="level2">
+<h2 class="anchored" data-anchor-id="inspecting-the-vision-transformer">4.5 Inspecting the Vision Transformer</h2>
+<p>To understand how the ViT processes image data, the authors analyze three key components of its internal representations: the initial embedding filters, the learned positional embeddings, and the behavior of the self-attention mechanism through the network’s layers.</p>
+<section id="the-first-layer-learning-meaningful-basis-functions" class="level3">
+<h3 class="anchored" data-anchor-id="the-first-layer-learning-meaningful-basis-functions">The First Layer: Learning Meaningful “Basis Functions”</h3>
+<blockquote class="blockquote">
+<p>“The first layer of the Vision Transformer linearly projects the flattened patches into a lower-dimensional space… Figure 7 (left) shows the top principal components of the the learned embedding filters. The components resemble plausible basis functions for a low-dimensional representation of the fine structure within each patch.”</p>
+</blockquote>
+<p>The very first layer of the ViT takes the raw, flattened 16x16 pixel patches and learns to project them into a more meaningful representation (the patch embeddings). By visualizing the principal components of this learned projection, the authors can see what kind of patterns the model has learned to look for.</p>
+<p>The result is remarkable. The filters are not random noise. Instead, the model has independently learned a set of “basis functions”—fundamental visual building blocks like horizontal and vertical edges, corners, and color gradients. In essence, the ViT has learned to perform a function similar to what the first few layers of a CNN are explicitly designed to do, but without any of the built-in architectural priors. This provides strong evidence that the model is learning fundamental and sensible visual features from scratch.</p>
+</section>
+<section id="the-position-embeddings-re-learning-the-2d-grid" class="level3">
+<h3 class="anchored" data-anchor-id="the-position-embeddings-re-learning-the-2d-grid">The Position Embeddings: Re-learning the 2D Grid</h3>
+<blockquote class="blockquote">
+<p>“Figure 7 (center) shows that the model learns to encode distance within the image in the similarity of position embeddings, i.e.&nbsp;closer patches tend to have more similar position embeddings. Further, the row-column structure appears; patches in the same row/column have similar embeddings.”</p>
+</blockquote>
+<p><a href="images/2025-09-26-vit-reading-notes/paper-fig-7.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-09-26-vit-reading-notes/paper-fig-7.PNG" class="img-fluid"></a></p>
+<p>A key question for the ViT is whether it can understand the 2D layout of an image after it’s been flattened into a 1D sequence. This analysis of the learned positional embeddings provides a clear answer. By plotting the similarity between the embedding vectors for every pair of positions, the authors reveal a clear pattern.</p>
+<p>The model has successfully learned a 2D representation of the image space. Patches that are physically close to each other in the image have very similar positional embeddings, while distant patches have very different ones. The model has even learned the concepts of “rows” and “columns,” as all patches in the same row share some similarity in their embeddings. This is a powerful result, as it shows that the simple, learnable 1D position embeddings are sufficient for the model to reconstruct the 2D topology of the image, justifying the authors’ decision not to use more complex, hand-crafted 2D embeddings.</p>
+</section>
+<section id="the-attention-mechanism-from-local-to-global" class="level3">
+<h3 class="anchored" data-anchor-id="the-attention-mechanism-from-local-to-global">The Attention Mechanism: From Local to Global</h3>
+<blockquote class="blockquote">
+<p>“Self-attention allows ViT to integrate information across the entire image even in the lowest layers. We investigate to what degree the network makes use of this capability… This ‘attention distance’ is analogous to receptive field size in CNNs.”</p>
+</blockquote>
+<p>This is perhaps the most fascinating part of the inspection. In a CNN, the “receptive field” (the area of the input image that a feature is based on) starts very small and grows systematically with each layer. The authors investigate if the ViT’s self-attention learns a similar pattern.</p>
+<p>Their findings reveal a key difference and a major advantage of the ViT:</p>
+<ul>
+<li><strong>Mixed Attention in Early Layers:</strong> In the very first few layers, the model exhibits a mix of behaviors. Some attention heads consistently focus on small, local regions, acting much like the small convolutional filters in an early CNN layer. However, <em>other</em> attention heads are already attending globally, integrating information from across the entire image. This ability to perform both local and global processing from the very beginning is a fundamental departure from the rigid structure of a CNN.</li>
+<li><strong>Increasing Distance with Depth:</strong> On average, the “attention distance” does increase as we go deeper into the network. This means that later layers are generally more concerned with integrating global context, which is an intuitive and sensible strategy.</li>
+<li><strong>Semantic Relevance:</strong> As shown in Figure 6, when the attention from the final <code>[CLS]</code> token is projected back onto the image space, the model is clearly focusing on the regions of the image that are most semantically relevant for classification (e.g., the body of the dog, not just the background).</li>
+</ul>
+<p><a href="images/2025-09-26-vit-reading-notes/paper-fig-6.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-09-26-vit-reading-notes/paper-fig-6.PNG" class="img-fluid"></a></p>
+<p>In summary, the ViT learns a flexible and powerful attention strategy that combines the best of both worlds: some heads specialize in local feature extraction like CNNs, while others leverage the Transformer’s unique strength of global context integration, right from the start.</p>
+</section>
+</section>
+<section id="a-glimpse-into-self-supervised-learning" class="level2">
+<h2 class="anchored" data-anchor-id="a-glimpse-into-self-supervised-learning">4.6 A Glimpse into Self-Supervised Learning</h2>
+<p>The main results of the paper rely on large-scale <em>supervised</em> pre-training, which requires massive, human-labeled datasets. However, much of the revolution in NLP was powered by <em>self-supervised</em> pre-training (like in BERT and GPT), where models learn from vast amounts of raw, unlabeled text. In this final, forward-looking experiment, the authors investigate if a similar approach could work for ViT.</p>
+<section id="the-experiment-masked-patch-prediction" class="level3">
+<h3 class="anchored" data-anchor-id="the-experiment-masked-patch-prediction">The Experiment: Masked Patch Prediction</h3>
+<blockquote class="blockquote">
+<p>“We also perform a preliminary exploration on masked patch prediction for self-supervision, mimicking the masked language modeling task used in BERT.”</p>
+</blockquote>
+<p>The authors create a visual analog of BERT’s famous “masked language modeling” task. The idea is simple yet powerful:</p>
+<ol type="1">
+<li><strong>Input:</strong> An image is converted into a sequence of patches as usual.</li>
+<li><strong>Masking:</strong> A significant portion of the image patches (50% in their experiment) are corrupted or “masked.” For most of them, their embedding is replaced with a special, learnable <code>[MASK]</code> embedding.</li>
+<li><strong>The Goal:</strong> The model is trained to predict the mean color of the original, uncorrupted patches that were masked.</li>
+</ol>
+<p>Think of this as creating a jigsaw puzzle for the model. By looking at the visible patches, the model must learn to infer what the missing patches should look like. To solve this task effectively, the model is forced to develop a deep, contextual understanding of the visual world. It has to learn that if it sees patches corresponding to a furry ear and a wet nose, the missing patch between them is likely to be part of a dog’s face. This is a powerful way to learn rich visual features without needing any explicit labels like “dog” or “cat.”</p>
+</section>
+<section id="the-results-promising-but-not-yet-state-of-the-art" class="level3">
+<h3 class="anchored" data-anchor-id="the-results-promising-but-not-yet-state-of-the-art">The Results: Promising but Not Yet State-of-the-Art</h3>
+<blockquote class="blockquote">
+<p>“With self-supervised pre-training, our smaller ViT-B/16 model achieves 79.9% accuracy on ImageNet, a significant improvement of 2% to training from scratch, but still 4% behind supervised pre-training.”</p>
+</blockquote>
+<p>The results of this preliminary experiment are highly informative:</p>
+<ul>
+<li><p><strong>The Good News:</strong> The self-supervised ViT achieves <strong>79.9%</strong> accuracy on ImageNet. This is a <strong>2% absolute improvement</strong> over training the same model from scratch. This is a crucial proof-of-concept: self-supervision works for the Vision Transformer. It’s a viable strategy for learning good visual representations from unlabeled images.</p></li>
+<li><p><strong>The Room for Improvement:</strong> However, this result is still <strong>4% lower</strong> than the accuracy achieved by the same ViT-B/16 model when pre-trained with <em>supervised</em> labels on the large ImageNet-21k dataset.</p></li>
+</ul>
+<p>This gap is not surprising. The supervised pre-training provides the model with a very strong, clean signal (the human-provided labels). The simple masked patch prediction task, while effective, is a less direct signal. The authors conclude that this is a promising direction for future work, suggesting that more advanced self-supervised methods (like contrastive learning) could help close this gap. This experiment successfully demonstrates the potential of self-supervised ViTs, paving the way for a new and exciting area of research.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">5. Conclusion</h2>
+<section id="the-core-contribution-simplicity-and-scale" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-contribution-simplicity-and-scale">The Core Contribution: Simplicity and Scale</h3>
+<blockquote class="blockquote">
+<p>“We have explored the direct application of Transformers to image recognition. Unlike prior works using self-attention in computer vision, we do not introduce image-specific inductive biases into the architecture apart from the initial patch extraction step. Instead, we interpret an image as a sequence of patches and process it by a standard Transformer encoder as used in NLP.”</p>
+</blockquote>
+<p>The paper’s conclusion is a masterclass in summarizing its own impact. The authors’ contribution is one of elegant and radical simplicity. Instead of building ever-more-complex, vision-specific attention mechanisms to rival CNNs, they took a step back and reframed the problem entirely. By demonstrating that a standard NLP Transformer could be applied directly to a sequence of image patches, they showed that the path forward was not more specialization, but more generalization.</p>
+<p>The true breakthrough, as they state, is the recipe: a <strong>simple, scalable architecture combined with massive-scale pre-training</strong>. The Vision Transformer is the definitive proof of the thesis that “large scale training trumps inductive bias.” It shows that with a sufficiently flexible model and enough data, the fundamental patterns of vision can be learned from scratch, without the need for the hard-coded architectural priors of a CNN.</p>
+<blockquote class="blockquote">
+<p>“Thus, Vision Transformer matches or exceeds the state of the art on many image classification datasets, whilst being relatively cheap to pre-train.”</p>
+</blockquote>
+<p>This simple strategy, when executed at scale, proved to be remarkably effective. The experiments clearly show that ViT not only matches or beats the performance of the best CNN-based models, but does so with significantly less pre-training compute. This demonstrated that the approach was not just a scientific curiosity, but a practical and efficient path to building state-of-the-art vision systems.</p>
+</section>
+<section id="the-road-ahead-challenges-and-future-directions" class="level3">
+<h3 class="anchored" data-anchor-id="the-road-ahead-challenges-and-future-directions">The Road Ahead: Challenges and Future Directions</h3>
+<blockquote class="blockquote">
+<p>“While these initial results are encouraging, many challenges remain.”</p>
+</blockquote>
+<p>Great research opens up more questions than it answers, and the authors conclude by laying out the exciting future directions that the Vision Transformer enables:</p>
+<ul>
+<li><strong>Beyond Classification:</strong> The most immediate challenge is to apply the ViT to other core computer vision tasks like object detection and semantic segmentation. These tasks require dense, per-pixel predictions, making them a natural next step for an architecture that produces rich, per-patch representations.</li>
+<li><strong>Unlocking Self-Supervision:</strong> As their preliminary experiment showed, there is a promising but significant gap between supervised and self-supervised pre-training for ViT. Developing more sophisticated self-supervised objectives (such as contrastive learning) to close this gap is a major challenge. Success here would dramatically reduce the reliance on expensive, human-labeled datasets and unlock the potential of the near-infinite supply of unlabeled images on the internet.</li>
+<li><strong>The Promise of Further Scaling:</strong> The scaling studies consistently showed that the ViT’s performance did not saturate, even with 300 million training images. This strongly suggests that training even larger Vision Transformers on even bigger datasets will continue to push the boundaries of performance.</li>
+</ul>
+<p>Ultimately, “An Image is Worth 16x16 Words” is more than just a paper about a new model. It marked a true paradigm shift, breaking down the long-standing walls between the worlds of NLP and computer vision and establishing the Transformer as a candidate for a truly universal architecture for machine learning.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
