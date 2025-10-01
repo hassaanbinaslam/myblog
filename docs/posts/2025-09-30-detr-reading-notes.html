@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-09-30">
+<meta name="description" content="A detailed, section by section breakdown of the paper that reimagined object detection as a direct set prediction problem, eliminating the need for complex, hand designed pipelines.">
+
+<title>DETR: A Deep Dive into End-to-End Object Detection with Transformers – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="DETR: A Deep Dive into End-to-End Object Detection with Transformers – Random Thoughts">
+<meta property="og:description" content="A detailed, section by section breakdown of the paper that reimagined object detection as a direct set prediction problem, eliminating the need for complex, hand designed pipelines.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-30-detr-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="DETR: A Deep Dive into End-to-End Object Detection with Transformers – Random Thoughts">
+<meta name="twitter:description" content="A detailed, section by section breakdown of the paper that reimagined object detection as a direct set prediction problem, eliminating the need for complex, hand designed pipelines.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-09-30-detr-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#setting-the-stage-why-object-detection-needed-a-rethink" id="toc-setting-the-stage-why-object-detection-needed-a-rethink" class="nav-link" data-scroll-target="#setting-the-stage-why-object-detection-needed-a-rethink">Setting the Stage: Why Object Detection Needed a Rethink</a></li>
+  <li><a href="#enter-the-transformer-a-new-architecture-for-detection" id="toc-enter-the-transformer-a-new-architecture-for-detection" class="nav-link" data-scroll-target="#enter-the-transformer-a-new-architecture-for-detection">Enter the Transformer: A New Architecture for Detection</a></li>
+  <li><a href="#introducing-detr-the-detection-transformer" id="toc-introducing-detr-the-detection-transformer" class="nav-link" data-scroll-target="#introducing-detr-the-detection-transformer">Introducing DETR: The DEtection TRansformer</a></li>
+  <li><a href="#autoregressive-vs.-parallel-decoding-detrs-key-architectural-choice" id="toc-autoregressive-vs.-parallel-decoding-detrs-key-architectural-choice" class="nav-link" data-scroll-target="#autoregressive-vs.-parallel-decoding-detrs-key-architectural-choice">Autoregressive vs.&nbsp;Parallel Decoding: DETR’s Key Architectural Choice</a></li>
+  <li><a href="#performance-promises-and-peculiarities" id="toc-performance-promises-and-peculiarities" class="nav-link" data-scroll-target="#performance-promises-and-peculiarities">Performance, Promises, and Peculiarities</a></li>
+  </ul></li>
+  <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">2. Related Work</a>
+  <ul class="collapse">
+  <li><a href="#set-prediction" id="toc-set-prediction" class="nav-link" data-scroll-target="#set-prediction">2.1 Set Prediction</a></li>
+  <li><a href="#transformers-and-parallel-decoding" id="toc-transformers-and-parallel-decoding" class="nav-link" data-scroll-target="#transformers-and-parallel-decoding">2.2 Transformers and Parallel Decoding</a></li>
+  <li><a href="#object-detection" id="toc-object-detection" class="nav-link" data-scroll-target="#object-detection">2.3 Object Detection</a></li>
+  </ul></li>
+  <li><a href="#the-detr-model" id="toc-the-detr-model" class="nav-link" data-scroll-target="#the-detr-model">3. The DETR Model</a>
+  <ul class="collapse">
+  <li><a href="#object-detection-set-prediction-loss" id="toc-object-detection-set-prediction-loss" class="nav-link" data-scroll-target="#object-detection-set-prediction-loss">3.1 Object Detection Set Prediction Loss</a></li>
+  <li><a href="#the-detr-architecture" id="toc-the-detr-architecture" class="nav-link" data-scroll-target="#the-detr-architecture">3.2 The DETR Architecture</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DETR: A Deep Dive into End-to-End Object Detection with Transformers</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A detailed, section by section breakdown of the paper that reimagined object detection as a direct set prediction problem, eliminating the need for complex, hand designed pipelines.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 30, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-09-30-detr-reading-notes.png" class="img-fluid"></p>
+<p>For years, the world of object detection has been dominated by complex, multi stage pipelines. Models like Faster R-CNN and YOLO, despite their success, rely on hand tuned components like anchor boxes and non maximum suppression to function. In 2020, researchers from Facebook AI introduced DETR (DEtection TRansformer), a groundbreaking model that reframes the task entirely. It treats detection as a direct set prediction problem, leveraging the power of transformers to create a truly end to end system. In this post, we will take a detailed, section by section look at the paper to understand how this elegant approach works and why it represents a significant leap forward for the field.</p>
+<p><a href="images/2025-09-30-detr-reading-notes/paper-title.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-09-30-detr-reading-notes/paper-title.PNG" class="img-fluid"></a></p>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p><a href="images/2025-09-30-detr-reading-notes/paper-abstract.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-09-30-detr-reading-notes/paper-abstract.PNG" class="img-fluid"></a></p>
+<p>The abstract lays out the entire story of DETR in a few short sentences. It tells us what the core problem is with existing methods, what DETR’s new approach is, what its key components are, and why it matters. Let’s start with the central idea.</p>
+<blockquote class="blockquote">
+<p>We present a new method that views object detection as a direct set prediction problem. Our approach streamlines the detection pipeline, effectively removing the need for many hand-designed components like a non-maximum suppression procedure or anchor generation…</p>
+</blockquote>
+<p>To appreciate why this is so significant, we first need to understand the “old” way of doing things. For years, leading object detectors like Faster R-CNN, SSD, and YOLO have treated object detection as an indirect problem. Instead of directly predicting the final bounding boxes, they follow a multi-stage process:</p>
+<ol type="1">
+<li><strong>Generate massive amounts of proposals:</strong> They start by creating thousands of candidate bounding boxes. In some models, these are called <strong>anchor boxes</strong>, which are predefined boxes of various sizes and aspect ratios tiled across the entire image. The model’s job is not to find a box from scratch, but to slightly adjust (regress) these anchors and classify whether they contain an object.</li>
+<li><strong>Filter the duplicates:</strong> This initial step inevitably produces many redundant, overlapping detections for the same object. To clean up this mess, a post-processing step called <strong>Non-Maximum Suppression (NMS)</strong> is required. NMS is a hand-designed algorithm that keeps the box with the highest confidence score and throws away any other boxes that overlap with it above a certain threshold.</li>
+</ol>
+<p>This pipeline, while effective, is complex. Its performance depends heavily on the careful tuning of these components: How many anchors should you use? What should their sizes and aspect ratios be? What is the right overlap threshold for NMS?</p>
+<p>DETR’s core contribution is to eliminate this entire pipeline. By framing object detection as a <strong>direct set prediction problem</strong>, it builds a model that outputs the final, unique set of objects in a single pass. No anchors, no NMS, no complex post-processing.</p>
+<p>So, how does it achieve this? The abstract highlights two main ingredients:</p>
+<blockquote class="blockquote">
+<p>The main ingredients of the new framework… are a set-based global loss that forces unique predictions via bipartite matching, and a transformer encoder-decoder architecture.</p>
+</blockquote>
+<p>Let’s quickly define these two concepts.</p>
+<ul>
+<li><strong>Transformer Encoder-Decoder Architecture:</strong> Originally developed for machine translation in NLP, the Transformer is a neural network architecture built on <strong>self-attention mechanisms</strong>. Unlike Convolutional Neural Networks (CNNs) that process information locally, attention allows the model to weigh the importance of all other elements in the input when processing a single element. In computer vision, this means the model can reason about the entire image at once, understanding the global context and the relationships between objects. This global reasoning is key to avoiding duplicate predictions naturally.</li>
+<li><strong>Set-Based Global Loss with Bipartite Matching:</strong> This is the clever training strategy that makes direct set prediction possible. The model outputs a fixed-size set of predictions (e.g., 100 boxes). During training, we need a way to compare this predicted set to the ground-truth set of objects in the image. Since the order of predictions doesn’t matter, DETR uses the <strong>Hungarian algorithm</strong> to find the best one-to-one matching (a <strong>bipartite matching</strong>) between the predicted and ground-truth boxes. Once each prediction is uniquely assigned to a ground-truth box, a loss is calculated and the model is updated. This forces the model to learn to produce unique, accurate predictions for each object.</li>
+</ul>
+<p>The abstract concludes by stating that this conceptually simple model achieves performance on par with a highly optimized Faster R-CNN baseline on the challenging COCO dataset. It also mentions that the architecture is flexible and can be easily extended to more complex tasks like panoptic segmentation, which we’ll explore later.</p>
+<p>In essence, the abstract presents DETR as an elegant and powerful alternative to the complex, hand-tuned pipelines that have long dominated object detection.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Quick Note on Bipartite Matching
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>At the heart of DETR’s training process is a concept from graph theory called <strong>bipartite matching</strong>, which is used to solve the <strong>assignment problem</strong>.</p>
+<p>Imagine you have two distinct groups of items. For example, a group of job applicants and a group of open job positions. You want to assign each applicant to exactly one job in the most optimal way possible. This is an assignment problem.</p>
+<p>A bipartite matching is the formal way to solve this. The two groups of items (applicants and jobs) are the two sets of nodes in a “bipartite graph”. A “matching” is a set of connections between the two groups such that no item is connected to more than one other item.</p>
+<p>In the context of DETR:</p>
+<ul>
+<li><strong>Set A</strong> is the fixed-size set of <code>N</code> predictions made by the model. Each prediction consists of a class label and a bounding box.</li>
+<li><strong>Set B</strong> is the set of <code>k</code> ground-truth objects in the image. (To make the sets equal in size, this set is padded with <code>N-k</code> “no object” slots).</li>
+</ul>
+<p>The goal is to find the best possible one-to-one assignment between the model’s predictions and the actual objects. To do this, we first calculate a “cost” for every possible pairing. This cost measures how dissimilar a predicted box is from a ground-truth box, considering both the class prediction and the box coordinates.</p>
+<p>The <strong>Hungarian algorithm</strong> is then used to find the assignment that minimizes the total cost across all pairs.</p>
+<p><strong>Why is this so important?</strong> This matching process enforces a unique prediction for each ground-truth object. By finding this optimal matching before calculating the loss, DETR forces the model to learn to produce a clean, duplicate-free set of predictions from the very beginning. It’s the mechanism that allows DETR to get rid of Non-Maximum Suppression (NMS).</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/HZLKDC9OSaQ?si=CaMOU0h0O0rtUBe-" title="Bipartite Matching (MIT OpenCourseWare)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+</div>
+</div>
+</div>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<p><a href="images/2025-09-30-detr-reading-notes/paper-section-1-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-09-30-detr-reading-notes/paper-section-1-1.PNG" class="img-fluid"></a></p>
+<section id="setting-the-stage-why-object-detection-needed-a-rethink" class="level3">
+<h3 class="anchored" data-anchor-id="setting-the-stage-why-object-detection-needed-a-rethink">Setting the Stage: Why Object Detection Needed a Rethink</h3>
+<p>The authors open by clearly stating the fundamental goal of object detection: to predict a set of items, where each item consists of a bounding box and a category label. The key word here is “set”. A set is an unordered collection of unique elements. However, as the authors immediately point out, this isn’t how leading models have historically approached the task.</p>
+<blockquote class="blockquote">
+<p>Modern detectors address this set prediction task in an indirect way, by defining surrogate regression and classification problems on a large set of proposals [37,5], anchors [23], or window centers [53,46].</p>
+</blockquote>
+<p>This sentence masterfully summarizes the core issue with the pre-DETR status quo. Let’s break down what “indirect” and “surrogate” mean in this context.</p>
+<p>Instead of directly predicting the final set of objects, models like Faster R-CNN work on a substitute, or <strong>surrogate</strong>, task. They start by generating thousands of pre-defined bounding boxes, known as <strong>anchors</strong> or <strong>proposals</strong>. Think of these as a dense grid of “best guesses” laid over the image. The model’s job is then twofold:</p>
+<ol type="1">
+<li><strong>Classification:</strong> For each anchor, classify whether it contains an object or is just background.</li>
+<li><strong>Regression:</strong> For each anchor that contains an object, slightly adjust its coordinates (height, width, x/y position) to better fit the ground-truth object.</li>
+</ol>
+<p>This indirect approach creates two significant downstream problems, which the authors highlight:</p>
+<blockquote class="blockquote">
+<p>Their performances are significantly influenced by postprocessing steps to collapse near-duplicate predictions, by the design of the anchor sets and by the heuristics that assign target boxes to anchors [52].</p>
+</blockquote>
+<p>First, because you start with thousands of anchors, you inevitably get multiple, slightly different predictions for the same object. This requires a hand-designed post-processing step called <strong>Non-Maximum Suppression (NMS)</strong> to filter out these duplicates. Second, the entire system’s performance is sensitive to the initial design of the anchors and the “heuristics” (i.e., the rule-based methods) used to match them to ground-truth objects during training. This introduces a lot of complexity and extra hyperparameters that need to be tuned.</p>
+<p>DETR’s proposal is to get rid of this entire convoluted process. The authors frame their work as bringing the <strong>end-to-end philosophy</strong> to object detection. This philosophy, which has been incredibly successful in fields like machine translation and speech recognition, means creating a single, unified model that goes directly from the raw input (the image) to the final output (the unique set of objects) with no intermediate, hand-designed steps.</p>
+<p>They conclude by acknowledging that others have tried this before, but that those attempts were not competitive with the highly optimized traditional detectors. The stated goal of this paper is to “bridge this gap” by introducing a model that is both end-to-end <em>and</em> high-performing.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Quick Note on Surrogate Regression
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In object detection, <strong>regression</strong> refers to the task of predicting the continuous numerical values that define a bounding box: its position (like x and y coordinates) and its size (width and height).</p>
+<p>The term <strong>surrogate</strong> means “substitute” or “proxy”. So, <strong>surrogate regression</strong> is an indirect approach where the model doesn’t predict the final bounding box coordinates directly. Instead, it predicts <em>corrections</em> or <em>offsets</em> relative to a predefined starting point.</p>
+<p>Let’s consider the most common starting point: an <strong>anchor box</strong>.</p>
+<ul>
+<li><p><strong>The Direct Approach (what DETR does):</strong> The model is asked, “What are the absolute coordinates of the object in the image?” It might output <code>(x=0.5, y=0.5, w=0.2, h=0.3)</code> which directly defines the box’s location and size relative to the image.</p></li>
+<li><p><strong>The Surrogate Approach (what Faster R-CNN does):</strong> The model is given a fixed anchor box and asked, “How do you need to <em>change</em> this anchor to make it fit the object?” The model’s output isn’t the final coordinates, but a set of deltas, like <code>(dx=0.1, dy=-0.05, dw=0.2, dh=0.15)</code>. These deltas are then used in a formula to adjust the original anchor box’s position and size to get the final prediction.</p></li>
+</ul>
+<p><strong>Why use this indirect method?</strong> Historically, it made the learning problem easier. Predicting small adjustments from a good starting guess (the anchor) was more stable and effective for early models than predicting absolute coordinates from scratch. The anchor boxes encode strong prior knowledge about typical object shapes and sizes.</p>
+<p>The key takeaway is that surrogate regression is a core part of the complex, multi-stage pipeline that DETR aims to replace. By predicting absolute box coordinates, DETR eliminates the entire machinery of designing, assigning, and regressing from anchors.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="enter-the-transformer-a-new-architecture-for-detection" class="level3">
+<h3 class="anchored" data-anchor-id="enter-the-transformer-a-new-architecture-for-detection">Enter the Transformer: A New Architecture for Detection</h3>
+<p>Having established the limitations of existing pipelines, the authors introduce their solution. They streamline the process by directly tackling the set prediction problem, and they do so by borrowing a powerful tool from the world of Natural Language Processing (NLP).</p>
+<p><a href="images/2025-09-30-detr-reading-notes/paper-section-1-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-09-30-detr-reading-notes/paper-section-1-2.PNG" class="img-fluid"></a></p>
+<p>This is the central technical proposal of the paper. Let’s unpack it.</p>
+<ul>
+<li><p><strong>Transformers:</strong> This refers to the architecture introduced in the landmark 2017 paper, “Attention Is All You Need.” Transformers revolutionized NLP tasks like machine translation by replacing the recurrent layers (RNNs) common at the time with a new mechanism called <strong>self-attention</strong>.</p></li>
+<li><p><strong>Self-Attention:</strong> This is the magic ingredient. Unlike a Convolutional Neural Network (CNN) which processes an image through small, local filters, a self-attention mechanism allows the model to consider the entire input at once. When processing a single part of the image (say, a patch corresponding to a cat’s ear), self-attention enables the model to look at every other part of the image (the cat’s tail, a nearby dog, the background) and weigh their importance. This creates a rich, global understanding of the image content.</p></li>
+<li><p><strong>Modeling Pairwise Interactions:</strong> The authors state that self-attention “explicitly models all pairwise interactions.” This is the key to solving the duplicate prediction problem that plagues other models. Because the model can reason about the relationships between all potential objects simultaneously, it can learn that two predictions are targeting the same object. The predictions can effectively “communicate” with each other via the self-attention mechanism, and the model can learn to suppress one of them. This is a learned, dynamic process that replaces the need for a rigid, hand-coded NMS algorithm.</p></li>
+</ul>
+<p>In short, the authors’ central insight is that the global reasoning power of transformers, specifically the self-attention mechanism, is perfectly suited to the task of predicting a <em>set</em> of unique objects. It provides a natural way to enforce the uniqueness constraint without any external post-processing.</p>
+</section>
+<section id="introducing-detr-the-detection-transformer" class="level3">
+<h3 class="anchored" data-anchor-id="introducing-detr-the-detection-transformer">Introducing DETR: The DEtection TRansformer</h3>
+<p>Now, the authors give their new framework a name and succinctly summarize how it works and what makes it different.</p>
+<blockquote class="blockquote">
+<p>Our DEtection TRansformer (DETR, see Figure 1) predicts all objects at once, and is trained end-to-end with a set loss function which performs bipartite matching between predicted and ground-truth objects.</p>
+</blockquote>
+<p><a href="images/2025-09-30-detr-reading-notes/paper-fig-1.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-09-30-detr-reading-notes/paper-fig-1.PNG" class="img-fluid"></a></p>
+<p>Here, we get a concise recap of the core mechanics:</p>
+<ol type="1">
+<li><strong>DETR predicts all objects at once:</strong> This is a crucial detail. Unlike autoregressive models (like traditional RNNs) that generate outputs one by one in a sequence, DETR decodes all object predictions in parallel. This is a more efficient and holistic approach.</li>
+<li><strong>It uses a set loss with bipartite matching:</strong> As we’ve discussed, this is the mechanism that allows the model to be trained on unordered sets of objects. The <strong>bipartite matching</strong> step creates a unique one-to-one assignment between the predicted and ground-truth boxes, which then allows for a straightforward loss calculation.</li>
+</ol>
+<p>Next, the authors hammer home the primary benefit of this design: simplification.</p>
+<blockquote class="blockquote">
+<p>DETR simplifies the detection pipeline by dropping multiple hand-designed components that encode prior knowledge, like spatial anchors or non-maximal suppression.</p>
+</blockquote>
+<p>This is the punchline of the DETR philosophy. The complex, hyperparameter-sensitive machinery of <strong>spatial anchors</strong> and <strong>non-maximal suppression</strong> is rendered obsolete. The model learns to perform these functions implicitly through its architecture and training process.</p>
+<p>Finally, the authors highlight a significant practical advantage that lowers the barrier to entry for researchers and practitioners.</p>
+<blockquote class="blockquote">
+<p>Unlike most existing detection methods, DETR doesn’t require any customized layers, and thus can be reproduced easily in any framework that contains standard CNN and transformer classes.</p>
+</blockquote>
+<p>This is a bigger deal than it might seem. Many state-of-the-art computer vision models rely on highly specialized code (e.g., custom CUDA kernels) to implement novel layers, making them difficult to reproduce, modify, or deploy. DETR, on the other hand, is built almost entirely from standard, off-the-shelf components: a standard CNN backbone (like ResNet) and a standard Transformer implementation. This makes the architecture remarkably simple and accessible, a quality the authors hope will attract new researchers to the field.</p>
+</section>
+<section id="autoregressive-vs.-parallel-decoding-detrs-key-architectural-choice" class="level3">
+<h3 class="anchored" data-anchor-id="autoregressive-vs.-parallel-decoding-detrs-key-architectural-choice">Autoregressive vs.&nbsp;Parallel Decoding: DETR’s Key Architectural Choice</h3>
+<p>While the idea of end-to-end set prediction wasn’t entirely new, DETR’s approach was fundamentally different from what came before. The authors pinpoint the exact combination of ideas that sets their work apart.</p>
+<p><a href="images/2025-09-30-detr-reading-notes/paper-section-1-4.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-09-30-detr-reading-notes/paper-section-1-4.PNG" class="img-fluid"></a></p>
+<p>To understand this, we need to define two key terms: <strong>autoregressive</strong> and <strong>non-autoregressive (or parallel)</strong> decoding.</p>
+<ul>
+<li><p><strong>Autoregressive Decoding:</strong> Think of this as a sequential, step-by-step process. The model predicts the first object, then takes that prediction as input to predict the second object, and so on. It’s like writing a sentence one word at a time, where each new word depends on the ones you’ve already written. This is the natural mode of operation for <strong>Recurrent Neural Networks (RNNs)</strong>, which is why prior attempts at set prediction used them. The downside is that this process can be slow and can’t be easily parallelized.</p></li>
+<li><p><strong>Non-Autoregressive (Parallel) Decoding:</strong> This is what DETR does. It predicts the <em>entire set</em> of objects all at once, in a single forward pass. It doesn’t generate box 1, then box 2, then box 3. It generates <code>[box 1, box 2, box 3, ..., box N]</code> simultaneously. This is made possible by the Transformer architecture.</p></li>
+</ul>
+<p>So, why is parallel decoding even possible here? The authors provide the answer:</p>
+<blockquote class="blockquote">
+<p>Our matching loss function uniquely assigns a prediction to a ground truth object, and is invariant to a permutation of predicted objects, so we can emit them in parallel.</p>
+</blockquote>
+<p>This is a beautiful and crucial point. The loss function is <strong>permutation-invariant</strong>, meaning the order of the predictions doesn’t matter. If the model predicts <code>[cat, dog]</code> or <code>[dog, cat]</code>, the bipartite matching algorithm will match them to the correct ground-truth objects just the same, and the final loss will be identical. Because the order of the output doesn’t matter for training, the model is free to generate all the outputs at the same time.</p>
+<p>This synergy between the permutation-invariant loss and the parallel-decoding capability of the Transformer is the core technical innovation that distinguishes DETR from previous, RNN-based end-to-end detectors.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Quick Note: How DETR Predicts “All at Once” (Parallel vs.&nbsp;Autoregressive)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>When the paper says DETR “predicts all objects at once,” it’s referring to a <strong>parallel</strong> (or non-autoregressive) decoding process. This is a fundamental departure from how sequence-based models, especially older ones, used to work.</p>
+<section id="the-old-way-autoregressive-prediction" class="level4">
+<h4 class="anchored" data-anchor-id="the-old-way-autoregressive-prediction">The “Old” Way: Autoregressive Prediction</h4>
+<p>Previous end-to-end approaches, often based on <strong>Recurrent Neural Networks (RNNs)</strong>, generated predictions one by one, in a sequence. This is called an <strong>autoregressive</strong> model because each prediction depends on the ones that came before it.</p>
+<p>Imagine the task is to list the objects in an image. An autoregressive model would:</p>
+<ol type="1">
+<li>Predict the first object: <code>(cat, [box_coords_1])</code>.</li>
+<li>Feed the information about the predicted <code>cat</code> back into the model.</li>
+<li>Based on the image <em>and</em> the fact that it just found a cat, predict the second object: <code>(dog, [box_coords_2])</code>.</li>
+<li>Feed information about both the <code>cat</code> and <code>dog</code> back into the model… and so on, until it outputs a special “end of sequence” token.</li>
+</ol>
+<p>The key idea is <strong>dependency</strong>: the prediction for object <code>N</code> is conditioned on the <code>N-1</code> objects already found. This is inherently sequential and cannot be done in parallel.</p>
+</section>
+<section id="the-detr-way-parallel-prediction" class="level4">
+<h4 class="anchored" data-anchor-id="the-detr-way-parallel-prediction">The DETR Way: Parallel Prediction</h4>
+<p>DETR uses a Transformer decoder, which enables a completely different approach. It doesn’t generate predictions sequentially. Instead, it processes a fixed number of “slots” or “queries” all at the same time.</p>
+<p>Here’s a simplified view of how it works:</p>
+<ol type="1">
+<li><strong>Input “Object Queries”:</strong> The model starts with a fixed-size set of <code>N</code> learned embeddings, called <strong>object queries</strong>. Let’s say <code>N=100</code>. You can think of these as 100 empty “slots” waiting to be filled with information about potential objects.</li>
+<li><strong>Parallel Processing:</strong> The Transformer decoder takes all 100 object queries as input and processes them simultaneously. During this process, each query:
+<ul>
+<li>Extracts information from the entire image (via encoder-decoder attention).</li>
+<li>Communicates with <em>all other 99 queries</em> to understand what other objects are being detected (via self-attention). This is how it learns to avoid making duplicate predictions.</li>
+</ul></li>
+<li><strong>Final Output:</strong> After passing through the decoder, each of the 100 output slots is independently passed through a small feed-forward network to produce a final prediction: either a <code>(class, bounding_box)</code> pair or a “no object” classification.</li>
+</ol>
+<p>The crucial difference is that the prediction for slot #5 does not depend on the final output of slot #4. They are all computed in a single forward pass, reasoning about each other’s existence through the internal self-attention mechanism, not through a sequential dependency chain. This makes the architecture highly efficient and conceptually elegant.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+<section id="performance-promises-and-peculiarities" class="level3">
+<h3 class="anchored" data-anchor-id="performance-promises-and-peculiarities">Performance, Promises, and Peculiarities</h3>
+<p>Having laid out the architecture, the authors now preview the results and discuss the nuances of their new model.</p>
+<blockquote class="blockquote">
+<p>We evaluate DETR on one of the most popular object detection datasets, COCO [24], against a very competitive Faster R-CNN baseline [37]. Faster R-CNN has undergone many design iterations and its performance was greatly improved since the original publication. Our experiments show that our new model achieves comparable performances.</p>
+</blockquote>
+<p>This is a statement of confidence. The authors aren’t comparing DETR to an outdated model; they are benchmarking it against a modern, highly-optimized version of Faster R-CNN, the long-reigning champion of two-stage object detectors. Achieving “comparable performance” right out of the gate with a completely new paradigm is a significant achievement.</p>
+<p>However, the overall performance score doesn’t tell the whole story. The authors provide a more detailed breakdown of DETR’s specific strengths and weaknesses:</p>
+<blockquote class="blockquote">
+<p>More precisely, DETR demonstrates significantly better performance on large objects, a result likely enabled by the non-local computations of the transformer. It obtains, however, lower performances on small objects. We expect that future work will improve this aspect in the same way the development of FPN [22] did for Faster R-CNN.</p>
+</blockquote>
+<p>This is a critical insight into how DETR “sees” the world.</p>
+<ul>
+<li><strong>Strength on Large Objects:</strong> The Transformer’s self-attention mechanism processes the entire image globally. This allows it to easily see and reason about large objects that span a significant portion of the image, something that can be challenging for CNNs which build up features from local receptive fields.</li>
+<li><strong>Weakness on Small Objects:</strong> This is the model’s primary limitation at the time of publication. The authors astutely draw a parallel to the history of Faster R-CNN, which also initially struggled with objects at different scales. That problem was largely solved by the introduction of the <strong>Feature Pyramid Network (FPN)</strong>, which allowed the model to use features from different layers of the CNN to detect objects of various sizes. The authors suggest that a similar multi-scale feature engineering approach could likely solve this issue for DETR in the future.</li>
+</ul>
+<p>The authors also flag that training this new model isn’t quite the same as training a conventional detector.</p>
+<blockquote class="blockquote">
+<p>Training settings for DETR differ from standard object detectors in multiple ways. The new model requires extra-long training schedule and benefits from auxiliary decoding losses in the transformer.</p>
+</blockquote>
+<p>This is an important practical note. Transformers are notoriously data-hungry and often require longer training schedules to converge compared to CNNs. Additionally, the authors mention using <strong>auxiliary losses</strong>, a training trick where the loss function is applied at the output of every decoder layer, not just the final one. This provides a richer, more direct supervisory signal deep within the network, helping the complex architecture learn more effectively.</p>
+<p>Finally, they showcase the flexibility and power of the DETR framework beyond simple object detection.</p>
+<blockquote class="blockquote">
+<p>The design ethos of DETR easily extend to more complex tasks. In our experiments, we show that a simple segmentation head trained on top of a pre-trained DETR outperfoms competitive baselines on Panoptic Segmentation…</p>
+</blockquote>
+<p>This is a powerful demonstration of the model’s capabilities. <strong>Panoptic Segmentation</strong> is a challenging task that unifies object detection (for “things” like cars, people) and semantic segmentation (for “stuff” like sky, road). The fact that a standard DETR model can be adapted to this task by simply adding a small segmentation “head”—and that it achieves excellent results—proves that the core architecture is learning rich, general-purpose visual representations. It’s not just a specialized box-finder; it’s a powerful vision backbone.</p>
+</section>
+</section>
+<section id="related-work" class="level2">
+<h2 class="anchored" data-anchor-id="related-work">2. Related Work</h2>
+<section id="set-prediction" class="level3">
+<h3 class="anchored" data-anchor-id="set-prediction">2.1 Set Prediction</h3>
+<p>The authors begin by addressing the core theoretical challenge that DETR is built to solve: predicting a set of items. This might sound simple, but it goes against the grain of how many standard deep learning models are structured.</p>
+<blockquote class="blockquote">
+<p>There is no canonical deep learning model to directly predict sets.</p>
+</blockquote>
+<p>This is a profound opening statement. Most deep learning models are designed to predict a single output (e.g., a class label for an entire image) or a structured grid of outputs (e.g., a segmentation mask). Predicting an <em>unordered collection of unique items</em> is a fundamentally different kind of problem.</p>
+<p>The authors clarify why object detection is a particularly tricky form of set prediction. While a task like multi-label classification (predicting a set of tags for an image, like <code>{"cat", "sofa", "indoor"}</code>) is a set prediction problem, it’s simpler because the elements are distinct. Object detection is harder because the predictions have an “underlying structure”—you can have two very similar predictions for the same object.</p>
+<p>This leads to two primary challenges that any direct set prediction model for object detection must overcome:</p>
+<ol type="1">
+<li><p><strong>Avoiding Duplicates:</strong> As we’ve discussed, traditional detectors solve this with a post-processing step (NMS). A true end-to-end model, however, must have a built-in mechanism to prevent redundant predictions. The authors argue this requires “global inference schemes that model interactions between all predicted elements,” which is a perfect description of what a Transformer’s self-attention mechanism does.</p></li>
+<li><p><strong>Handling Permutation Invariance:</strong> A “set” has no order. If an image contains a cat and a dog, a prediction of <code>[cat, dog]</code> is just as correct as <code>[dog, cat]</code>. A standard loss function would fail here, as it would compare the prediction at index 0 to the ground truth at index 0, and so on. The loss function itself must be <em>invariant to the permutation</em> (ordering) of the predictions.</p></li>
+</ol>
+<p>Fortunately, there is a well-established solution to the second problem, which the DETR authors adopt.</p>
+<blockquote class="blockquote">
+<p>The usual solution is to design a loss based on the Hungarian algorithm [20], to find a bipartite matching between ground-truth and prediction. This enforces permutation-invariance, and guarantees that each target element has a unique match.</p>
+</blockquote>
+<p>This is the key. By using the Hungarian algorithm to find the best one-to-one matching between the predicted and ground-truth boxes <em>before</em> calculating the loss, the problem of ordering is solved. This matching process ensures that each prediction is uniquely paired with a ground-truth object, elegantly handling the permutation-invariance requirement.</p>
+<p>With this context, the authors precisely state their contribution. They aren’t the first to use a bipartite matching loss. They are, however, the first to successfully combine it with a more powerful and suitable architecture.</p>
+<blockquote class="blockquote">
+<p>We follow the bipartite matching loss approach. In contrast to most prior work however, we step away from autoregressive models and use transformers with parallel decoding…</p>
+</blockquote>
+<p>This is the crucial distinction. Previous attempts at end-to-end detection used RNNs, which generated objects one by one (autoregressively). DETR’s innovation is to pair the set-based loss with a Transformer, which can predict all objects at once (in parallel), leveraging global self-attention to avoid duplicates from the start.</p>
+</section>
+<section id="transformers-and-parallel-decoding" class="level3">
+<h3 class="anchored" data-anchor-id="transformers-and-parallel-decoding">2.2 Transformers and Parallel Decoding</h3>
+<p>Having established their goal—a direct set prediction model—and the training strategy—a bipartite matching loss—the authors now turn to the architecture that makes it all possible.</p>
+<blockquote class="blockquote">
+<p>Transformers were introduced by Vaswani et al.&nbsp;[47] as a new attention-based building block for machine translation. Attention mechanisms [2] are neural network layers that aggregate information from the entire input sequence.</p>
+</blockquote>
+<p>Here, the authors credit the source of their core technology: the 2017 paper “Attention Is All You Need,” which introduced the Transformer to the world of NLP. At the heart of the Transformer is the <strong>attention mechanism</strong>.</p>
+<p>To understand attention, it helps to contrast it with a standard Convolutional Neural Network (CNN). A CNN processes an image using small filters (or kernels) that look at tiny, localized patches of the image. It builds up a bigger-picture understanding layer by layer. An attention mechanism, on the other hand, is inherently global. When processing any single element of its input, it can “look at” and pull information from <em>every other element</em> in the entire input, weighing each one by its relevance.</p>
+<p>The specific type of attention used in Transformers is called <strong>self-attention</strong>.</p>
+<blockquote class="blockquote">
+<p>Transformers introduced self-attention layers, which… scan through each element of a sequence and update it by aggregating information from the whole sequence.</p>
+</blockquote>
+<p>With self-attention, every element in the input sequence (in this case, every patch of the image feature map) calculates an “attention score” with every other element. This allows the model to learn rich, context-aware representations. For example, a feature representing a tire can directly attend to a feature representing a steering wheel on the other side of the car, strengthening the model’s belief that it is looking at a “car” instance. This ability to model long-range dependencies and global context is precisely what’s needed to distinguish between two separate objects and to avoid duplicate predictions for a single object.</p>
+<p>Finally, the authors connect the Transformer architecture to the concept of <strong>parallel decoding</strong>, which we discussed earlier.</p>
+<blockquote class="blockquote">
+<p>Transformers were first used in auto-regressive models… generating output tokens one by one. However, the prohibitive inference cost… lead to the development of parallel sequence generation… We also combine transformers and parallel decoding for their suitable trade-off between computational cost and the ability to perform the global computations required for set prediction.</p>
+</blockquote>
+<p>This is a key historical point. The decoder in the original Transformer was autoregressive, meaning it generated its output sequence (the translated sentence) one word at a time. This is effective but slow. Over time, researchers developed methods for non-autoregressive or <strong>parallel decoding</strong>, where the model outputs the entire sequence at once.</p>
+<p>DETR capitalizes on this newer, more efficient way of using Transformers. The combination is a perfect match:</p>
+<ol type="1">
+<li><strong>Parallel Decoding</strong> is ideal for set prediction, where the output order doesn’t matter.</li>
+<li><strong>Global Self-Attention</strong> provides the computational mechanism to reason about all objects simultaneously, eliminating the need for NMS.</li>
+</ol>
+<p>This powerful combination of a set-based loss and a parallel-decoding Transformer is what allows DETR to be both conceptually simple and empirically powerful.</p>
+</section>
+<section id="object-detection" class="level3">
+<h3 class="anchored" data-anchor-id="object-detection">2.3 Object Detection</h3>
+<p>Here, the authors systematically review the landscape of object detection, showing how DETR’s philosophy diverges from mainstream approaches and builds upon, yet improves, more niche end-to-end methods.</p>
+<section id="the-problem-with-initial-guesses" class="level4">
+<h4 class="anchored" data-anchor-id="the-problem-with-initial-guesses">The Problem with “Initial Guesses”</h4>
+<p>The section opens by restating the core limitation of the dominant object detection paradigms.</p>
+<blockquote class="blockquote">
+<p>Most modern object detection methods make predictions relative to some initial guesses. Two-stage detectors [37,5] predict boxes w.r.t. proposals, whereas single-stage methods make predictions w.r.t. anchors [23] or a grid of possible object centers [53,46].</p>
+</blockquote>
+<p>This summarizes the two main families of conventional detectors:</p>
+<ul>
+<li><strong>Two-Stage Detectors (e.g., Faster R-CNN):</strong> First, a Region Proposal Network (RPN) proposes a sparse set of candidate object locations (“proposals”). Second, a detector head refines these proposals and classifies them.</li>
+<li><strong>Single-Stage Detectors (e.g., YOLO, SSD):</strong> These models skip the dedicated proposal step and instead use a dense grid of predefined “anchors” or grid cells as their starting point.</li>
+</ul>
+<p>In both cases, the model is not finding objects from scratch. It is <em>refining</em> a set of initial guesses. As the authors note, this makes performance highly dependent on the design of these initial guesses.</p>
+<p>DETR’s approach is fundamentally different:</p>
+<blockquote class="blockquote">
+<p>In our model we are able to remove this hand-crafted process and streamline the detection process by directly predicting the set of detections with absolute box prediction w.r.t. the input image rather than an anchor.</p>
+</blockquote>
+<p>Instead of predicting offsets from an anchor (surrogate regression), DETR predicts the absolute coordinates of the bounding box directly. This is a more direct and elegant formulation that removes an entire layer of hand-designed complexity.</p>
+</section>
+<section id="previous-attempts-at-end-to-end-detection" class="level4">
+<h4 class="anchored" data-anchor-id="previous-attempts-at-end-to-end-detection">Previous Attempts at End-to-End Detection</h4>
+<p>The authors then acknowledge that they are not the first to explore ideas like set-based losses or attention. However, they carefully point out the shortcomings of these prior works.</p>
+<p><strong>1. Set-Based Loss in Early Models:</strong> Some early deep learning detectors did use the bipartite matching loss. However, these models were limited by their architecture. They used standard CNNs or fully-connected layers, which couldn’t effectively model the global relationships between all predictions. As a result, they still produced duplicate detections and required a hand-designed NMS post-processing step to clean them up. They had the right loss function, but the wrong architecture to take full advantage of it.</p>
+<p><strong>2. Learnable NMS and Relation Networks:</strong> More recent work tried to eliminate NMS by explicitly modeling the relationships between predictions using attention mechanisms. These “relation networks” were a step in the right direction. However, they were still not “pure” end-to-end systems. The authors critique them for using “additional hand-crafted context features like proposal box coordinates” to feed into the attention mechanism. DETR’s goal is to learn these relationships from the image features alone, reducing the amount of explicit prior knowledge built into the model.</p>
+<p><strong>3. Recurrent Detectors: The Closest Relatives:</strong> Finally, the authors identify the work that is most similar to their own: end-to-end models that used bipartite matching with encoder-decoder architectures.</p>
+<blockquote class="blockquote">
+<p>Closest to our approach are end-to-end set predictions for object detection [43] and instance segmentation [41,30,36,42].</p>
+</blockquote>
+<p>These models shared the same end-to-end philosophy as DETR. So what’s the difference? The authors highlight two critical distinctions:</p>
+<ul>
+<li><strong>Architecture:</strong> These prior models were based on <strong>RNNs</strong>, which are <strong>autoregressive</strong>. They predicted objects one by one in a sequence. DETR’s key advantage is its use of <strong>Transformers with parallel decoding</strong>, which predicts all objects at once, making it more efficient and allowing for global reasoning among all potential objects simultaneously.</li>
+<li><strong>Performance:</strong> These earlier attempts were only validated on smaller, simpler datasets. They were never proven to be competitive against highly optimized baselines on challenging, large-scale benchmarks like COCO.</li>
+</ul>
+<p>DETR is therefore the first model to successfully combine all the right ingredients (bipartite matching loss, an encoder-decoder architecture) with the right architectural choice (the Transformer) and prove that this end-to-end philosophy can achieve state-of-the-art results.</p>
+</section>
+</section>
+</section>
+<section id="the-detr-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-detr-model">3. The DETR Model</h2>
+<section id="object-detection-set-prediction-loss" class="level3">
+<h3 class="anchored" data-anchor-id="object-detection-set-prediction-loss">3.1 Object Detection Set Prediction Loss</h3>
+<p>The central challenge for DETR is this: the model outputs a fixed-size set of <code>N</code> predictions, but the ground truth for an image contains a variable number of objects, <code>k</code>. How do you compare these two sets in a way that is differentiable and encourages the model to learn?</p>
+<blockquote class="blockquote">
+<p>DETR infers a fixed-size set of N predictions, in a single pass through the decoder, where N is set to be significantly larger than the typical number of objects in an image.</p>
+</blockquote>
+<p>First, the architecture is designed to always output a fixed number of predictions, <code>N</code> (the paper uses <code>N=100</code>). This <code>N</code> is chosen to be larger than the maximum number of objects you’d expect to find in any single image. For an image that only contains, say, 3 objects, the ground truth is conceptually padded with <code>N-3</code> “no object” (∅) slots. This way, we always have two sets of the same size to compare: the <code>N</code> predictions and the <code>N</code> (padded) ground truth objects.</p>
+<p>The loss calculation is a clever two-stage process:</p>
+<ol type="1">
+<li><strong>First, find the best possible one-to-one matching</strong> between the model’s <code>N</code> predictions and the <code>N</code> ground-truth objects.</li>
+<li><strong>Second, compute the loss</strong> for these specific matched pairs.</li>
+</ol>
+<section id="stage-1-the-optimal-bipartite-matching" class="level4">
+<h4 class="anchored" data-anchor-id="stage-1-the-optimal-bipartite-matching">Stage 1: The Optimal Bipartite Matching</h4>
+<p>This first stage is all about solving the assignment problem. We have two sets, and we need to find the optimal pairing between them.</p>
+<blockquote class="blockquote">
+<p>To find a bipartite matching between these two sets we search for a permutation of N elements σ ∈ S<sub>N</sub> with the lowest cost: ô = arg min <sub>σ∈S<sub>N</sub></sub> Σ<sup>N</sup><sub>i=1</sub> L<sub>match</sub>(y<sub>i</sub>, ŷ<sub>σ(i)</sub>)</p>
+</blockquote>
+<p>This looks complex, but the idea is intuitive. We are searching for the permutation <code>σ</code> (an ordering of the predictions) that minimizes the total matching cost. This is done efficiently using the <strong>Hungarian algorithm</strong>.</p>
+<p>The key is the <strong>pair-wise matching cost</strong>, <code>L_match</code>. This cost function evaluates how “good” a match is between a single ground-truth object <code>y_i</code> and a single predicted object <code>ŷ_σ(i)</code>. The cost is designed to be low if:</p>
+<ol type="1">
+<li><strong>The class prediction is accurate:</strong> The model is highly confident in the correct class (e.g., predicting “cat” with 98% probability for a ground-truth cat).</li>
+<li><strong>The bounding boxes are similar:</strong> The predicted box and the ground-truth box have a high degree of overlap and similarity. The paper uses a combination of L1 loss and Generalized IoU (GIoU) loss for this, which we’ll cover shortly.</li>
+</ol>
+<p>The Hungarian algorithm takes in the cost matrix of every possible prediction-to-ground-truth pairing and returns the best one-to-one assignment—the one with the lowest total cost. This step is a direct replacement for the complex, heuristic-based assignment rules that traditional detectors use to match anchors to ground-truth objects.</p>
+</section>
+<section id="stage-2-the-hungarian-loss" class="level4">
+<h4 class="anchored" data-anchor-id="stage-2-the-hungarian-loss">Stage 2: The Hungarian Loss</h4>
+<p>Once the optimal matching <code>ô</code> has been found, calculating the final loss is straightforward. We now have <code>N</code> well-defined pairs of <code>(ground_truth, prediction)</code>.</p>
+<blockquote class="blockquote">
+<p>The second step is to compute the loss function, the Hungarian loss for all pairs matched in the previous step. We define the loss similarly to the losses of common object detectors…</p>
+</blockquote>
+<p>The final loss, <code>L_Hungarian</code>, is a sum over all <code>N</code> pairs. For each pair, the loss is a combination of:</p>
+<ul>
+<li><strong>A negative log-likelihood for the class prediction:</strong> This is a standard classification loss that penalizes incorrect class predictions.</li>
+<li><strong>A bounding box loss:</strong> This is a regression loss that penalizes inaccurate box coordinates. This loss is only applied for pairs where the ground truth is a real object (not the “no object” class).</li>
+</ul>
+<p>The authors also note a practical detail: they down-weight the classification loss for pairs matched to the “no object” class. This is because most of the <code>N=100</code> predictions will be assigned to “no object,” and this weighting prevents the model from becoming lazy and only learning to predict background. It’s a standard technique to handle class imbalance.</p>
+<p>In summary, this elegant two-step process—first match, then compute loss—is what enables DETR to be trained end-to-end on unordered sets of objects, forming the foundation of its entire design.</p>
+</section>
+</section>
+<section id="the-detr-architecture" class="level3">
+<h3 class="anchored" data-anchor-id="the-detr-architecture">3.2 The DETR Architecture</h3>
+<p>The DETR architecture is surprisingly elegant and can be broken down into three main components, as shown in Figure 2 of the paper.</p>
+<p><a href="images/2025-09-30-detr-reading-notes/paper-fig-2.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-09-30-detr-reading-notes/paper-fig-2.PNG" class="img-fluid"></a></p>
+<blockquote class="blockquote">
+<p>The overall DETR architecture is surprisingly simple… It contains three main components…: a CNN backbone to extract a compact feature representation, an encoder-decoder transformer, and a simple feed forward network (FFN) that makes the final detection prediction.</p>
+</blockquote>
+<p>This simple, modular design is one of DETR’s greatest strengths. It reuses well-established building blocks in a novel combination. Let’s look at each part in detail.</p>
+<section id="the-backbone-feature-extraction" class="level4">
+<h4 class="anchored" data-anchor-id="the-backbone-feature-extraction">The Backbone: Feature Extraction</h4>
+<p>Like most modern computer vision models, DETR starts with a standard Convolutional Neural Network (CNN) backbone.</p>
+<blockquote class="blockquote">
+<p><strong>Backbone.</strong> Starting from the initial image… a conventional CNN backbone generates a lower-resolution activation map <code>f</code>.</p>
+</blockquote>
+<ul>
+<li><strong>Purpose:</strong> The backbone’s job is to act as a feature extractor. It takes the input image (e.g., 800x800 pixels with 3 color channels) and processes it to produce a rich feature map. This map has a smaller spatial resolution (e.g., 25x25) but a much greater channel depth (e.g., 2048 channels). Each “pixel” in this feature map is a high-dimensional vector that represents a specific region of the original image, encoding complex visual patterns like textures, edges, and parts of objects.</li>
+<li><strong>Implementation:</strong> The authors use a standard ResNet model, a common and powerful choice for a vision backbone.</li>
+</ul>
+</section>
+<section id="the-transformer-encoder-global-context-reasoning" class="level4">
+<h4 class="anchored" data-anchor-id="the-transformer-encoder-global-context-reasoning">The Transformer Encoder: Global Context Reasoning</h4>
+<p>This is where DETR starts to diverge from traditional detectors. The features from the CNN are passed into a Transformer encoder.</p>
+<blockquote class="blockquote">
+<p><strong>Transformer encoder.</strong> … The encoder expects a sequence as input, hence we collapse the spatial dimensions of [the feature map] into one dimension… Since the transformer architecture is permutation-invariant, we supplement it with fixed positional encodings that are added to the input of each attention layer.</p>
+</blockquote>
+<ul>
+<li><strong>Purpose:</strong> The encoder’s goal is to enrich the features from the CNN with global context. It needs to understand the relationships between different objects and parts of the image. For example, it might learn that a feature representing a “person” is often found near a feature representing a “bicycle.”</li>
+<li><strong>Mechanism:</strong>
+<ol type="1">
+<li><strong>Flattening:</strong> The 2D spatial grid of features from the CNN is “flattened” into a 1D sequence. For a 25x25 feature map, this creates a sequence of 625 feature vectors.</li>
+<li><strong>Positional Encodings:</strong> A standard Transformer is <em>permutation-invariant</em>—if you shuffle the input sequence, the output is just a shuffled version of the original. This is a problem for images, where the spatial location of features is critical. To solve this, <strong>positional encodings</strong> are added to each feature vector in the sequence. These are fixed (not learned) vectors that encode the original <code>(x, y)</code> position of the feature. This allows the model to retain spatial information while processing the data as a sequence.</li>
+<li><strong>Self-Attention:</strong> The encoder then processes this sequence of (feature + position) vectors using its multi-head self-attention layers. This allows every feature in the image to attend to every other feature, building a globally-aware representation of the entire scene.</li>
+</ol></li>
+</ul>
+</section>
+<section id="the-transformer-decoder-object-extraction" class="level4">
+<h4 class="anchored" data-anchor-id="the-transformer-decoder-object-extraction">The Transformer Decoder: Object Extraction</h4>
+<p>The output of the encoder (the context-rich feature map) is then passed to the Transformer decoder, which performs the actual object detection task.</p>
+<blockquote class="blockquote">
+<p><strong>Transformer decoder.</strong> The difference with the original transformer is that our model decodes the N objects in parallel… Since the decoder is also permutation-invariant, the N input embeddings must be different to produce different results. These input embeddings are learnt positional encodings that we refer to as <strong>object queries</strong>.</p>
+</blockquote>
+<ul>
+<li><strong>Purpose:</strong> The decoder’s job is to take the global scene representation from the encoder and extract the location and class of each individual object.</li>
+<li><strong>Mechanism:</strong> This is arguably the most innovative part of DETR.
+<ol type="1">
+<li><strong>Object Queries:</strong> Instead of feeding the decoder the output of the previous time step (as in an autoregressive model), DETR feeds it a fixed set of <code>N</code> learned embeddings called <strong>object queries</strong>. You can think of these as <code>N</code> empty “slots” or learnable “object finders.” Each query is a vector that is learned during training and will become responsible for finding a specific type of object or an object in a specific region.</li>
+<li><strong>Parallel Decoding:</strong> All <code>N</code> object queries are passed into the decoder and processed at the same time (in parallel).</li>
+<li><strong>Attention:</strong> Inside the decoder, two types of attention are at play.
+<ul>
+<li><strong>Self-Attention:</strong> The object queries attend to <em>each other</em>. This is crucial for eliminating duplicate predictions. The queries can “communicate” and learn that if one query is already focused on the main person in the image, the others should look for different objects.</li>
+<li><strong>Encoder-Decoder Attention:</strong> Each object query also attends to the output of the encoder. This is how the queries “look at” the image’s feature map to gather the information needed to predict an object’s class and bounding box.</li>
+</ul></li>
+</ol></li>
+</ul>
+<p>The output of the decoder is a set of <code>N</code> embedding vectors, where each vector now contains rich information about a potential object it has found.</p>
+</section>
+<section id="prediction-feed-forward-networks-ffns-the-final-output" class="level4">
+<h4 class="anchored" data-anchor-id="prediction-feed-forward-networks-ffns-the-final-output">Prediction Feed-Forward Networks (FFNs): The Final Output</h4>
+<p>The final step is to translate the <code>N</code> output embeddings from the decoder into concrete box predictions and class labels.</p>
+<blockquote class="blockquote">
+<p><strong>Prediction feed-forward networks (FFNs).</strong> The final prediction is computed by a 3-layer perceptron… The FFN predicts the normalized center coordinates, height and width of the box… and the linear layer predicts the class label using a softmax function.</p>
+</blockquote>
+<p>A single, small FFN (which is shared across all <code>N</code> outputs for efficiency) takes each of the <code>N</code> embeddings from the decoder and passes it through two separate “heads”:</p>
+<ol type="1">
+<li><strong>A classification head:</strong> Predicts the class label for the object (e.g., “person,” “car,” or the special “no object” class).</li>
+<li><strong>A regression head:</strong> Predicts the four numbers defining the bounding box (center x, center y, width, height), normalized relative to the image size.</li>
+</ol>
+</section>
+<section id="auxiliary-decoding-losses" class="level4">
+<h4 class="anchored" data-anchor-id="auxiliary-decoding-losses">Auxiliary Decoding Losses</h4>
+<p>Finally, the authors mention a helpful training trick.</p>
+<blockquote class="blockquote">
+<p>We found helpful to use auxiliary losses in decoder during training… We add prediction FFNs and Hungarian loss after each decoder layer.</p>
+</blockquote>
+<p>Instead of just applying the main loss function at the very end of the final decoder layer, they apply it after <em>every</em> decoder layer. This provides a stronger, more direct training signal deep inside the network, helping the model converge faster and achieve better results.</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
