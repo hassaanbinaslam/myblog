@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -136,6 +137,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -259,7 +262,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Get the code
+<span class="screen-reader-only">Tip</span>Get the code
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -296,7 +299,7 @@ Get the code
 <h3 class="anchored" data-anchor-id="part-1-generating-the-spiral">Part 1: Generating the Spiral</h3>
 <p>First, we need a function to create our hero — the 2D spiral. We can do this easily using some basic trigonometry. This function generates a set of (x, y) coordinates that trace out a nice, clean spiral.</p>
 <div id="69f46e07" class="cell" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2"></a></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="kw">def</span> generate_spiral(num_points<span class="op">=</span><span class="dv">1000</span>, revolutions<span class="op">=</span><span class="dv">3</span>):</span>
 <span id="cb1-4"><a href="#cb1-4"></a>    <span class="co">"""</span></span>
@@ -333,11 +336,11 @@ Get the code
 <span id="cb1-35"><a href="#cb1-35"></a>    <span class="co"># The .T (transpose) operation flips this to a (1000, 2) array.</span></span>
 <span id="cb1-36"><a href="#cb1-36"></a>    <span class="co"># Now, each row of our final array is a single (x, y) point on the spiral.</span></span>
 <span id="cb1-37"><a href="#cb1-37"></a>    spiral_data <span class="op">=</span> np.vstack((x, y)).T</span>
-<span id="cb1-38"><a href="#cb1-38"></a>    <span class="cf">return</span> spiral_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-38"><a href="#cb1-38"></a>    <span class="cf">return</span> spiral_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Running just the <code>generate_spiral</code> function and plotting its output gives us our beautiful starting manifold. This is the “perfect” information we are trying to preserve. It’s the benchmark against which we’ll measure the success or failure of our transformation.</p>
 <div id="7f8ec6d1" class="cell" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-3"><a href="#cb2-3"></a></span>
 <span id="cb2-4"><a href="#cb2-4"></a><span class="co"># Generate the spiral</span></span>
@@ -349,7 +352,7 @@ Get the code
 <span id="cb2-10"><a href="#cb2-10"></a>plt.title(<span class="st">"Our Input 'Manifold of Interest'"</span>)</span>
 <span id="cb2-11"><a href="#cb2-11"></a>plt.gca().set_aspect(<span class="st">'equal'</span>, <span class="st">'box'</span>)</span>
 <span id="cb2-12"><a href="#cb2-12"></a>plt.axis(<span class="st">'off'</span>)</span>
-<span id="cb2-13"><a href="#cb2-13"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-13"><a href="#cb2-13"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -365,7 +368,7 @@ Get the code
 <p>This next function is the core of our entire experiment. It takes our 2D spiral, sends it on its journey through high-dimensional space, and brings it back.</p>
 <p>I’ll show you the final, working code first, and then I’ll confess a little bug I ran into along the way. It’s a great example of the kind of thing you run into when working with linear algebra.</p>
 <div id="6b4a06b9" class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">def</span> transform_manifold(data_2d, n_dim):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">def</span> transform_manifold(data_2d, n_dim):</span>
 <span id="cb3-2"><a href="#cb3-2"></a>    <span class="co">"""</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co">    Projects 2D data to n_dim, applies ReLU, and projects back.</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a><span class="co">    """</span></span>
@@ -415,14 +418,14 @@ Get the code
 <span id="cb3-48"><a href="#cb3-48"></a>    reconstructed_data <span class="op">=</span> relu_data <span class="op">@</span> T_backward</span>
 <span id="cb3-49"><a href="#cb3-49"></a>    <span class="co"># reconstructed_data.shape is (1000, 2)</span></span>
 <span id="cb3-50"><a href="#cb3-50"></a>    </span>
-<span id="cb3-51"><a href="#cb3-51"></a>    <span class="cf">return</span> reconstructed_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-51"><a href="#cb3-51"></a>    <span class="cf">return</span> reconstructed_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="part-3-running-the-show-and-plotting-the-results" class="level3">
 <h3 class="anchored" data-anchor-id="part-3-running-the-show-and-plotting-the-results">Part 3: Running the Show and Plotting the Results</h3>
 <p>Finally, we just need to loop through the different dimensions we want to test (<code>2, 3, 5, 15, 30</code>), call our transformation function for each one, and use <code>matplotlib</code> to plot the results in a neat row.</p>
 <div id="78b320bb" class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="co"># Dimensions to test</span></span>
 <span id="cb4-4"><a href="#cb4-4"></a>dims_to_test <span class="op">=</span> [<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">30</span>, <span class="dv">100</span>]</span>
@@ -447,7 +450,7 @@ Get the code
 <span id="cb4-23"><a href="#cb4-23"></a>    ax.set_aspect(<span class="st">'equal'</span>, <span class="st">'box'</span>)</span>
 <span id="cb4-24"><a href="#cb4-24"></a>    ax.axis(<span class="st">'off'</span>)</span>
 <span id="cb4-25"><a href="#cb4-25"></a>    </span>
-<span id="cb4-26"><a href="#cb4-26"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-26"><a href="#cb4-26"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -528,13 +531,14 @@ Get the code
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -60,7 +60,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -113,10 +114,10 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
-<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -132,7 +133,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -166,6 +167,8 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -302,14 +305,14 @@ window.Quarto = {
 <div id="cell-4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="1efe3040-9935-48ea-e1d9-2a26ce2b4710" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> numpy, matplotlib, pandas, torch, seaborn</span>
 <span id="cb1-3"><a href="#cb1-3"></a></span>
 <span id="cb1-4"><a href="#cb1-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
 <span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
 <span id="cb1-6"><a href="#cb1-6"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
 <span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="bu">print</span>(<span class="st">"seaborn=="</span> <span class="op">+</span> seaborn.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="bu">print</span>(<span class="st">"seaborn=="</span> <span class="op">+</span> seaborn.__version__)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>python==3.7.15
@@ -350,7 +353,7 @@ Sigmoid(x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-x} }
 <div id="cell-6" class="cell" data-execution_count="2">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb3-2"><a href="#cb3-2"></a></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co"># A class representing Sigmoid activation function</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a><span class="kw">class</span> SigmoidAct(nn.Module):</span>
@@ -373,14 +376,14 @@ Sigmoid(x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-x} }
 <span id="cb3-21"><a href="#cb3-21"></a><span class="co"># initialize sigmoid activation function</span></span>
 <span id="cb3-22"><a href="#cb3-22"></a>sigmoid_fn <span class="op">=</span> SigmoidAct()</span>
 <span id="cb3-23"><a href="#cb3-23"></a><span class="co"># initialize relu activation function</span></span>
-<span id="cb3-24"><a href="#cb3-24"></a>relu_fn <span class="op">=</span> ReluAct()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-24"><a href="#cb3-24"></a>relu_fn <span class="op">=</span> ReluAct()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>I have defined a helper function to calculate the gradients for these activation functions.</p>
 <div id="cell-8" class="cell" data-execution_count="3">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="co"># A helper function to computes the gradients of an activation function at specified positions.</span></span>
 <span id="cb4-4"><a href="#cb4-4"></a><span class="kw">def</span> get_grads(act_fn, x):</span>
@@ -401,14 +404,14 @@ Sigmoid(x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-x} }
 <span id="cb4-19"><a href="#cb4-19"></a>    ax.plot(x, y_grads, linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">"Gradient"</span>)</span>
 <span id="cb4-20"><a href="#cb4-20"></a>    ax.set_title(fn_name)</span>
 <span id="cb4-21"><a href="#cb4-21"></a>    ax.legend()</span>
-<span id="cb4-22"><a href="#cb4-22"></a>    ax.set_ylim(<span class="op">-</span><span class="fl">1.5</span>, x.<span class="bu">max</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-22"><a href="#cb4-22"></a>    ax.set_ylim(<span class="op">-</span><span class="fl">1.5</span>, x.<span class="bu">max</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>let’s plot the gradients.</p>
 <div id="cell-10" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:444}}" data-outputid="28a9a86d-fd82-4ad9-c041-e171cc1fd4c2" data-execution_count="4">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> torch</span>
 <span id="cb5-2"><a href="#cb5-2"></a></span>
 <span id="cb5-3"><a href="#cb5-3"></a>x <span class="op">=</span> torch.linspace(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">1000</span>)</span>
 <span id="cb5-4"><a href="#cb5-4"></a></span>
@@ -416,7 +419,7 @@ Sigmoid(x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-x} }
 <span id="cb5-6"><a href="#cb5-6"></a>vis_act_fn(sigmoid_fn, <span class="st">'sigmoid'</span>, ax[<span class="dv">0</span>], x)</span>
 <span id="cb5-7"><a href="#cb5-7"></a>vis_act_fn(relu_fn, <span class="st">'relu'</span>, ax[<span class="dv">1</span>], x)</span>
 <span id="cb5-8"><a href="#cb5-8"></a>fig.subplots_adjust(hspace<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb5-9"><a href="#cb5-9"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-9"><a href="#cb5-9"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -449,7 +452,7 @@ Sigmoid(x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-x} }
 <li><code>torchvision.transforms.ToTensor</code> converts a <code>PIL Image</code> or <code>numpy.ndarray</code> to tensor. It converts a PIL Image or numpy.ndarray <strong>(H x W x C) in the range [0, 255]</strong> to a torch.FloatTensor of shape <strong>(C x H x W) in the range [0.0, 1.0]</strong>. Here C=Channel, H=Height, W=Width. Read more about this transformation <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html">here</a></li>
 </ul>
 <div id="cell-14" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:457,&quot;referenced_widgets&quot;:[&quot;ce55a0f2e2684778812544c628163dd5&quot;,&quot;ca1ff433bfb547719fa6456c5f4f18f2&quot;,&quot;f4a2d8966d844062912daa347f7e61ed&quot;,&quot;dcd01c7285c44bf4b813910c74dd3679&quot;,&quot;de06bdf6041243af9428e181ade1cebf&quot;,&quot;3b9deeb7becd4afa8d1d82c576a73b22&quot;,&quot;3ee4770150d94535b0511db9acc1a968&quot;,&quot;25326f26390e4096a69b74f943a22884&quot;,&quot;5f61453474c9499f8d025d2d9df90e15&quot;,&quot;3d20a1dcd4c042c98ad8f34266c0c7f1&quot;,&quot;0e93d2ce99034967834e52cef286f93b&quot;,&quot;43f3bf0ad2dc45ed98ce5c9aa92935e4&quot;,&quot;33d609b46d5a4177901137c6383691f4&quot;,&quot;aaeacc4ffcba41db8bcca0662b623184&quot;,&quot;36ef52f4766840049d9d3a45c352dff9&quot;,&quot;ac0d9aceb6a44ca1a6f73ead10dd6010&quot;,&quot;2dc9220e292c417fb9a12bfbf4bf50b0&quot;,&quot;2e1eb1c05fa54d9b9e2811ade1e1d64a&quot;,&quot;0f8d68ef12744c72a717bc3aa2101e7b&quot;,&quot;e0054336a32640bf8674dd9fe6580dc3&quot;,&quot;1dd05f8ed81546cc8c19ee8f74f4f560&quot;,&quot;7b934e55e4b4473faa3641d2f1d4f091&quot;,&quot;66e1e35efd5f437289bfa38dad645dea&quot;,&quot;f3e2a72710c34bb2b30fdb090c519002&quot;,&quot;210695dd9fb14af3875a3029ac909119&quot;,&quot;7800b6db2b924faf933f0aa764cf49e6&quot;,&quot;740cd9fe77774fbd8e224090555db123&quot;,&quot;b1ae274504384660a52bf0a069d4dbe5&quot;,&quot;83c4576efd254a519a3096ff424e1fa8&quot;,&quot;acc52db36ef84565805c7341e97126cf&quot;,&quot;038da41c108e4877971d3fe7ea495a65&quot;,&quot;27fb611102fd41d7b9f3769fff06be04&quot;,&quot;63d1607a80714ecda20b8d187d163a41&quot;,&quot;26d0a9e665a843ea8338906ec01708c3&quot;,&quot;ff6633e123774feab76247186a36aa33&quot;,&quot;8ecf7ac5007e4635a75091a554655bf4&quot;,&quot;ac237ce3ce9045bb93ad7f3496af60fe&quot;,&quot;15ef66b2e0cd405d9b814c0524929d10&quot;,&quot;c3f49a9d93144df4a86b9945784d59cb&quot;,&quot;14901451364d47948c60085883f148d7&quot;,&quot;0605da47a3b04f5eb9dba235ee9b9460&quot;,&quot;6ef6ce9ca43e4d559cf7f89a85d686eb&quot;,&quot;83eea35b1e5648bbbc7058f2c4d70c69&quot;,&quot;82574f6d7e634d45b795ace5424f605e&quot;]}}" data-outputid="1fe8ea0b-fac4-4984-e708-9f9267c80a23" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">#collapse-output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="im">import</span> torchvision</span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb6-4"><a href="#cb6-4"></a></span>
@@ -464,7 +467,7 @@ Sigmoid(x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-x} }
 <span id="cb6-13"><a href="#cb6-13"></a>test_dataset.transform<span class="op">=</span>transform</span>
 <span id="cb6-14"><a href="#cb6-14"></a></span>
 <span id="cb6-15"><a href="#cb6-15"></a><span class="bu">print</span>(<span class="ss">f"Total training images: </span><span class="sc">{</span><span class="bu">len</span>(train_dataset)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-16"><a href="#cb6-16"></a><span class="bu">print</span>(<span class="ss">f"Shape of an image: </span><span class="sc">{</span>np<span class="sc">.</span>shape(train_dataset.data[<span class="dv">7</span>])<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-16"><a href="#cb6-16"></a><span class="bu">print</span>(<span class="ss">f"Shape of an image: </span><span class="sc">{</span>np<span class="sc">.</span>shape(train_dataset.data[<span class="dv">7</span>])<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to classifier_data/MNIST/raw/train-images-idx3-ubyte.gz</code></pre>
@@ -516,11 +519,11 @@ Shape of an image: torch.Size([28, 28])</code></pre>
 </div>
 <p>From the above cell output, there are <code>60,000</code> training images. The shape of each image is <code>28 x 28</code>, which means it is a 2D matrix.</p>
 <div id="cell-16" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:282}}" data-outputid="dfea36b0-806e-475a-c922-9dcb823b2a65" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a><span class="co"># plot a single image</span></span>
 <span id="cb12-3"><a href="#cb12-3"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb12-4"><a href="#cb12-4"></a></span>
-<span id="cb12-5"><a href="#cb12-5"></a>plt.imshow(train_dataset.data[<span class="dv">7</span>], cmap<span class="op">=</span><span class="st">'gray'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-5"><a href="#cb12-5"></a>plt.imshow(train_dataset.data[<span class="dv">7</span>], cmap<span class="op">=</span><span class="st">'gray'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -534,7 +537,7 @@ Shape of an image: torch.Size([28, 28])</code></pre>
 <h2 class="anchored" data-anchor-id="load-generated-data-into-pytorch-dataset-and-dataloader-class">Load generated data into PyTorch Dataset and DataLoader class</h2>
 <p>Now let’s load our data into <code>Dataset</code> and <code>DataLoader</code> classes. PyTorch Dataset is a helper class that converts data and labels into a list of tuples. DataLoader is another helper class to create batches from Dataset tuples. <code>batch_size</code> means the number of tuples we want in a single batch. We have used 128 here, so each fetch from DataLoader will give us a list of 128 tuples.</p>
 <div id="cell-18" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="13cedfec-2b73-41be-bf6d-e08ff8818026" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> torch</span>
 <span id="cb13-2"><a href="#cb13-2"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader, random_split</span>
 <span id="cb13-3"><a href="#cb13-3"></a></span>
 <span id="cb13-4"><a href="#cb13-4"></a>train_size<span class="op">=</span><span class="bu">len</span>(train_dataset)</span>
@@ -553,7 +556,7 @@ Shape of an image: torch.Size([28, 28])</code></pre>
 <span id="cb13-17"><a href="#cb13-17"></a><span class="bu">print</span>(<span class="ss">f"Batches in Valid Loader: </span><span class="sc">{</span><span class="bu">len</span>(valid_loader)<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb13-18"><a href="#cb13-18"></a></span>
 <span id="cb13-19"><a href="#cb13-19"></a><span class="bu">print</span>(<span class="ss">f"Examples in Train Loader: </span><span class="sc">{</span><span class="bu">len</span>(train_loader.sampler)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb13-20"><a href="#cb13-20"></a><span class="bu">print</span>(<span class="ss">f"Examples in Valid Loader: </span><span class="sc">{</span><span class="bu">len</span>(valid_loader.sampler)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-20"><a href="#cb13-20"></a><span class="bu">print</span>(<span class="ss">f"Examples in Valid Loader: </span><span class="sc">{</span><span class="bu">len</span>(valid_loader.sampler)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Batches in Train Loader: 469
 Batches in Valid Loader: 141
@@ -592,7 +595,7 @@ Examples in Valid Loader: 18000</code></pre>
 <div id="cell-20" class="cell" data-execution_count="8">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">class</span> DeepLearningPipeline(<span class="bu">object</span>):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">class</span> DeepLearningPipeline(<span class="bu">object</span>):</span>
 <span id="cb15-2"><a href="#cb15-2"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, model, loss_fn, optimizer):</span>
 <span id="cb15-3"><a href="#cb15-3"></a>        <span class="co"># Here we define the attributes of our class</span></span>
 <span id="cb15-4"><a href="#cb15-4"></a>        </span>
@@ -784,7 +787,7 @@ Examples in Valid Loader: 18000</code></pre>
 <span id="cb15-190"><a href="#cb15-190"></a>        plt.ylabel(<span class="st">'Loss'</span>)</span>
 <span id="cb15-191"><a href="#cb15-191"></a>        plt.legend()</span>
 <span id="cb15-192"><a href="#cb15-192"></a>        plt.tight_layout()</span>
-<span id="cb15-193"><a href="#cb15-193"></a>        <span class="cf">return</span> fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-193"><a href="#cb15-193"></a>        <span class="cf">return</span> fig</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -792,7 +795,7 @@ Examples in Valid Loader: 18000</code></pre>
 <h2 class="anchored" data-anchor-id="create-a-model-with-sigmoid-activations">Create a model with sigmoid activations</h2>
 <p>Let’s define a fully connected 4 layers model with only <code>sigmoid</code> activations.</p>
 <div id="cell-22" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb16-2"><a href="#cb16-2"></a></span>
 <span id="cb16-3"><a href="#cb16-3"></a>SigmoidNet <span class="op">=</span> nn.Sequential()</span>
 <span id="cb16-4"><a href="#cb16-4"></a>SigmoidNet.add_module(<span class="st">"F"</span>, nn.Flatten())</span>
@@ -802,21 +805,21 @@ Examples in Valid Loader: 18000</code></pre>
 <span id="cb16-8"><a href="#cb16-8"></a>SigmoidNet.add_module(<span class="st">"S2"</span>, nn.Sigmoid())</span>
 <span id="cb16-9"><a href="#cb16-9"></a>SigmoidNet.add_module(<span class="st">"L3"</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">10</span>, bias<span class="op">=</span><span class="va">False</span>))</span>
 <span id="cb16-10"><a href="#cb16-10"></a>SigmoidNet.add_module(<span class="st">"S3"</span>, nn.Sigmoid())</span>
-<span id="cb16-11"><a href="#cb16-11"></a>SigmoidNet.add_module(<span class="st">"L4"</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">10</span>, bias<span class="op">=</span><span class="va">False</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-11"><a href="#cb16-11"></a>SigmoidNet.add_module(<span class="st">"L4"</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">10</span>, bias<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Print model’s summary.</p>
 <div id="cell-24" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>torch.manual_seed(<span class="dv">42</span>)</span>
-<span id="cb17-2"><a href="#cb17-2"></a>device <span class="op">=</span> torch.device(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>torch.manual_seed(<span class="dv">42</span>)</span>
+<span id="cb17-2"><a href="#cb17-2"></a>device <span class="op">=</span> torch.device(<span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-25" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="fd266f64-623e-49ef-c522-83437d833a2f" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">#collapse-output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a><span class="im">from</span> torchsummary <span class="im">import</span> summary</span>
 <span id="cb18-3"><a href="#cb18-3"></a></span>
 <span id="cb18-4"><a href="#cb18-4"></a>model_sigmoid <span class="op">=</span> SigmoidNet</span>
 <span id="cb18-5"><a href="#cb18-5"></a>model_sigmoid <span class="op">=</span> model_sigmoid.to(device)</span>
 <span id="cb18-6"><a href="#cb18-6"></a></span>
-<span id="cb18-7"><a href="#cb18-7"></a>summary(model_sigmoid, (<span class="dv">1</span>, <span class="dv">28</span><span class="op">*</span><span class="dv">28</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-7"><a href="#cb18-7"></a>summary(model_sigmoid, (<span class="dv">1</span>, <span class="dv">28</span><span class="op">*</span><span class="dv">28</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>----------------------------------------------------------------
         Layer (type)               Output Shape         Param #
@@ -843,7 +846,7 @@ Estimated Total Size (MB): 0.04
 </div>
 <p>Create an optimizer and a loss function.</p>
 <div id="cell-27" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
 <span id="cb20-2"><a href="#cb20-2"></a></span>
 <span id="cb20-3"><a href="#cb20-3"></a><span class="co"># learning rate</span></span>
 <span id="cb20-4"><a href="#cb20-4"></a>lr <span class="op">=</span> <span class="fl">0.001</span></span>
@@ -852,16 +855,16 @@ Estimated Total Size (MB): 0.04
 <span id="cb20-7"><a href="#cb20-7"></a>optimizer_sigmoid <span class="op">=</span> optim.SGD(model_sigmoid.parameters(), lr<span class="op">=</span>lr)</span>
 <span id="cb20-8"><a href="#cb20-8"></a></span>
 <span id="cb20-9"><a href="#cb20-9"></a><span class="co"># Defines a BCE loss function</span></span>
-<span id="cb20-10"><a href="#cb20-10"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-10"><a href="#cb20-10"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Train our model for 15 epochs.</p>
 <div id="cell-29" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="d40bd62b-2c49-4c80-fbdd-0faaade50292" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">#collapse-output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a>n_epochs <span class="op">=</span> <span class="dv">15</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a></span>
 <span id="cb21-4"><a href="#cb21-4"></a>dlp_sigmoid <span class="op">=</span> DeepLearningPipeline(model_sigmoid, loss_fn, optimizer_sigmoid)</span>
 <span id="cb21-5"><a href="#cb21-5"></a>dlp_sigmoid.set_loaders(train_loader, valid_loader)</span>
-<span id="cb21-6"><a href="#cb21-6"></a>dlp_sigmoid.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-6"><a href="#cb21-6"></a>dlp_sigmoid.train(n_epochs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>epoch:   0, train loss: 2.38803, valid loss: 2.34602
 epoch:   1, train loss: 2.37269, valid loss: 2.33644
@@ -882,7 +885,7 @@ epoch:  14, train loss: 2.30266, valid loss: 2.30254</code></pre>
 </div>
 <p>Let’s see how our training and validation loss looks like.</p>
 <div id="cell-31" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:297}}" data-outputid="7e5ef117-77b8-4b03-d774-c7f3dc83ecff" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>fig <span class="op">=</span> dlp_sigmoid.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>fig <span class="op">=</span> dlp_sigmoid.plot_losses()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -896,7 +899,7 @@ epoch:  14, train loss: 2.30266, valid loss: 2.30254</code></pre>
 <h2 class="anchored" data-anchor-id="create-a-model-with-relu-activations">Create a model with ReLU activations</h2>
 <p>This time let’s define the same model with ReLU activation functions.</p>
 <div id="cell-33" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>ReluNet <span class="op">=</span> nn.Sequential()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>ReluNet <span class="op">=</span> nn.Sequential()</span>
 <span id="cb24-2"><a href="#cb24-2"></a>ReluNet.add_module(<span class="st">"F"</span>, nn.Flatten())</span>
 <span id="cb24-3"><a href="#cb24-3"></a>ReluNet.add_module(<span class="st">"L1"</span>, nn.Linear(<span class="dv">28</span><span class="op">*</span><span class="dv">28</span>, <span class="dv">10</span>, bias<span class="op">=</span><span class="va">False</span>))</span>
 <span id="cb24-4"><a href="#cb24-4"></a>ReluNet.add_module(<span class="st">"S1"</span>, nn.ReLU())</span>
@@ -904,15 +907,15 @@ epoch:  14, train loss: 2.30266, valid loss: 2.30254</code></pre>
 <span id="cb24-6"><a href="#cb24-6"></a>ReluNet.add_module(<span class="st">"S2"</span>, nn.ReLU())</span>
 <span id="cb24-7"><a href="#cb24-7"></a>ReluNet.add_module(<span class="st">"L3"</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">10</span>, bias<span class="op">=</span><span class="va">False</span>))</span>
 <span id="cb24-8"><a href="#cb24-8"></a>ReluNet.add_module(<span class="st">"S3"</span>, nn.ReLU())</span>
-<span id="cb24-9"><a href="#cb24-9"></a>ReluNet.add_module(<span class="st">"L4"</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">10</span>, bias<span class="op">=</span><span class="va">False</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-9"><a href="#cb24-9"></a>ReluNet.add_module(<span class="st">"L4"</span>, nn.Linear(<span class="dv">10</span>, <span class="dv">10</span>, bias<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Print the model’s summary.</p>
 <div id="cell-35" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="255049fa-1f53-4386-ba7b-6eb7705b9758" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">#collapse-output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb25-2"><a href="#cb25-2"></a>model_relu <span class="op">=</span> ReluNet</span>
 <span id="cb25-3"><a href="#cb25-3"></a>model_relu <span class="op">=</span> model_relu.to(device)</span>
 <span id="cb25-4"><a href="#cb25-4"></a></span>
-<span id="cb25-5"><a href="#cb25-5"></a>summary(model_relu, (<span class="dv">1</span>, <span class="dv">28</span><span class="op">*</span><span class="dv">28</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-5"><a href="#cb25-5"></a>summary(model_relu, (<span class="dv">1</span>, <span class="dv">28</span><span class="op">*</span><span class="dv">28</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>----------------------------------------------------------------
         Layer (type)               Output Shape         Param #
@@ -939,22 +942,22 @@ Estimated Total Size (MB): 0.04
 </div>
 <p>Create an optimizer and a loss function.</p>
 <div id="cell-37" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a>lr <span class="op">=</span> <span class="fl">0.001</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a>lr <span class="op">=</span> <span class="fl">0.001</span></span>
 <span id="cb27-2"><a href="#cb27-2"></a></span>
 <span id="cb27-3"><a href="#cb27-3"></a><span class="co"># Defines a SGD optimizer to update the parameters</span></span>
 <span id="cb27-4"><a href="#cb27-4"></a>optimizer_relu <span class="op">=</span> optim.SGD(model_relu.parameters(), lr<span class="op">=</span>lr)</span>
 <span id="cb27-5"><a href="#cb27-5"></a></span>
 <span id="cb27-6"><a href="#cb27-6"></a><span class="co"># Defines a BCE loss function</span></span>
-<span id="cb27-7"><a href="#cb27-7"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-7"><a href="#cb27-7"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Train the model for 15 epochs.</p>
 <div id="cell-39" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="61417d51-533b-47ea-df01-8d7cc0024a63" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">#collapse-output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a>n_epochs <span class="op">=</span> <span class="dv">15</span></span>
 <span id="cb28-3"><a href="#cb28-3"></a></span>
 <span id="cb28-4"><a href="#cb28-4"></a>dlp_relu <span class="op">=</span> DeepLearningPipeline(model_relu, loss_fn, optimizer_relu)</span>
 <span id="cb28-5"><a href="#cb28-5"></a>dlp_relu.set_loaders(train_loader, valid_loader)</span>
-<span id="cb28-6"><a href="#cb28-6"></a>dlp_relu.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-6"><a href="#cb28-6"></a>dlp_relu.train(n_epochs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>epoch:   0, train loss: 2.30268, valid loss: 2.30202
 epoch:   1, train loss: 2.30229, valid loss: 2.30165
@@ -975,7 +978,7 @@ epoch:  14, train loss: 2.27912, valid loss: 2.28062</code></pre>
 </div>
 <p>Now plot the model losses.</p>
 <div id="cell-41" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:297}}" data-outputid="d15435ca-a8fe-4926-8c71-03fd69a8e0f2" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>fig <span class="op">=</span> dlp_relu.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>fig <span class="op">=</span> dlp_relu.plot_losses()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -995,7 +998,7 @@ epoch:  14, train loss: 2.27912, valid loss: 2.28062</code></pre>
 <div id="cell-44" class="cell" data-execution_count="20">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
 <span id="cb31-2"><a href="#cb31-2"></a></span>
 <span id="cb31-3"><a href="#cb31-3"></a><span class="kw">def</span> plot_gradients(grads, epoch<span class="op">=</span><span class="dv">0</span>):</span>
 <span id="cb31-4"><a href="#cb31-4"></a>    <span class="co">"""</span></span>
@@ -1020,13 +1023,13 @@ epoch:  14, train loss: 2.27912, valid loss: 2.28062</code></pre>
 <span id="cb31-23"><a href="#cb31-23"></a>    )</span>
 <span id="cb31-24"><a href="#cb31-24"></a>    fig.subplots_adjust(wspace<span class="op">=</span><span class="fl">0.45</span>)</span>
 <span id="cb31-25"><a href="#cb31-25"></a>    plt.show()</span>
-<span id="cb31-26"><a href="#cb31-26"></a>    plt.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-26"><a href="#cb31-26"></a>    plt.close()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Plot the gradients for model with sigmoid activations.</p>
 <div id="cell-46" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:1000}}" data-outputid="3cc92299-0971-4cf6-8864-f06b6228f5ed" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(dlp_sigmoid.grad)):</span>
-<span id="cb32-2"><a href="#cb32-2"></a>    plot_gradients(dlp_sigmoid.grad[i], i)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(dlp_sigmoid.grad)):</span>
+<span id="cb32-2"><a href="#cb32-2"></a>    plot_gradients(dlp_sigmoid.grad[i], i)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1158,7 +1161,7 @@ epoch:  14, train loss: 2.27912, valid loss: 2.28062</code></pre>
 <h3 class="anchored" data-anchor-id="can-we-improve-our-sigmoidnet">Can we improve our SigmoidNet?</h3>
 <p>Let’s train another SigmoidNet with the same configuration but with <code>xavior initialization</code> , and observe how it behaves now.</p>
 <div id="cell-49" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="9ca2c3bf-dedf-4904-d3ba-ac2f8581e0de" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co">#collapse-output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb33-2"><a href="#cb33-2"></a>model_sigmoid_v1 <span class="op">=</span> SigmoidNet</span>
 <span id="cb33-3"><a href="#cb33-3"></a>model_sigmoid_v1 <span class="op">=</span> model_sigmoid_v1.to(device)</span>
 <span id="cb33-4"><a href="#cb33-4"></a></span>
@@ -1180,7 +1183,7 @@ epoch:  14, train loss: 2.27912, valid loss: 2.28062</code></pre>
 <span id="cb33-20"><a href="#cb33-20"></a></span>
 <span id="cb33-21"><a href="#cb33-21"></a>dlp_sigmoid_v1 <span class="op">=</span> DeepLearningPipeline(model_sigmoid_v1, loss_fn, optimizer_sigmoid)</span>
 <span id="cb33-22"><a href="#cb33-22"></a>dlp_sigmoid_v1.set_loaders(train_loader, valid_loader)</span>
-<span id="cb33-23"><a href="#cb33-23"></a>dlp_sigmoid_v1.train(n_epochs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-23"><a href="#cb33-23"></a>dlp_sigmoid_v1.train(n_epochs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>epoch:   0, train loss: 2.49727, valid loss: 2.45576
 epoch:   1, train loss: 2.46252, valid loss: 2.42681
@@ -1200,7 +1203,7 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 </div>
 </div>
 <div id="cell-50" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:297}}" data-outputid="fcb7b68d-2814-455a-8f39-bc3148f15fe8" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a>fig <span class="op">=</span> dlp_sigmoid_v1.plot_losses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a>fig <span class="op">=</span> dlp_sigmoid_v1.plot_losses()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1210,10 +1213,10 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 </div>
 </div>
 <div id="cell-51" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:1000}}" data-outputid="3670ae2d-854b-434b-bb68-3afa04a3cdac" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">##</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a><span class="co">#  SigmoidNet gradients with xavior initialization</span></span>
 <span id="cb36-3"><a href="#cb36-3"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(dlp_sigmoid_v1.grad)):</span>
-<span id="cb36-4"><a href="#cb36-4"></a>    plot_gradients(dlp_sigmoid_v1.grad[i], i)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-4"><a href="#cb36-4"></a>    plot_gradients(dlp_sigmoid_v1.grad[i], i)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1328,7 +1331,7 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <div id="cell-53" class="cell" data-execution_count="25">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb37-2"><a href="#cb37-2"></a></span>
 <span id="cb37-3"><a href="#cb37-3"></a><span class="co"># A helper function to get gradients of a weight layer for all epochs.</span></span>
 <span id="cb37-4"><a href="#cb37-4"></a><span class="kw">def</span> get_layer_gradients(layer_name, layer_grads):</span>
@@ -1341,13 +1344,13 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <span id="cb37-11"><a href="#cb37-11"></a>        epoch_df <span class="op">=</span> pd.DataFrame(temp)</span>
 <span id="cb37-12"><a href="#cb37-12"></a>        df <span class="op">=</span> df.append(epoch_df, ignore_index<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb37-13"><a href="#cb37-13"></a></span>
-<span id="cb37-14"><a href="#cb37-14"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-14"><a href="#cb37-14"></a>    <span class="cf">return</span> df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Print the names for the model weight layers.</p>
 <div id="cell-55" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="86301275-9a01-448c-8df0-aefa5898cd93" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>weight_layers_sigmoid_v1 <span class="op">=</span> <span class="bu">list</span>(dlp_sigmoid_v1.grad[<span class="dv">0</span>].keys())</span>
-<span id="cb38-2"><a href="#cb38-2"></a>weight_layers_sigmoid_v1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>weight_layers_sigmoid_v1 <span class="op">=</span> <span class="bu">list</span>(dlp_sigmoid_v1.grad[<span class="dv">0</span>].keys())</span>
+<span id="cb38-2"><a href="#cb38-2"></a>weight_layers_sigmoid_v1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="26">
 <pre><code>['L1.weight', 'L2.weight', 'L3.weight', 'L4.weight']</code></pre>
 </div>
@@ -1358,19 +1361,19 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <li><code>g</code>: for epoch</li>
 </ul>
 <div id="cell-57" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:206}}" data-outputid="3810fa67-b4e1-49e0-9371-d1530aa7c90a" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a>df0_sigmoid_v1 <span class="op">=</span> get_layer_gradients(weight_layers_sigmoid_v1[<span class="dv">0</span>], dlp_sigmoid_v1.grad)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a>df0_sigmoid_v1 <span class="op">=</span> get_layer_gradients(weight_layers_sigmoid_v1[<span class="dv">0</span>], dlp_sigmoid_v1.grad)</span>
 <span id="cb40-2"><a href="#cb40-2"></a>df1_sigmoid_v1 <span class="op">=</span> get_layer_gradients(weight_layers_sigmoid_v1[<span class="dv">1</span>], dlp_sigmoid_v1.grad)</span>
 <span id="cb40-3"><a href="#cb40-3"></a>df2_sigmoid_v1 <span class="op">=</span> get_layer_gradients(weight_layers_sigmoid_v1[<span class="dv">2</span>], dlp_sigmoid_v1.grad)</span>
 <span id="cb40-4"><a href="#cb40-4"></a>df3_sigmoid_v1 <span class="op">=</span> get_layer_gradients(weight_layers_sigmoid_v1[<span class="dv">3</span>], dlp_sigmoid_v1.grad)</span>
 <span id="cb40-5"><a href="#cb40-5"></a></span>
-<span id="cb40-6"><a href="#cb40-6"></a>df3_sigmoid_v1.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb40-6"><a href="#cb40-6"></a>df3_sigmoid_v1.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="27">
 <div id="df-182a959d-0aab-4660-88bd-f6ed76affdea">
     <div class="colab-df-container">
       <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -1380,27 +1383,27 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
+<th data-quarto-table-cell-role="th">0</th>
 <td>-0.003590</td>
 <td>0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">1</td>
+<th data-quarto-table-cell-role="th">1</th>
 <td>-0.002747</td>
 <td>0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
+<th data-quarto-table-cell-role="th">2</th>
 <td>-0.002291</td>
 <td>0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
+<th data-quarto-table-cell-role="th">3</th>
 <td>-0.006168</td>
 <td>0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
+<th data-quarto-table-cell-role="th">4</th>
 <td>-0.002711</td>
 <td>0</td>
 </tr>
@@ -1485,7 +1488,7 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <div id="cell-58" class="cell" data-execution_count="28">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="co"># Another helper function to create the ridge plots</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="co"># Another helper function to create the ridge plots</span></span>
 <span id="cb41-2"><a href="#cb41-2"></a><span class="kw">def</span> plot_gradients_ridge_v1(df, layer_name):</span>
 <span id="cb41-3"><a href="#cb41-3"></a>    sns.set_theme(style<span class="op">=</span><span class="st">"white"</span>, rc<span class="op">=</span>{<span class="st">"axes.facecolor"</span>: (<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)})</span>
 <span id="cb41-4"><a href="#cb41-4"></a></span>
@@ -1522,14 +1525,14 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <span id="cb41-35"><a href="#cb41-35"></a>    g.<span class="bu">set</span>(yticks<span class="op">=</span>[], ylabel<span class="op">=</span><span class="st">""</span>)</span>
 <span id="cb41-36"><a href="#cb41-36"></a>    g.despine(bottom<span class="op">=</span><span class="va">True</span>, left<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb41-37"><a href="#cb41-37"></a></span>
-<span id="cb41-38"><a href="#cb41-38"></a>    <span class="cf">return</span> g</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-38"><a href="#cb41-38"></a>    <span class="cf">return</span> g</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Create plots for all weight layer.</p>
 <div id="cell-60" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:1000}}" data-outputid="81dea6f3-3f3f-452a-872c-e00898bdbda3" data-execution_count="29">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co"># https://stackoverflow.com/questions/35042255/how-to-plot-multiple-seaborn-jointplot-in-subplot</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co"># https://stackoverflow.com/questions/35042255/how-to-plot-multiple-seaborn-jointplot-in-subplot</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a><span class="im">import</span> warnings</span>
 <span id="cb42-3"><a href="#cb42-3"></a><span class="im">import</span> matplotlib.image <span class="im">as</span> mpimg</span>
 <span id="cb42-4"><a href="#cb42-4"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
@@ -1564,7 +1567,7 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <span id="cb42-33"><a href="#cb42-33"></a>[ax.set_axis_off() <span class="cf">for</span> ax <span class="kw">in</span> axarr.ravel()]</span>
 <span id="cb42-34"><a href="#cb42-34"></a></span>
 <span id="cb42-35"><a href="#cb42-35"></a>plt.tight_layout()</span>
-<span id="cb42-36"><a href="#cb42-36"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-36"><a href="#cb42-36"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1587,8 +1590,8 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <h2 class="anchored" data-anchor-id="gradients-for-a-model-with-relu-activations">Gradients for a model with ReLU activations</h2>
 <p>In this section we will visualize gradients for our model with ReLU activations.</p>
 <div id="cell-63" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:1000}}" data-outputid="3fc49cf2-5b03-4485-8add-9721c946fcff" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(dlp_relu.grad)):</span>
-<span id="cb43-2"><a href="#cb43-2"></a>    plot_gradients(dlp_relu.grad[i], i)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(dlp_relu.grad)):</span>
+<span id="cb43-2"><a href="#cb43-2"></a>    plot_gradients(dlp_relu.grad[i], i)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1708,7 +1711,7 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <div id="cell-66" class="cell" data-execution_count="31">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="co"># a helper function relu ridge plots. </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="co"># a helper function relu ridge plots. </span></span>
 <span id="cb44-2"><a href="#cb44-2"></a><span class="co"># same as 'plot_gradients_ridge_v1' but with added limits</span></span>
 <span id="cb44-3"><a href="#cb44-3"></a><span class="kw">def</span> plot_gradients_ridge_v2(df, layer_name):</span>
 <span id="cb44-4"><a href="#cb44-4"></a>    sns.set_theme(style<span class="op">=</span><span class="st">"white"</span>, rc<span class="op">=</span>{<span class="st">"axes.facecolor"</span>: (<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)})</span>
@@ -1745,24 +1748,24 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <span id="cb44-35"><a href="#cb44-35"></a>    g.despine(bottom<span class="op">=</span><span class="va">True</span>, left<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb44-36"><a href="#cb44-36"></a>    plt.xticks(fontsize<span class="op">=</span><span class="dv">35</span>)</span>
 <span id="cb44-37"><a href="#cb44-37"></a></span>
-<span id="cb44-38"><a href="#cb44-38"></a>    <span class="cf">return</span> g</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-38"><a href="#cb44-38"></a>    <span class="cf">return</span> g</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-67" class="cell" data-execution_count="32">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>weight_layers_relu <span class="op">=</span> <span class="bu">list</span>(dlp_relu.grad[<span class="dv">0</span>].keys())</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>weight_layers_relu <span class="op">=</span> <span class="bu">list</span>(dlp_relu.grad[<span class="dv">0</span>].keys())</span>
 <span id="cb45-2"><a href="#cb45-2"></a></span>
 <span id="cb45-3"><a href="#cb45-3"></a>df0_relu <span class="op">=</span> get_layer_gradients(weight_layers_relu[<span class="dv">0</span>], dlp_relu.grad)</span>
 <span id="cb45-4"><a href="#cb45-4"></a>df1_relu <span class="op">=</span> get_layer_gradients(weight_layers_relu[<span class="dv">1</span>], dlp_relu.grad)</span>
 <span id="cb45-5"><a href="#cb45-5"></a>df2_relu <span class="op">=</span> get_layer_gradients(weight_layers_relu[<span class="dv">2</span>], dlp_relu.grad)</span>
-<span id="cb45-6"><a href="#cb45-6"></a>df3_relu <span class="op">=</span> get_layer_gradients(weight_layers_relu[<span class="dv">3</span>], dlp_relu.grad)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-6"><a href="#cb45-6"></a>df3_relu <span class="op">=</span> get_layer_gradients(weight_layers_relu[<span class="dv">3</span>], dlp_relu.grad)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-68" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:991}}" data-outputid="284e39fa-5026-4b7a-a925-ff0e706e280c" data-execution_count="33">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="im">import</span> matplotlib.image <span class="im">as</span> mpimg</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="im">import</span> matplotlib.image <span class="im">as</span> mpimg</span>
 <span id="cb46-2"><a href="#cb46-2"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
 <span id="cb46-3"><a href="#cb46-3"></a></span>
 <span id="cb46-4"><a href="#cb46-4"></a>g1 <span class="op">=</span> plot_gradients_ridge_v2(df0_relu, weight_layers_relu[<span class="dv">0</span>])</span>
@@ -1795,7 +1798,7 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
 <span id="cb46-31"><a href="#cb46-31"></a>[ax.set_axis_off() <span class="cf">for</span> ax <span class="kw">in</span> axarr.ravel()]</span>
 <span id="cb46-32"><a href="#cb46-32"></a></span>
 <span id="cb46-33"><a href="#cb46-33"></a>plt.tight_layout()</span>
-<span id="cb46-34"><a href="#cb46-34"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb46-34"><a href="#cb46-34"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1874,13 +1877,14 @@ epoch:  14, train loss: 2.30993, valid loss: 2.30946</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

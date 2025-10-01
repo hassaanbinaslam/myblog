@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -136,6 +137,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -265,8 +268,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </figure>
 </div>
 <p>First, switch to the root user and update the system packages.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">sudo</span> <span class="at">-i</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">yum</span> update <span class="at">-y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">sudo</span> <span class="at">-i</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">yum</span> update <span class="at">-y</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/yum-update.PNG" class="img-fluid figure-img"></p>
@@ -274,8 +277,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </figure>
 </div>
 <p>Next, we’ll install a suite of essential development tools and libraries.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">yum</span> groupinstall <span class="st">"Development Tools"</span> <span class="at">-y</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">yum</span> install <span class="at">-y</span> nasm glibc-static expat-static gperf zlib-static cmake</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">yum</span> groupinstall <span class="st">"Development Tools"</span> <span class="at">-y</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">yum</span> install <span class="at">-y</span> nasm glibc-static expat-static gperf zlib-static cmake</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><code>Development Tools</code>: This is a group of packages that includes essentials like <code>gcc</code>, <code>make</code>, and other compilers.</li>
 <li><code>nasm</code>: An assembler required by <code>x264</code>.</li>
@@ -303,10 +306,10 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Now, let’s create a dedicated directory to keep all our source code organized.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/ffmpeg_sources</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="bu">cd</span> ~/ffmpeg_sources</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/ffmpeg_sources</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="bu">cd</span> ~/ffmpeg_sources</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Finally, we need to tell the system’s package configuration tool (<code>pkg-config</code>) where to find the custom libraries we are about to build. We’ll install them in <code>/usr/local</code>, so we need to add that path.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="bu">export</span> <span class="va">PKG_CONFIG_PATH</span><span class="op">=</span><span class="st">"/usr/local/lib/pkgconfig:/usr/lib64/pkgconfig"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="bu">export</span> <span class="va">PKG_CONFIG_PATH</span><span class="op">=</span><span class="st">"/usr/local/lib/pkgconfig:/usr/lib64/pkgconfig"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><a href="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/env-setup-complete.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Environment setup complete"><img src="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/env-setup-complete.PNG" class="img-fluid figure-img" alt="Environment setup complete"></a></p>
@@ -322,12 +325,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <section id="the-encoder-x264" class="level3">
 <h3 class="anchored" data-anchor-id="the-encoder-x264">1. The Encoder: <code>x264</code></h3>
 <p>This is the high-quality H.264 video encoder we had to give up in Part 2. Let’s make it our first priority.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">git</span> clone <span class="at">--branch</span> stable <span class="at">--depth</span> 1 https://code.videolan.org/videolan/x264.git</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">git</span> clone <span class="at">--branch</span> stable <span class="at">--depth</span> 1 https://code.videolan.org/videolan/x264.git</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="bu">cd</span> x264</span>
 <span id="cb5-3"><a href="#cb5-3"></a><span class="ex">./configure</span> <span class="at">--prefix</span><span class="op">=</span>/usr/local <span class="at">--enable-static</span> <span class="at">--disable-shared</span> <span class="at">--enable-pic</span></span>
 <span id="cb5-4"><a href="#cb5-4"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
 <span id="cb5-5"><a href="#cb5-5"></a><span class="fu">make</span> install</span>
-<span id="cb5-6"><a href="#cb5-6"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><code>--prefix=/usr/local</code>: Tells the build to install into our custom directory.</li>
 <li><code>--enable-static --disable-shared</code>: This is the key. We instruct it to build only the static library (<code>.a</code> file) and not a shared one (<code>.so</code> file).</li>
@@ -346,7 +349,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>To enable the <code>drawtext</code> filter, we need a whole stack of font-related libraries. We must build them in order of dependency.</p>
 <p><strong>A. Compression Libraries: <code>brotli</code> and <code>bzip2</code></strong></p>
 <p>These are low-level dependencies for the font libraries.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># Brotli</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># Brotli</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="fu">wget</span> https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz <span class="at">-O</span> brotli-1.1.0.tar.gz</span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="fu">tar</span> <span class="at">-xzf</span> brotli-1.1.0.tar.gz</span>
 <span id="cb6-4"><a href="#cb6-4"></a><span class="bu">cd</span> brotli-1.1.0/</span>
@@ -362,7 +365,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <span id="cb6-14"><a href="#cb6-14"></a><span class="bu">cd</span> bzip2-1.0.8/</span>
 <span id="cb6-15"><a href="#cb6-15"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
 <span id="cb6-16"><a href="#cb6-16"></a><span class="fu">make</span> install PREFIX=/usr/local</span>
-<span id="cb6-17"><a href="#cb6-17"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><strong>Note:</strong> Brotli uses <code>cmake</code> for its build, where <code>-DBUILD_SHARED_LIBS=OFF</code> achieves our static-only goal. <code>bzip2</code> has a unique makefile, requiring us to specify the install location with <code>PREFIX=/usr/local</code>.</li>
 </ul>
@@ -388,13 +391,13 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p><strong>B. Image Format: <code>libpng</code></strong></p>
 <p>FreeType, the font engine, needs this to handle certain font formats.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">wget</span> https://download.sourceforge.net/libpng/libpng-1.6.40.tar.gz</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">wget</span> https://download.sourceforge.net/libpng/libpng-1.6.40.tar.gz</span>
 <span id="cb7-2"><a href="#cb7-2"></a><span class="fu">tar</span> <span class="at">-xzf</span> libpng-1.6.40.tar.gz</span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="bu">cd</span> libpng-1.6.40/</span>
 <span id="cb7-4"><a href="#cb7-4"></a><span class="ex">./configure</span> <span class="at">--prefix</span><span class="op">=</span>/usr/local <span class="at">--enable-static</span> <span class="at">--disable-shared</span></span>
 <span id="cb7-5"><a href="#cb7-5"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
 <span id="cb7-6"><a href="#cb7-6"></a><span class="fu">make</span> install</span>
-<span id="cb7-7"><a href="#cb7-7"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><a href="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/libpng-installed.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="libpng installed"><img src="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/libpng-installed.PNG" class="img-fluid figure-img" alt="libpng installed"></a></p>
@@ -403,13 +406,13 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p><strong>C. The Font Engine: <code>FreeType</code></strong></p>
 <p>This is the core library that actually renders font glyphs from font files.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">wget</span> https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">wget</span> https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz</span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="fu">tar</span> <span class="at">-xzf</span> freetype-2.13.2.tar.gz</span>
 <span id="cb8-3"><a href="#cb8-3"></a><span class="bu">cd</span> freetype-2.13.2/</span>
 <span id="cb8-4"><a href="#cb8-4"></a><span class="ex">./configure</span> <span class="at">--prefix</span><span class="op">=</span>/usr/local <span class="at">--enable-static</span> <span class="at">--disable-shared</span></span>
 <span id="cb8-5"><a href="#cb8-5"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
 <span id="cb8-6"><a href="#cb8-6"></a><span class="fu">make</span> install</span>
-<span id="cb8-7"><a href="#cb8-7"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -432,7 +435,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p><strong>D. Text Layout Libraries: <code>FriBidi</code> and <code>HarfBuzz</code></strong></p>
 <p>These libraries handle complex text layout, like right-to-left languages and shaping glyphs correctly.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># FriBidi</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># FriBidi</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="fu">wget</span> https://github.com/fribidi/fribidi/releases/download/v1.0.13/fribidi-1.0.13.tar.xz</span>
 <span id="cb9-3"><a href="#cb9-3"></a><span class="fu">tar</span> <span class="at">-xf</span> fribidi-1.0.13.tar.xz</span>
 <span id="cb9-4"><a href="#cb9-4"></a><span class="bu">cd</span> fribidi-1.0.13/</span>
@@ -448,7 +451,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <span id="cb9-14"><a href="#cb9-14"></a><span class="va">LIBS</span><span class="op">=</span><span class="st">"-lbrotlidec -lbrotlicommon"</span> <span class="ex">./configure</span> <span class="at">--prefix</span><span class="op">=</span>/usr/local <span class="at">--enable-static</span> <span class="at">--disable-shared</span> <span class="at">--with-freetype</span><span class="op">=</span>yes</span>
 <span id="cb9-15"><a href="#cb9-15"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
 <span id="cb9-16"><a href="#cb9-16"></a><span class="fu">make</span> install</span>
-<span id="cb9-17"><a href="#cb9-17"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-17"><a href="#cb9-17"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><strong>Note:</strong> The <code>LIBS="..."</code> part for HarfBuzz is a crucial fix, explicitly telling it how to link with the Brotli libraries we just built.</li>
 </ul>
@@ -474,13 +477,13 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p><strong>E. Font Management: <code>Fontconfig</code></strong></p>
 <p>This is the high-level library that finds and manages the fonts on a system. It’s the final piece of our font stack.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="fu">wget</span> https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.14.2.tar.xz</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="fu">wget</span> https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.14.2.tar.xz</span>
 <span id="cb10-2"><a href="#cb10-2"></a><span class="fu">tar</span> <span class="at">-xf</span> fontconfig-2.14.2.tar.xz</span>
 <span id="cb10-3"><a href="#cb10-3"></a><span class="bu">cd</span> fontconfig-2.14.2/</span>
 <span id="cb10-4"><a href="#cb10-4"></a><span class="va">LIBS</span><span class="op">=</span><span class="st">"-lbrotlidec -lbrotlicommon"</span> <span class="ex">./configure</span> <span class="at">--prefix</span><span class="op">=</span>/usr/local <span class="at">--enable-static</span> <span class="at">--disable-shared</span></span>
 <span id="cb10-5"><a href="#cb10-5"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
 <span id="cb10-6"><a href="#cb10-6"></a><span class="fu">make</span> install</span>
-<span id="cb10-7"><a href="#cb10-7"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-7"><a href="#cb10-7"></a><span class="bu">cd</span> /root/ffmpeg_sources/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><a href="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/fontconfig2-installed.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Fontconfig2 installed"><img src="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/fontconfig2-installed.PNG" class="img-fluid figure-img" alt="Fontconfig2 installed"></a></p>
@@ -494,10 +497,10 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="the-main-event-compiling-our-custom-ffmpeg">The Main Event: Compiling Our Custom FFmpeg</h2>
 <p>With all our dependencies in place, we can finally configure and compile FFmpeg itself.</p>
 <p>First, let’s clone a recent, stable version of the FFmpeg source code.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">git</span> clone <span class="at">--depth</span> 1 <span class="at">--branch</span> n7.1 https://github.com/FFmpeg/FFmpeg.git</span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="bu">cd</span> FFmpeg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">git</span> clone <span class="at">--depth</span> 1 <span class="at">--branch</span> n7.1 https://github.com/FFmpeg/FFmpeg.git</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="bu">cd</span> FFmpeg</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Now, we construct the master command. This <code>./configure</code> script tells FFmpeg exactly how we want it to be built. Every flag matters.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1"></a><span class="ex">./configure</span> <span class="dt">\</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1"></a><span class="ex">./configure</span> <span class="dt">\</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a>  <span class="at">--prefix</span><span class="op">=</span><span class="st">"/usr/local"</span> <span class="dt">\</span></span>
 <span id="cb12-3"><a href="#cb12-3"></a>  <span class="at">--pkg-config-flags</span><span class="op">=</span><span class="st">"--static"</span> <span class="dt">\</span></span>
 <span id="cb12-4"><a href="#cb12-4"></a>  <span class="at">--extra-cflags</span><span class="op">=</span><span class="st">"-I/usr/local/include"</span> <span class="dt">\</span></span>
@@ -511,7 +514,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <span id="cb12-12"><a href="#cb12-12"></a>  <span class="at">--enable-libfreetype</span> <span class="dt">\</span></span>
 <span id="cb12-13"><a href="#cb12-13"></a>  <span class="at">--enable-libfontconfig</span> <span class="dt">\</span></span>
 <span id="cb12-14"><a href="#cb12-14"></a>  <span class="at">--enable-libfribidi</span> <span class="dt">\</span></span>
-<span id="cb12-15"><a href="#cb12-15"></a>  <span class="at">--enable-libharfbuzz</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-15"><a href="#cb12-15"></a>  <span class="at">--enable-libharfbuzz</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Let’s break this down:</p>
 <ul>
 <li><code>--prefix="/usr/local"</code> &amp; <code>--bindir="/output"</code>: Defines where to install the libraries (<code>/usr/local</code>) and the final executable (<code>/output</code>).</li>
@@ -528,8 +531,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </figure>
 </div>
 <p>With the configuration set, it’s time to build and install.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
-<span id="cb13-2"><a href="#cb13-2"></a><span class="fu">make</span> install</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1"></a><span class="fu">make</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="fu">make</span> install</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -562,7 +565,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="the-moment-of-truth-verification">The Moment of Truth: Verification</h2>
 <p>Did it actually work? Let’s run a series of checks to verify our new binary.</p>
 <p>First, check its dependencies with <code>ldd</code>. A statically linked executable should have no dynamic dependencies.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">ldd</span> /output/ffmpeg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">ldd</span> /output/ffmpeg</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The expected output should be:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -572,12 +575,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p>This is a perfect result. It means our binary is completely self-contained and portable—ideal for a Lambda Layer.</p>
 <div class="callout callout-style-default callout-important callout-titled" title="This is important">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-This is important
+<span class="screen-reader-only">Important</span>This is important
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -594,7 +597,7 @@ This is important
 </div>
 </div>
 <p>Next, check the version and configuration.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1"></a><span class="ex">/output/ffmpeg</span> <span class="at">-version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1"></a><span class="ex">/output/ffmpeg</span> <span class="at">-version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The output should show our custom configuration flags right at the top, confirming our build options were respected. You should see <code>--enable-gpl</code>, <code>--enable-libx264</code>, <code>--enable-libfreetype</code>, etc.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -603,11 +606,11 @@ This is important
 </figure>
 </div>
 <p>Now, let’s confirm both of our target features are present.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># Check for the drawtext filter</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># Check for the drawtext filter</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a><span class="ex">/output/ffmpeg</span> <span class="at">-filters</span> <span class="kw">|</span> <span class="fu">grep</span> drawtext</span>
 <span id="cb16-3"><a href="#cb16-3"></a></span>
 <span id="cb16-4"><a href="#cb16-4"></a><span class="co"># Check for the libx264 codec</span></span>
-<span id="cb16-5"><a href="#cb16-5"></a><span class="ex">/output/ffmpeg</span> <span class="at">-codecs</span> <span class="kw">|</span> <span class="fu">grep</span> libx264</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="ex">/output/ffmpeg</span> <span class="at">-codecs</span> <span class="kw">|</span> <span class="fu">grep</span> libx264</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Both of these commands should return a result, proving that we have successfully built a single binary with both features enabled.</p>
 <div class="quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
@@ -630,7 +633,7 @@ This is important
 </div>
 </div>
 <p>Finally, let’s check the size.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1"></a><span class="fu">ls</span> <span class="at">-lh</span> /output/ffmpeg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1"></a><span class="fu">ls</span> <span class="at">-lh</span> /output/ffmpeg</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>You’ll likely see a file size around 25-30 MB. Compare this to the 80-100+ MB of the general-purpose static builds we downloaded in Part 2. Our custom build is significantly smaller, which means faster Lambda cold starts and smaller deployment packages.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -645,7 +648,7 @@ This is important
 <section id="step-1-package-the-new-lambda-layer" class="level3">
 <h3 class="anchored" data-anchor-id="step-1-package-the-new-lambda-layer">Step 1: Package the New Lambda Layer</h3>
 <p>We’ll package it into a new Lambda Layer zip file. It’s good practice to give it a new name to avoid confusion with the layer from Part 2.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1"></a><span class="co"># Create the directory structure for our custom layer</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1"></a><span class="co"># Create the directory structure for our custom layer</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a><span class="fu">mkdir</span> <span class="at">-p</span> custom-ffmpeg-layer/bin</span>
 <span id="cb18-3"><a href="#cb18-3"></a></span>
 <span id="cb18-4"><a href="#cb18-4"></a><span class="co"># Copy our newly downloaded ffmpeg binary into it</span></span>
@@ -654,9 +657,9 @@ This is important
 <span id="cb18-7"><a href="#cb18-7"></a><span class="co"># Create the zip archive</span></span>
 <span id="cb18-8"><a href="#cb18-8"></a><span class="bu">cd</span> custom-ffmpeg-layer</span>
 <span id="cb18-9"><a href="#cb18-9"></a><span class="fu">zip</span> <span class="at">-r</span> ../custom-ffmpeg-layer.zip .</span>
-<span id="cb18-10"><a href="#cb18-10"></a><span class="bu">cd</span> ..</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-10"><a href="#cb18-10"></a><span class="bu">cd</span> ..</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>You should now have a <code>custom-ffmpeg-layer.zip</code> file by now. Let’s check the layer size as well.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1"></a><span class="fu">ls</span> <span class="at">-lh</span> custom-ffmpeg-layer.zip</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1"></a><span class="fu">ls</span> <span class="at">-lh</span> custom-ffmpeg-layer.zip</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><a href="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/custom-ffmpeg-layer.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-22" title="ffmpeg custom lambda layer"><img src="images/2025-08-03-the-horse-in-motion-ffmpeg-gotchas-part-3/custom-ffmpeg-layer.PNG" class="img-fluid figure-img" alt="ffmpeg custom lambda layer"></a></p>
@@ -668,7 +671,7 @@ This is important
 <section id="step-2-update-the-sam-template" class="level3">
 <h3 class="anchored" data-anchor-id="step-2-update-the-sam-template">Step 2: Update the SAM Template</h3>
 <p>Next, we’ll edit our <code>template.yaml</code> to point to this new layer. The only change required is updating the <code>ContentUri</code> of our <code>FFmpegLayer</code> resource.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># In template.yaml</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># In template.yaml</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a></span>
 <span id="cb20-3"><a href="#cb20-3"></a><span class="co">...</span></span>
 <span id="cb20-4"><a href="#cb20-4"></a><span class="co">  # Define the Lambda Layer</span></span>
@@ -681,12 +684,12 @@ This is important
 <span id="cb20-11"><a href="#cb20-11"></a><span class="co">      CompatibleRuntimes:</span></span>
 <span id="cb20-12"><a href="#cb20-12"></a><span class="co">        - python3.12</span></span>
 <span id="cb20-13"><a href="#cb20-13"></a><span class="co">        - python3.13</span></span>
-<span id="cb20-14"><a href="#cb20-14"></a><span class="co">...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-14"><a href="#cb20-14"></a><span class="co">...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="step-3-update-the-lambda-function-code-the-payoff" class="level3">
 <h3 class="anchored" data-anchor-id="step-3-update-the-lambda-function-code-the-payoff">Step 3: Update the Lambda Function Code (The Payoff!)</h3>
 <p>This is the moment we’ve been working towards. We can now update our <code>src/app.py</code> to use the high-quality <code>libx264</code> encoder. This is the one-line change that makes this entire effort worthwhile.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># In src/app.py</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># In src/app.py</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a>...</span>
 <span id="cb21-3"><a href="#cb21-3"></a>        <span class="co"># When a layer is used, its contents are available in the /opt directory.</span></span>
 <span id="cb21-4"><a href="#cb21-4"></a>        <span class="co"># Our FFmpeg binary is therefore at /opt/bin/ffmpeg.</span></span>
@@ -711,17 +714,17 @@ This is important
 <span id="cb21-23"><a href="#cb21-23"></a>            output_path,</span>
 <span id="cb21-24"><a href="#cb21-24"></a>        ]</span>
 <span id="cb21-25"><a href="#cb21-25"></a></span>
-<span id="cb21-26"><a href="#cb21-26"></a>...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-26"><a href="#cb21-26"></a>...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>No other changes to the Python code are necessary.</p>
 </section>
 <section id="step-4-deploy-and-test" class="level3">
 <h3 class="anchored" data-anchor-id="step-4-deploy-and-test">Step 4: Deploy and Test</h3>
 <p>With our new layer and updated code, we’re ready for the final deployment. Run the standard SAM commands from your project’s root directory:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1"></a><span class="co"># Build the application with the new layer</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1"></a><span class="co"># Build the application with the new layer</span></span>
 <span id="cb22-2"><a href="#cb22-2"></a><span class="ex">sam</span> build</span>
 <span id="cb22-3"><a href="#cb22-3"></a></span>
 <span id="cb22-4"><a href="#cb22-4"></a><span class="co"># Deploy the changes to AWS</span></span>
-<span id="cb22-5"><a href="#cb22-5"></a><span class="ex">sam</span> deploy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-5"><a href="#cb22-5"></a><span class="ex">sam</span> deploy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>After the deployment completes, invoke your Lambda function one last time. Check the CloudWatch logs, and you should see the FFmpeg command execute successfully. Then, head over to your S3 bucket. You will find a new <code>horse-in-motion.mp4</code> file, created by your very own, custom-built, highly-optimized FFmpeg binary, running live in the cloud!</p>
 <p>Here is final video output: </p><div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/ETgnuIz5E2Q" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div><p></p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Code checkpoint">
@@ -730,7 +733,7 @@ This is important
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Code checkpoint
+<span class="screen-reader-only">Tip</span>Code checkpoint
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -805,13 +808,14 @@ Code checkpoint
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

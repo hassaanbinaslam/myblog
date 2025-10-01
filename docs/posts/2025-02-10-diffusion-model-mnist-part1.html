@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -136,6 +137,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -297,19 +300,19 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <li>I have also tested this notebook with AWS SageMaker Jupyter Notebook running on instance “ml.g5.xlarge” and image “SageMaker Distribution 2.3.0”.</li>
 </ul>
 <div id="47c651f8-0f51-44cb-8df6-54dd96313c33" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span>pip install datasets[vision]</span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="op">!</span>pip install diffusers</span>
 <span id="cb1-4"><a href="#cb1-4"></a><span class="op">!</span>pip install watermark</span>
 <span id="cb1-5"><a href="#cb1-5"></a><span class="op">!</span>pip install torchinfo</span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="op">!</span>pip install matplotlib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="op">!</span>pip install matplotlib</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://github.com/rasbt/watermark">WaterMark</a> is an IPython magic extension for printing date and time stamps, version numbers, and hardware information. Let’s load this extension and print the environment details.</p>
 <div id="64dd2d3c-631e-43b2-ab87-b0e9e0c1bafa" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="9af53e1f-1b21-4ba4-84a9-f5df6c2c1f6b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="1ded64c8-c97b-4e32-9c10-958b87cbfd57" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p torch,torchvision,datasets,diffusers,matplotlib,watermark,torchinfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p torch,torchvision,datasets,diffusers,matplotlib,watermark,torchinfo</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Python implementation: CPython
 Python version       : 3.11.11
@@ -343,9 +346,9 @@ Architecture: 64bit
 <h3 class="anchored" data-anchor-id="loading-the-mnist-dataset">Loading the MNIST Dataset</h3>
 <p>Loading the MNIST dataset is incredibly easy, thanks to the <a href="https://huggingface.co/docs/datasets/en/index">Hugging Face <code>datasets</code> library</a>. With just one line of code, we can download and load the dataset:</p>
 <div id="55e2d7b7-2dfe-486f-bd9f-6a109ea1177e" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="a688cea1-b0ac-4bab-9b17-fb4ff1ab92dc" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
 <span id="cb5-2"><a href="#cb5-2"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"mnist"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="bu">print</span>(dataset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="bu">print</span>(dataset)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/usr/local/lib/python3.11/dist-packages/huggingface_hub/utils/_auth.py:94: UserWarning: 
 The secret `HF_TOKEN` does not exist in your Colab secrets.
@@ -379,7 +382,7 @@ Please note that authentication is recommended but still optional to access publ
 </ul>
 <p>Let’s display a sample image from the training dataset.</p>
 <div id="cbf44cc1-03a6-4daa-b255-1a2caca61594" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:80}}" data-outputid="6cc393e6-7163-47ff-8b2b-31880354e6c3" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> display</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> display</span>
 <span id="cb8-2"><a href="#cb8-2"></a></span>
 <span id="cb8-3"><a href="#cb8-3"></a><span class="co"># Extract a sample image from the dataset</span></span>
 <span id="cb8-4"><a href="#cb8-4"></a>sample_image <span class="op">=</span> dataset[<span class="st">"train"</span>][<span class="st">"image"</span>][<span class="dv">0</span>]</span>
@@ -389,7 +392,7 @@ Please note that authentication is recommended but still optional to access publ
 <span id="cb8-8"><a href="#cb8-8"></a><span class="bu">print</span>(<span class="st">"Image Size:"</span>, sample_image.size)  <span class="co"># Displays dimensions of the image</span></span>
 <span id="cb8-9"><a href="#cb8-9"></a></span>
 <span id="cb8-10"><a href="#cb8-10"></a><span class="co"># Display the image</span></span>
-<span id="cb8-11"><a href="#cb8-11"></a>display(sample_image)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-11"><a href="#cb8-11"></a>display(sample_image)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Data Type: &lt;class 'PIL.PngImagePlugin.PngImageFile'&gt;
 Image Size: (28, 28)</code></pre>
@@ -404,13 +407,13 @@ Image Size: (28, 28)</code></pre>
 </div>
 <p>From the last cell output, you can see the loaded images are object of <a href="https://pillow.readthedocs.io/en/stable/index.html">Python Image Library (PIL)</a> and are very tiny in their actual size. Let’s enlarge the sample image and view it up close.</p>
 <div id="fc933555-f744-438d-8f75-127cb4502ef6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:422}}" data-outputid="4514e571-d5ab-4f6a-abe1-65b2009b9752" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb10-2"><a href="#cb10-2"></a></span>
 <span id="cb10-3"><a href="#cb10-3"></a><span class="co"># Display the image with a larger size</span></span>
 <span id="cb10-4"><a href="#cb10-4"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">5</span>))  <span class="co"># Adjust the figure size as needed</span></span>
 <span id="cb10-5"><a href="#cb10-5"></a>plt.imshow(sample_image, cmap<span class="op">=</span><span class="st">"gray"</span>)  <span class="co"># Use "gray" colormap for MNIST images</span></span>
 <span id="cb10-6"><a href="#cb10-6"></a>plt.axis(<span class="st">"off"</span>)  <span class="co"># Hide axis for better visibility</span></span>
-<span id="cb10-7"><a href="#cb10-7"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-7"><a href="#cb10-7"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -421,14 +424,14 @@ Image Size: (28, 28)</code></pre>
 </div>
 <p>Each image is made up of small square pixels, with values ranging from 0 (black) to 255 (white). The grayscale intensity of each pixel determines how bright or dark it appears. By displaying these pixel values, we can understand how the model sees the image.</p>
 <div id="efcc90ee-b29c-40bd-b4b6-589554238130" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="c2a9faed-4644-44bf-fec5-7621d05a3cbc" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb11-2"><a href="#cb11-2"></a></span>
 <span id="cb11-3"><a href="#cb11-3"></a><span class="co"># Convert image to NumPy array</span></span>
 <span id="cb11-4"><a href="#cb11-4"></a>image_array <span class="op">=</span> np.array(sample_image)</span>
 <span id="cb11-5"><a href="#cb11-5"></a></span>
 <span id="cb11-6"><a href="#cb11-6"></a><span class="co"># Print the pixel values in a structured format</span></span>
 <span id="cb11-7"><a href="#cb11-7"></a><span class="cf">for</span> row <span class="kw">in</span> image_array:</span>
-<span id="cb11-8"><a href="#cb11-8"></a>    <span class="bu">print</span>(<span class="st">" "</span>.join(<span class="ss">f"</span><span class="sc">{</span>pixel<span class="sc">:3}</span><span class="ss">"</span> <span class="cf">for</span> pixel <span class="kw">in</span> row))  <span class="co"># Align values properly</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-8"><a href="#cb11-8"></a>    <span class="bu">print</span>(<span class="st">" "</span>.join(<span class="ss">f"</span><span class="sc">{</span>pixel<span class="sc">:3}</span><span class="ss">"</span> <span class="cf">for</span> pixel <span class="kw">in</span> row))  <span class="co"># Align values properly</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
@@ -472,7 +475,7 @@ Image Size: (28, 28)</code></pre>
 </ul>
 <p>Below is the code for our preprocessing pipeline:</p>
 <div id="4a63822a-e60a-4afc-a8d7-894c672e236f" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> torch</span>
 <span id="cb13-2"><a href="#cb13-2"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
 <span id="cb13-3"><a href="#cb13-3"></a></span>
 <span id="cb13-4"><a href="#cb13-4"></a>image_size <span class="op">=</span> <span class="dv">32</span>  <span class="co"># Define the target image size (e.g., 32x32)</span></span>
@@ -480,7 +483,7 @@ Image Size: (28, 28)</code></pre>
 <span id="cb13-6"><a href="#cb13-6"></a>preprocess <span class="op">=</span> transforms.Compose([</span>
 <span id="cb13-7"><a href="#cb13-7"></a>    transforms.Resize((image_size, image_size)),  <span class="co"># Resize images to a fixed size</span></span>
 <span id="cb13-8"><a href="#cb13-8"></a>    transforms.ToTensor(),  <span class="co"># Convert images to tensors &amp; scale pixel values to [0, 1]</span></span>
-<span id="cb13-9"><a href="#cb13-9"></a>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-9"><a href="#cb13-9"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Each function in <code>transforms.Compose()</code> plays a crucial role in preparing the images:</p>
 <ul>
@@ -503,13 +506,13 @@ Image Size: (28, 28)</code></pre>
 <p>With our preprocessing pipeline defined, we now need to <strong>apply it to the dataset</strong>. Instead of modifying the dataset in advance, we’ll use <strong>on-the-fly transformations</strong> — ensuring preprocessing is applied only when data is accessed, keeping memory usage efficient.</p>
 <p>To achieve this, we define a transformation function and set it for our dataset:</p>
 <div id="ac0ee97c-b8bb-4aba-a62a-4ac26a3fec89" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># Define the transform function</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># Define the transform function</span></span>
 <span id="cb14-2"><a href="#cb14-2"></a><span class="kw">def</span> transform(examples):</span>
 <span id="cb14-3"><a href="#cb14-3"></a>    examples <span class="op">=</span> [preprocess(image) <span class="cf">for</span> image <span class="kw">in</span> examples[<span class="st">"image"</span>]]</span>
 <span id="cb14-4"><a href="#cb14-4"></a>    <span class="cf">return</span> {<span class="st">"images"</span>: examples}</span>
 <span id="cb14-5"><a href="#cb14-5"></a></span>
 <span id="cb14-6"><a href="#cb14-6"></a><span class="co"># Apply the transform to the dataset</span></span>
-<span id="cb14-7"><a href="#cb14-7"></a>dataset.set_transform(transform)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-7"><a href="#cb14-7"></a>dataset.set_transform(transform)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In this code:</p>
 <ul>
@@ -543,14 +546,14 @@ Image Size: (28, 28)</code></pre>
 <p>Shuffling is particularly important as it enhances the model’s <strong>generalization ability</strong>, ensuring it learns meaningful patterns rather than sequence-based biases.</p>
 <p>Here’s how to create a <strong>DataLoader</strong> for the MNIST training set:</p>
 <div id="988d13e5-5507-4c1b-9464-1bd55c3a56bb" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="im">import</span> torch</span>
 <span id="cb15-2"><a href="#cb15-2"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb15-3"><a href="#cb15-3"></a></span>
 <span id="cb15-4"><a href="#cb15-4"></a>batch_size <span class="op">=</span> <span class="dv">8</span> <span class="co"># Define batch size (adjust as needed based on GPU memory)</span></span>
 <span id="cb15-5"><a href="#cb15-5"></a><span class="co"># Using a small batch size for easier visual validation of images.</span></span>
 <span id="cb15-6"><a href="#cb15-6"></a><span class="co"># When training, we will use a larger batch size for efficiency.</span></span>
 <span id="cb15-7"><a href="#cb15-7"></a></span>
-<span id="cb15-8"><a href="#cb15-8"></a>train_dataloader <span class="op">=</span> DataLoader(dataset[<span class="st">"train"</span>], batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-8"><a href="#cb15-8"></a>train_dataloader <span class="op">=</span> DataLoader(dataset[<span class="st">"train"</span>], batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In this code snippet:</p>
 <ul>
@@ -568,7 +571,7 @@ Image Size: (28, 28)</code></pre>
 <p>We can use <code>matplotlib</code> along with <code>torchvision.utils.make_grid</code> to display a grid of images from our <code>train_dataloader</code>. This quick visual inspection helps confirm that the images are correctly formatted and ready for model training.</p>
 <p>Below is a simple implementation to visualize a batch:</p>
 <div id="652c5ffc-72ed-477f-b77b-a63ace242e44" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:135}}" data-outputid="972172e2-291c-48c4-b9a5-4d470c934c53" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="im">import</span> torchvision</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="im">import</span> torchvision</span>
 <span id="cb16-2"><a href="#cb16-2"></a></span>
 <span id="cb16-3"><a href="#cb16-3"></a><span class="co"># Get a batch of images from the dataloader</span></span>
 <span id="cb16-4"><a href="#cb16-4"></a>data_iter <span class="op">=</span> <span class="bu">iter</span>(train_dataloader)</span>
@@ -581,7 +584,7 @@ Image Size: (28, 28)</code></pre>
 <span id="cb16-11"><a href="#cb16-11"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
 <span id="cb16-12"><a href="#cb16-12"></a>plt.axis(<span class="st">"off"</span>)</span>
 <span id="cb16-13"><a href="#cb16-13"></a>plt.imshow(torchvision.utils.make_grid(imgs)[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"Greys"</span>)</span>
-<span id="cb16-14"><a href="#cb16-14"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-14"><a href="#cb16-14"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Input shape: torch.Size([8, 1, 32, 32])</code></pre>
 </div>
@@ -599,7 +602,7 @@ Image Size: (28, 28)</code></pre>
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Why the color of the images flipped?
+<span class="screen-reader-only">Note</span>Why the color of the images flipped?
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -614,7 +617,7 @@ Why the color of the images flipped?
 </div>
 <p>Our images have been transformed from pixel-based representations to tensors, making them more suitable for training. Now, let’s visualize how a single image appears after these transformations.</p>
 <div id="3400b617-9c8e-4ee3-a4e2-1b53239b4b72" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:1000}}" data-outputid="9f708ae5-ef0f-4498-c266-863bc6690c16" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co"># Take the first image from the batch</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co"># Take the first image from the batch</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a>image_tensor <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(train_dataloader))[<span class="st">"images"</span>][<span class="dv">0</span>]</span>
 <span id="cb18-3"><a href="#cb18-3"></a></span>
 <span id="cb18-4"><a href="#cb18-4"></a><span class="co"># Convert tensor to NumPy array</span></span>
@@ -633,7 +636,7 @@ Why the color of the images flipped?
 <span id="cb18-17"><a href="#cb18-17"></a>plt.imshow(image_array, cmap<span class="op">=</span><span class="st">"gray"</span>, interpolation<span class="op">=</span><span class="st">"nearest"</span>)</span>
 <span id="cb18-18"><a href="#cb18-18"></a>plt.title(<span class="st">"Processed Image"</span>)</span>
 <span id="cb18-19"><a href="#cb18-19"></a>plt.axis(<span class="st">"off"</span>)</span>
-<span id="cb18-20"><a href="#cb18-20"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-20"><a href="#cb18-20"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Pixel values after preprocessing:
 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -688,12 +691,12 @@ Why the color of the images flipped?
 <p>The <code>corrupt</code> function takes a batch of clean images and progressively degrades them by blending in random noise at varying levels, determined by an <code>amount</code> parameter. This function plays a fundamental role in diffusion models, enabling a structured transition from the original image to noise. While our initial implementation will use a simplified version, understanding its mechanics is essential, as more advanced models will build upon this process.</p>
 <p>Now, let’s examine its implementation:</p>
 <div id="f0329975-258a-4157-b263-7f0f6074e4da" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># Definition of the noise corruption function</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># Definition of the noise corruption function</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a><span class="kw">def</span> corrupt(x, noise, amount):</span>
 <span id="cb20-3"><a href="#cb20-3"></a>    amount <span class="op">=</span> amount.view(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)  <span class="co"># make sure it's broadcastable</span></span>
 <span id="cb20-4"><a href="#cb20-4"></a>    <span class="cf">return</span> (</span>
 <span id="cb20-5"><a href="#cb20-5"></a>        x <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> amount) <span class="op">+</span> noise <span class="op">*</span> amount</span>
-<span id="cb20-6"><a href="#cb20-6"></a>    )  <span class="co"># equivalent to x.lerp(noise, amount)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-6"><a href="#cb20-6"></a>    )  <span class="co"># equivalent to x.lerp(noise, amount)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The function <code>corrupt(x, noise, amount)</code> takes three input arguments:</p>
 <ul>
@@ -728,7 +731,7 @@ Why the color of the images flipped?
 <p>By structuring the noise corruption process this way, we ensure that images degrade in a controlled and predictable manner — an essential property for training diffusion models.</p>
 <p>To better understand how the <code>corrupt</code> function modifies images, we will apply it to a batch of MNIST digits with varying levels of noise and visualize the results. The code below retrieves a batch of images from <code>train_dataloader</code>, generates a range of noise levels, applies the <code>corrupt</code> function, and then displays both the clean and noisy images.</p>
 <div id="2f6c7b3b-5a83-4b8d-bc90-6d95ceedaf39" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:415}}" data-outputid="094acca5-b6e5-4967-aa83-a30125f43515" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># --- Visualizing the effect of the corrupt function ---</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># --- Visualizing the effect of the corrupt function ---</span></span>
 <span id="cb23-2"><a href="#cb23-2"></a><span class="co"># Get a batch of images from the training dataloader</span></span>
 <span id="cb23-3"><a href="#cb23-3"></a>batch <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(train_dataloader))</span>
 <span id="cb23-4"><a href="#cb23-4"></a>imgs <span class="op">=</span> batch[<span class="st">"images"</span>]</span>
@@ -749,7 +752,7 @@ Why the color of the images flipped?
 <span id="cb23-19"><a href="#cb23-19"></a>axs[<span class="dv">1</span>].set_title(<span class="st">"Corrupted data, from little corruption to a lot of corrupton"</span>)</span>
 <span id="cb23-20"><a href="#cb23-20"></a>axs[<span class="dv">1</span>].imshow(torchvision.utils.make_grid(noised_x)[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"Greys"</span>) <span class="co"># Display corrupted images in bottom row</span></span>
 <span id="cb23-21"><a href="#cb23-21"></a></span>
-<span id="cb23-22"><a href="#cb23-22"></a>plt.show() <span class="co"># Show the plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-22"><a href="#cb23-22"></a>plt.show() <span class="co"># Show the plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -806,12 +809,12 @@ Why the color of the images flipped?
 <li><strong>It establishes a useful baseline.</strong> This basic denoising UNet allows us to compare performance as we transition to more sophisticated, iterative diffusion models.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Are There U-Net Architectures Without Convolutional Layers?">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Are There U-Net Architectures Without Convolutional Layers?
+<span class="screen-reader-only">Tip</span>Are There U-Net Architectures Without Convolutional Layers?
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -851,7 +854,7 @@ Are There U-Net Architectures Without Convolutional Layers?
 </ul>
 <p>Here’s the PyTorch code for our BasicUNet class, implementing the simple convolutional UNet architecture we just described:</p>
 <div id="25b17100-3e56-4716-a66b-f0f140cf415d" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">from</span> torch <span class="im">import</span> nn</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">from</span> torch <span class="im">import</span> nn</span>
 <span id="cb24-2"><a href="#cb24-2"></a></span>
 <span id="cb24-3"><a href="#cb24-3"></a></span>
 <span id="cb24-4"><a href="#cb24-4"></a><span class="kw">class</span> BasicUNet(nn.Module):</span>
@@ -894,17 +897,17 @@ Are There U-Net Architectures Without Convolutional Layers?
 <span id="cb24-41"><a href="#cb24-41"></a>                x <span class="op">+=</span> h.pop()  <span class="co"># Fetching stored output (skip connection)</span></span>
 <span id="cb24-42"><a href="#cb24-42"></a>            x <span class="op">=</span> <span class="va">self</span>.act(l(x))</span>
 <span id="cb24-43"><a href="#cb24-43"></a></span>
-<span id="cb24-44"><a href="#cb24-44"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-44"><a href="#cb24-44"></a>        <span class="cf">return</span> x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="5c6a3c6a-1066-4a4d-adbf-f8c8575ca40a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="327ff6aa-386b-47b9-ed14-d187749c073d" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="im">from</span> torchinfo <span class="im">import</span> summary</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="im">from</span> torchinfo <span class="im">import</span> summary</span>
 <span id="cb25-2"><a href="#cb25-2"></a></span>
 <span id="cb25-3"><a href="#cb25-3"></a><span class="co"># initialize the model</span></span>
 <span id="cb25-4"><a href="#cb25-4"></a>model <span class="op">=</span> BasicUNet()</span>
 <span id="cb25-5"><a href="#cb25-5"></a></span>
 <span id="cb25-6"><a href="#cb25-6"></a><span class="co"># print model info</span></span>
 <span id="cb25-7"><a href="#cb25-7"></a><span class="bu">print</span>(model)</span>
-<span id="cb25-8"><a href="#cb25-8"></a>summary(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-8"><a href="#cb25-8"></a>summary(model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>BasicUNet(
   (down_layers): ModuleList(
@@ -960,12 +963,12 @@ Non-trainable params: 0
 <li><code>nn.Conv2d(64, 64, kernel_size=5, padding=2)</code>: The third convolutional layer takes <code>64</code> input channels and also outputs <code>64</code> channels. Notice how the number of feature channels increases in the encoder’s initial layers. This is a common strategy in convolutional networks, allowing them to capture increasingly abstract and complex features as they go deeper.</li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Why Conv2d and not Conv3d or Conv1d?">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Why Conv2d and not Conv3d or Conv1d?
+<span class="screen-reader-only">Tip</span>Why Conv2d and not Conv3d or Conv1d?
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -1068,7 +1071,7 @@ Why Conv2d and not Conv3d or Conv1d?
 <p>This process repeats for <strong>5 epochs</strong>, allowing the model to progressively improve its ability to denoise MNIST digits.</p>
 <p>After training, we <strong>plot the loss curve</strong> to visualize how the MSE loss evolves over time.</p>
 <div id="831e0595-79e4-4e77-bd9f-b5ee50d722f0" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="69c11eaa-3855-4a6a-cbdc-6e60afa7e5c8" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="im">from</span> torch.nn <span class="im">import</span> functional <span class="im">as</span> F</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="im">from</span> torch.nn <span class="im">import</span> functional <span class="im">as</span> F</span>
 <span id="cb28-2"><a href="#cb28-2"></a><span class="im">from</span> torch.optim <span class="im">import</span> Adam</span>
 <span id="cb28-3"><a href="#cb28-3"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb28-4"><a href="#cb28-4"></a></span>
@@ -1085,13 +1088,13 @@ Why Conv2d and not Conv3d or Conv1d?
 <span id="cb28-15"><a href="#cb28-15"></a>batch_size <span class="op">=</span> <span class="dv">128</span>                                      <span class="co"># Larger batch size for training</span></span>
 <span id="cb28-16"><a href="#cb28-16"></a>train_dataloader <span class="op">=</span> torch.utils.data.DataLoader(</span>
 <span id="cb28-17"><a href="#cb28-17"></a>    dataset[<span class="st">"train"</span>], batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span></span>
-<span id="cb28-18"><a href="#cb28-18"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-18"><a href="#cb28-18"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>device:  cuda</code></pre>
 </div>
 </div>
 <div id="96ff233e-1ce6-4a38-921c-8bc60e8e75f5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="2fd36efe-88ad-4496-8554-f9e53318bd7f" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="co"># --- Training Loop ---</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="co"># --- Training Loop ---</span></span>
 <span id="cb30-2"><a href="#cb30-2"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
 <span id="cb30-3"><a href="#cb30-3"></a>    <span class="cf">for</span> batch <span class="kw">in</span> train_dataloader:                         <span class="co"># Iterate over training batches</span></span>
 <span id="cb30-4"><a href="#cb30-4"></a>        clean_images <span class="op">=</span> batch[<span class="st">"images"</span>].to(device)           <span class="co"># Load clean images</span></span>
@@ -1115,7 +1118,7 @@ Why Conv2d and not Conv3d or Conv1d?
 <span id="cb30-22"><a href="#cb30-22"></a></span>
 <span id="cb30-23"><a href="#cb30-23"></a>    <span class="co"># --- Print average loss per epoch ---</span></span>
 <span id="cb30-24"><a href="#cb30-24"></a>    avg_loss <span class="op">=</span> <span class="bu">sum</span>(losses[<span class="op">-</span><span class="bu">len</span>(train_dataloader):]) <span class="op">/</span> <span class="bu">len</span>(train_dataloader)</span>
-<span id="cb30-25"><a href="#cb30-25"></a>    <span class="bu">print</span>(<span class="ss">f"Epoch </span><span class="sc">{</span>epoch<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_epochs<span class="sc">}</span><span class="ss"> - Average Loss: </span><span class="sc">{</span>avg_loss<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-25"><a href="#cb30-25"></a>    <span class="bu">print</span>(<span class="ss">f"Epoch </span><span class="sc">{</span>epoch<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_epochs<span class="sc">}</span><span class="ss"> - Average Loss: </span><span class="sc">{</span>avg_loss<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Epoch 1/5 - Average Loss: 0.0173
 Epoch 2/5 - Average Loss: 0.0105
@@ -1125,13 +1128,13 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 </div>
 </div>
 <div id="d72db71d-566b-4085-8af9-e1578f3bfc9f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:410}}" data-outputid="4428fb22-52ce-45c8-aed9-8d32e73560a9" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># --- Plot Loss Curve ---</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># --- Plot Loss Curve ---</span></span>
 <span id="cb32-2"><a href="#cb32-2"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
 <span id="cb32-3"><a href="#cb32-3"></a>plt.plot(losses)</span>
 <span id="cb32-4"><a href="#cb32-4"></a>plt.xlabel(<span class="st">"Iteration"</span>)</span>
 <span id="cb32-5"><a href="#cb32-5"></a>plt.ylabel(<span class="st">"MSE Loss"</span>)</span>
 <span id="cb32-6"><a href="#cb32-6"></a>plt.title(<span class="st">"Training Loss Curve (Model 1 - Direct Image Prediction)"</span>)</span>
-<span id="cb32-7"><a href="#cb32-7"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb32-7"><a href="#cb32-7"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1181,7 +1184,7 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 <p>By analyzing this plot, we can visually assess how effectively <strong>Model 1 denoises MNIST digits</strong> using its <strong>direct image prediction strategy</strong> and how well it generalizes to <strong>new noisy test data</strong>.</p>
 <p>The PyTorch code for this inference and visualization process is provided in the subsequent code block.</p>
 <div id="7322d73a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:603}}" data-outputid="860a709a-f0b9-4c91-a636-8a96a649aa94" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># --- Inference with Model 1 and Visualization ---</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># --- Inference with Model 1 and Visualization ---</span></span>
 <span id="cb33-2"><a href="#cb33-2"></a><span class="co"># --- Prepare test dataset and dataloader ---</span></span>
 <span id="cb33-3"><a href="#cb33-3"></a>test_dataset <span class="op">=</span> load_dataset(<span class="st">"mnist"</span>, split<span class="op">=</span><span class="st">"test"</span>) <span class="co"># Load MNIST test split dataset</span></span>
 <span id="cb33-4"><a href="#cb33-4"></a>test_dataset.set_transform(transform)             <span class="co"># Apply preprocessing transform to test dataset</span></span>
@@ -1230,7 +1233,7 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 <span id="cb33-47"><a href="#cb33-47"></a>    plt.axis(<span class="st">'off'</span>) <span class="co"># Hide axes</span></span>
 <span id="cb33-48"><a href="#cb33-48"></a></span>
 <span id="cb33-49"><a href="#cb33-49"></a>plt.tight_layout() <span class="co"># Adjust subplot layout for better spacing</span></span>
-<span id="cb33-50"><a href="#cb33-50"></a>plt.show() <span class="co"># Show the complete plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-50"><a href="#cb33-50"></a>plt.show() <span class="co"># Show the complete plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1248,7 +1251,7 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 <p>Let’s run inference one more time, but with a different approach.</p>
 <p>Instead of starting with an original <strong>MNIST digit</strong> and adding noise to it, we will feed the model <strong>pure noise</strong> as input and observe the results.</p>
 <div id="MbGMmRuQ_fel" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:420}}" data-outputid="7a815557-5c8a-4fed-a28e-d1de23246790" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="im">import</span> torch</span>
 <span id="cb34-2"><a href="#cb34-2"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb34-3"><a href="#cb34-3"></a></span>
 <span id="cb34-4"><a href="#cb34-4"></a><span class="co"># Generate a noisy image (random noise)</span></span>
@@ -1271,7 +1274,7 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 <span id="cb34-21"><a href="#cb34-21"></a>axs[<span class="dv">1</span>].axis(<span class="st">"off"</span>)</span>
 <span id="cb34-22"><a href="#cb34-22"></a></span>
 <span id="cb34-23"><a href="#cb34-23"></a>plt.tight_layout()</span>
-<span id="cb34-24"><a href="#cb34-24"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-24"><a href="#cb34-24"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1286,7 +1289,7 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 <h4 class="anchored" data-anchor-id="exploring-iterative-refinement">Exploring Iterative Refinement</h4>
 <p>To see if we can further improve upon these one-shot results, we will experiment with a simple <strong>iterative refinement approach</strong>. Instead of denoising in a single step, we start with <strong>pure random noise</strong> and iteratively refine it over <strong>5 steps</strong> using our trained model. The following code implements this process:</p>
 <div id="942241dd" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:414}}" data-outputid="42d04845-91c0-4858-fd64-3a439b23f9c8" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="co"># --- Iterative Refinement Experiment (Model 1) ---</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="co"># --- Iterative Refinement Experiment (Model 1) ---</span></span>
 <span id="cb35-2"><a href="#cb35-2"></a><span class="im">import</span> torchvision</span>
 <span id="cb35-3"><a href="#cb35-3"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb35-4"><a href="#cb35-4"></a></span>
@@ -1310,7 +1313,7 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
 <span id="cb35-22"><a href="#cb35-22"></a>    axs[i, <span class="dv">0</span>].imshow(torchvision.utils.make_grid(step_history[i])[<span class="dv">0</span>].clip(<span class="dv">0</span>, <span class="dv">1</span>), cmap<span class="op">=</span><span class="st">"Greys"</span>) <span class="co"># Plot refined x</span></span>
 <span id="cb35-23"><a href="#cb35-23"></a>    axs[i, <span class="dv">1</span>].imshow(torchvision.utils.make_grid(pred_output_history[i])[<span class="dv">0</span>].clip(<span class="dv">0</span>, <span class="dv">1</span>), cmap<span class="op">=</span><span class="st">"Greys"</span>) <span class="co"># Plot prediction</span></span>
 <span id="cb35-24"><a href="#cb35-24"></a>plt.tight_layout()</span>
-<span id="cb35-25"><a href="#cb35-25"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb35-25"><a href="#cb35-25"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1390,13 +1393,14 @@ Epoch 5/5 - Average Loss: 0.0088</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

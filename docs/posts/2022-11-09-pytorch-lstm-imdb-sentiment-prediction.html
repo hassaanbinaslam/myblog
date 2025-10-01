@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -133,6 +134,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -265,8 +268,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>For “runtime type” choose hardware accelerator as “GPU”. It will take a long time to complete the training without any GPU.</p>
 <p>This notebook also depends on the PyTorch library <a href="https://pytorch.org/text/stable/index.html">TorchText</a>. We will use this library to fetch IMDB review data. While using the <code>torchtext</code> latest version, I found more dependencies on other libraries like <code>torchdata</code>. Even after resolving them, it threw strange encoding errors while fetching IMDB data. So I have downgraded this library till the version I found working without external dependencies. Consequently, <code>torch</code> is also downgraded to a compatible version, but I did not find any issue while working with a lower version of PyTorch for this notebook. It is preferred to restart the runtime after the library installation is complete.</p>
 <div id="cell-4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="6a37f823-61e1-44cb-a21f-9f0aef76f1b4" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span> pip install torchtext<span class="op">==</span><span class="fl">0.11.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span> pip install torchtext<span class="op">==</span><span class="fl">0.11.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/
 Requirement already satisfied: torchtext==0.11.0 in /usr/local/lib/python3.7/dist-packages (0.11.0)
@@ -284,14 +287,14 @@ Requirement already satisfied: chardet&lt;4,&gt;=3.0.2 in /usr/local/lib/python3
 <div id="cell-5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="85394c24-663a-427b-e8c9-d2084d2f9735" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="im">import</span> numpy, matplotlib, pandas, torch, torchtext</span>
 <span id="cb3-3"><a href="#cb3-3"></a></span>
 <span id="cb3-4"><a href="#cb3-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
 <span id="cb3-5"><a href="#cb3-5"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
 <span id="cb3-6"><a href="#cb3-6"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
 <span id="cb3-7"><a href="#cb3-7"></a><span class="bu">print</span>(<span class="st">"torchtext=="</span> <span class="op">+</span> torchtext.__version__)</span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>python==3.7.15
@@ -308,18 +311,18 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="download-data">Download data</h3>
 <p>Let’s download our movie review dataset. This dataset is also known as <a href="https://ai.stanford.edu/~amaas/data/sentiment/">Large Movie Review Dataset</a>, and can also be obtained in a compressed zip file from <a href="https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz">this link</a>. Using the <code>torchtext</code> library makes downloading, extracting, and reading files a lot easier. ‘torchtext.datasets’ comes with many more NLP related datasets, and a full list can be <a href="https://pytorch.org/text/stable/datasets.html">found here</a>.</p>
 <div id="cell-7" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> torchtext.datasets <span class="im">import</span> IMDB</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">from</span> torchtext.datasets <span class="im">import</span> IMDB</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="im">from</span> torch.utils.data.dataset <span class="im">import</span> random_split</span>
 <span id="cb5-3"><a href="#cb5-3"></a></span>
 <span id="cb5-4"><a href="#cb5-4"></a>torch.manual_seed(<span class="dv">1</span>)</span>
 <span id="cb5-5"><a href="#cb5-5"></a></span>
 <span id="cb5-6"><a href="#cb5-6"></a>train_dataset_raw <span class="op">=</span> IMDB(split<span class="op">=</span><span class="st">"train"</span>)</span>
-<span id="cb5-7"><a href="#cb5-7"></a>test_dataset_raw <span class="op">=</span> IMDB(split<span class="op">=</span><span class="st">"test"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-7"><a href="#cb5-7"></a>test_dataset_raw <span class="op">=</span> IMDB(split<span class="op">=</span><span class="st">"test"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Check the size of the downloaded data.</p>
 <div id="cell-9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="15d68147-95cf-458c-a25c-b9aeec98e462" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="bu">print</span>(<span class="st">"Train dataset size: "</span>, <span class="bu">len</span>(train_dataset_raw))</span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="bu">print</span>(<span class="st">"Test dataset size: "</span>, <span class="bu">len</span>(test_dataset_raw))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="bu">print</span>(<span class="st">"Train dataset size: "</span>, <span class="bu">len</span>(train_dataset_raw))</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="bu">print</span>(<span class="st">"Test dataset size: "</span>, <span class="bu">len</span>(test_dataset_raw))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Train dataset size:  25000
 Test dataset size:  25000</code></pre>
@@ -330,17 +333,17 @@ Test dataset size:  25000</code></pre>
 <h3 class="anchored" data-anchor-id="split-train-data-further-into-train-and-validation-set">Split train data further into train and validation set</h3>
 <p>Both train and test datasets have 25000 reviews. Therefore, we can split the training set further into the train and validation sets.</p>
 <div id="cell-11" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>train_set_size <span class="op">=</span> <span class="dv">20000</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>train_set_size <span class="op">=</span> <span class="dv">20000</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a>valid_set_size <span class="op">=</span> <span class="dv">5000</span></span>
 <span id="cb8-3"><a href="#cb8-3"></a></span>
-<span id="cb8-4"><a href="#cb8-4"></a>train_dataset, valid_dataset <span class="op">=</span> random_split(<span class="bu">list</span>(train_dataset_raw), [<span class="dv">20000</span>, <span class="dv">5000</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-4"><a href="#cb8-4"></a>train_dataset, valid_dataset <span class="op">=</span> random_split(<span class="bu">list</span>(train_dataset_raw), [<span class="dv">20000</span>, <span class="dv">5000</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="how-does-this-data-look" class="level3">
 <h3 class="anchored" data-anchor-id="how-does-this-data-look">How does this data look?</h3>
 <p>The data we have is in the form of tuples. The first index has the sentiment label, and the second contains the review text. Let’s check the first element in our training dataset.</p>
 <div id="cell-13" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="adb1305a-df0c-46a8-9af4-972b3c5277cc" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>train_dataset[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>train_dataset[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>('pos',
  'An extra is called upon to play a general in a movie about the Russian Revolution. However, he is not any ordinary extra. He is Serguis Alexander, former commanding general of the Russia armies who is now being forced to relive the same scene, which he suffered professional and personal tragedy in, to satisfy the director who was once a revolutionist in Russia and was humiliated by Alexander. It can now be the time for this broken man to finally "win" his penultimate battle. This is one powerful movie with meticulous direction by Von Sternberg, providing the greatest irony in Alexander\'s character in every way he can. Jannings deserved his Oscar for the role with a very moving performance playing the general at his peak and at his deepest valley. Powell lends a sinister support as the revenge minded director and Brent is perfect in her role with her face and movements showing so much expression as Jannings\' love. All around brilliance. Rating, 10.')</code></pre>
@@ -348,7 +351,7 @@ Test dataset size:  25000</code></pre>
 </div>
 <p>Check the first index of the validation set.</p>
 <div id="cell-15" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="96ea82d5-8662-4285-d7e3-9f516b181f27" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>valid_dataset[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>valid_dataset[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <pre><code>('neg',
  'The Dereks did seem to struggle to find rolls for Bo after "10".&lt;br /&gt;&lt;br /&gt;I used to work for a marine park in the Florida Keys. One day, the script for "Ghosts Can\'t Do It" was circulating among the trainers in the "fish house" where food was prepared for the dolphins. There was one scene where a -dolphin- supposedly propositions Bo (or Bo the dolphin), asking to "go make eggs." Reading the script, we -lauuughed-...&lt;br /&gt;&lt;br /&gt;We did not end up doing any portion of this movie at our facility, although our dolphins -were- in "The Big Blue!"&lt;br /&gt;&lt;br /&gt;This must have been very close to the end of Anthony Quinn\'s life. I hope he had fun in this film, as it certainly didn\'t do anything for his legacy.')</code></pre>
@@ -365,64 +368,64 @@ Test dataset size:  25000</code></pre>
 </ul>
 <p>Let’s take a simple text example and apply these steps to understand why these steps are essential in preprocessing. In the last step, we will create tokens from the preprocessed text.</p>
 <div id="cell-17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:35}}" data-outputid="740babb1-00b7-4066-caa2-5cc5fe47053e" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>example_text <span class="op">=</span> <span class="st">'''This is awesome movie &lt;br /&gt;&lt;br /&gt;. I loved it so much :-) I</span><span class="ch">\'</span><span class="st">m goona watch it again :)'''</span></span>
-<span id="cb13-2"><a href="#cb13-2"></a>example_text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>example_text <span class="op">=</span> <span class="st">'''This is awesome movie &lt;br /&gt;&lt;br /&gt;. I loved it so much :-) I</span><span class="ch">\'</span><span class="st">m goona watch it again :)'''</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>example_text</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>"This is awesome movie &lt;br /&gt;&lt;br /&gt;. I loved it so much :-) I'm goona watch it again :)"</code></pre>
 </div>
 </div>
 <div id="cell-18" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:35}}" data-outputid="4e5cedfc-ba91-4b55-8dcb-235861b72be5" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">##</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a><span class="co"># step 1. remove HTML tags. they are not helpful in understanding the sentiments of a review</span></span>
 <span id="cb15-3"><a href="#cb15-3"></a><span class="im">import</span> re</span>
 <span id="cb15-4"><a href="#cb15-4"></a></span>
 <span id="cb15-5"><a href="#cb15-5"></a>text <span class="op">=</span> re.sub(<span class="st">'&lt;[^&gt;]*&gt;'</span>, <span class="st">''</span>, example_text)</span>
-<span id="cb15-6"><a href="#cb15-6"></a>text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-6"><a href="#cb15-6"></a>text</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>"This is awesome movie . I loved it so much :-) I'm goona watch it again :)"</code></pre>
 </div>
 </div>
 <div id="cell-19" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:35}}" data-outputid="27e40280-07b0-431f-e150-1b9c2ea0cf82" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">##</span></span>
 <span id="cb17-2"><a href="#cb17-2"></a><span class="co"># step 2: use lowercase for all text to keep symmetry</span></span>
 <span id="cb17-3"><a href="#cb17-3"></a>text <span class="op">=</span> text.lower()</span>
-<span id="cb17-4"><a href="#cb17-4"></a>text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-4"><a href="#cb17-4"></a>text</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="10">
 <pre><code>"this is awesome movie . i loved it so much :-) i'm goona watch it again :)"</code></pre>
 </div>
 </div>
 <div id="cell-20" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="33a74799-341c-4d4b-a28a-4dc230e02e4f" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
 <span id="cb19-2"><a href="#cb19-2"></a><span class="co"># step 3: extract emoticons. keep them as they are important sentiment signals</span></span>
 <span id="cb19-3"><a href="#cb19-3"></a>emoticons <span class="op">=</span> re.findall(<span class="st">'(?::|;|=)(?:-)?(?:</span><span class="er">\</span><span class="st">)|</span><span class="er">\</span><span class="st">(|D|P)'</span>, text)</span>
-<span id="cb19-4"><a href="#cb19-4"></a>emoticons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-4"><a href="#cb19-4"></a>emoticons</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>[':-)', ':)']</code></pre>
 </div>
 </div>
 <div id="cell-21" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:35}}" data-outputid="31ee748e-ac8c-4681-ae89-28360309f786" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">##</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="co"># step 4: remove punctuation marks</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a>text <span class="op">=</span> re.sub(<span class="st">'[</span><span class="er">\</span><span class="st">W]+'</span>, <span class="st">' '</span>, text)</span>
-<span id="cb21-4"><a href="#cb21-4"></a>text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-4"><a href="#cb21-4"></a>text</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <pre><code>'this is awesome movie i loved it so much i m goona watch it again '</code></pre>
 </div>
 </div>
 <div id="cell-22" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:35}}" data-outputid="d67ff36b-d664-4e14-dea4-9a18b637e6d7" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="co">##</span></span>
 <span id="cb23-2"><a href="#cb23-2"></a><span class="co"># step 5: put back emoticons</span></span>
 <span id="cb23-3"><a href="#cb23-3"></a>text <span class="op">=</span> text <span class="op">+</span> <span class="st">' '</span>.join(emoticons).replace(<span class="st">'-'</span>, <span class="st">''</span>)</span>
-<span id="cb23-4"><a href="#cb23-4"></a>text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-4"><a href="#cb23-4"></a>text</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>'this is awesome movie i loved it so much i m goona watch it again :) :)'</code></pre>
 </div>
 </div>
 <div id="cell-23" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="aba0338c-a7a8-44a8-fc64-7f9b4210e8be" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">##</span></span>
 <span id="cb25-2"><a href="#cb25-2"></a><span class="co"># step 6: generate word tokens</span></span>
 <span id="cb25-3"><a href="#cb25-3"></a>text <span class="op">=</span> text.split()</span>
-<span id="cb25-4"><a href="#cb25-4"></a>text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-4"><a href="#cb25-4"></a>text</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="14">
 <pre><code>['this',
  'is',
@@ -445,7 +448,7 @@ Test dataset size:  25000</code></pre>
 </div>
 <p>Let’s put all the preprocessing steps in a nice function and give it a name.</p>
 <div id="cell-25" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">def</span> tokenizer(text):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">def</span> tokenizer(text):</span>
 <span id="cb27-2"><a href="#cb27-2"></a>    <span class="co"># step 1. remove HTML tags. they are not helpful in understanding the sentiments of a review</span></span>
 <span id="cb27-3"><a href="#cb27-3"></a>    <span class="co"># step 2: use lowercase for all text to keep symmetry</span></span>
 <span id="cb27-4"><a href="#cb27-4"></a>    <span class="co"># step 3: extract emoticons. keep them as they are important sentiment signals</span></span>
@@ -458,12 +461,12 @@ Test dataset size:  25000</code></pre>
 <span id="cb27-11"><a href="#cb27-11"></a>    text <span class="op">=</span> re.sub(<span class="st">"[</span><span class="er">\</span><span class="st">W]+"</span>, <span class="st">" "</span>, text)</span>
 <span id="cb27-12"><a href="#cb27-12"></a>    text <span class="op">=</span> text <span class="op">+</span> <span class="st">" "</span>.join(emoticons).replace(<span class="st">"-"</span>, <span class="st">""</span>)</span>
 <span id="cb27-13"><a href="#cb27-13"></a>    tokenized <span class="op">=</span> text.split()</span>
-<span id="cb27-14"><a href="#cb27-14"></a>    <span class="cf">return</span> tokenized</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-14"><a href="#cb27-14"></a>    <span class="cf">return</span> tokenized</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Apply <code>tokenizer</code> on the <code>example_text</code> to verify the output.</p>
 <div id="cell-27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="c57eb03d-680b-4c55-d3a1-dedfd4eb9ce8" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a>example_tokens <span class="op">=</span> tokenizer(example_text)</span>
-<span id="cb28-2"><a href="#cb28-2"></a>example_tokens</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a>example_tokens <span class="op">=</span> tokenizer(example_text)</span>
+<span id="cb28-2"><a href="#cb28-2"></a>example_tokens</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
 <pre><code>['this',
  'is',
@@ -489,11 +492,11 @@ Test dataset size:  25000</code></pre>
 <h3 class="anchored" data-anchor-id="preparing-data-dictionary">Preparing data dictionary</h3>
 <p>We are successful in creating word tokens from our <code>example_text</code>. But there is one more problem. Some of the tokens are repeating. If we can convert these tokens into a dictionary along with their frequency count, we can significantly reduce the generated token size from these reviews. Let’s do that.</p>
 <div id="cell-29" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="aec65607-3078-4f6f-8139-5ff9c2951097" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
 <span id="cb30-2"><a href="#cb30-2"></a></span>
 <span id="cb30-3"><a href="#cb30-3"></a>token_counts <span class="op">=</span> Counter()</span>
 <span id="cb30-4"><a href="#cb30-4"></a>token_counts.update(example_tokens)</span>
-<span id="cb30-5"><a href="#cb30-5"></a>token_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-5"><a href="#cb30-5"></a>token_counts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
 <pre><code>Counter({'this': 1,
          'is': 1,
@@ -513,8 +516,8 @@ Test dataset size:  25000</code></pre>
 </div>
 <p>Let’s sort the output to have the most common words at the top.</p>
 <div id="cell-31" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="4b6c783a-7352-4024-d298-93d831f4bd83" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>sorted_by_freq_tuples <span class="op">=</span> <span class="bu">sorted</span>(token_counts.items(), key<span class="op">=</span><span class="kw">lambda</span> x: x[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb32-2"><a href="#cb32-2"></a>sorted_by_freq_tuples</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>sorted_by_freq_tuples <span class="op">=</span> <span class="bu">sorted</span>(token_counts.items(), key<span class="op">=</span><span class="kw">lambda</span> x: x[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb32-2"><a href="#cb32-2"></a>sorted_by_freq_tuples</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>[('i', 2),
  ('it', 2),
@@ -546,12 +549,12 @@ Test dataset size:  25000</code></pre>
 <li>Tokens in vocab at the starting indices reflect higher frequency</li>
 </ul>
 <div id="cell-33" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="d97dfd64-f37e-4372-cd52-339466927997" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">##</span></span>
 <span id="cb34-2"><a href="#cb34-2"></a><span class="co"># step 1: convert our sorted list of tokens to OrderedDict</span></span>
 <span id="cb34-3"><a href="#cb34-3"></a><span class="im">from</span> collections <span class="im">import</span> OrderedDict</span>
 <span id="cb34-4"><a href="#cb34-4"></a></span>
 <span id="cb34-5"><a href="#cb34-5"></a>ordered_dict <span class="op">=</span> OrderedDict(sorted_by_freq_tuples)</span>
-<span id="cb34-6"><a href="#cb34-6"></a>ordered_dict</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-6"><a href="#cb34-6"></a>ordered_dict</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
 <pre><code>OrderedDict([('i', 2),
              ('it', 2),
@@ -570,20 +573,20 @@ Test dataset size:  25000</code></pre>
 </div>
 </div>
 <div id="cell-34" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="7ec70e90-8c13-4b00-a6cd-abed87943542" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">##</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a><span class="co"># Check the length of our dictionary</span></span>
-<span id="cb36-3"><a href="#cb36-3"></a><span class="bu">len</span>(ordered_dict)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-3"><a href="#cb36-3"></a><span class="bu">len</span>(ordered_dict)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>14</code></pre>
 </div>
 </div>
 <div id="cell-35" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="1c03856f-5e50-4a0d-9218-52929ae78b0a" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="co">##</span></span>
 <span id="cb38-2"><a href="#cb38-2"></a><span class="co"># step 2: convert the ordered dict to torchtext.vocab</span></span>
 <span id="cb38-3"><a href="#cb38-3"></a><span class="im">from</span> torchtext.vocab <span class="im">import</span> vocab</span>
 <span id="cb38-4"><a href="#cb38-4"></a></span>
 <span id="cb38-5"><a href="#cb38-5"></a>vb <span class="op">=</span> vocab(ordered_dict)</span>
-<span id="cb38-6"><a href="#cb38-6"></a>vb.get_stoi()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb38-6"><a href="#cb38-6"></a>vb.get_stoi()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>{'goona': 11,
  'much': 9,
@@ -614,7 +617,7 @@ Test dataset size:  25000</code></pre>
 </ol>
 <p>Let’s apply all these steps on our IMDB reviews training dataset.</p>
 <div id="cell-37" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="48bd4363-f820-4a43-93dc-0bf56c35eb0a" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co">##</span></span>
 <span id="cb40-2"><a href="#cb40-2"></a><span class="co"># step 1: convert reviews into tokens</span></span>
 <span id="cb40-3"><a href="#cb40-3"></a><span class="co"># step 2: find frequency of tokens</span></span>
 <span id="cb40-4"><a href="#cb40-4"></a></span>
@@ -624,14 +627,14 @@ Test dataset size:  25000</code></pre>
 <span id="cb40-8"><a href="#cb40-8"></a>    tokens <span class="op">=</span> tokenizer(line)</span>
 <span id="cb40-9"><a href="#cb40-9"></a>    token_counts.update(tokens)</span>
 <span id="cb40-10"><a href="#cb40-10"></a> </span>
-<span id="cb40-11"><a href="#cb40-11"></a><span class="bu">print</span>(<span class="st">'IMDB vocab size:'</span>, <span class="bu">len</span>(token_counts))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb40-11"><a href="#cb40-11"></a><span class="bu">print</span>(<span class="st">'IMDB vocab size:'</span>, <span class="bu">len</span>(token_counts))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>IMDB vocab size: 69023</code></pre>
 </div>
 </div>
 <p>After tokenizing IMDB reviews, we find that there <code>69023</code> unique tokens.</p>
 <div id="cell-39" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="2da48263-8c05-456e-9e30-5e595919a618" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">##</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a><span class="co"># step 3: sort the token based on their frequency</span></span>
 <span id="cb42-3"><a href="#cb42-3"></a><span class="co"># step 4: put the sorted tokens in OrderedDict</span></span>
 <span id="cb42-4"><a href="#cb42-4"></a><span class="co"># step 5: convert token to integers using vocab object</span></span>
@@ -647,7 +650,7 @@ Test dataset size:  25000</code></pre>
 <span id="cb42-14"><a href="#cb42-14"></a></span>
 <span id="cb42-15"><a href="#cb42-15"></a><span class="co"># print some token indexes from vocab</span></span>
 <span id="cb42-16"><a href="#cb42-16"></a><span class="cf">for</span> token <span class="kw">in</span> [<span class="st">"this"</span>, <span class="st">"is"</span>, <span class="st">"an"</span>, <span class="st">"example"</span>]:</span>
-<span id="cb42-17"><a href="#cb42-17"></a>    <span class="bu">print</span>(token, <span class="st">" --&gt; "</span>, vb[token])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-17"><a href="#cb42-17"></a>    <span class="bu">print</span>(token, <span class="st">" --&gt; "</span>, vb[token])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>this  --&gt;  11
 is  --&gt;  7
@@ -662,14 +665,14 @@ example  --&gt;  457</code></pre>
 </ul>
 <p>Let’s also print the tokens present at the first ten indices of our vocab object.</p>
 <div id="cell-41" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="8a12125d-d609-43ed-d83e-7e855b55bc33" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>vb.get_itos()[:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>vb.get_itos()[:<span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
 <pre><code>['&lt;pad&gt;', '&lt;unk&gt;', 'the', 'and', 'a', 'of', 'to', 'is', 'it', 'in']</code></pre>
 </div>
 </div>
 <p>It shows that articles, prepositions, and pronouns are the most common words in the training dataset. So let’s also check the least common words.</p>
 <div id="cell-43" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="b3edc3ee-3cd0-4a46-9044-16e65da37883" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>vb.get_itos()[<span class="op">-</span><span class="dv">10</span>:]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>vb.get_itos()[<span class="op">-</span><span class="dv">10</span>:]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="25">
 <pre><code>['hairband',
  'ratt',
@@ -701,31 +704,31 @@ example  --&gt;  457</code></pre>
 </ul>
 <p>Let’s create two simple functions (inline lambda) for review text and label processing.</p>
 <div id="cell-45" class="cell" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">##</span></span>
 <span id="cb48-2"><a href="#cb48-2"></a><span class="co"># inline lambda functions for text and label precessing</span></span>
 <span id="cb48-3"><a href="#cb48-3"></a>text_pipeline <span class="op">=</span> <span class="kw">lambda</span> x: [vb[token] <span class="cf">for</span> token <span class="kw">in</span> tokenizer(x)]</span>
-<span id="cb48-4"><a href="#cb48-4"></a>label_pipeline <span class="op">=</span> <span class="kw">lambda</span> x: <span class="fl">1.0</span> <span class="cf">if</span> x <span class="op">==</span> <span class="st">"pos"</span> <span class="cf">else</span> <span class="fl">0.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb48-4"><a href="#cb48-4"></a>label_pipeline <span class="op">=</span> <span class="kw">lambda</span> x: <span class="fl">1.0</span> <span class="cf">if</span> x <span class="op">==</span> <span class="st">"pos"</span> <span class="cf">else</span> <span class="fl">0.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-46" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="eed8b2b9-ec2e-4c77-b64f-0003ddc95b36" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a><span class="co">##</span></span>
 <span id="cb49-2"><a href="#cb49-2"></a><span class="co"># apply text_pipeline to example_text</span></span>
-<span id="cb49-3"><a href="#cb49-3"></a>text_pipeline(example_text)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb49-3"><a href="#cb49-3"></a>text_pipeline(example_text)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="27">
 <pre><code>[11, 7, 1166, 18, 10, 450, 8, 37, 74, 10, 142, 1, 104, 8, 174, 2287, 2287]</code></pre>
 </div>
 </div>
 <p>Instead of processing a single review at a time, we always prefer to work with a batch of them during model training. For each review item in the batch, we will be doing the same preprocessing steps i.e.&nbsp;review text processing and label processing. For handling preprocessing steps at a batch level, we can create another higher-level function that applies preprocessing steps at a batch level.</p>
 <div id="cell-48" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="5d3efdc2-19ae-4615-8db6-4e652d720822" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a><span class="co">##</span></span>
 <span id="cb51-2"><a href="#cb51-2"></a><span class="co"># setting device on GPU if available, else CPU</span></span>
 <span id="cb51-3"><a href="#cb51-3"></a>device <span class="op">=</span> torch.device(<span class="st">'cuda'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span>)</span>
-<span id="cb51-4"><a href="#cb51-4"></a><span class="bu">print</span>(<span class="st">'Using device:'</span>, device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb51-4"><a href="#cb51-4"></a><span class="bu">print</span>(<span class="st">'Using device:'</span>, device)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Using device: cuda</code></pre>
 </div>
 </div>
 <div id="cell-49" class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a><span class="co">##</span></span>
 <span id="cb53-2"><a href="#cb53-2"></a><span class="co"># a function to apply pre-processing steps at a batch level</span></span>
 <span id="cb53-3"><a href="#cb53-3"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb53-4"><a href="#cb53-4"></a></span>
@@ -757,7 +760,7 @@ example  --&gt;  457</code></pre>
 <span id="cb53-30"><a href="#cb53-30"></a>    <span class="co"># 1. a list of processed and padded review texts</span></span>
 <span id="cb53-31"><a href="#cb53-31"></a>    <span class="co"># 2. a list of processed labels</span></span>
 <span id="cb53-32"><a href="#cb53-32"></a>    <span class="co"># 3. a list of review text original lengths (before padding)</span></span>
-<span id="cb53-33"><a href="#cb53-33"></a>    <span class="cf">return</span> padded_text_list.to(device), label_list.to(device), lengths.to(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb53-33"><a href="#cb53-33"></a>    <span class="cf">return</span> padded_text_list.to(device), label_list.to(device), lengths.to(device)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="sequence-padding" class="level3">
 <h3 class="anchored" data-anchor-id="sequence-padding">Sequence padding</h3>
@@ -766,22 +769,22 @@ example  --&gt;  457</code></pre>
 <p>We intend to make all review texts in a batch of the same length. For this, we take the maximum length of a text in a batch, all pad all the smaller text with extra dummy tokens (‘pad’) to make their sizes equal. Finally, with all the data in a batch of the same dimension, we convert it into a tensor matrix for faster processing.</p>
 <p>To understand how PyTorch utility <code>nn.utils.rnn.pad_sequence</code> works, we can take a simple example of three tensors (a, b, c) of varying sizes (1, 3, 5).</p>
 <div id="cell-51" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="6df8f266-52c7-41ce-eb2f-7535a775d08d" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1"></a><span class="co">##</span></span>
 <span id="cb55-2"><a href="#cb55-2"></a><span class="co"># initialize three tensors of varying sizes</span></span>
 <span id="cb55-3"><a href="#cb55-3"></a>a <span class="op">=</span> torch.tensor([<span class="dv">1</span>])</span>
 <span id="cb55-4"><a href="#cb55-4"></a>b <span class="op">=</span> torch.tensor([<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>])</span>
 <span id="cb55-5"><a href="#cb55-5"></a>c <span class="op">=</span> torch.tensor([<span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>])</span>
-<span id="cb55-6"><a href="#cb55-6"></a>a, b, c</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb55-6"><a href="#cb55-6"></a>a, b, c</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="30">
 <pre><code>(tensor([1]), tensor([2, 3, 4]), tensor([5, 6, 7, 8, 9]))</code></pre>
 </div>
 </div>
 <p>Now let’s pad them to make sizes consistant.</p>
 <div id="cell-53" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="f3e0a572-1acf-45cc-f869-f5d15bdb1a65" data-execution_count="31">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1"></a><span class="co">##</span></span>
 <span id="cb57-2"><a href="#cb57-2"></a><span class="co"># apply padding on tensors</span></span>
 <span id="cb57-3"><a href="#cb57-3"></a>pad_seq <span class="op">=</span> nn.utils.rnn.pad_sequence([a, b, c])</span>
-<span id="cb57-4"><a href="#cb57-4"></a>pad_seq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb57-4"><a href="#cb57-4"></a>pad_seq</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="31">
 <pre><code>tensor([[1, 2, 5],
         [0, 3, 6],
@@ -795,10 +798,10 @@ example  --&gt;  457</code></pre>
 <h3 class="anchored" data-anchor-id="sequence-packing">Sequence packing</h3>
 <p>From the above output, we can see that after padding tensors of varying sizes, we can convert them into a single matrix for faster processing. But the drawback of this approach is that we can have many, many padded tokens in our matrix. They are not helping us in any way, instead of occupying a lot of machine memory. To avoid this, we can also squish these matrixes into a much condensed form called <code>packed padded sequences</code> using PyTorch utility <code>nn.utils.rnn.pack_padded_sequence</code>.</p>
 <div id="cell-55" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="f45f9d61-3b4f-492c-cd4c-b5ba6f115f63" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1"></a>pack_pad_seq <span class="op">=</span> nn.utils.rnn.pack_padded_sequence(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1"></a>pack_pad_seq <span class="op">=</span> nn.utils.rnn.pack_padded_sequence(</span>
 <span id="cb59-2"><a href="#cb59-2"></a>    pad_seq, [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>], enforce_sorted<span class="op">=</span><span class="va">False</span>, batch_first<span class="op">=</span><span class="va">False</span></span>
 <span id="cb59-3"><a href="#cb59-3"></a>)</span>
-<span id="cb59-4"><a href="#cb59-4"></a>pack_pad_seq.data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb59-4"><a href="#cb59-4"></a>pack_pad_seq.data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="32">
 <pre><code>tensor([5, 2, 1, 6, 3, 7, 4, 8, 9])</code></pre>
 </div>
@@ -810,7 +813,7 @@ example  --&gt;  457</code></pre>
 </ul>
 <p>We can move back and forth between the padded pack and unpacked sequences using this information.</p>
 <div id="cell-57" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="4041dad4-e6f7-48c9-8153-bd4cf94fc075" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1"></a>pack_pad_seq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1"></a>pack_pad_seq</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="33">
 <pre><code>PackedSequence(data=tensor([5, 2, 1, 6, 3, 7, 4, 8, 9]), batch_sizes=tensor([3, 2, 2, 1, 1]), sorted_indices=tensor([2, 1, 0]), unsorted_indices=tensor([2, 1, 0]))</code></pre>
 </div>
@@ -820,7 +823,7 @@ example  --&gt;  457</code></pre>
 <h3 class="anchored" data-anchor-id="run-data-preprocessing-pipelines-on-an-example-batch">Run data preprocessing pipelines on an example batch</h3>
 <p>Let’s load our data in the PyTorch DataLoader class and create a small batch of 4 reviews. Preprocess the entire set with <code>collate_batch</code> function.</p>
 <div id="cell-59" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="7c1bb941-285f-4f23-8dae-3626c58c2b68" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb63-2"><a href="#cb63-2"></a></span>
 <span id="cb63-3"><a href="#cb63-3"></a>dataloader <span class="op">=</span> DataLoader(</span>
 <span id="cb63-4"><a href="#cb63-4"></a>    train_dataset, batch_size<span class="op">=</span><span class="dv">4</span>, shuffle<span class="op">=</span><span class="va">False</span>, collate_fn<span class="op">=</span>collate_batch</span>
@@ -829,7 +832,7 @@ example  --&gt;  457</code></pre>
 <span id="cb63-7"><a href="#cb63-7"></a></span>
 <span id="cb63-8"><a href="#cb63-8"></a><span class="bu">print</span>(<span class="st">"text_batch.shape: "</span>, text_batch.shape)</span>
 <span id="cb63-9"><a href="#cb63-9"></a><span class="bu">print</span>(<span class="st">"label_batch: "</span>, label_batch)</span>
-<span id="cb63-10"><a href="#cb63-10"></a><span class="bu">print</span>(<span class="st">"length_batch: "</span>, length_batch)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb63-10"><a href="#cb63-10"></a><span class="bu">print</span>(<span class="st">"length_batch: "</span>, length_batch)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>text_batch.shape:  torch.Size([4, 218])
 label_batch:  tensor([1., 1., 1., 0.], device='cuda:0')
@@ -843,7 +846,7 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 </ul>
 <p>Let’s check what the first review in this batch looks like after preprocessing and padding.</p>
 <div id="cell-61" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="5615d0a2-06d7-4d6d-cf90-8f2cc5710aae" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1"></a><span class="bu">print</span>(text_batch[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1"></a><span class="bu">print</span>(text_batch[<span class="dv">0</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>tensor([   35,  1739,     7,   449,   721,     6,   301,     4,   787,     9,
             4,    18,    44,     2,  1705,  2460,   186,    25,     7,    24,
@@ -872,20 +875,20 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 </div>
 <p>To complete the picture, I have re-printed the original text of the first review and manually processed a part of it. You can verify that the tokens match.</p>
 <div id="cell-63" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="5e7f0099-c07f-4a4b-e2c9-3297074308b8" data-execution_count="36">
-<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1"></a><span class="co">##</span></span>
 <span id="cb67-2"><a href="#cb67-2"></a><span class="co"># first review</span></span>
-<span id="cb67-3"><a href="#cb67-3"></a>train_dataset[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb67-3"><a href="#cb67-3"></a>train_dataset[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="36">
 <pre><code>('pos',
  'An extra is called upon to play a general in a movie about the Russian Revolution. However, he is not any ordinary extra. He is Serguis Alexander, former commanding general of the Russia armies who is now being forced to relive the same scene, which he suffered professional and personal tragedy in, to satisfy the director who was once a revolutionist in Russia and was humiliated by Alexander. It can now be the time for this broken man to finally "win" his penultimate battle. This is one powerful movie with meticulous direction by Von Sternberg, providing the greatest irony in Alexander\'s character in every way he can. Jannings deserved his Oscar for the role with a very moving performance playing the general at his peak and at his deepest valley. Powell lends a sinister support as the revenge minded director and Brent is perfect in her role with her face and movements showing so much expression as Jannings\' love. All around brilliance. Rating, 10.')</code></pre>
 </div>
 </div>
 <div id="cell-64" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="63e0d0b1-d478-4bab-959a-a1654903b0f9" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1"></a><span class="co">##</span></span>
 <span id="cb69-2"><a href="#cb69-2"></a><span class="co"># manually preprocessing a part of review text</span></span>
 <span id="cb69-3"><a href="#cb69-3"></a><span class="co"># notice that the generated tokens match</span></span>
 <span id="cb69-4"><a href="#cb69-4"></a>text <span class="op">=</span> <span class="st">'An extra is called upon to play a general in a movie about the Russian Revolution'</span></span>
-<span id="cb69-5"><a href="#cb69-5"></a>[vb[token] <span class="cf">for</span> token <span class="kw">in</span> tokenizer(text)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb69-5"><a href="#cb69-5"></a>[vb[token] <span class="cf">for</span> token <span class="kw">in</span> tokenizer(text)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="37">
 <pre><code>[35, 1739, 7, 449, 721, 6, 301, 4, 787, 9, 4, 18, 44, 2, 1705, 2460]</code></pre>
 </div>
@@ -896,7 +899,7 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 <h2 class="anchored" data-anchor-id="batching-the-training-validation-and-test-dataset">Batching the training, validation, and test dataset</h2>
 <p>Let’s proceed on creating DataLoaders for train, valid, and test data with <code>batch_size = 32</code></p>
 <div id="cell-66" class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1"></a>batch_size <span class="op">=</span> <span class="dv">32</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb71"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1"></a>batch_size <span class="op">=</span> <span class="dv">32</span></span>
 <span id="cb71-2"><a href="#cb71-2"></a></span>
 <span id="cb71-3"><a href="#cb71-3"></a>train_dl <span class="op">=</span> DataLoader(</span>
 <span id="cb71-4"><a href="#cb71-4"></a>    train_dataset, batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span>, collate_fn<span class="op">=</span>collate_batch</span>
@@ -906,14 +909,14 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 <span id="cb71-8"><a href="#cb71-8"></a>)</span>
 <span id="cb71-9"><a href="#cb71-9"></a>test_dl <span class="op">=</span> DataLoader(</span>
 <span id="cb71-10"><a href="#cb71-10"></a>    test_dataset_raw, batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">False</span>, collate_fn<span class="op">=</span>collate_batch</span>
-<span id="cb71-11"><a href="#cb71-11"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb71-11"><a href="#cb71-11"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="define-model-training-and-evaluation-pipelines" class="level2">
 <h2 class="anchored" data-anchor-id="define-model-training-and-evaluation-pipelines">Define model training and evaluation pipelines</h2>
 <p>I have defined two simple functions to train and evaluate the model in this section.</p>
 <div id="cell-68" class="cell" data-execution_count="39">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1"></a><span class="co">##</span></span>
 <span id="cb72-2"><a href="#cb72-2"></a><span class="co"># model training pipeline</span></span>
 <span id="cb72-3"><a href="#cb72-3"></a><span class="co"># https://github.com/rasbt/machine-learning-book/blob/main/ch15/ch15_part2.ipynb</span></span>
 <span id="cb72-4"><a href="#cb72-4"></a><span class="kw">def</span> train(dataloader):</span>
@@ -940,7 +943,7 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 <span id="cb72-25"><a href="#cb72-25"></a>            loss <span class="op">=</span> loss_fn(pred, label_batch)</span>
 <span id="cb72-26"><a href="#cb72-26"></a>            total_acc <span class="op">+=</span> ((pred <span class="op">&gt;=</span> <span class="fl">0.5</span>).<span class="bu">float</span>() <span class="op">==</span> label_batch).<span class="bu">float</span>().<span class="bu">sum</span>().item()</span>
 <span id="cb72-27"><a href="#cb72-27"></a>            total_loss <span class="op">+=</span> loss.item() <span class="op">*</span> label_batch.size(<span class="dv">0</span>)</span>
-<span id="cb72-28"><a href="#cb72-28"></a>    <span class="cf">return</span> total_acc <span class="op">/</span> <span class="bu">len</span>(dataloader.dataset), total_loss <span class="op">/</span> <span class="bu">len</span>(dataloader.dataset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb72-28"><a href="#cb72-28"></a>    <span class="cf">return</span> total_acc <span class="op">/</span> <span class="bu">len</span>(dataloader.dataset), total_loss <span class="op">/</span> <span class="bu">len</span>(dataloader.dataset)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="rnn-model-configuration-loss-function-and-optimizer" class="level2">
@@ -953,7 +956,7 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 <li>Finally, we have a logistic sigmoid layer for prediction</li>
 </ul>
 <div id="cell-70" class="cell" data-execution_count="40">
-<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1"></a><span class="co">##</span></span>
 <span id="cb73-2"><a href="#cb73-2"></a><span class="co"># https://github.com/rasbt/machine-learning-book/blob/main/ch15/ch15_part2.ipynb</span></span>
 <span id="cb73-3"><a href="#cb73-3"></a><span class="kw">class</span> RNN(nn.Module):</span>
 <span id="cb73-4"><a href="#cb73-4"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, vocab_size, embed_dim, rnn_hidden_size, fc_hidden_size):</span>
@@ -976,26 +979,26 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 <span id="cb73-21"><a href="#cb73-21"></a>        out <span class="op">=</span> <span class="va">self</span>.relu(out)</span>
 <span id="cb73-22"><a href="#cb73-22"></a>        out <span class="op">=</span> <span class="va">self</span>.fc2(out)</span>
 <span id="cb73-23"><a href="#cb73-23"></a>        out <span class="op">=</span> <span class="va">self</span>.sigmoid(out)</span>
-<span id="cb73-24"><a href="#cb73-24"></a>        <span class="cf">return</span> out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb73-24"><a href="#cb73-24"></a>        <span class="cf">return</span> out</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-71" class="cell" data-execution_count="41">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1"></a>vocab_size <span class="op">=</span> <span class="bu">len</span>(vb)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1"></a>vocab_size <span class="op">=</span> <span class="bu">len</span>(vb)</span>
 <span id="cb74-2"><a href="#cb74-2"></a>embed_dim <span class="op">=</span> <span class="dv">20</span></span>
 <span id="cb74-3"><a href="#cb74-3"></a>rnn_hidden_size <span class="op">=</span> <span class="dv">64</span></span>
 <span id="cb74-4"><a href="#cb74-4"></a>fc_hidden_size <span class="op">=</span> <span class="dv">64</span></span>
 <span id="cb74-5"><a href="#cb74-5"></a></span>
 <span id="cb74-6"><a href="#cb74-6"></a>torch.manual_seed(<span class="dv">1</span>)</span>
 <span id="cb74-7"><a href="#cb74-7"></a>model <span class="op">=</span> RNN(vocab_size, embed_dim, rnn_hidden_size, fc_hidden_size)</span>
-<span id="cb74-8"><a href="#cb74-8"></a>model <span class="op">=</span> model.to(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb74-8"><a href="#cb74-8"></a>model <span class="op">=</span> model.to(device)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="define-model-loss-function-and-optimizer" class="level3">
 <h3 class="anchored" data-anchor-id="define-model-loss-function-and-optimizer">Define model loss function and optimizer</h3>
 <p>For loss function (or criterion), I have used <a href="https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html">Binary Cross Entropy</a>, and for loss optimization, I have used <a href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html">Adam algorithm</a></p>
 <div id="cell-73" class="cell" data-execution_count="42">
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb75"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
 <span id="cb75-2"><a href="#cb75-2"></a></span>
 <span id="cb75-3"><a href="#cb75-3"></a>loss_fn <span class="op">=</span> nn.BCELoss()</span>
-<span id="cb75-4"><a href="#cb75-4"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">0.001</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb75-4"><a href="#cb75-4"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">0.001</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -1003,13 +1006,13 @@ length_batch:  tensor([165,  86, 218, 145], device='cuda:0')</code></pre>
 <h2 class="anchored" data-anchor-id="model-training-and-evaluation">Model training and evaluation</h2>
 <p>Let’s run the pipeline for ten epochs and compare the training and validation accuracy.</p>
 <div id="cell-75" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="3c53356b-77ab-49e2-92ff-5e8086d3b9c2" data-execution_count="43">
-<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1"></a>num_epochs <span class="op">=</span> <span class="dv">10</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1"></a>num_epochs <span class="op">=</span> <span class="dv">10</span></span>
 <span id="cb76-2"><a href="#cb76-2"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
 <span id="cb76-3"><a href="#cb76-3"></a>    acc_train, loss_train <span class="op">=</span> train(train_dl)</span>
 <span id="cb76-4"><a href="#cb76-4"></a>    acc_valid, loss_valid <span class="op">=</span> evaluate(valid_dl)</span>
 <span id="cb76-5"><a href="#cb76-5"></a>    <span class="bu">print</span>(</span>
 <span id="cb76-6"><a href="#cb76-6"></a>        <span class="ss">f"Epoch </span><span class="sc">{</span>epoch<span class="sc">}</span><span class="ss"> train accuracy: </span><span class="sc">{</span>acc_train<span class="sc">:.4f}</span><span class="ss">; val accuracy: </span><span class="sc">{</span>acc_valid<span class="sc">:.4f}</span><span class="ss">"</span></span>
-<span id="cb76-7"><a href="#cb76-7"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb76-7"><a href="#cb76-7"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Epoch 0 train accuracy: 0.6085; val accuracy: 0.6502
 Epoch 1 train accuracy: 0.7206; val accuracy: 0.7462
@@ -1027,7 +1030,7 @@ Epoch 9 train accuracy: 0.9747; val accuracy: 0.8636</code></pre>
 <h3 class="anchored" data-anchor-id="evaluate-sentiments-on-random-texts">Evaluate sentiments on random texts</h3>
 <p>Let’s create another helper method to evaluate sentiments on random texts.</p>
 <div id="cell-77" class="cell" data-execution_count="44">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1"></a><span class="kw">def</span> classify_review(text):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1"></a><span class="kw">def</span> classify_review(text):</span>
 <span id="cb78-2"><a href="#cb78-2"></a>    text_list, lengths <span class="op">=</span> [], []</span>
 <span id="cb78-3"><a href="#cb78-3"></a></span>
 <span id="cb78-4"><a href="#cb78-4"></a>    <span class="co"># process review text with text_pipeline</span></span>
@@ -1057,23 +1060,23 @@ Epoch 9 train accuracy: 0.9747; val accuracy: 0.8636</code></pre>
 <span id="cb78-28"><a href="#cb78-28"></a>    <span class="cf">if</span> (pred<span class="op">&gt;=</span><span class="fl">0.5</span>) <span class="op">==</span> <span class="dv">1</span>:</span>
 <span id="cb78-29"><a href="#cb78-29"></a>        review_class <span class="op">=</span> <span class="st">"positive"</span></span>
 <span id="cb78-30"><a href="#cb78-30"></a></span>
-<span id="cb78-31"><a href="#cb78-31"></a>    <span class="bu">print</span>(<span class="st">"review type: "</span>, review_class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb78-31"><a href="#cb78-31"></a>    <span class="bu">print</span>(<span class="st">"review type: "</span>, review_class)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-78" class="cell" data-execution_count="45">
-<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb79"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1"></a><span class="co">##</span></span>
 <span id="cb79-2"><a href="#cb79-2"></a><span class="co"># create two random texts with strong positive and negative sentiments</span></span>
 <span id="cb79-3"><a href="#cb79-3"></a>pos_review <span class="op">=</span> <span class="st">'i love this movie. it was so good.'</span></span>
-<span id="cb79-4"><a href="#cb79-4"></a>neg_review <span class="op">=</span> <span class="st">'slow and boring. waste of time.'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb79-4"><a href="#cb79-4"></a>neg_review <span class="op">=</span> <span class="st">'slow and boring. waste of time.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-79" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="0f2c5b34-3ce2-4304-da0a-30855050c1dd" data-execution_count="46">
-<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1"></a>classify_review(pos_review)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb80"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1"></a>classify_review(pos_review)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>model pred:  tensor([[0.9388]], device='cuda:0', grad_fn=&lt;SigmoidBackward0&gt;)
 review type:  positive</code></pre>
 </div>
 </div>
 <div id="cell-80" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="2dee82f4-b8fa-44f8-d5aa-ffddc54488d9" data-execution_count="47">
-<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1"></a>classify_review(neg_review)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb82"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1"></a>classify_review(neg_review)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>model pred:  tensor([[0.0057]], device='cuda:0', grad_fn=&lt;SigmoidBackward0&gt;)
 review type:  negative</code></pre>
@@ -1136,13 +1139,14 @@ review type:  negative</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

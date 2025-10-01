@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -133,6 +134,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -264,13 +267,13 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <div id="cell-4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="8b4cefed-e790-4b6c-9998-e49b8f2d6b47" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> numpy, matplotlib, pandas, torch</span>
 <span id="cb1-3"><a href="#cb1-3"></a></span>
 <span id="cb1-4"><a href="#cb1-4"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
 <span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"numpy=="</span> <span class="op">+</span> numpy.__version__)</span>
 <span id="cb1-6"><a href="#cb1-6"></a><span class="bu">print</span>(<span class="st">"torch=="</span> <span class="op">+</span> torch.__version__)</span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"matplotlib=="</span> <span class="op">+</span> matplotlib.__version__)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>python==3.7.15
@@ -290,17 +293,17 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="download-data">Download data</h3>
 <p>For input text, we will use a famous English folk story (though any other text will work equally well) with the name <a href="https://en.wikipedia.org/wiki/Cinderella">Cinderella</a>. To download the story text, you may use <a href="https://www.gutenberg.org/cache/epub/10830/pg10830.txt">Project Gutenberg</a> site or <a href="https://ia600204.us.archive.org/30/items/cinderella10830gut/10830.txt">Archive.org</a>.</p>
 <div id="cell-8" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a>download_link <span class="op">=</span> <span class="st">"https://ia600204.us.archive.org/30/items/cinderella10830gut/10830.txt"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a>download_link <span class="op">=</span> <span class="st">"https://ia600204.us.archive.org/30/items/cinderella10830gut/10830.txt"</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co">## alternate download link</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a><span class="co"># download_link = "https://www.gutenberg.org/cache/epub/10830/pg10830.txt"</span></span>
 <span id="cb3-5"><a href="#cb3-5"></a></span>
-<span id="cb3-6"><a href="#cb3-6"></a>file_name <span class="op">=</span> <span class="st">'input.txt'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-6"><a href="#cb3-6"></a>file_name <span class="op">=</span> <span class="st">'input.txt'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="08ab0427-083e-441f-c596-868284544089" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">##</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="co"># download the story text and save it as {file_name}</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="op">!</span> curl {download_link} <span class="op">-</span>o {file_name}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="op">!</span> curl {download_link} <span class="op">-</span>o {file_name}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -309,17 +312,17 @@ matplotlib==3.2.2</code></pre>
 </div>
 <p>The download is complete. We can now open the file and read its contents.</p>
 <div id="cell-11" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">##</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="co"># Reading and processing text</span></span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="cf">with</span> <span class="bu">open</span>(file_name, <span class="st">"r"</span>, encoding<span class="op">=</span><span class="st">"utf8"</span>) <span class="im">as</span> fp:</span>
-<span id="cb6-4"><a href="#cb6-4"></a>    text <span class="op">=</span> fp.read()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-4"><a href="#cb6-4"></a>    text <span class="op">=</span> fp.read()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="preprocess-data" class="level3">
 <h3 class="anchored" data-anchor-id="preprocess-data">Preprocess data</h3>
 <p>The downloaded text has been published as a volunteer effort under <strong>Project Gutenberg</strong>. They have added some project and license information after the original story text as part of the project requirements. We are not interested in that text (boilerplate text), so let’s omit that and limit our input text to the folk story.</p>
 <div id="cell-13" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="b9127f6f-d88f-41bf-9b03-b29d1af1c715" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">##</span></span>
 <span id="cb7-2"><a href="#cb7-2"></a><span class="co"># truncate text till story start and end</span></span>
 <span id="cb7-3"><a href="#cb7-3"></a>start_indx <span class="op">=</span> text.find(</span>
 <span id="cb7-4"><a href="#cb7-4"></a>    <span class="st">"There once lived a gentleman and his wife, who were the parents of a</span><span class="ch">\n</span><span class="st">lovely little daughter."</span></span>
@@ -329,7 +332,7 @@ matplotlib==3.2.2</code></pre>
 <span id="cb7-8"><a href="#cb7-8"></a>text <span class="op">=</span> text[start_indx:end_indx]</span>
 <span id="cb7-9"><a href="#cb7-9"></a></span>
 <span id="cb7-10"><a href="#cb7-10"></a><span class="co"># total length of the text</span></span>
-<span id="cb7-11"><a href="#cb7-11"></a><span class="bu">print</span>(<span class="st">"Total Length (character count):"</span>, <span class="bu">len</span>(text))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-11"><a href="#cb7-11"></a><span class="bu">print</span>(<span class="st">"Total Length (character count):"</span>, <span class="bu">len</span>(text))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Total Length (character count): 21831</code></pre>
 </div>
@@ -339,16 +342,16 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="how-does-the-data-look">How does the data look?</h3>
 <p>Let’s view the first 500 characters from the story text.</p>
 <div id="cell-15" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:87}}" data-outputid="372bb33a-850f-471e-e086-d5ffc4f86298" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># view the text start</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a>text[:<span class="dv">500</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># view the text start</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>text[:<span class="dv">500</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>'There once lived a gentleman and his wife, who were the parents of a\nlovely little daughter.\n\nWhen this child was only nine years of age, her mother fell sick.\nFinding her death coming on, she called her child to her and said to\nher, "My child, always be good; bear every thing that happens to you\nwith patience, and whatever evil and troubles you may suffer, you will\nbe happy in the end if you are so." Then the poor lady died, and her\ndaughter was full of great grief at the loss of a mother so go'</code></pre>
 </div>
 </div>
 <p>And the last 500 characters.</p>
 <div id="cell-17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:87}}" data-outputid="83201752-ee9e-44a6-b39e-71acbc27bec3" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># view the text end</span></span>
-<span id="cb11-2"><a href="#cb11-2"></a>text[<span class="op">-</span><span class="dv">500</span>:]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># view the text end</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>text[<span class="op">-</span><span class="dv">500</span>:]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <pre><code>'their affection.\nShe was then taken to the palace of the young prince, in whose eyes she\nappeared yet more lovely than before, and who married her shortly after.\n\nCinderella, who was as good as she was beautiful, allowed her sisters to\nlodge in the palace, and gave them in marriage, that same day, to two\nlords belonging to the court.\n\n[Illustration: MARRIAGE OF THE PRINCE AND CINDERELLA.]\n\nThe amiable qualities of Cinderella were as conspicuous after as they\nhad been before marriage.\n\n\n\n\n       '</code></pre>
 </div>
@@ -359,7 +362,7 @@ matplotlib==3.2.2</code></pre>
 <p>Our data is a string and can’t be used to train a model. So instead, we have to convert it into integers. For this encoding, we will use a simple methodology where each unique character in the text is assigned an integer and then replaced with all occurrences of that character in the text with that integer value.</p>
 <p>For this, let’s first create a set of all the unique characters in the text.</p>
 <div id="cell-19" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="e8c52889-57ad-47cc-a8c8-b4bef4adcacb" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb13-2"><a href="#cb13-2"></a></span>
 <span id="cb13-3"><a href="#cb13-3"></a><span class="co"># find unique chars from text</span></span>
 <span id="cb13-4"><a href="#cb13-4"></a>char_set <span class="op">=</span> <span class="bu">set</span>(text)</span>
@@ -367,7 +370,7 @@ matplotlib==3.2.2</code></pre>
 <span id="cb13-6"><a href="#cb13-6"></a></span>
 <span id="cb13-7"><a href="#cb13-7"></a><span class="co"># sort char set</span></span>
 <span id="cb13-8"><a href="#cb13-8"></a>chars_sorted <span class="op">=</span> <span class="bu">sorted</span>(char_set)</span>
-<span id="cb13-9"><a href="#cb13-9"></a><span class="bu">print</span>(chars_sorted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="bu">print</span>(chars_sorted)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unique Characters: 65
 ['\n', ' ', '!', '"', "'", ',', '-', '.', ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y', 'Z', '[', ']', '_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']</code></pre>
@@ -375,21 +378,21 @@ matplotlib==3.2.2</code></pre>
 </div>
 <p>We now know all the unique characters in our input text. Accordingly, we can create a dictionary and assign each character in <code>char_set</code> a unique integer.</p>
 <div id="cell-21" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="0b7a8e2c-d7f7-4ae0-acc4-818af3912c53" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># encode chars</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># encode chars</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a>char2int <span class="op">=</span> {ch: i <span class="cf">for</span> i, ch <span class="kw">in</span> <span class="bu">enumerate</span>(chars_sorted)}</span>
 <span id="cb15-3"><a href="#cb15-3"></a></span>
 <span id="cb15-4"><a href="#cb15-4"></a><span class="co"># `char2int` dictionary for char -&gt; int</span></span>
-<span id="cb15-5"><a href="#cb15-5"></a><span class="bu">print</span>(char2int)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="bu">print</span>(char2int)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{'\n': 0, ' ': 1, '!': 2, '"': 3, "'": 4, ',': 5, '-': 6, '.': 7, ':': 8, ';': 9, '?': 10, 'A': 11, 'B': 12, 'C': 13, 'D': 14, 'E': 15, 'F': 16, 'G': 17, 'H': 18, 'I': 19, 'J': 20, 'K': 21, 'L': 22, 'M': 23, 'N': 24, 'O': 25, 'P': 26, 'Q': 27, 'R': 28, 'S': 29, 'T': 30, 'U': 31, 'V': 32, 'W': 33, 'Y': 34, 'Z': 35, '[': 36, ']': 37, '_': 38, 'a': 39, 'b': 40, 'c': 41, 'd': 42, 'e': 43, 'f': 44, 'g': 45, 'h': 46, 'i': 47, 'j': 48, 'k': 49, 'l': 50, 'm': 51, 'n': 52, 'o': 53, 'p': 54, 'q': 55, 'r': 56, 's': 57, 't': 58, 'u': 59, 'v': 60, 'w': 61, 'x': 62, 'y': 63, 'z': 64}</code></pre>
 </div>
 </div>
 <p>But more than just the encoding, we also need a way to convert the encoded characters back to the original form. For this, we will use a separate array that will hold the index of each <code>char</code> in the dictionary. Together with <code>char2int</code> and <code>int2char</code> we can move back and forth between encoded and decoded characters.</p>
 <div id="cell-23" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="c3767341-eced-4fab-f94e-3e8951aa7c5d" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>int2char <span class="op">=</span> np.array(chars_sorted)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>int2char <span class="op">=</span> np.array(chars_sorted)</span>
 <span id="cb17-2"><a href="#cb17-2"></a></span>
 <span id="cb17-3"><a href="#cb17-3"></a><span class="co"># `int2char` for int -&gt; char</span></span>
-<span id="cb17-4"><a href="#cb17-4"></a><span class="bu">print</span>(int2char)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="bu">print</span>(int2char)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>['\n' ' ' '!' '"' "'" ',' '-' '.' ':' ';' '?' 'A' 'B' 'C' 'D' 'E' 'F' 'G'
  'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'Y' 'Z'
@@ -402,21 +405,21 @@ matplotlib==3.2.2</code></pre>
 <h3 class="anchored" data-anchor-id="encode-input-text">Encode input text</h3>
 <p>In this step, we will use the <code>char2int</code> dictionary to encode our story text. The encoded version of <code>text</code> is called <code>text_encoded</code>.</p>
 <div id="cell-25" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="85147933-cc61-4443-b731-926d8361ed5d" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
 <span id="cb19-2"><a href="#cb19-2"></a><span class="co"># encode original text</span></span>
 <span id="cb19-3"><a href="#cb19-3"></a>text_encoded <span class="op">=</span> np.array([char2int[ch] <span class="cf">for</span> ch <span class="kw">in</span> text], dtype<span class="op">=</span>np.int32)</span>
 <span id="cb19-4"><a href="#cb19-4"></a></span>
-<span id="cb19-5"><a href="#cb19-5"></a><span class="bu">print</span>(<span class="st">"Text encoded shape: "</span>, text_encoded.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-5"><a href="#cb19-5"></a><span class="bu">print</span>(<span class="st">"Text encoded shape: "</span>, text_encoded.shape)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Text encoded shape:  (21831,)</code></pre>
 </div>
 </div>
 <p>Let’s use <code>int2char</code> to decode and return the original text.</p>
 <div id="cell-27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="3dfc5e40-bfe5-4d42-c3d4-e1deb39e5bb0" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">##</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="co"># decoding original text</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a><span class="cf">for</span> ex <span class="kw">in</span> text_encoded[:<span class="dv">5</span>]:</span>
-<span id="cb21-4"><a href="#cb21-4"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="sc">{}</span><span class="st"> -&gt; </span><span class="sc">{}</span><span class="st">"</span>.<span class="bu">format</span>(ex, int2char[ex]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-4"><a href="#cb21-4"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="sc">{}</span><span class="st"> -&gt; </span><span class="sc">{}</span><span class="st">"</span>.<span class="bu">format</span>(ex, int2char[ex]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>30 -&gt; T
 46 -&gt; h
@@ -427,8 +430,8 @@ matplotlib==3.2.2</code></pre>
 </div>
 <p>Another example of encoding and decoding. This time I used multiple words together.</p>
 <div id="cell-29" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="9e2b9f46-a56f-4901-9524-e0b10ad483c1" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="bu">print</span>(text[:<span class="dv">18</span>], <span class="st">"     == Encoding ==&gt; "</span>, text_encoded[:<span class="dv">18</span>])</span>
-<span id="cb23-2"><a href="#cb23-2"></a><span class="bu">print</span>(text_encoded[<span class="dv">19</span>:<span class="dv">41</span>], <span class="st">" == Reverse  ==&gt; "</span>, <span class="st">""</span>.join(int2char[text_encoded[<span class="dv">19</span>:<span class="dv">41</span>]]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="bu">print</span>(text[:<span class="dv">18</span>], <span class="st">"     == Encoding ==&gt; "</span>, text_encoded[:<span class="dv">18</span>])</span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="bu">print</span>(text_encoded[<span class="dv">19</span>:<span class="dv">41</span>], <span class="st">" == Reverse  ==&gt; "</span>, <span class="st">""</span>.join(int2char[text_encoded[<span class="dv">19</span>:<span class="dv">41</span>]]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>There once lived a      == Encoding ==&gt;  [30 46 43 56 43  1 53 52 41 43  1 50 47 60 43 42  1 39]
 [45 43 52 58 50 43 51 39 52  1 39 52 42  1 46 47 57  1 61 47 44 43]  == Reverse  ==&gt;  gentleman and his wife</code></pre>
@@ -443,24 +446,24 @@ matplotlib==3.2.2</code></pre>
 <li>The last character in sequence (41) represents the output</li>
 </ul>
 <div id="cell-31" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co">##</span></span>
 <span id="cb25-2"><a href="#cb25-2"></a><span class="co"># make sequences of encoded text as `text_chunks`</span></span>
 <span id="cb25-3"><a href="#cb25-3"></a>seq_length <span class="op">=</span> <span class="dv">40</span></span>
 <span id="cb25-4"><a href="#cb25-4"></a>chunk_size <span class="op">=</span> seq_length <span class="op">+</span> <span class="dv">1</span></span>
 <span id="cb25-5"><a href="#cb25-5"></a></span>
 <span id="cb25-6"><a href="#cb25-6"></a>text_chunks <span class="op">=</span> [</span>
 <span id="cb25-7"><a href="#cb25-7"></a>    text_encoded[i : i <span class="op">+</span> chunk_size] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(text_encoded) <span class="op">-</span> chunk_size <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb25-8"><a href="#cb25-8"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-8"><a href="#cb25-8"></a>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-32" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="fe404cbb-adcc-4d22-d784-b3842a02de76" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">##</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a><span class="co"># inspect the first chuck</span></span>
 <span id="cb26-3"><a href="#cb26-3"></a><span class="cf">for</span> seq <span class="kw">in</span> text_chunks[:<span class="dv">1</span>]:</span>
 <span id="cb26-4"><a href="#cb26-4"></a>    input_seq <span class="op">=</span> seq[:<span class="op">-</span><span class="dv">1</span>]</span>
 <span id="cb26-5"><a href="#cb26-5"></a>    target <span class="op">=</span> seq[<span class="op">-</span><span class="dv">1</span>]</span>
 <span id="cb26-6"><a href="#cb26-6"></a></span>
 <span id="cb26-7"><a href="#cb26-7"></a>    <span class="bu">print</span>(input_seq, <span class="st">" -&gt; "</span>, target)</span>
-<span id="cb26-8"><a href="#cb26-8"></a>    <span class="bu">print</span>(<span class="bu">repr</span>(<span class="st">""</span>.join(int2char[input_seq])), <span class="st">" -&gt; "</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[target])))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-8"><a href="#cb26-8"></a>    <span class="bu">print</span>(<span class="bu">repr</span>(<span class="st">""</span>.join(int2char[input_seq])), <span class="st">" -&gt; "</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[target])))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[30 46 43 56 43  1 53 52 41 43  1 50 47 60 43 42  1 39  1 45 43 52 58 50
  43 51 39 52  1 39 52 42  1 46 47 57  1 61 47 44]  -&gt;  43
@@ -468,14 +471,14 @@ matplotlib==3.2.2</code></pre>
 </div>
 </div>
 <div id="cell-33" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="a01e82c2-7a34-420d-e98f-64e573d98589" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co">##</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a><span class="co"># inspect the second chuck</span></span>
 <span id="cb28-3"><a href="#cb28-3"></a><span class="cf">for</span> seq <span class="kw">in</span> text_chunks[<span class="dv">1</span>:<span class="dv">2</span>]:</span>
 <span id="cb28-4"><a href="#cb28-4"></a>    input_seq <span class="op">=</span> seq[:<span class="op">-</span><span class="dv">1</span>]</span>
 <span id="cb28-5"><a href="#cb28-5"></a>    target <span class="op">=</span> seq[<span class="op">-</span><span class="dv">1</span>]</span>
 <span id="cb28-6"><a href="#cb28-6"></a></span>
 <span id="cb28-7"><a href="#cb28-7"></a>    <span class="bu">print</span>(input_seq, <span class="st">" -&gt; "</span>, target)</span>
-<span id="cb28-8"><a href="#cb28-8"></a>    <span class="bu">print</span>(<span class="bu">repr</span>(<span class="st">""</span>.join(int2char[input_seq])), <span class="st">" -&gt; "</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[target])))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-8"><a href="#cb28-8"></a>    <span class="bu">print</span>(<span class="bu">repr</span>(<span class="st">""</span>.join(int2char[input_seq])), <span class="st">" -&gt; "</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[target])))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[46 43 56 43  1 53 52 41 43  1 50 47 60 43 42  1 39  1 45 43 52 58 50 43
  51 39 52  1 39 52 42  1 46 47 57  1 61 47 44 43]  -&gt;  5
@@ -493,7 +496,7 @@ matplotlib==3.2.2</code></pre>
 <div id="cell-35" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="b5befe45-930a-45fa-c85c-768c1dd6317d" data-execution_count="17">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="im">import</span> torch</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="im">import</span> torch</span>
 <span id="cb30-2"><a href="#cb30-2"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset</span>
 <span id="cb30-3"><a href="#cb30-3"></a></span>
 <span id="cb30-4"><a href="#cb30-4"></a></span>
@@ -509,7 +512,7 @@ matplotlib==3.2.2</code></pre>
 <span id="cb30-14"><a href="#cb30-14"></a>        <span class="cf">return</span> text_chunk[:<span class="op">-</span><span class="dv">1</span>].<span class="bu">long</span>(), text_chunk[<span class="dv">1</span>:].<span class="bu">long</span>()  <span class="co"># return input, target</span></span>
 <span id="cb30-15"><a href="#cb30-15"></a></span>
 <span id="cb30-16"><a href="#cb30-16"></a></span>
-<span id="cb30-17"><a href="#cb30-17"></a>seq_dataset <span class="op">=</span> TextDataset(torch.tensor(text_chunks))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-17"><a href="#cb30-17"></a>seq_dataset <span class="op">=</span> TextDataset(torch.tensor(text_chunks))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:15: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at  ../torch/csrc/utils/tensor_new.cpp:201.)
@@ -523,12 +526,12 @@ matplotlib==3.2.2</code></pre>
 </ul>
 <p>Remember that both <code>input</code> and <code>target</code> sequences are derived from the same encoded text. We train our model to predict the next character from the given input. One character is given as an input to the model, and one character output comes out of the model. In an ideal case, the model output character should represent the next character in a sequence. And our <code>target</code> sequence is just that: one next character from the input sequence.</p>
 <div id="cell-37" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="7da935b2-0c86-4736-ca4a-26d5ed4df0f8" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="cf">for</span> i, (seq, target) <span class="kw">in</span> <span class="bu">enumerate</span>(seq_dataset):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="cf">for</span> i, (seq, target) <span class="kw">in</span> <span class="bu">enumerate</span>(seq_dataset):</span>
 <span id="cb32-2"><a href="#cb32-2"></a>    <span class="bu">print</span>(<span class="st">" Input (x):"</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[seq])))</span>
 <span id="cb32-3"><a href="#cb32-3"></a>    <span class="bu">print</span>(<span class="st">"Target (y):"</span>, <span class="bu">repr</span>(<span class="st">""</span>.join(int2char[target])))</span>
 <span id="cb32-4"><a href="#cb32-4"></a>    <span class="bu">print</span>()</span>
 <span id="cb32-5"><a href="#cb32-5"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">1</span>:</span>
-<span id="cb32-6"><a href="#cb32-6"></a>        <span class="cf">break</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb32-6"><a href="#cb32-6"></a>        <span class="cf">break</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> Input (x): 'There once lived a gentleman and his wif'
 Target (y): 'here once lived a gentleman and his wife'
@@ -543,12 +546,12 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <h3 class="anchored" data-anchor-id="load-data-into-dataloader-class-to-prepare-batches">Load data into DataLoader class to prepare batches</h3>
 <p>In this step, we have prepared training batches using the PyTorch <a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">DataLoader</a> class.</p>
 <div id="cell-39" class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb34-2"><a href="#cb34-2"></a></span>
 <span id="cb34-3"><a href="#cb34-3"></a>batch_size <span class="op">=</span> <span class="dv">64</span></span>
 <span id="cb34-4"><a href="#cb34-4"></a></span>
 <span id="cb34-5"><a href="#cb34-5"></a>torch.manual_seed(<span class="dv">1</span>)</span>
-<span id="cb34-6"><a href="#cb34-6"></a>seq_dl <span class="op">=</span> DataLoader(seq_dataset, batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span>, drop_last<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-6"><a href="#cb34-6"></a>seq_dl <span class="op">=</span> DataLoader(seq_dataset, batch_size<span class="op">=</span>batch_size, shuffle<span class="op">=</span><span class="va">True</span>, drop_last<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -559,7 +562,7 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <div id="cell-41" class="cell" data-execution_count="20">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb35-2"><a href="#cb35-2"></a></span>
 <span id="cb35-3"><a href="#cb35-3"></a>device <span class="op">=</span> <span class="st">"cuda"</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">"cpu"</span></span>
 <span id="cb35-4"><a href="#cb35-4"></a></span>
@@ -580,11 +583,11 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <span id="cb35-19"><a href="#cb35-19"></a>    <span class="kw">def</span> init_hidden(<span class="va">self</span>, batch_size):</span>
 <span id="cb35-20"><a href="#cb35-20"></a>        hidden <span class="op">=</span> torch.zeros(<span class="dv">1</span>, batch_size, <span class="va">self</span>.rnn_hidden_size)</span>
 <span id="cb35-21"><a href="#cb35-21"></a>        cell <span class="op">=</span> torch.zeros(<span class="dv">1</span>, batch_size, <span class="va">self</span>.rnn_hidden_size)</span>
-<span id="cb35-22"><a href="#cb35-22"></a>        <span class="cf">return</span> hidden.to(device), cell.to(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb35-22"><a href="#cb35-22"></a>        <span class="cf">return</span> hidden.to(device), cell.to(device)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-42" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="0d50bde3-f39f-4900-900b-cc4eb488e8eb" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
 <span id="cb36-2"><a href="#cb36-2"></a></span>
 <span id="cb36-3"><a href="#cb36-3"></a><span class="co"># define model dimensions</span></span>
 <span id="cb36-4"><a href="#cb36-4"></a>vocab_size <span class="op">=</span> <span class="bu">len</span>(int2char)</span>
@@ -594,7 +597,7 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <span id="cb36-8"><a href="#cb36-8"></a><span class="co"># initialize model</span></span>
 <span id="cb36-9"><a href="#cb36-9"></a>model <span class="op">=</span> RNN(vocab_size, embed_dim, rnn_hidden_size)</span>
 <span id="cb36-10"><a href="#cb36-10"></a>model <span class="op">=</span> model.to(device)</span>
-<span id="cb36-11"><a href="#cb36-11"></a>model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-11"><a href="#cb36-11"></a>model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>RNN(
   (embedding): Embedding(65, 256)
@@ -610,8 +613,8 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <li>For optimization, we will use <a href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html">torch.optim.Adam</a></li>
 </ul>
 <div id="cell-44" class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span>
-<span id="cb38-2"><a href="#cb38-2"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">0.005</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span>
+<span id="cb38-2"><a href="#cb38-2"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">0.005</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="model-training" class="level3">
@@ -620,7 +623,7 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <div id="cell-46" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="2f289099-3541-49b3-9e38-f124466370ca" data-execution_count="27">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a><span class="co"># for execution time measurement</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a><span class="co"># for execution time measurement</span></span>
 <span id="cb39-2"><a href="#cb39-2"></a><span class="im">from</span> timeit <span class="im">import</span> default_timer <span class="im">as</span> timer</span>
 <span id="cb39-3"><a href="#cb39-3"></a></span>
 <span id="cb39-4"><a href="#cb39-4"></a>num_epochs <span class="op">=</span> <span class="dv">10000</span></span>
@@ -650,7 +653,7 @@ Target (y): 'ere once lived a gentleman and his wife,'
 <span id="cb39-28"><a href="#cb39-28"></a></span>
 <span id="cb39-29"><a href="#cb39-29"></a>end <span class="op">=</span> timer()  <span class="co"># timer end</span></span>
 <span id="cb39-30"><a href="#cb39-30"></a><span class="bu">print</span>(<span class="st">"Total execution time in seconds: "</span>, <span class="st">"</span><span class="sc">%.2f</span><span class="st">"</span> <span class="op">%</span> (end <span class="op">-</span> start))</span>
-<span id="cb39-31"><a href="#cb39-31"></a><span class="bu">print</span>(<span class="st">"Device type: "</span>, device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-31"><a href="#cb39-31"></a><span class="bu">print</span>(<span class="st">"Device type: "</span>, device)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Epoch 0 loss: 2.6252
@@ -696,7 +699,7 @@ Device type:  cuda</code></pre>
 <div id="cell-48" class="cell" data-execution_count="28">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="im">from</span> torch.distributions.categorical <span class="im">import</span> Categorical</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a><span class="im">from</span> torch.distributions.categorical <span class="im">import</span> Categorical</span>
 <span id="cb41-2"><a href="#cb41-2"></a></span>
 <span id="cb41-3"><a href="#cb41-3"></a><span class="kw">def</span> sample(model, starting_str, len_generated_text<span class="op">=</span><span class="dv">500</span>, scale_factor<span class="op">=</span><span class="fl">1.0</span>):</span>
 <span id="cb41-4"><a href="#cb41-4"></a></span>
@@ -721,7 +724,7 @@ Device type:  cuda</code></pre>
 <span id="cb41-23"><a href="#cb41-23"></a>        last_char <span class="op">=</span> m.sample()</span>
 <span id="cb41-24"><a href="#cb41-24"></a>        generated_str <span class="op">+=</span> <span class="bu">str</span>(int2char[last_char])</span>
 <span id="cb41-25"><a href="#cb41-25"></a></span>
-<span id="cb41-26"><a href="#cb41-26"></a>    <span class="cf">return</span> generated_str</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-26"><a href="#cb41-26"></a>    <span class="cf">return</span> generated_str</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -729,9 +732,9 @@ Device type:  cuda</code></pre>
 <h2 class="anchored" data-anchor-id="generating-new-text-passages">Generating new text passages</h2>
 <p>We are processing text and model output on the ‘CPU’ device in the ‘sample’ function. So let’s also move the model to the same device.</p>
 <div id="cell-50" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="1911eba3-6f14-466e-d427-971a2f1cc322" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">##</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a><span class="co"># move model to cpu</span></span>
-<span id="cb42-3"><a href="#cb42-3"></a>model.to(<span class="st">'cpu'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-3"><a href="#cb42-3"></a>model.to(<span class="st">'cpu'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="30">
 <pre><code>RNN(
   (embedding): Embedding(65, 256)
@@ -743,23 +746,23 @@ Device type:  cuda</code></pre>
 <p>Before generating some lengthy text, let’s experiment with simple words and see if our model can complete them.</p>
 <p>At first, I used the string “fat” and asked the model to generate the following three characters to complete this word. But at the same time, I have passed a tiny scaling factor meaning I have decreased the model’s predictability.</p>
 <div id="cell-52" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="567aab7e-229d-47e7-9058-8f35b195ef39" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"fat"</span>, len_generated_text<span class="op">=</span><span class="dv">3</span>, scale_factor<span class="op">=</span><span class="fl">0.1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"fat"</span>, len_generated_text<span class="op">=</span><span class="dv">3</span>, scale_factor<span class="op">=</span><span class="fl">0.1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>fat, i</code></pre>
 </div>
 </div>
 <p>Next, I asked the model to use the same input and predict the following three characters, but I increased the model’s predictability ten times. So let’s see the output this time.</p>
 <div id="cell-54" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="64b81ecd-a1f5-4133-a93b-3d7e03db9c0c" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">'fat'</span>, len_generated_text<span class="op">=</span><span class="dv">3</span>, scale_factor<span class="op">=</span><span class="fl">1.0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">'fat'</span>, len_generated_text<span class="op">=</span><span class="dv">3</span>, scale_factor<span class="op">=</span><span class="fl">1.0</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>father</code></pre>
 </div>
 </div>
 <p>The second time model generated the correct word “father” it had seen before in the training text. So let’s now generate some lengthy texts.</p>
 <div id="cell-56" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="789757fd-0635-4444-bd01-43e34ad61f48" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a><span class="co">##</span></span>
 <span id="cb48-2"><a href="#cb48-2"></a><span class="co"># text generation example 1</span></span>
-<span id="cb48-3"><a href="#cb48-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The father"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb48-3"><a href="#cb48-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The father"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The father too was she was one of those good faeries who protect children. Her
 spirits revived, and she wiped away her tears.
@@ -771,9 +774,9 @@ horses, much handsomer than your sisters', to say the least</code></pre>
 </div>
 </div>
 <div id="cell-57" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="9bf79006-546a-4d37-82d5-c96c81f95841" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a><span class="co">##</span></span>
 <span id="cb50-2"><a href="#cb50-2"></a><span class="co"># text generation example 2</span></span>
-<span id="cb50-3"><a href="#cb50-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The mother"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb50-3"><a href="#cb50-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The mother"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The mother so good crust. But
 if you like to give the household. It was she who washed the dishes, and
@@ -791,9 +794,9 @@ Cinderella drew</code></pre>
 </div>
 </div>
 <div id="cell-58" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="abd71fa5-7526-41b4-dbd6-6d19032151c9" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a><span class="co">##</span></span>
 <span id="cb52-2"><a href="#cb52-2"></a><span class="co"># text generation example 3</span></span>
-<span id="cb52-3"><a href="#cb52-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The three sisters"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb52-3"><a href="#cb52-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The three sisters"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The three sisters were very cruel to Cinderella,
 that he delicacies which she had
@@ -811,9 +814,9 @@ The long-wished-for evening came at last, an</code></pre>
 </div>
 </div>
 <div id="cell-59" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="e1aabb58-eed7-405c-b970-fe504107e75e" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1"></a><span class="co">##</span></span>
 <span id="cb54-2"><a href="#cb54-2"></a><span class="co"># text generation example 4</span></span>
-<span id="cb54-3"><a href="#cb54-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The lovely prince"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb54-3"><a href="#cb54-3"></a><span class="bu">print</span>(sample(model, starting_str<span class="op">=</span><span class="st">"The lovely prince"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The lovely prince
 immediately jumped up behind the
@@ -881,13 +884,14 @@ THEN LED INTO THE ROYAL BY THE HER WITH THE HONORS DUE TO A GREAT PRINCES</code>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -133,6 +134,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -246,7 +249,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>This notebook was created and tested in Google Colab. The great thing about Google Colab is that it comes with FFmpeg pre-installed, so you can run the code without any additional setup. You can run it in any Jupyter environment, but you might need to install FFmpeg first.</p>
 <p>Let’s start by checking the installed FFmpeg version.</p>
 <div id="XsJM-tQdAvjp" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="cb98b3a4-d42c-4cd6-fa78-7d13a1008fd4" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">!</span>ffmpeg <span class="op">-</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">!</span>ffmpeg <span class="op">-</span>version</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers
 built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
@@ -263,12 +266,12 @@ libpostproc    55.  9.100 / 55.  9.100</code></pre>
 </div>
 <p>We’ll also install and use the <a href="https://github.com/rasbt/watermark">watermark library</a>. It’s an <code>IPython</code> magic extension that’s incredibly useful for printing environment details like Python versions, library versions, and hardware information. It’s a great practice for reproducibility.</p>
 <div id="xKqtmNcUBBhx" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%%</span>capture</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="op">!</span>pip install watermark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%%</span>capture</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="op">!</span>pip install watermark</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="9af53e1f-1b21-4ba4-84a9-f5df6c2c1f6b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="61295562-d962-433b-a9ce-525eac28f542">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">%</span>load_ext watermark</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p watermark,matplotlib,PIL</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">%</span>load_ext watermark</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p watermark,matplotlib,PIL</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Python implementation: CPython
 Python version       : 3.11.13
@@ -299,7 +302,7 @@ Architecture: 64bit
 <h2 class="anchored" data-anchor-id="download-the-video-frames">Download the video frames</h2>
 <p>First, we need the raw materials: the individual frames of “The Horse in Motion.” I’ve hosted them on a public GitHub repository. The following Python code will create a directory called <code>video_frames</code> and download the 15 images into it.</p>
 <div id="d71dcd00" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="898df6b8-ec06-42b7-e53c-3b3e93b343fc" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="im">import</span> os</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a><span class="im">import</span> os</span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="im">import</span> requests</span>
 <span id="cb6-3"><a href="#cb6-3"></a></span>
 <span id="cb6-4"><a href="#cb6-4"></a><span class="co"># Create the output directory if it doesn't exist</span></span>
@@ -322,7 +325,7 @@ Architecture: 64bit
 <span id="cb6-21"><a href="#cb6-21"></a>        <span class="bu">print</span>(<span class="ss">f"Failed to download frame</span><span class="sc">{</span>frame_number<span class="sc">}</span><span class="ss">.png"</span>)</span>
 <span id="cb6-22"><a href="#cb6-22"></a></span>
 <span id="cb6-23"><a href="#cb6-23"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Listing downloaded files:"</span>)</span>
-<span id="cb6-24"><a href="#cb6-24"></a><span class="op">!</span>ls video_frames</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-24"><a href="#cb6-24"></a><span class="op">!</span>ls video_frames</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Downloaded frame01.png
 Downloaded frame02.png
@@ -348,7 +351,7 @@ frame03.png  frame06.png  frame09.png  frame12.png  frame15.png</code></pre>
 </div>
 <p>Before we stitch them into a video, let’s use <code>matplotlib</code> and <code>Pillow</code> to have a look at the frames we just downloaded. This helps confirm everything looks correct.</p>
 <div id="28745b30" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:470}}" data-outputid="b3af989c-1555-48a2-e71c-c38aefe19b3c" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">import</span> os</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">import</span> os</span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb8-3"><a href="#cb8-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
 <span id="cb8-4"><a href="#cb8-4"></a></span>
@@ -367,7 +370,7 @@ frame03.png  frame06.png  frame09.png  frame12.png  frame15.png</code></pre>
 <span id="cb8-17"><a href="#cb8-17"></a>    ax.axis(<span class="st">"off"</span>)</span>
 <span id="cb8-18"><a href="#cb8-18"></a></span>
 <span id="cb8-19"><a href="#cb8-19"></a>plt.tight_layout()</span>
-<span id="cb8-20"><a href="#cb8-20"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-20"><a href="#cb8-20"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -381,11 +384,11 @@ frame03.png  frame06.png  frame09.png  frame12.png  frame15.png</code></pre>
 <h2 class="anchored" data-anchor-id="creating-the-video-with-ffmpeg">Creating the Video with FFmpeg</h2>
 <p>Now for the main event. We’ll use a single FFmpeg command to take our 15 separate <code>png</code> images and turn them into a looping <code>mp4</code> video file with text overlaid.</p>
 <div id="frLFbNodLH-1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="0cc435dd-0b49-49b1-b4b5-b0575ce2e88a" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="op">!</span>ffmpeg <span class="op">\</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="op">!</span>ffmpeg <span class="op">\</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="op">-</span>stream_loop <span class="op">-</span><span class="dv">1</span> <span class="op">-</span>framerate <span class="fl">1.5</span> <span class="op">-</span>i video_frames<span class="op">/</span>frame<span class="op">%</span><span class="dv">0</span><span class="er">2d</span>.png <span class="op">\</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a><span class="op">-</span>vf <span class="st">"drawtext=fontfile=/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf:text='The Horse in Motion and FFmpeg Gotchas':fontcolor=white:fontsize=14:box=1:boxcolor=black@0.8:boxborderw=5:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(t,0,10)'"</span> <span class="op">\</span></span>
 <span id="cb9-4"><a href="#cb9-4"></a><span class="op">-</span>c:v libx264 <span class="op">-</span>r <span class="dv">30</span> <span class="op">-</span>pix_fmt yuv420p <span class="op">-</span>t <span class="dv">40</span> <span class="op">\</span></span>
-<span id="cb9-5"><a href="#cb9-5"></a>output_with_text.mp4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-5"><a href="#cb9-5"></a>output_with_text.mp4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre>ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers
@@ -515,7 +518,7 @@ video:556kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing o
 <p>If <code>ffmpeg</code> is the factory that builds the car, <code>ffprobe</code> is the inspector who reads the spec sheet to make sure it was built correctly. It doesn’t change the file; it just tells you everything about it.</p>
 <p>Let’s run it on our new video to inspect its properties. We’ll ask for the video stream information in a clean, readable format.</p>
 <div id="S2XYF39PUf0J" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="e98ef593-04ec-4445-cda2-15a9fbfd461e" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="op">!</span>ffprobe <span class="op">-</span>v quiet <span class="op">-</span>print_format default<span class="op">=</span>noprint_wrappers<span class="op">=</span><span class="dv">1</span> <span class="op">-</span>show_format <span class="op">-</span>show_streams <span class="op">/</span>content<span class="op">/</span>output_with_text.mp4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="op">!</span>ffprobe <span class="op">-</span>v quiet <span class="op">-</span>print_format default<span class="op">=</span>noprint_wrappers<span class="op">=</span><span class="dv">1</span> <span class="op">-</span>show_format <span class="op">-</span>show_streams <span class="op">/</span>content<span class="op">/</span>output_with_text.mp4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>index=0
 codec_name=h264
@@ -617,7 +620,7 @@ TAG:encoder=Lavf58.76.100</code></pre>
 <p><code>DEV.LS h264          H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (decoders: h264 h264_qsv h264_cuvid ) (encoders: libx264 libx264rgb h264_nvenc h264_omx h264_qsv )</code></p>
 <p>The letters at the beginning tell you what FFmpeg can do with this format. <code>D</code> means decoding is supported, <code>E</code> means encoding is supported, and <code>V</code> means it’s a video codec. Our <code>libx264</code> is listed as an available encoder.</p>
 <div id="NnptdNI9OAbT" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="574a413a-ba8a-4f44-fda3-02f429d5725b" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="op">!</span>ffmpeg <span class="op">-</span>codecs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="op">!</span>ffmpeg <span class="op">-</span>codecs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers
   built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
@@ -1138,7 +1141,7 @@ Codecs:
 <p><code>ffmpeg -buildconf</code></p>
 <p>In the output, you’ll see a long list of <code>--enable-</code> flags. If you see <code>--enable-libfreetype</code>, you know the <code>drawtext</code> filter should work. This becomes extremely important when you’re building FFmpeg for a minimal environment like Docker or AWS Lambda, where you might not have these libraries by default.</p>
 <div id="N2kQXsEOUkKI" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;}}" data-outputid="9e997fe8-ea1a-495c-bacd-1011e7006f39" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="op">!</span>ffmpeg <span class="op">-</span>buildconf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="op">!</span>ffmpeg <span class="op">-</span>buildconf</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers
   built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
@@ -1284,13 +1287,14 @@ Codecs:
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
