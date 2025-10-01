@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-10-01">
+<meta name="description" content="A detailed breakdown of the paper that taught a computer to see the world through the lens of human language, enabling remarkable zero shot image classification.">
+
+<title>Connecting Vision and Language: A Deep Dive into OpenAI’s CLIP – Random Thoughts</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/favicon.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-D1ST9BH6HX"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Connecting Vision and Language: A Deep Dive into OpenAI’s CLIP – Random Thoughts">
+<meta property="og:description" content="A detailed breakdown of the paper that taught a computer to see the world through the lens of human language, enabling remarkable zero shot image classification.">
+<meta property="og:image" content="https://hassaanbinaslam.github.io/posts/images/2025-10-01-clip-reading-notes.png">
+<meta property="og:site_name" content="Random Thoughts">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1024">
+<meta name="twitter:title" content="Connecting Vision and Language: A Deep Dive into OpenAI’s CLIP – Random Thoughts">
+<meta name="twitter:description" content="A detailed breakdown of the paper that taught a computer to see the world through the lens of human language, enabling remarkable zero shot image classification.">
+<meta name="twitter:image" content="https://hassaanbinaslam.github.io/posts/images/2025-10-01-clip-reading-notes.png">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Random Thoughts</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hassaanbinaslam/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hassaanbinaslam/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/hassaanbinaslam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a>
+  <ul class="collapse">
+  <li><a href="#the-problem-the-fixed-set-limitation-of-vision-models" id="toc-the-problem-the-fixed-set-limitation-of-vision-models" class="nav-link" data-scroll-target="#the-problem-the-fixed-set-limitation-of-vision-models">The Problem: The “Fixed Set” Limitation of Vision Models</a></li>
+  <li><a href="#the-solution-learning-from-natural-language" id="toc-the-solution-learning-from-natural-language" class="nav-link" data-scroll-target="#the-solution-learning-from-natural-language">The Solution: Learning from Natural Language</a></li>
+  <li><a href="#the-payoff-true-zero-shot-transfer" id="toc-the-payoff-true-zero-shot-transfer" class="nav-link" data-scroll-target="#the-payoff-true-zero-shot-transfer">The Payoff: True Zero-Shot Transfer</a></li>
+  <li><a href="#the-evidence-it-actually-works" id="toc-the-evidence-it-actually-works" class="nav-link" data-scroll-target="#the-evidence-it-actually-works">The Evidence: It Actually Works</a></li>
+  </ul></li>
+  <li><a href="#introduction-and-motivating-work" id="toc-introduction-and-motivating-work" class="nav-link" data-scroll-target="#introduction-and-motivating-work">1. Introduction and Motivating Work</a>
+  <ul class="collapse">
+  <li><a href="#the-nlp-revolution-a-blueprint-for-vision" id="toc-the-nlp-revolution-a-blueprint-for-vision" class="nav-link" data-scroll-target="#the-nlp-revolution-a-blueprint-for-vision">The NLP Revolution: A Blueprint for Vision</a></li>
+  <li><a href="#the-central-question-can-vision-learn-from-nlps-playbook" id="toc-the-central-question-can-vision-learn-from-nlps-playbook" class="nav-link" data-scroll-target="#the-central-question-can-vision-learn-from-nlps-playbook">The Central Question: Can Vision Learn from NLP’s Playbook?</a></li>
+  <li><a href="#standing-on-the-shoulders-of-giants-a-history-of-vision-language-models" id="toc-standing-on-the-shoulders-of-giants-a-history-of-vision-language-models" class="nav-link" data-scroll-target="#standing-on-the-shoulders-of-giants-a-history-of-vision-language-models">Standing on the Shoulders of Giants: A History of Vision-Language Models</a></li>
+  <li><a href="#the-performance-gap-and-the-pragmatic-middle-ground" id="toc-the-performance-gap-and-the-pragmatic-middle-ground" class="nav-link" data-scroll-target="#the-performance-gap-and-the-pragmatic-middle-ground">The Performance Gap and the “Pragmatic Middle Ground”</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Connecting Vision and Language: A Deep Dive into OpenAI’s CLIP</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">papers</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A detailed breakdown of the paper that taught a computer to see the world through the lens of human language, enabling remarkable zero shot image classification.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 1, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/2025-10-01-clip-reading-notes.png" class="img-fluid"></p>
+<p>For years, the gold standard in computer vision involved training models on massive, manually labeled datasets like ImageNet. While incredibly successful, this approach has a fundamental limitation: the model’s knowledge is confined to the specific categories it was trained on. In a parallel revolution, natural language processing (NLP) models like GPT-3 moved towards pre-training on the vast, raw text of the internet, learning flexible and generalizable knowledge. The OpenAI CLIP paper asks a powerful question: can we bring the NLP pre-training paradigm to computer vision and learn from the rich, descriptive text that naturally accompanies images online?</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-title.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="images/2025-10-01-clip-reading-notes/paper-title.png" class="img-fluid"></a></p>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-abstract.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="images/2025-10-01-clip-reading-notes/paper-abstract.png" class="img-fluid"></a></p>
+<section id="the-problem-the-fixed-set-limitation-of-vision-models" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem-the-fixed-set-limitation-of-vision-models">The Problem: The “Fixed Set” Limitation of Vision Models</h3>
+<p>The authors start by highlighting a long-standing challenge in computer vision.</p>
+<blockquote class="blockquote">
+<p>State-of-the-art computer vision systems are trained to predict a fixed set of predetermined object categories. This restricted form of supervision limits their generality and usability since additional labeled data is needed to specify any other visual concept.</p>
+</blockquote>
+<p>For years, the standard approach was to train a model on a dataset with a predefined list of categories, like the 1000 object classes in the famous ImageNet dataset. If a model was trained to recognize “cats,” “dogs,” and “cars,” it had no inherent ability to recognize a “horse” or a “bicycle.” To teach it a new concept, you had to go back, collect and label thousands of new images, and fine-tune or retrain the model. This process is expensive, slow, and fundamentally limits a model’s real world usefulness. The world is not a fixed set of 1000 categories.</p>
+</section>
+<section id="the-solution-learning-from-natural-language" class="level3">
+<h3 class="anchored" data-anchor-id="the-solution-learning-from-natural-language">The Solution: Learning from Natural Language</h3>
+<p>Instead of relying on these rigid, curated datasets, the authors propose a more natural and scalable alternative.</p>
+<blockquote class="blockquote">
+<p>Learning directly from raw text about images is a promising alternative which leverages a much broader source of supervision. We demonstrate that the simple pre-training task of predicting which caption goes with which image is an efficient and scalable way to learn SOTA image representations from scratch on a dataset of 400 million (image, text) pairs collected from the internet.</p>
+</blockquote>
+<p>This is the core idea of CLIP. The internet is filled with images, and those images are often paired with descriptive text: captions, articles, titles, etc. This text provides a rich source of information, or what the authors call <strong>supervision</strong>. Instead of teaching a model that an image maps to a single label like <code>dog</code>, we can teach it that an image maps to a descriptive phrase like <code>"a photo of a golden retriever playing in the park"</code>.</p>
+<p>By training on a massive, custom-built dataset of <strong>400 million</strong> of these (image, text) pairs, the model learns a much more nuanced and flexible understanding of visual concepts. The goal of the training is simple: given a batch of images and a batch of captions, the model must figure out which caption correctly describes which image.</p>
+</section>
+<section id="the-payoff-true-zero-shot-transfer" class="level3">
+<h3 class="anchored" data-anchor-id="the-payoff-true-zero-shot-transfer">The Payoff: True Zero-Shot Transfer</h3>
+<p>This training approach unlocks the model’s most powerful capability.</p>
+<blockquote class="blockquote">
+<p>After pre-training, natural language is used to reference learned visual concepts (or describe new ones) enabling zero-shot transfer of the model to downstream tasks.</p>
+</blockquote>
+<p>Because CLIP learns to connect the content of an image to the meaning of text, you can now give it classification tasks it has never seen before, simply by describing the classes in plain English. This is called <strong>zero-shot transfer</strong>.</p>
+<p>Imagine you want to classify photos of different dog breeds. With a traditional model, you’d need a labeled dataset of thousands of dog photos. With CLIP, you simply provide the text descriptions, like <code>"a photo of a golden retriever"</code>, <code>"a photo of a poodle"</code>, <code>"a photo of a husky"</code>, and the model can instantly classify images into these new categories without seeing a single labeled example. It’s using its pre-trained knowledge to connect what it “sees” in the image to the text you provide.</p>
+</section>
+<section id="the-evidence-it-actually-works" class="level3">
+<h3 class="anchored" data-anchor-id="the-evidence-it-actually-works">The Evidence: It Actually Works</h3>
+<p>The authors back up this powerful claim with extensive testing.</p>
+<blockquote class="blockquote">
+<p>We study the performance of this approach by benchmarking on over 30 different existing computer vision datasets… For instance, we match the accuracy of the original ResNet-50 on ImageNet zero-shot without needing to use any of the 1.28 million training examples it was trained on.</p>
+</blockquote>
+<p>This is the headline result. They tested CLIP’s zero-shot performance across a huge range of tasks, from recognizing objects and actions to reading text (OCR). The most stunning demonstration is its performance on ImageNet. Without being trained on <em>any</em> of the 1.28 million ImageNet training images, CLIP was able to match the accuracy of a fully-supervised ResNet-50 model that was explicitly trained on that data. This proves that learning from natural language supervision is not just a clever idea, but a highly effective method for building general-purpose visual models.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: How Does CLIP <em>Actually</em> Classify an Image?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>One of the most profound ideas in the CLIP paper is that the model does <strong>not</strong> have a fixed list of categories it can recognize. This is a radical departure from how most computer vision models worked before it. To truly appreciate this, let’s compare the traditional approach to CLIP’s new paradigm.</p>
+<section id="the-traditional-approach-a-built-in-classifier" class="level4">
+<h4 class="anchored" data-anchor-id="the-traditional-approach-a-built-in-classifier">The Traditional Approach: A Built-in Classifier</h4>
+<p>Think of a classic image classification model like a ResNet-50 trained on the ImageNet dataset. Its architecture is typically composed of two main parts:</p>
+<ol type="1">
+<li><strong>Feature Extractor:</strong> A deep stack of convolutional layers that process an input image and convert it into a high level feature representation (essentially, a vector or list of numbers).</li>
+<li><strong>Classifier Head:</strong> A final, fully connected layer at the very end of the network. For a model trained on ImageNet, this layer has exactly 1000 outputs, one for each of the 1000 specific classes in the dataset.</li>
+</ol>
+<p>The model is trained to make the output corresponding to the correct class have the highest score. This structure is rigid. The model can only ever predict one of the 1000 classes it was explicitly built to recognize. If you want it to recognize a new object, you have to replace or retrain this final layer.</p>
+</section>
+<section id="the-clip-approach-a-dynamic-classifier-from-language" class="level4">
+<h4 class="anchored" data-anchor-id="the-clip-approach-a-dynamic-classifier-from-language">The CLIP Approach: A Dynamic Classifier from Language</h4>
+<p>CLIP gets rid of the fixed classifier head entirely. Instead, it learns a shared space where both images and text can coexist. It does this using two separate encoders:</p>
+<ol type="1">
+<li><strong>Image Encoder:</strong> Takes an image and turns it into a feature vector.</li>
+<li><strong>Text Encoder:</strong> Takes a piece of text (a word, a phrase, or a sentence) and turns it into a feature vector.</li>
+</ol>
+<p>The key is that both models are trained together to place the vectors for a matching (image, text) pair as close as possible in this shared space, which we can call a “multimodal embedding space”. Think of it as a universal “concept space” where visual and textual ideas that mean the same thing are placed near each other.</p>
+<p>So, when you ask CLIP to perform a classification task, here is what happens behind the scenes:</p>
+<ol type="1">
+<li><strong>Step 1: Encode the Image.</strong> You feed a single image (for instance, a photo of a cat) into CLIP’s <strong>Image Encoder</strong>. The output is a single vector that numerically represents the content of the image.</li>
+<li><strong>Step 2: Encode the Potential Classes.</strong> You create a list of text descriptions for all your target classes. For example: <code>"a photo of a dog"</code>, <code>"a photo of a car"</code>, <code>"a photo of a cat"</code>. You then feed this list into CLIP’s <strong>Text Encoder</strong>. The output is a set of vectors, one for each text description.</li>
+<li><strong>Step 3: Find the Best Match.</strong> CLIP then calculates the similarity (specifically, the cosine similarity) between the one image vector and <em>every single one</em> of the text vectors.</li>
+<li><strong>Step 4: Make the Prediction.</strong> The text description whose vector is most similar to the image vector is the model’s prediction. In our example, the vector for <code>"a photo of a cat"</code> would be “closest” to the image vector, making that the final classification.</li>
+</ol>
+<p>The “classifier” is not a static part of the model’s architecture; it is something you create dynamically at inference time just by providing text. This is what gives CLIP its incredible flexibility. You can swap out your list of classes for any other visual concept you can describe with words, all without retraining the model. This is the essence of its powerful zero shot capability.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="introduction-and-motivating-work" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-and-motivating-work">1. Introduction and Motivating Work</h2>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-10-01-clip-reading-notes/paper-section-1-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="images/2025-10-01-clip-reading-notes/paper-section-1-1.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-10-01-clip-reading-notes/paper-section-1-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="images/2025-10-01-clip-reading-notes/paper-section-1-2.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<section id="the-nlp-revolution-a-blueprint-for-vision" class="level3">
+<h3 class="anchored" data-anchor-id="the-nlp-revolution-a-blueprint-for-vision">The NLP Revolution: A Blueprint for Vision</h3>
+<p>To understand the genius of CLIP, we first have to look away from computer vision and towards its sister field, Natural Language Processing. The authors of CLIP didn’t invent their core strategy from scratch; they brilliantly adapted a paradigm that had already proven phenomenally successful in the world of text.</p>
+<blockquote class="blockquote">
+<p>Pre-training methods which learn directly from raw text have revolutionized NLP over the last few years (Dai &amp; Le, 2015; Peters et al., 2018; Howard &amp; Ruder, 2018; Radford et al., 2018; Devlin et al., 2018; Raffel et al., 2019).</p>
+</blockquote>
+<p>The authors are referencing a seismic shift in NLP. Before this “revolution,” NLP models were often trained for a specific task (e.g., sentiment analysis) on a relatively small, task specific dataset. The breakthrough was the idea of <strong>pre-training</strong>: first, train a massive model on a gigantic corpus of raw, unlabeled text from the internet. The goal wasn’t to perform a specific task, but to learn the underlying patterns, grammar, and concepts of language itself. This pre-trained model could then be quickly adapted (or “fine-tuned”) for specific tasks with much less data and achieve state of the art results.</p>
+<blockquote class="blockquote">
+<p>Task-agnostic objectives such as autoregressive and masked language modeling have scaled across many orders of magnitude in compute, model capacity, and data, steadily improving capabilities.</p>
+</blockquote>
+<p>This sentence explains <em>how</em> this pre-training works. Since you don’t have explicit labels, you need a “self-supervised” or <strong>task-agnostic</strong> objective. This means the learning task is generated from the data itself, not from human labels. The two most famous objectives are:</p>
+<ul>
+<li><strong>Autoregressive Language Modeling:</strong> This simply means “predicting the next word.” The model is given a sequence of text like “The cat sat on the” and its goal is to predict the next word, “mat”. This is the fundamental principle behind models like GPT (Generative Pre-trained Transformer).</li>
+<li><strong>Masked Language Modeling (MLM):</strong> Instead of just predicting the next word, this approach takes a sentence, masks out a word (e.g., “The cat [MASK] on the mat”), and tasks the model with predicting the missing word. This forces the model to learn context from both the left and the right, and it’s the core idea behind the hugely influential BERT model.</li>
+</ul>
+<p>These simple, scalable objectives allowed researchers to throw massive amounts of data and compute at their models, leading to rapid improvements.</p>
+<blockquote class="blockquote">
+<p>The development of “text-to-text” as a standardized input-output interface … has enabled task-agnostic architectures to zero-shot transfer to downstream datasets removing the need for specialized output heads or dataset specific customization. Flagship systems like GPT-3 … are now competitive across many tasks with bespoke models while requiring little to no dataset specific training data.</p>
+</blockquote>
+<p>This is the ultimate payoff of the NLP paradigm. By framing every problem as a “text-in, text-out” task, models became incredibly flexible. For example, instead of training a specialized translation model, you could just feed a model like Google’s T5 the text: <code>"translate English to German: Hello, how are you?"</code> and it would learn to output: <code>"Hallo, wie geht es Ihnen?"</code>.</p>
+<p>This flexibility, supercharged by massive scale, led to models like <strong>GPT-3</strong>. GPT-3 is a single, pre-trained model that can perform a staggering variety of tasks it was never explicitly trained for (summarization, coding, creative writing, classification) simply by being given the right text prompt. It doesn’t need specialized “output heads” (like the fixed classifier layers we discussed earlier) and requires little to no task specific training data.</p>
+<p>In essence, the authors are setting the stage by saying: “Look at the incredible power and flexibility NLP unlocked by moving from small, labeled datasets to massive, self-supervised pre-training. We are going to do the same thing for computer vision.”</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>GPT-3 vs.&nbsp;T5: Two Philosophies of Language Modeling
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>While both are massive Transformer-based models pre-trained on web-scale text, GPT-3 and T5 are built on different fundamental principles that make them better suited for different kinds of tasks.</p>
+<p>At a high level, you can think of the difference with this analogy:</p>
+<ul>
+<li><strong>GPT-3 is a brilliant autocomplete.</strong> It is an expert at continuing a piece of text. Its core strength is open-ended <strong>generation</strong>.</li>
+<li><strong>T5 is a universal translator.</strong> It is an expert at transforming an input text into a desired output text. Its core strength is <strong>transformation</strong> and structured tasks.</li>
+</ul>
+<p>Let’s look at the key technical differences that lead to this behavior.</p>
+<section id="training-objective-the-core-task" class="level4">
+<h4 class="anchored" data-anchor-id="training-objective-the-core-task">1. Training Objective: The Core Task</h4>
+<p>This is the most important distinction.</p>
+<ul>
+<li><p><strong>GPT-3 (Autoregressive):</strong> As we discussed, GPT-3 is trained on an <strong>autoregressive</strong> objective, which simply means “predict the next word.” It reads text from left to right and learns to predict the most probable next token given the preceding context. It never sees “the future”; it only ever looks backward.</p></li>
+<li><p><strong>T5 (Text-to-Text Denoising):</strong> T5 (Text-to-Text Transfer Transformer) is trained on a “fill-in-the-blank” objective, inspired by BERT’s Masked Language Modeling. During pre-training, it takes a clean sentence, randomly “corrupts” it by masking out spans of text, and is then asked to reconstruct the original, uncorrupted text.</p>
+<p>For example:</p>
+<ul>
+<li><strong>Original:</strong> <code>Thank you for inviting me to the party last week.</code></li>
+<li><strong>Corrupted Input to T5:</strong> <code>Thank you &lt;X&gt; me to the party &lt;Y&gt; week.</code></li>
+<li><strong>T5’s Target Output:</strong> <code>&lt;X&gt; for inviting &lt;Y&gt; last</code></li>
+</ul>
+<p>This “denoising” objective forces the model to become very good at understanding the full context of a sentence to fill in the missing parts. This makes it a natural fit for tasks that require transforming an input into an output.</p></li>
+</ul>
+</section>
+<section id="model-architecture" class="level4">
+<h4 class="anchored" data-anchor-id="model-architecture">2. Model Architecture</h4>
+<p>Their training objectives lead to different choices in the underlying Transformer architecture.</p>
+<ul>
+<li><p><strong>GPT-3 (Decoder-Only):</strong> Because its only job is to generate the next word based on past context, GPT-3 uses only the <strong>decoder</strong> blocks from the original Transformer architecture. The decoder’s “masked self-attention” mechanism is perfectly suited for this, as it ensures that when predicting a word, the model can only attend to the words that came before it.</p></li>
+<li><p><strong>T5 (Encoder-Decoder):</strong> T5 uses the full <strong>encoder-decoder</strong> architecture from the original Transformer.</p>
+<ul>
+<li>The <strong>Encoder</strong> reads the entire corrupted input sequence at once (e.g., <code>Thank you &lt;X&gt; me to the party...</code>). This allows it to build a complete, bidirectional understanding of the context.</li>
+<li>The <strong>Decoder</strong> then takes the encoder’s representation and generates the target output (e.g., <code>&lt;X&gt; for inviting...</code>) in an autoregressive, word-by-word fashion. This structure is ideal for sequence-to-sequence tasks like translation and summarization.</li>
+</ul></li>
+</ul>
+</section>
+<section id="typical-use-case" class="level4">
+<h4 class="anchored" data-anchor-id="typical-use-case">3. Typical Use Case</h4>
+<p>Their design differences make them shine in different scenarios.</p>
+<ul>
+<li><strong>GPT-3 is best for:</strong>
+<ul>
+<li><strong>Open-ended generation:</strong> Creative writing, brainstorming, writing code, creating long-form content.</li>
+<li><strong>Few-shot prompting:</strong> Its massive scale gives it an incredible ability to perform tasks just by seeing a few examples in the prompt, without any retraining.</li>
+<li><strong>Chatbots and conversational AI.</strong></li>
+</ul></li>
+<li><strong>T5 is best for:</strong>
+<ul>
+<li><strong>Transformation tasks:</strong> Summarization (long text in, short text out), translation (English in, German out), question answering (question in, answer out).</li>
+<li><strong>Fine-tuning:</strong> It serves as a powerful, general-purpose base model that is explicitly designed to be fine-tuned on specific datasets to become an expert at a particular transformation task.</li>
+</ul></li>
+</ul>
+</section>
+<section id="summary-table" class="level3">
+<h3 class="anchored" data-anchor-id="summary-table">Summary Table</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">GPT-3 (and GPT family)</th>
+<th style="text-align: left;">T5 (and BERT-style models)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Primary Goal</strong></td>
+<td style="text-align: left;">Generation</td>
+<td style="text-align: left;">Transformation</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Training Objective</strong></td>
+<td style="text-align: left;">Autoregressive (Predict next word)</td>
+<td style="text-align: left;">Denoising (Fill in the blanks)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Architecture</strong></td>
+<td style="text-align: left;">Decoder-Only</td>
+<td style="text-align: left;">Encoder-Decoder</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Data Flow</strong></td>
+<td style="text-align: left;">Unidirectional (looks at past context)</td>
+<td style="text-align: left;">Bidirectional (looks at all context)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Best For</strong></td>
+<td style="text-align: left;">Creative writing, few-shot prompting</td>
+<td style="text-align: left;">Summarization, translation, fine-tuning</td>
+</tr>
+</tbody>
+</table>
+<p>The CLIP paper references the innovations from <em>both</em> of these camps. It takes the idea of massive scale and flexible, zero-shot transfer from the GPT world and applies it to a task that is conceptually more like a transformation (image in, text description out).</p>
+</section>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: If GPT is a “Next-Word Predictor,” How Can It Summarize?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This is a brilliant question that highlights a key development in modern AI. The base GPT-3 model is, at its core, an autoregressive, “next-word predictor.” In contrast, models like T5 are built with an encoder-decoder structure that is a more natural architectural fit for summarization. So how can ChatGPT, which is based on the GPT architecture, be so good at it?</p>
+<p>The answer lies in two concepts: <strong>emergent abilities from scale</strong> and a powerful fine-tuning process called <strong>instruction tuning (and RLHF)</strong>.</p>
+<section id="emergent-abilities-from-scale" class="level4">
+<h4 class="anchored" data-anchor-id="emergent-abilities-from-scale">1. Emergent Abilities from Scale</h4>
+<p>A base GPT model is trained on a simple goal: predict the next word. But to get really good at this task across a dataset as vast and diverse as the internet, the model cannot simply memorize sequences. It is forced to build a deep, internal understanding of language and the world. It must learn:</p>
+<ul>
+<li><strong>Grammar and Syntax:</strong> The rules of language.</li>
+<li><strong>Semantic Concepts:</strong> The meaning of words and how they relate (e.g., that “king” - “man” + “woman” is close to “queen”).</li>
+<li><strong>Factual Knowledge:</strong> Information about people, places, and events.</li>
+<li><strong>Context and Cohesion:</strong> How sentences and paragraphs logically follow each other.</li>
+</ul>
+<p>To accurately predict the next word of a complex article, the model must implicitly keep track of the article’s main topic and key points. In a sense, the ability to “understand” for the purpose of summarization is an <strong>emergent property</strong> that arises as a side effect of getting extremely good at next-word prediction at a massive scale.</p>
+<p>The base model saw countless examples of articles followed by abstracts or summaries in its training data. So, if you prompt it correctly (e.g., by providing an article followed by <code>TL;DR:</code>), it recognizes this pattern and knows that the most probable “next words” are a condensed version of the preceding text. It’s completing a pattern it has learned.</p>
+</section>
+<section id="instruction-tuning-and-rlhf-the-secret-sauce-of-chatgpt" class="level4">
+<h4 class="anchored" data-anchor-id="instruction-tuning-and-rlhf-the-secret-sauce-of-chatgpt">2. Instruction Tuning and RLHF: The Secret Sauce of ChatGPT</h4>
+<p>This is the most critical factor. <strong>ChatGPT is not the base GPT-3 model.</strong> It is a variant that has gone through an extensive, second phase of training designed specifically to make it a helpful assistant.</p>
+<p>This process involves two main steps:</p>
+<ul>
+<li><p><strong>Instruction Tuning (Supervised Fine-Tuning):</strong> First, the base GPT model is fine-tuned on a high-quality, curated dataset of <code>(instruction, desired_output)</code> pairs. These were created by human labelers. For summarization, this dataset would contain thousands of examples like:</p>
+<blockquote class="blockquote">
+<p><strong>Instruction:</strong> <code>"Summarize the following scientific abstract for a fifth-grader: [long, complex abstract text]"</code></p>
+<p><strong>Desired Output:</strong> <code>"[simple, easy-to-understand summary]"</code></p>
+</blockquote>
+<p>By training on millions of such instructions across thousands of different tasks, the model learns to generalize the <em>concept</em> of following instructions, not just completing patterns.</p></li>
+<li><p><strong>Reinforcement Learning from Human Feedback (RLHF):</strong> This is the step that truly refines the model’s behavior. In this stage, the model generates several different responses to a single prompt (e.g., four different summaries). A human rater then ranks these responses from best to worst. This feedback is used to train a separate “reward model.” Finally, the main GPT model is fine-tuned again using reinforcement learning to maximize the score it gets from this reward model.</p></li>
+</ul>
+<p>In simple terms, <strong>RLHF trains the model to produce outputs that humans find helpful, accurate, and well-written.</strong></p>
+</section>
+<section id="the-bottom-line" class="level4">
+<h4 class="anchored" data-anchor-id="the-bottom-line">The Bottom Line</h4>
+<p>You can think of it like this:</p>
+<ul>
+<li><strong>Base GPT-3</strong> is like a brilliant student who has read every book in the library. They have all the knowledge, but they are not trained to apply it to specific tasks for you. They might answer your question, or they might just continue your sentence in a creative but unhelpful way.</li>
+<li><strong>ChatGPT</strong> is that same brilliant student after they have completed a rigorous apprenticeship on how to be the world’s best assistant. They have been explicitly trained to understand and follow instructions, including “summarize this,” making them far more reliable and useful for such tasks.</li>
+</ul>
+<p>So, while T5’s <em>architecture</em> is a natural fit for summarization, ChatGPT’s massive scale and, more importantly, its specialized <strong>instruction-following and RLHF training</strong> give it the powerful ability to perform this and many other structured tasks exceptionally well.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+<section id="the-central-question-can-vision-learn-from-nlps-playbook" class="level3">
+<h3 class="anchored" data-anchor-id="the-central-question-can-vision-learn-from-nlps-playbook">The Central Question: Can Vision Learn from NLP’s Playbook?</h3>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-section-1-3.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="images/2025-10-01-clip-reading-notes/paper-section-1-3.png" class="img-fluid"></a></p>
+<p>After establishing the success of pre-training on raw web text in NLP, the authors pivot to make their main point: computer vision has not yet embraced this paradigm, and perhaps it should.</p>
+<blockquote class="blockquote">
+<p>These results suggest that the aggregate supervision accessible to modern pre-training methods within web-scale collections of text surpasses that of high-quality crowd-labeled NLP datasets.</p>
+</blockquote>
+<p>This is a powerful claim. The authors are arguing that the sheer volume and diversity of text on the internet (the “aggregate supervision”) is a more potent teacher than smaller, meticulously human-labeled datasets. Think of it this way: a “crowd-labeled” dataset might have thousands of perfectly annotated examples for a specific task like question answering. But the internet has trillions of words discussing nearly every topic imaginable, from cooking to quantum mechanics to celebrity gossip. The authors’ claim is that the raw breadth and variety of this web-scale data provides a richer, more generalizable learning signal than any clean, but narrow, dataset ever could. Quantity and variety have a quality all their own.</p>
+<p>Having made this point about NLP, they immediately contrast it with computer vision:</p>
+<blockquote class="blockquote">
+<p>However, in other fields such as computer vision it is still standard practice to pre-train models on crowd-labeled datasets such as ImageNet (Deng et al., 2009).</p>
+</blockquote>
+<p>This sentence sets up the central tension of the paper. While NLP has moved on to learning from the messy, vast internet, computer vision’s most foundational models are still pre-trained on datasets like <strong>ImageNet</strong>. ImageNet is a monumental achievement in data collection, consisting of over 14 million images hand-labeled by humans (via crowdsourcing platforms like Amazon Mechanical Turk) into thousands of object categories. It was the dataset that fueled the deep learning revolution.</p>
+<p>However, from the perspective of the CLIP authors, it represents the “old” way of doing things: a finite set of categories, expensive to create, and fundamentally limited in scope compared to the near-infinite variety of visual information online.</p>
+<p>This contrast leads them to state their research question in the clearest possible terms:</p>
+<blockquote class="blockquote">
+<p>Could scalable pre-training methods which learn directly from web text result in a similar breakthrough in computer vision? Prior work is encouraging.</p>
+</blockquote>
+<p>This is it. This is the thesis of the entire paper. The authors are proposing to directly apply the successful NLP blueprint to the field of computer vision. They are asking: what happens if we stop training vision models on fixed sets of categories and instead train them to connect images to the raw, natural language that accompanies them all over the internet?</p>
+<p>The final sentence, “Prior work is encouraging,” is a deliberate and important piece of scientific storytelling. They are signaling that while their approach is ambitious, they are not the first to have this idea. They are building on a history of prior research, which they will now use to motivate their specific approach.</p>
+</section>
+<section id="standing-on-the-shoulders-of-giants-a-history-of-vision-language-models" class="level3">
+<h3 class="anchored" data-anchor-id="standing-on-the-shoulders-of-giants-a-history-of-vision-language-models">Standing on the Shoulders of Giants: A History of Vision-Language Models</h3>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-10-01-clip-reading-notes/paper-section-1-4.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="images/2025-10-01-clip-reading-notes/paper-section-1-4.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/2025-10-01-clip-reading-notes/paper-section-1-5.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="images/2025-10-01-clip-reading-notes/paper-section-1-5.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+<p>The idea of teaching a computer vision system using natural language is not new. In this section, the authors take us on a two-decade tour of the research that paved the way for CLIP, showing a clear evolution from simple ideas to the sophisticated techniques that made their breakthrough possible.</p>
+<section id="the-early-pioneers" class="level4">
+<h4 class="anchored" data-anchor-id="the-early-pioneers">The Early Pioneers</h4>
+<p>The journey starts over 20 years ago, demonstrating just how long researchers have been chasing this goal.</p>
+<blockquote class="blockquote">
+<p>Over 20 years ago Mori et al.&nbsp;(1999) explored improving content based image retrieval by training a model to predict the nouns and adjectives in text documents paired with images.</p>
+</blockquote>
+<p>This is the foundational concept in its simplest form. “Content-based image retrieval” is the task of finding similar images to a query image. Mori et al.&nbsp;realized that the text accompanying an image (like in an article) provides valuable clues. By training a model to associate parts of an image with specific words (nouns and adjectives), they could improve their system. This early work established the core principle: text paired with images is a powerful source of supervision.</p>
+<p>The idea continued to evolve with increasing sophistication through the 2000s and early 2010s with work from Quattoni et al.&nbsp;(2007) and Srivastava &amp; Salakhutdinov (2012), who explored more advanced techniques for learning “deep representations” from multimodal (i.e., multiple types of data, like text and images) features.</p>
+</section>
+<section id="the-modern-era-cnns-meet-text" class="level4">
+<h4 class="anchored" data-anchor-id="the-modern-era-cnns-meet-text">The Modern Era: CNNs Meet Text</h4>
+<p>The real acceleration began when modern deep learning architectures, specifically Convolutional Neural Networks (CNNs), were applied to the problem.</p>
+<blockquote class="blockquote">
+<p>Joulin et al.&nbsp;(2016) modernized this line of work and demonstrated that CNNs trained to predict words in image captions learn useful image representations. They converted the title, description, and hashtag metadata of images in the YFCC100M dataset … into a bag-of-words multi-label classification task and showed that pre-training AlexNet … learned representations which preformed similarly to ImageNet-based pre-training on transfer tasks.</p>
+</blockquote>
+<p>This was a major milestone. Joulin et al.&nbsp;took a large dataset of images from Flickr, each with associated text (titles, hashtags, etc.). They treated this as a massive classification problem using a <strong>bag-of-words (BoW)</strong> approach.</p>
+<ul>
+<li><strong>Bag-of-Words (BoW):</strong> This is a simple way to represent text. Imagine you take a sentence, throw all the words into a bag, and shake it up. You ignore grammar and word order, and just count the occurrences of each word. The model’s task was to look at an image and predict the “bag of words” that appeared in its description.</li>
+</ul>
+<p>The crucial finding was that an AlexNet model (the CNN that kicked off the deep learning boom in 2012) pre-trained this way learned visual features that were just as useful as those learned from the meticulously-labeled ImageNet dataset. This was strong evidence that learning from messy, real-world text could compete with learning from clean, human-labeled categories.</p>
+<blockquote class="blockquote">
+<p>Li et al.&nbsp;(2017) then extended this approach to predicting phrase n-grams in addition to individual words and demonstrated the ability of their system to zero-shot transfer to other image classification datasets…</p>
+</blockquote>
+<p>Li et al.&nbsp;took the next logical step. Instead of just predicting individual words (1-grams), they trained their model to predict <strong>n-grams</strong> (sequences of n words). For example, instead of predicting “golden” and “retriever” separately, the model could predict the 2-gram “golden retriever.” This captures more meaning. More importantly, they were one of the first to show that this approach could enable <strong>zero-shot transfer</strong>. They could create a classifier for new, unseen categories just by describing them with text. While the performance was low (as the paper later notes), it was a critical proof of concept.</p>
+</section>
+<section id="the-immediate-predecessors" class="level4">
+<h4 class="anchored" data-anchor-id="the-immediate-predecessors">The Immediate Predecessors</h4>
+<p>The final pieces of the puzzle came from very recent work that incorporated the latest NLP architectures and training techniques.</p>
+<blockquote class="blockquote">
+<p>Adopting more recent architectures and pre-training approaches, VirTex (Desai &amp; Johnson, 2020), ICMLM (Bulent Sariyildiz et al., 2020), and ConVIRT (Zhang et al., 2020) have recently demonstrated the potential of transformer-based language modeling, masked language modeling, and contrastive objectives to learn image representations from text.</p>
+</blockquote>
+<p>These papers, published just before CLIP, brought the vision-language field right up to the cutting edge. They incorporated ideas from the NLP revolution we discussed earlier, like using powerful Transformer models to understand the text.</p>
+<p>Most importantly, they explored <strong>contrastive objectives</strong>. This is a key concept for understanding CLIP.</p>
+<ul>
+<li><strong>Contrastive Objectives:</strong> Instead of a <em>predictive</em> task (e.g., “predict the exact words in this caption”), a contrastive task is a <em>matching</em> task. The model is given an image, one correct text caption, and several incorrect captions. Its only job is to learn which text is the correct match. It learns to pull the representations of the correct (image, text) pair together in its embedding space, while pushing the representations of incorrect pairs far apart. This is often a much more efficient and robust learning signal than trying to predict every single word correctly.</li>
+</ul>
+<p>These papers served as the final “proofs of concept,” showing that combining modern architectures with a contrastive learning objective was a promising path forward. The stage was now set for the CLIP authors to ask: what happens if we take this exact approach and scale it up… way up?</p>
+</section>
+</section>
+<section id="the-performance-gap-and-the-pragmatic-middle-ground" class="level3">
+<h3 class="anchored" data-anchor-id="the-performance-gap-and-the-pragmatic-middle-ground">The Performance Gap and the “Pragmatic Middle Ground”</h3>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-section-1-6.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="images/2025-10-01-clip-reading-notes/paper-section-1-6.png" class="img-fluid"></a></p>
+<p>If learning from natural language is such a great idea, why wasn’t everyone already doing it? The authors directly address this by pointing to a simple, unavoidable fact: the performance just wasn’t good enough.</p>
+<blockquote class="blockquote">
+<p>While exciting as proofs of concept, using natural language supervision for image representation learning is still rare. This is likely because demonstrated performance on common benchmarks is much lower than alternative approaches. For example, Li et al.&nbsp;(2017) reach only 11.5% accuracy on ImageNet in a zero-shot setting.</p>
+</blockquote>
+<p>This is the sober reality check. The earlier work by Li et al.&nbsp;was a fantastic proof of concept for zero-shot transfer, but an 11.5% accuracy on ImageNet is, to put it bluntly, terrible. The authors drive this point home by providing two stark comparisons:</p>
+<ol type="1">
+<li>It was far below the <strong>88.4% accuracy</strong> of the state-of-the-art models at the time.</li>
+<li>It was even worse than the <strong>50% accuracy</strong> of “classic” (pre-deep learning) computer vision methods from nearly a decade prior.</li>
+</ol>
+<p>With such poor performance, it’s no wonder that this approach remained a niche research area rather than a mainstream technique. The promise of flexibility was overshadowed by the reality of poor results.</p>
+<p>However, this didn’t stop researchers from using large-scale, internet-style data. Instead, they found a successful “middle ground” by using a more targeted, albeit less flexible, form of supervision.</p>
+<blockquote class="blockquote">
+<p>Instead, more narrowly scoped but well-targeted uses of weak supervision have improved performance. Mahajan et al.&nbsp;(2018) showed that predicting ImageNet-related hashtags on Instagram images is an effective pre-training task.</p>
+</blockquote>
+<p>This introduces a key concept: <strong>weak supervision</strong>. This term refers to using labels that are noisy, imprecise, or not perfectly curated, in contrast to the “gold-standard” clean labels of a dataset like ImageNet. The key insight from Mahajan et al.&nbsp;was to leverage this at a massive scale.</p>
+<ul>
+<li><strong>What they did:</strong> They trained a model on billions of public Instagram images. The “label” for each image was simply the set of hashtags its user had applied.</li>
+<li><strong>Why it’s “weak”:</strong> Hashtags are very noisy. An image of a cat at the beach might be tagged with <code>#cat</code>, <code>#beach</code>, <code>#sunset</code>, and <code>#vacation</code>.</li>
+<li><strong>Why it’s “well-targeted”:</strong> Crucially, they filtered the hashtags to only include those relevant to the 1000 ImageNet classes.</li>
+<li><strong>The Result:</strong> This was an incredibly effective pre-training strategy. A model pre-trained on these noisy hashtags and then fine-tuned on ImageNet achieved a new state-of-the-art accuracy, boosting performance by over 5%.</li>
+</ul>
+<p>This was followed by similar work that further validated the approach:</p>
+<blockquote class="blockquote">
+<p>Kolesnikov et al.&nbsp;(2019) and Dosovitskiy et al.&nbsp;(2020) have also demonstrated large gains on a broader set of transfer benchmarks by pre-training models to predict the classes of the noisily labeled JFT-300M dataset.</p>
+</blockquote>
+<p>This work used JFT-300M, a massive internal Google dataset with 300 million images and noisy, automatically generated labels for thousands of classes. Just like the Instagram work, pre-training on this huge, “weakly” labeled dataset before fine-tuning on smaller, clean datasets led to huge performance gains.</p>
+<p>So, the authors have established a clear story:</p>
+<ol type="1">
+<li>The dream of learning from <em>general, arbitrary text</em> (like captions) was exciting but performed poorly.</li>
+<li>The pragmatic approach of learning from <em>massive but targeted weak labels</em> (like hashtags or noisy class labels) was a huge success for pre-training.</li>
+</ol>
+<p>This sets the stage for the authors to critique this successful “middle ground” and introduce their own approach as the true solution.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/hassaanbinaslam\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script src="https://utteranc.es/client.js" repo="hassaanbinaslam/myblog_utterances" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
