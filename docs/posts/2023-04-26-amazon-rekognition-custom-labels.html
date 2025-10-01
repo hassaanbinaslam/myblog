@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -60,7 +60,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -113,7 +114,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
@@ -136,6 +137,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -280,27 +283,27 @@ Note
 <h2 class="anchored" data-anchor-id="step-1-download-and-clean-raspberry-pi-images">Step 1: Download and clean Raspberry Pi images</h2>
 <p>We need to collect relevant images to successfully train a model that can detect Raspberry Pi logos on computer boards. We can use the <code>Google Images</code> search to find such images. But downloading many pictures from Google search can take much work to automate. So instead, we can use a different search engine, <a href="https://duckduckgo.com/">DuckDuckGo.com</a>, that provides a more straightforward interface <a href="https://pypi.org/project/duckduckgo-search/">duckduckgo_search</a> for search. For downloading and resizing images, we will use additional libraries from the <code>FastAI</code> ecosystem <a href="https://github.com/fastai/fastai">fastai</a> and <a href="https://github.com/fastai/fastdownload/tree/master/">fastdownload</a>.</p>
 <div id="cell-7" class="cell" data-tags="[]" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>writefile requirements.txt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>writefile requirements.txt</span>
 <span id="cb1-2"><a href="#cb1-2"></a>duckduckgo<span class="op">-</span>search<span class="op">==</span><span class="fl">2.8.6</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>fastai<span class="op">==</span><span class="fl">2.7.12</span> </span>
 <span id="cb1-4"><a href="#cb1-4"></a>fastdownload<span class="op">==</span><span class="fl">0.0.7</span> </span>
-<span id="cb1-5"><a href="#cb1-5"></a>fastcore<span class="op">==</span><span class="fl">1.5.29</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5"></a>fastcore<span class="op">==</span><span class="fl">1.5.29</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Overwriting requirements.txt</code></pre>
 </div>
 </div>
 <div id="cell-8" class="cell" data-tags="[]" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%%</span>capture</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%%</span>capture</span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="op">!</span>pip install <span class="op">-</span>r requirements.txt </span>
 <span id="cb3-3"><a href="#cb3-3"></a></span>
 <span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Install required libraries</span></span>
 <span id="cb3-5"><a href="#cb3-5"></a><span class="co"># 1. `duckduckgo_search` to search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine.</span></span>
 <span id="cb3-6"><a href="#cb3-6"></a><span class="co"># 2. `fastdownload` to easily download, verify, and extract archives</span></span>
 <span id="cb3-7"><a href="#cb3-7"></a><span class="co"># 3. `fastai` to open, visualize, and transform images</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="co"># 4. `fastcore` extends Python list functionality</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co"># 4. `fastcore` extends Python list functionality</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-9" class="cell" data-tags="[]" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> duckduckgo_search <span class="im">import</span> ddg_images</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> duckduckgo_search <span class="im">import</span> ddg_images</span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="im">from</span> fastcore.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a></span>
 <span id="cb4-4"><a href="#cb4-4"></a><span class="co"># Define a function to search for images using DuckDuckGo.com search engine for the provided term. It returns the URL of the searched image.</span></span>
@@ -317,7 +320,7 @@ Note
 <span id="cb4-15"><a href="#cb4-15"></a></span>
 <span id="cb4-16"><a href="#cb4-16"></a><span class="co"># Test the search function and display URLs returned</span></span>
 <span id="cb4-17"><a href="#cb4-17"></a>urls <span class="op">=</span> search_images(searches[<span class="st">"pi"</span>], max_images<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb4-18"><a href="#cb4-18"></a>urls[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-18"><a href="#cb4-18"></a>urls[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Searching for 'raspberry pi board'</code></pre>
 </div>
@@ -327,17 +330,17 @@ Note
 </div>
 <p>Above, we have defined a function that can be used to search images and return their URLs. Next, we can use these URLs to download and save images to a local directory.</p>
 <div id="cell-11" class="cell" data-tags="[]" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb7-2"><a href="#cb7-2"></a></span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="co"># Define a local path to store downloaded images</span></span>
 <span id="cb7-4"><a href="#cb7-4"></a>local_dir <span class="op">=</span> <span class="st">"./assets/2023-04-26-amazon-rekognition-custom-labels/"</span></span>
 <span id="cb7-5"><a href="#cb7-5"></a></span>
 <span id="cb7-6"><a href="#cb7-6"></a><span class="co"># Create the directory if it does not exist</span></span>
 <span id="cb7-7"><a href="#cb7-7"></a>local_path <span class="op">=</span> Path(local_dir)</span>
-<span id="cb7-8"><a href="#cb7-8"></a>local_path.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-8"><a href="#cb7-8"></a>local_path.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-12" class="cell" data-tags="[]" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="im">from</span> fastdownload <span class="im">import</span> download_url</span>
 <span id="cb8-3"><a href="#cb8-3"></a></span>
 <span id="cb8-4"><a href="#cb8-4"></a><span class="co"># `local_path_raw` is the local directory to store raw downloaded images</span></span>
@@ -349,7 +352,7 @@ Note
 <span id="cb8-10"><a href="#cb8-10"></a></span>
 <span id="cb8-11"><a href="#cb8-11"></a><span class="co"># Display the downloaded image</span></span>
 <span id="cb8-12"><a href="#cb8-12"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(dest)</span>
-<span id="cb8-13"><a href="#cb8-13"></a>im.to_thumb(<span class="dv">512</span>, <span class="dv">512</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-13"><a href="#cb8-13"></a>im.to_thumb(<span class="dv">512</span>, <span class="dv">512</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 
 <style>
@@ -386,7 +389,7 @@ Note
 </div>
 <p>In the above image, you can see the <code>Raspberry Pi logo</code> in the center of the board. That is our target and we want our model to locate it automatically. This sample image shows that our search string is correct, and we can proceed to download similar images.</p>
 <div id="cell-14" class="cell" data-tags="[]" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># Use each search string to search and download images</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># Use each search string to search and download images</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a>max_images <span class="op">=</span> <span class="dv">200</span>  <span class="co"># total number of images to search for</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a></span>
 <span id="cb9-4"><a href="#cb9-4"></a><span class="cf">for</span> key, value <span class="kw">in</span> searches.items():</span>
@@ -396,32 +399,32 @@ Note
 <span id="cb9-8"><a href="#cb9-8"></a></span>
 <span id="cb9-9"><a href="#cb9-9"></a>    <span class="co"># download and store the images for provided searched term</span></span>
 <span id="cb9-10"><a href="#cb9-10"></a>    download_images(dest, urls<span class="op">=</span>search_images(value, max_images<span class="op">=</span>max_images))</span>
-<span id="cb9-11"><a href="#cb9-11"></a>    resize_images(local_path_raw <span class="op">/</span> key, max_size<span class="op">=</span><span class="dv">800</span>, dest<span class="op">=</span>local_path_raw <span class="op">/</span> key)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-11"><a href="#cb9-11"></a>    resize_images(local_path_raw <span class="op">/</span> key, max_size<span class="op">=</span><span class="dv">800</span>, dest<span class="op">=</span>local_path_raw <span class="op">/</span> key)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Searching for 'raspberry pi board'</code></pre>
 </div>
 </div>
 <p>At this point, the search and download step is complete. Next, let’s count the number of images successfully downloaded to our local directory.</p>
 <div id="cell-16" class="cell" data-tags="[]" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># Check the count of downloaded images</span></span>
-<span id="cb11-2"><a href="#cb11-2"></a>(local_path_raw <span class="op">/</span> <span class="st">"pi"</span>).ls()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># Check the count of downloaded images</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>(local_path_raw <span class="op">/</span> <span class="st">"pi"</span>).ls()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>(#156) [Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/e3a144d9-5730-4def-9581-c2cc6f26140a.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/195d40ea-0a1c-4875-a7eb-6f06fc0855cd.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/5d10c219-ae38-4cfe-b432-96f951e0bb3f.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/2d0e1737-a72d-4513-bd74-432fae126891.png'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/338f84b5-e583-4925-b3bb-aebc4bc18bd1.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/c114204b-b97a-455b-bdcc-0e3ee835ad11.png'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/f3a698c6-25b7-4c5f-b17b-95ade57afee0.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/2c950136-cb8e-4809-ae0b-f115a00e2f2d.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/5a574d21-5bbb-4214-b9c2-513e014bf348.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/raw/pi/c3d979de-648c-4e98-8fe4-3e617e12ec32.jpg')...]</code></pre>
 </div>
 </div>
 <p>We have downloaded the required images (#156 in total), but there is no guarantee that all our photos contain a Raspberry Pi logo. An image without a proper logo is useless for training. So we need to manually verify all the pictures and remove any that does not meet our requirements. This is a manual step and has to be performed <em>very patiently</em>. After cleaning all the images, I uploaded them under the <code>/clean</code> directory.</p>
 <div id="cell-18" class="cell" data-tags="[]" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># After downloading the images, next step is to manually clean all the images</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># After downloading the images, next step is to manually clean all the images</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a><span class="co"># After cleaning, check the count of images</span></span>
 <span id="cb13-3"><a href="#cb13-3"></a>local_path_clean <span class="op">=</span> local_path <span class="op">/</span> <span class="st">"clean"</span></span>
-<span id="cb13-4"><a href="#cb13-4"></a>local_path_clean.ls()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-4"><a href="#cb13-4"></a>local_path_clean.ls()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>(#112) [Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/d14e3413-0c2f-4a8d-9361-e842633a7fb6.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/1a623864-2b33-4bce-98e9-5cbc2551afae.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/228d560d-ab50-4bf5-8a3b-510dcdf89e9a.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/babf3bb6-fa72-4a53-989d-a34326422e19.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/95660e55-1566-47cb-912c-2c683b790dcd.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/9ee061b2-c492-4691-9557-4b848cd16f10.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/5e0490d6-646d-470e-8257-f3c6742c3a48.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/a3f1aaa0-3188-414a-b6b6-0e5ce308daf9.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/3ae6fd96-22fa-404c-a867-48ca3a181f05.jpg'),Path('assets/2023-04-26-amazon-rekognition-custom-labels/clean/51be4baa-f930-4816-9383-119e89bd0270.png')...]</code></pre>
 </div>
 </div>
 <p>Let’s display a sample of the cleaned images.</p>
 <div id="cell-20" class="cell" data-tags="[]" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># Define a function to display the extention of the image.</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># Define a function to display the extention of the image.</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a><span class="co"># Note that only JPG and PNG images can be used for training in Rekognition custom labels</span></span>
 <span id="cb15-3"><a href="#cb15-3"></a><span class="kw">def</span> label_func(f):</span>
 <span id="cb15-4"><a href="#cb15-4"></a>    <span class="cf">return</span> f[<span class="op">-</span><span class="dv">3</span>:].upper()</span>
@@ -437,7 +440,7 @@ Note
 <span id="cb15-14"><a href="#cb15-14"></a>)</span>
 <span id="cb15-15"><a href="#cb15-15"></a></span>
 <span id="cb15-16"><a href="#cb15-16"></a><span class="co"># Display a subset of images</span></span>
-<span id="cb15-17"><a href="#cb15-17"></a>dls.show_batch(max_n<span class="op">=</span><span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-17"><a href="#cb15-17"></a>dls.show_batch(max_n<span class="op">=</span><span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -451,7 +454,7 @@ Note
 <h2 class="anchored" data-anchor-id="step-2-upload-images-to-s3-bucket">Step 2: Upload images to S3 bucket</h2>
 <p>The next step is to upload our finalized training images to AWS S3 bucket. I have created a bucket with the name <code>2023-04-26-amazon-rekognition-custom-labels</code>. You may use a unique name of your own choice to create an S3 bucket.</p>
 <div id="cell-22" class="cell" data-tags="[]" data-execution_count="31">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># Define S3 bucket name, bucket URL and images S3 path</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># Define S3 bucket name, bucket URL and images S3 path</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a></span>
 <span id="cb16-3"><a href="#cb16-3"></a>s3_bucket_name <span class="op">=</span> <span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
 <span id="cb16-4"><a href="#cb16-4"></a>s3_bucket_url <span class="op">=</span> <span class="ss">f's3://</span><span class="sc">{</span>s3_bucket_name<span class="sc">}</span><span class="ss">'</span></span>
@@ -461,31 +464,31 @@ Note
 <span id="cb16-8"><a href="#cb16-8"></a><span class="bu">print</span>(</span>
 <span id="cb16-9"><a href="#cb16-9"></a><span class="st">'s3_bucket_url: '</span>, s3_buket_url, <span class="st">'</span><span class="ch">\n</span><span class="st">'</span></span>
 <span id="cb16-10"><a href="#cb16-10"></a><span class="st">'s3_images_path: '</span>, s3_images_path</span>
-<span id="cb16-11"><a href="#cb16-11"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-11"><a href="#cb16-11"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>s3_bucket_url:  s3://2023-04-26-amazon-rekognition-custom-labels 
 s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code></pre>
 </div>
 </div>
 <div id="cell-23" class="cell" data-tags="[]" data-execution_count="32">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## Create an S3 bucket using AWS CLI MakeBucket (mb) command. </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## Create an S3 bucket using AWS CLI MakeBucket (mb) command. </span></span>
 <span id="cb18-2"><a href="#cb18-2"></a><span class="co"># https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3/mb.html</span></span>
 <span id="cb18-3"><a href="#cb18-3"></a><span class="op">!</span>aws s3 mb $s3_bucket_url <span class="op">--</span>region $region</span>
 <span id="cb18-4"><a href="#cb18-4"></a></span>
-<span id="cb18-5"><a href="#cb18-5"></a><span class="co"># !aws s3 mb s3://2023-04-26-amazon-rekognition-custom-labels --region us-east-2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-5"><a href="#cb18-5"></a><span class="co"># !aws s3 mb s3://2023-04-26-amazon-rekognition-custom-labels --region us-east-2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>make_bucket failed: s3://2023-04-26-amazon-rekognition-custom-labels An error occurred (BucketAlreadyOwnedByYou) when calling the CreateBucket operation: Your previous request to create the named bucket succeeded and you already own it.</code></pre>
 </div>
 </div>
 <div id="cell-24" class="cell" data-tags="[]" data-execution_count="33">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># Upload images to s3 bucket</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># Upload images to s3 bucket</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a><span class="op">!</span>aws s3 sync .<span class="op">/</span>$local_path_clean $s3_images_path <span class="op">--</span>region $region</span>
 <span id="cb20-3"><a href="#cb20-3"></a></span>
-<span id="cb20-4"><a href="#cb20-4"></a><span class="co"># !aws s3 sync ./assets/2023-04-26-amazon-rekognition-custom-labels/clean s3://2023-04-26-amazon-rekognition-custom-labels/images --region us-east-2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="co"># !aws s3 sync ./assets/2023-04-26-amazon-rekognition-custom-labels/clean s3://2023-04-26-amazon-rekognition-custom-labels/images --region us-east-2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-25" class="cell" data-tags="[]" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># Display the list of images from S3</span></span>
-<span id="cb21-2"><a href="#cb21-2"></a><span class="op">!</span>aws s3 ls $s3_images_path <span class="op">--</span>recursive</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># Display the list of images from S3</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="op">!</span>aws s3 ls $s3_images_path <span class="op">--</span>recursive</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>2023-05-01 09:11:23      39999 images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg
 2023-05-01 09:11:23     527439 images/034cb4ef-b7b1-48ab-8839-515878aefe72.png
@@ -618,7 +621,7 @@ s3_images_path:  s3://2023-04-26-amazon-rekognition-custom-labels/images</code><
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Dataset
+<span class="screen-reader-only">Tip</span>Dataset
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -647,7 +650,7 @@ Dataset
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Labels
+<span class="screen-reader-only">Tip</span>Labels
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -703,7 +706,7 @@ Labels
 <div id="cell-32" class="cell" data-tags="[]" data-execution_count="33">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="im">import</span> boto3</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="im">import</span> boto3</span>
 <span id="cb23-2"><a href="#cb23-2"></a><span class="im">import</span> io</span>
 <span id="cb23-3"><a href="#cb23-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image, ImageDraw, ExifTags, ImageColor, ImageFont</span>
 <span id="cb23-4"><a href="#cb23-4"></a></span>
@@ -762,16 +765,16 @@ Labels
 <span id="cb23-57"><a href="#cb23-57"></a>    <span class="co"># For object detection use case, uncomment below code to display image.</span></span>
 <span id="cb23-58"><a href="#cb23-58"></a>    image_with_labels <span class="op">=</span> display_image(bucket,photo,response)</span>
 <span id="cb23-59"><a href="#cb23-59"></a></span>
-<span id="cb23-60"><a href="#cb23-60"></a>    <span class="cf">return</span> image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-60"><a href="#cb23-60"></a>    <span class="cf">return</span> image_with_labels</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="cell-33" class="cell" data-tags="[]" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>bucket<span class="op">=</span><span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>bucket<span class="op">=</span><span class="st">'2023-04-26-amazon-rekognition-custom-labels'</span></span>
 <span id="cb24-2"><a href="#cb24-2"></a>photo<span class="op">=</span><span class="st">'images/029ae3b8-b647-43f2-92b0-36ecbc7ae551.jpg'</span></span>
 <span id="cb24-3"><a href="#cb24-3"></a>model<span class="op">=</span><span class="st">'arn:aws:rekognition:us-east-2:801598032724:project/raspberry-pi-logos/version/raspberry-pi-logos.2023-05-01T18.56.34/1682949462653'</span></span>
 <span id="cb24-4"><a href="#cb24-4"></a>min_confidence<span class="op">=</span><span class="dv">20</span></span>
 <span id="cb24-5"><a href="#cb24-5"></a></span>
-<span id="cb24-6"><a href="#cb24-6"></a>image_with_labels<span class="op">=</span>show_custom_labels(model,bucket,photo, min_confidence)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-6"><a href="#cb24-6"></a>image_with_labels<span class="op">=</span>show_custom_labels(model,bucket,photo, min_confidence)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Response from the API: 
  {'CustomLabels': [{'Name': 'raspberry-pi-logo', 'Confidence': 21.43899917602539, 'Geometry': {'BoundingBox': {'Width': 0.08699999749660492, 'Height': 0.0675399973988533, 'Left': 0.34002000093460083, 'Top': 0.30324000120162964}}}], 'ResponseMetadata': {'RequestId': '45c1b1cd-162f-4ebf-8603-957648440d41', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amzn-requestid': '45c1b1cd-162f-4ebf-8603-957648440d41', 'content-type': 'application/x-amz-json-1.1', 'content-length': '216', 'date': 'Tue, 02 May 2023 14:30:22 GMT'}, 'RetryAttempts': 0}} 
@@ -786,8 +789,8 @@ Label Height: 41</code></pre>
 </div>
 </div>
 <div id="cell-34" class="cell" data-tags="[]" data-execution_count="35">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># Let's display the image with labels</span></span>
-<span id="cb26-2"><a href="#cb26-2"></a>image_with_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># Let's display the image with labels</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>image_with_labels</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="35">
 <div>
 <figure class="figure">
@@ -857,13 +860,14 @@ Label Height: 41</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

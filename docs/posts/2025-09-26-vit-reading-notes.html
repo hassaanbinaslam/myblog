@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -35,14 +35,15 @@ ul.task-list li input[type="checkbox"] {
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -105,6 +106,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -311,12 +314,12 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>While theoretically promising, the pure attention models had a critical flaw: they relied on “specialized attention patterns” that were not efficient on modern hardware (like GPUs/TPUs). As a result, when it came to large-scale, real-world image recognition, the battle-tested ResNet (a famous CNN architecture) was still king.</p>
 <p>This is the gap the paper aims to fill. They are arguing that previous attempts to apply Transformers to vision were perhaps too complex. Their hypothesis is that a <em>standard</em> Transformer, with minimal changes, can succeed where these specialized models failed, provided it’s given enough data to overcome its lack of image-specific inductive biases.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-A Note on Inductive Bias: The Secret Ingredient of Deep Learning
+<span class="screen-reader-only">Tip</span>A Note on Inductive Bias: The Secret Ingredient of Deep Learning
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -551,12 +554,12 @@ A Note on Inductive Bias: The Secret Ingredient of Deep Learning
 <li><p><strong>The MLP Head:</strong> After the sequence is processed by the encoder, we <em>discard all the outputs for the image patches</em>. We only take the final, transformed vector that corresponds to our special <code>[CLS]</code> token. This single vector is then fed into a standard Multi-Layer Perceptron (MLP), which acts as the classification “head.” This head maps the learned representation to the final class probabilities (e.g., “Bird”, “Ball”, “Car”).</p></li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-A Note on the [CLS] Token: Why Discard the Other Outputs?
+<span class="screen-reader-only">Tip</span>A Note on the [CLS] Token: Why Discard the Other Outputs?
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -618,12 +621,12 @@ A Note on the [CLS] Token: Why Discard the Other Outputs?
 <li><strong>Equation 4:</strong> This describes how to get the final output. It takes the 0-th element (the <code>[CLS]</code> token) from the output of the final layer <code>L</code>, passes it through one last LayerNorm, and the result, <code>y</code>, is the final image representation that is fed to the classification head.</li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Equations in more detail">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Equations in more detail
+<span class="screen-reader-only">Tip</span>Equations in more detail
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -743,12 +746,12 @@ Equations in more detail
 <p>The authors’ solution is elegant. They treat the learned positional embeddings not as a simple list, but as a representation of a 14x14 grid. They then use standard 2D interpolation techniques to “stretch” this learned 14x14 grid into a new 24x24 grid. This allows them to intelligently initialize the positional embeddings for the new, larger image size, preserving the spatial understanding the model learned during pre-training.</p>
 <p>Finally, the authors make a sharp observation: this interpolation step is one of the only places in the entire model where an explicit “inductive bias about the 2D structure of the images is manually injected.” It’s a small but necessary concession to the 2D nature of images, required to make this high-resolution fine-tuning strategy work.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-A Deeper Look: How to “Stretch” Positional Embeddings
+<span class="screen-reader-only">Tip</span>A Deeper Look: How to “Stretch” Positional Embeddings
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -1163,13 +1166,14 @@ A Deeper Look: How to “Stretch” Positional Embeddings
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

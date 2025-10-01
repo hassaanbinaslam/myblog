@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -137,6 +138,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -370,12 +373,12 @@ Note
 </div>
 </div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="va">AWS_ACCOUNT_ID</span><span class="op">=</span><span class="kw">`</span><span class="ex">aws</span> sts get-caller-identity <span class="at">--query</span> Account <span class="at">--output</span> text<span class="kw">`</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="va">AWS_ACCOUNT_ID</span><span class="op">=</span><span class="kw">`</span><span class="ex">aws</span> sts get-caller-identity <span class="at">--query</span> Account <span class="at">--output</span> text<span class="kw">`</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="va">AWS_REGION</span><span class="op">=</span><span class="kw">`</span><span class="ex">aws</span> configure get region<span class="kw">`</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="va">BUCKET_NAME</span><span class="op">=</span>glueworkshop-<span class="va">${AWS_ACCOUNT_ID}</span>-<span class="va">${AWS_REGION}</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">echo</span> <span class="va">${BUCKET_NAME}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="bu">echo</span> <span class="va">${BUCKET_NAME}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Now create a bucket using <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-managing-buckets-creating">s3 make bucket (mb)</a> command.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">aws</span> s3 mb s3://<span class="va">${BUCKET_NAME}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">aws</span> s3 mb s3://<span class="va">${BUCKET_NAME}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -385,9 +388,9 @@ Note
 </div></li>
 </ul>
 <p>Once our bucket is ready, we can clone sample data using the following three commands. Each command will take about a minute to complete. These commands will synchronize the contents of our bucket with another bucket (containing the sample data). To read more about <code>s3 sync</code> command use the AWS docs <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-managing-objects-sync">s3 sync objects</a></p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=1/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=1/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=1/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=1/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=2/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=2/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=3/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=3/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="ex">aws</span> s3 sync s3://redshift-immersionday-labs/data/clickstream/uservisits_parquet1/customer=3/ s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/customer=3/ <span class="at">--exclude</span> <span class="st">"*"</span> <span class="at">--include</span> <span class="st">"visitYearMonth=1992*"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -402,7 +405,7 @@ Note
 <li>/visitYearMonth=xxxxxx</li>
 </ul>
 <p>You can view all the partitions (and objects under them) with the <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html#using-s3-commands-listing-buckets">s3 list</a> command, and each partition has one parquet file under it.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">aws</span> s3 ls s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/ <span class="at">--recursive</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">aws</span> s3 ls s3://<span class="va">${BUCKET_NAME}</span>/input/syncstreamingdata/ <span class="at">--recursive</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -444,7 +447,7 @@ s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984
 <ul>
 <li>Using cloud9 environment, create a file with name <code>iam-policy.json</code> with the following contents.</li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">{</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">{</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a>    <span class="dt">"Version"</span><span class="fu">:</span> <span class="st">"2012-10-17"</span><span class="fu">,</span></span>
 <span id="cb6-3"><a href="#cb6-3"></a>    <span class="dt">"Statement"</span><span class="fu">:</span> <span class="ot">[</span></span>
 <span id="cb6-4"><a href="#cb6-4"></a>        <span class="fu">{</span></span>
@@ -454,9 +457,9 @@ s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984
 <span id="cb6-8"><a href="#cb6-8"></a>            <span class="dt">"Resource"</span><span class="fu">:</span> <span class="st">"*"</span></span>
 <span id="cb6-9"><a href="#cb6-9"></a>        <span class="fu">}</span></span>
 <span id="cb6-10"><a href="#cb6-10"></a>    <span class="ot">]</span></span>
-<span id="cb6-11"><a href="#cb6-11"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Using this file, we will now create an IAM policy named <code>passrole-glue-policy</code>. Later we will assign this policy to a role. This policy allows an AWS user or service to transfer its role to other services. To read more about this policy, use the AWS docs page <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_passrole.html">Granting a user permissions to pass a role to an AWS service</a>. To create the policy use command</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="ex">aws</span> iam create-policy <span class="at">--policy-name</span> passrole-glue-policy <span class="at">--policy-document</span> file://iam-policy.json</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="ex">aws</span> iam create-policy <span class="at">--policy-name</span> passrole-glue-policy <span class="at">--policy-document</span> file://iam-policy.json</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -467,7 +470,7 @@ s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984
 </ul>
 <p>Copy the <strong>Arn</strong> of the policy created. We will require it in the following steps.</p>
 <p>Next, we will create an IAM role and assign it some policies. For this, create a file named <code>iam-assume-policy.json</code> and put the following contents.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">{</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">{</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a>    <span class="dt">"Version"</span><span class="fu">:</span> <span class="st">"2012-10-17"</span><span class="fu">,</span></span>
 <span id="cb8-3"><a href="#cb8-3"></a>    <span class="dt">"Statement"</span><span class="fu">:</span> <span class="ot">[</span></span>
 <span id="cb8-4"><a href="#cb8-4"></a>        <span class="fu">{</span></span>
@@ -478,12 +481,12 @@ s3://bucket/input/syncstreamingdata/customer=2/visitYearMonth=199203/302125b7984
 <span id="cb8-9"><a href="#cb8-9"></a>        <span class="dt">"Action"</span><span class="fu">:</span> <span class="st">"sts:AssumeRole"</span></span>
 <span id="cb8-10"><a href="#cb8-10"></a>        <span class="fu">}</span></span>
 <span id="cb8-11"><a href="#cb8-11"></a>    <span class="ot">]</span></span>
-<span id="cb8-12"><a href="#cb8-12"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Now create the role <code>AWSGlueServiceRole-glueworkshop</code> and assign required <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html#aws-managed-policies">AWS managed policies</a> policies to it with the following commands.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="va">GLUE_ROLENAME</span><span class="op">=</span><span class="st">'AWSGlueServiceRole-glueworkshop'</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="va">GLUE_ROLENAME</span><span class="op">=</span><span class="st">'AWSGlueServiceRole-glueworkshop'</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="ex">aws</span> iam create-role <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--assume-role-policy-document</span> file://iam-assume-policy.json</span>
 <span id="cb9-3"><a href="#cb9-3"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::aws:policy/AmazonS3FullAccess</span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Next, we will assign the policy we created in the last step to this role.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
@@ -501,7 +504,7 @@ Note
 </div>
 </div>
 </div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::801598032724:policy/passrole-glue-policy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="ex">aws</span> iam attach-role-policy <span class="at">--role-name</span> <span class="va">${GLUE_ROLENAME}</span> <span class="at">--policy-arn</span> arn:aws:iam::801598032724:policy/passrole-glue-policy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -514,9 +517,9 @@ Note
 <section id="step-5-define-glue-database-and-crawlers" class="level2">
 <h2 class="anchored" data-anchor-id="step-5-define-glue-database-and-crawlers">Step 5: Define Glue database and crawlers</h2>
 <p>Create <a href="https://docs.aws.amazon.com/glue/latest/dg/define-database.html">AWS Glue database</a> with the name <code>partition_index_glueworkshop</code> by the command</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1"></a><span class="ex">aws</span> glue create-database <span class="at">--database-input</span> <span class="st">"{</span><span class="dt">\"</span><span class="st">Name</span><span class="dt">\"</span><span class="st">:</span><span class="dt">\"</span><span class="st">partition_index_glueworkshop</span><span class="dt">\"</span><span class="st">, </span><span class="dt">\"</span><span class="st">Description</span><span class="dt">\"</span><span class="st">:</span><span class="dt">\"</span><span class="st">This database is created using AWS CLI for partition index</span><span class="dt">\"</span><span class="st">}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1"></a><span class="ex">aws</span> glue create-database <span class="at">--database-input</span> <span class="st">"{</span><span class="dt">\"</span><span class="st">Name</span><span class="dt">\"</span><span class="st">:</span><span class="dt">\"</span><span class="st">partition_index_glueworkshop</span><span class="dt">\"</span><span class="st">, </span><span class="dt">\"</span><span class="st">Description</span><span class="dt">\"</span><span class="st">:</span><span class="dt">\"</span><span class="st">This database is created using AWS CLI for partition index</span><span class="dt">\"</span><span class="st">}"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>You can verify that the database has been created with the command.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1"></a><span class="ex">aws</span> glue get-database <span class="at">--name</span> partition_index_glueworkshop</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1"></a><span class="ex">aws</span> glue get-database <span class="at">--name</span> partition_index_glueworkshop</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -527,19 +530,19 @@ Note
 </ul>
 <p>Next, we will create two crawlers. These crawlers will crawl the S3 bucket and create tables from the identified objects. Both crawlers will be same except that the tables created by one crawler will be given the prefix <code>without_index_</code> and the other given <code>with_index_</code>. To create them use the commands below.</p>
 <p><strong>Crawler 1: crawler-without-partition-index</strong></p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1"></a><span class="ex">aws</span> glue create-crawler <span class="dt">\</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1"></a><span class="ex">aws</span> glue create-crawler <span class="dt">\</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a>--name crawler-without-partition-index <span class="dt">\</span></span>
 <span id="cb13-3"><a href="#cb13-3"></a>--role AWSGlueServiceRole-glueworkshop <span class="dt">\</span></span>
 <span id="cb13-4"><a href="#cb13-4"></a>--database-name partition_index_glueworkshop <span class="dt">\</span></span>
 <span id="cb13-5"><a href="#cb13-5"></a>--table-prefix without_index_ <span class="dt">\</span></span>
-<span id="cb13-6"><a href="#cb13-6"></a>--targets <span class="st">"{</span><span class="dt">\"</span><span class="st">S3Targets</span><span class="dt">\"</span><span class="st">: [{</span><span class="dt">\"</span><span class="st">Path</span><span class="dt">\"</span><span class="st">: </span><span class="dt">\"</span><span class="st">s3://</span><span class="va">${BUCKET_NAME}</span><span class="st">/input/syncstreamingdata/</span><span class="dt">\"</span><span class="st">} ]}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-6"><a href="#cb13-6"></a>--targets <span class="st">"{</span><span class="dt">\"</span><span class="st">S3Targets</span><span class="dt">\"</span><span class="st">: [{</span><span class="dt">\"</span><span class="st">Path</span><span class="dt">\"</span><span class="st">: </span><span class="dt">\"</span><span class="st">s3://</span><span class="va">${BUCKET_NAME}</span><span class="st">/input/syncstreamingdata/</span><span class="dt">\"</span><span class="st">} ]}"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Crawler 2: crawler-with-partition-index</strong></p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1"></a><span class="ex">aws</span> glue create-crawler <span class="dt">\</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1"></a><span class="ex">aws</span> glue create-crawler <span class="dt">\</span></span>
 <span id="cb14-2"><a href="#cb14-2"></a>--name crawler-with-partition-index <span class="dt">\</span></span>
 <span id="cb14-3"><a href="#cb14-3"></a>--role AWSGlueServiceRole-glueworkshop <span class="dt">\</span></span>
 <span id="cb14-4"><a href="#cb14-4"></a>--database-name partition_index_glueworkshop <span class="dt">\</span></span>
 <span id="cb14-5"><a href="#cb14-5"></a>--table-prefix with_index_ <span class="dt">\</span></span>
-<span id="cb14-6"><a href="#cb14-6"></a>--targets <span class="st">"{</span><span class="dt">\"</span><span class="st">S3Targets</span><span class="dt">\"</span><span class="st">: [{</span><span class="dt">\"</span><span class="st">Path</span><span class="dt">\"</span><span class="st">: </span><span class="dt">\"</span><span class="st">s3://</span><span class="va">${BUCKET_NAME}</span><span class="st">/input/syncstreamingdata/</span><span class="dt">\"</span><span class="st">} ]}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-6"><a href="#cb14-6"></a>--targets <span class="st">"{</span><span class="dt">\"</span><span class="st">S3Targets</span><span class="dt">\"</span><span class="st">: [{</span><span class="dt">\"</span><span class="st">Path</span><span class="dt">\"</span><span class="st">: </span><span class="dt">\"</span><span class="st">s3://</span><span class="va">${BUCKET_NAME}</span><span class="st">/input/syncstreamingdata/</span><span class="dt">\"</span><span class="st">} ]}"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -558,8 +561,8 @@ Note
 </div></li>
 </ul>
 <p>Now we will start both these crawlers.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1"></a><span class="ex">aws</span> glue start-crawler <span class="at">--name</span> crawler-without-partition-index</span>
-<span id="cb15-2"><a href="#cb15-2"></a><span class="ex">aws</span> glue start-crawler <span class="at">--name</span> crawler-with-partition-index</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1"></a><span class="ex">aws</span> glue start-crawler <span class="at">--name</span> crawler-without-partition-index</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="ex">aws</span> glue start-crawler <span class="at">--name</span> crawler-with-partition-index</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -581,10 +584,10 @@ Note
 <section id="step-6-create-a-partition-index-on-the-table" class="level2">
 <h2 class="anchored" data-anchor-id="step-6-create-a-partition-index-on-the-table">Step 6: Create a partition index on the table</h2>
 <p>Finally, we have reached a point where we can define the partition index on table <code>with_index_syncstreamingdata</code>. Adding an index does not affect the availability of a table, as the table continues to be available while indexes are being created. To read more about the <code>glue create-partition-index</code> command use the AWS docs <a href="https://awscli.amazonaws.com/v2/documentation/api/latest/reference/glue/create-partition-index.html">glue/create-partition-index.html</a></p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1"></a><span class="ex">aws</span> glue create-partition-index <span class="dt">\</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1"></a><span class="ex">aws</span> glue create-partition-index <span class="dt">\</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a>--database-name partition_index_glueworkshop <span class="dt">\</span></span>
 <span id="cb16-3"><a href="#cb16-3"></a>--table-name with_index_syncstreamingdata <span class="dt">\</span></span>
-<span id="cb16-4"><a href="#cb16-4"></a>--partition-index Keys=customer,visityearmonth,IndexName=idxbycustvym</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-4"><a href="#cb16-4"></a>--partition-index Keys=customer,visityearmonth,IndexName=idxbycustvym</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -715,13 +718,14 @@ Note
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
@@ -136,6 +137,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -263,13 +266,13 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <div id="cell-4" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">from</span> platform <span class="im">import</span> python_version</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> fastapi</span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="im">import</span> sse_starlette</span>
 <span id="cb1-4"><a href="#cb1-4"></a></span>
 <span id="cb1-5"><a href="#cb1-5"></a><span class="bu">print</span>(<span class="st">"python=="</span> <span class="op">+</span> python_version())</span>
 <span id="cb1-6"><a href="#cb1-6"></a><span class="bu">print</span>(<span class="st">"fastapi=="</span> <span class="op">+</span> fastapi.__version__)</span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"sse_starlette=="</span> <span class="op">+</span> sse_starlette.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="bu">print</span>(<span class="st">"sse_starlette=="</span> <span class="op">+</span> sse_starlette.__version__)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>python==3.12.8
@@ -283,7 +286,7 @@ sse_starlette==2.2.1</code></pre>
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Code Samples
+<span class="screen-reader-only">Tip</span>Code Samples
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -295,7 +298,7 @@ Code Samples
 <h3 class="anchored" data-anchor-id="simulating-llm-streaming-output">Simulating LLM Streaming Output</h3>
 <p>As we dive into implementing streaming APIs, it’s crucial to have a way to mimic how an LLM would generate text. Rather than connecting to a real model for every example, we’ll use a simple, controlled simulation. This allows us to focus on the streaming mechanisms without getting bogged down in the complexities of LLM inference.</p>
 <p>Our simulation is based on a straightforward asynchronous generator function called <code>event_generator</code>. Here’s the Python code:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Test messages</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Test messages</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a>MESSAGES <span class="op">=</span> [</span>
 <span id="cb3-3"><a href="#cb3-3"></a>    <span class="st">"This is"</span>,</span>
 <span id="cb3-4"><a href="#cb3-4"></a>    <span class="st">" a large"</span>,</span>
@@ -310,7 +313,7 @@ Code Samples
 <span id="cb3-13"><a href="#cb3-13"></a><span class="cf">async</span> <span class="kw">def</span> event_generator():</span>
 <span id="cb3-14"><a href="#cb3-14"></a>    <span class="cf">for</span> message <span class="kw">in</span> MESSAGES:</span>
 <span id="cb3-15"><a href="#cb3-15"></a>        <span class="cf">yield</span> message</span>
-<span id="cb3-16"><a href="#cb3-16"></a>        <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)  <span class="co"># Simulate an async delay</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-16"><a href="#cb3-16"></a>        <span class="cf">await</span> asyncio.sleep(<span class="dv">1</span>)  <span class="co"># Simulate an async delay</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>As you can see, the <code>event_generator</code> iterates through a list of predefined messages. With each iteration, it yields a message chunk and then pauses for 1 second using <code>asyncio.sleep(1)</code>. This pause mimics the time it might take for an LLM to generate the next portion of a response. This approach makes the simulation both easy to understand and also representative of the nature of LLM output. We’ll use this <code>event_generator</code> function across all the streaming examples in this post.</p>
 </section>
 </section>
@@ -351,7 +354,7 @@ Code Samples
 <div class="code-with-filename-file">
 <pre><strong>app_stream_response.py</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI</span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="im">from</span> fastapi.responses <span class="im">import</span> StreamingResponse</span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="im">import</span> asyncio</span>
 <span id="cb4-4"><a href="#cb4-4"></a></span>
@@ -378,7 +381,7 @@ Code Samples
 <span id="cb4-25"><a href="#cb4-25"></a><span class="cf">async</span> <span class="kw">def</span> stream_response():</span>
 <span id="cb4-26"><a href="#cb4-26"></a>    <span class="cf">return</span> StreamingResponse(</span>
 <span id="cb4-27"><a href="#cb4-27"></a>        event_generator(),</span>
-<span id="cb4-28"><a href="#cb4-28"></a>        media_type<span class="op">=</span><span class="st">"text/plain"</span>,)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-28"><a href="#cb4-28"></a>        media_type<span class="op">=</span><span class="st">"text/plain"</span>,)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </div>
@@ -394,7 +397,7 @@ Code Samples
 <div class="code-with-filename-file">
 <pre><strong>stream.html</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="cf">async</span> function streamResponse() {</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="cf">async</span> function streamResponse() {</span>
 <span id="cb5-2"><a href="#cb5-2"></a>   <span class="cf">try</span> {</span>
 <span id="cb5-3"><a href="#cb5-3"></a>      const response <span class="op">=</span> <span class="cf">await</span> fetch(<span class="st">'/stream'</span>)<span class="op">;</span></span>
 <span id="cb5-4"><a href="#cb5-4"></a>      const reader <span class="op">=</span> response.body.getReader()<span class="op">;</span></span>
@@ -414,7 +417,7 @@ Code Samples
 <span id="cb5-18"><a href="#cb5-18"></a>}</span>
 <span id="cb5-19"><a href="#cb5-19"></a></span>
 <span id="cb5-20"><a href="#cb5-20"></a><span class="op">//</span> Start streaming when page loads</span>
-<span id="cb5-21"><a href="#cb5-21"></a>streamResponse()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-21"><a href="#cb5-21"></a>streamResponse()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </div>
@@ -434,8 +437,8 @@ Code Samples
 <section id="comparison-to-rest-api-calls" class="level4">
 <h4 class="anchored" data-anchor-id="comparison-to-rest-api-calls">Comparison to REST API calls</h4>
 <p>In contrast to this streaming approach, a typical REST API call looks like this:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource javascript number-lines code-with-copy"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="fu">fetch</span>(<span class="st">'/api/data'</span>)<span class="op">;</span>  <span class="co">// Make the REST API request</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">const</span> data <span class="op">=</span> <span class="cf">await</span> response<span class="op">.</span><span class="fu">json</span>()<span class="op">;</span> <span class="co">// Parse the JSON response body</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource javascript number-lines code-with-copy"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="fu">fetch</span>(<span class="st">'/api/data'</span>)<span class="op">;</span>  <span class="co">// Make the REST API request</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">const</span> data <span class="op">=</span> <span class="cf">await</span> response<span class="op">.</span><span class="fu">json</span>()<span class="op">;</span> <span class="co">// Parse the JSON response body</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The difference is stark. In a REST API call, we wait for the entire response before processing. While with <code>StreamingResponse</code>, we handle each chunk of data as it becomes available. This allows us to display output to the user almost instantly rather than after a long wait.</p>
 </section>
 </section>
@@ -490,7 +493,7 @@ Code Samples
 <div class="code-with-filename-file">
 <pre><strong>app_ess.py</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI</span>
 <span id="cb7-2"><a href="#cb7-2"></a><span class="im">from</span> sse_starlette.sse <span class="im">import</span> EventSourceResponse</span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="im">import</span> asyncio</span>
 <span id="cb7-4"><a href="#cb7-4"></a></span>
@@ -515,7 +518,7 @@ Code Samples
 <span id="cb7-23"><a href="#cb7-23"></a></span>
 <span id="cb7-24"><a href="#cb7-24"></a><span class="at">@app.get</span>(<span class="st">"/stream"</span>)</span>
 <span id="cb7-25"><a href="#cb7-25"></a><span class="cf">async</span> <span class="kw">def</span> stream_response():</span>
-<span id="cb7-26"><a href="#cb7-26"></a>    <span class="cf">return</span> EventSourceResponse(event_generator())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-26"><a href="#cb7-26"></a>    <span class="cf">return</span> EventSourceResponse(event_generator())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </div>
@@ -531,12 +534,12 @@ Code Samples
 <div class="code-with-filename-file">
 <pre><strong>ess.html</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>const eventSource <span class="op">=</span> new EventSource(<span class="st">'/stream'</span>)<span class="op">;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>const eventSource <span class="op">=</span> new EventSource(<span class="st">'/stream'</span>)<span class="op">;</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a></span>
 <span id="cb8-3"><a href="#cb8-3"></a>eventSource.onmessage <span class="op">=</span> function (event) {</span>
 <span id="cb8-4"><a href="#cb8-4"></a>  const container <span class="op">=</span> document.getElementById(<span class="st">'response-container'</span>)<span class="op">;</span></span>
 <span id="cb8-5"><a href="#cb8-5"></a>  container.innerText <span class="op">+=</span> event.data<span class="op">;</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a>}<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-6"><a href="#cb8-6"></a>}<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </div>
@@ -572,7 +575,7 @@ Code Samples
 <li><strong>retry</strong>: The retry field specifies the amount of time (in milliseconds) that the client should wait before trying to reconnect if the connection is lost. This allows the server to control the client-side reconnection behavior.</li>
 </ul>
 <p>These additional fields allow you to build highly structured and robust applications. The server can now send messages such as:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> </span><span class="dv">12345</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> </span><span class="dv">12345</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="fu">event</span><span class="kw">:</span><span class="at"> user-logged-in</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a><span class="fu">retry</span><span class="kw">:</span><span class="at"> </span><span class="dv">10000</span></span>
 <span id="cb9-4"><a href="#cb9-4"></a><span class="fu">data</span><span class="kw">:</span><span class="at"> John Doe</span></span>
@@ -580,7 +583,7 @@ Code Samples
 <span id="cb9-6"><a href="#cb9-6"></a></span>
 <span id="cb9-7"><a href="#cb9-7"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> </span><span class="dv">12346</span></span>
 <span id="cb9-8"><a href="#cb9-8"></a><span class="fu">event</span><span class="kw">:</span><span class="at"> message</span></span>
-<span id="cb9-9"><a href="#cb9-9"></a><span class="fu">data</span><span class="kw">:</span><span class="at"> hello world</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="fu">data</span><span class="kw">:</span><span class="at"> hello world</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>In the above message stream we are using <code>id</code>, <code>event</code>, <code>retry</code> and multiple <code>data</code> fields. You can also format the message with data in one line, like the last message example.</p>
 <p>By understanding these additional message fields, you can design more sophisticated real-time applications leveraging the flexibility of Server-Sent Events.</p>
 </section>
@@ -631,7 +634,7 @@ Code Samples
 <div class="code-with-filename-file">
 <pre><strong>app_websocket.py</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, WebSocket</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">from</span> fastapi <span class="im">import</span> FastAPI, WebSocket</span>
 <span id="cb10-2"><a href="#cb10-2"></a><span class="im">import</span> asyncio</span>
 <span id="cb10-3"><a href="#cb10-3"></a></span>
 <span id="cb10-4"><a href="#cb10-4"></a><span class="co"># Test messages (same as before)</span></span>
@@ -671,7 +674,7 @@ Code Samples
 <span id="cb10-38"><a href="#cb10-38"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
 <span id="cb10-39"><a href="#cb10-39"></a>        <span class="bu">print</span>(<span class="ss">f"Error: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb10-40"><a href="#cb10-40"></a>    <span class="cf">finally</span>:</span>
-<span id="cb10-41"><a href="#cb10-41"></a>        <span class="cf">await</span> websocket.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-41"><a href="#cb10-41"></a>        <span class="cf">await</span> websocket.close()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </div>
@@ -696,7 +699,7 @@ Code Samples
 <div class="code-with-filename-file">
 <pre><strong>wsocket.html</strong></pre>
 </div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>let ws<span class="op">;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>let ws<span class="op">;</span></span>
 <span id="cb11-2"><a href="#cb11-2"></a></span>
 <span id="cb11-3"><a href="#cb11-3"></a>function connectWebSocket() {</span>
 <span id="cb11-4"><a href="#cb11-4"></a>    <span class="op">//</span> Create WebSocket connection</span>
@@ -751,7 +754,7 @@ Code Samples
 <span id="cb11-53"><a href="#cb11-53"></a>})<span class="op">;</span></span>
 <span id="cb11-54"><a href="#cb11-54"></a></span>
 <span id="cb11-55"><a href="#cb11-55"></a><span class="op">//</span> Connect when page loads</span>
-<span id="cb11-56"><a href="#cb11-56"></a>connectWebSocket()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-56"><a href="#cb11-56"></a>connectWebSocket()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </div>
@@ -901,13 +904,14 @@ Code Samples
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

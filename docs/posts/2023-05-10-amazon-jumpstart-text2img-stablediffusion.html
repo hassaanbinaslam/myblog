@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -133,6 +134,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -391,27 +394,27 @@ Tip
 <h2 class="anchored" data-anchor-id="set-up-the-environment">Set up the environment</h2>
 <p>There are some initial steps required to execute this notebook. They mainly involve installing the needed packages and initializing the SageMaker session.</p>
 <div id="cell-6" class="cell" data-tags="[]" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">%%</span>capture</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="op">!</span>pip install <span class="op">--</span>upgrade sagemaker</span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="op">!</span>pip install matplotlib</span>
 <span id="cb1-4"><a href="#cb1-4"></a><span class="op">!</span>pip install watermark</span>
 <span id="cb1-5"><a href="#cb1-5"></a></span>
 <span id="cb1-6"><a href="#cb1-6"></a><span class="co"># 1. Get the latest version of SageMaker Python SDK. https://github.com/aws/sagemaker-python-sdk</span></span>
 <span id="cb1-7"><a href="#cb1-7"></a><span class="co"># 2. Install matplotlib. https://github.com/matplotlib/matplotlib</span></span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># 3. Install watermark. An IPython magic extension for printing date and time stamps, version numbers, and hardware information. https://github.com/rasbt/watermark</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># 3. Install watermark. An IPython magic extension for printing date and time stamps, version numbers, and hardware information. https://github.com/rasbt/watermark</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://github.com/rasbt/watermark">watermark</a> extension is a great utility to expose packages, kernel, and hardware information. Though this is optional, and you may skip this step, it is a great way to report execution environment information and make it more transparent.</p>
 <div id="cell-8" class="cell" data-tags="[]" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">%</span>load_ext watermark</span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="co"># To load the watermark magic, execute the following line in your IPython notebook or current IPython shell</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># to learn more about the usage: https://github.com/rasbt/watermark/blob/master/docs/watermark.ipynb</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># to learn more about the usage: https://github.com/rasbt/watermark/blob/master/docs/watermark.ipynb</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-9" class="cell" data-tags="[]" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p numpy,matplotlib,boto3,json,sagemaker</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">%</span>watermark <span class="op">-</span>v <span class="op">-</span>m <span class="op">-</span>p numpy,matplotlib,boto3,json,sagemaker</span>
 <span id="cb3-2"><a href="#cb3-2"></a></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co"># watermark the notebook environment</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># watermark step is optional. This is done to make the environment details more transpaent</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># watermark step is optional. This is done to make the environment details more transpaent</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Python implementation: CPython
 Python version       : 3.8.12
@@ -436,14 +439,14 @@ Architecture: 64bit
 <p>Next, we will initialize the SageMaker session. This session manages interactions with the Amazon SageMaker APIs and any other AWS services needed. It provides convenient methods for manipulating entities and resources that Amazon SageMaker uses, such as training jobs, endpoints, and input datasets in S3. AWS service calls are delegated to an underlying Boto3 session, which is initialized using the AWS configuration chain by default.</p>
 <p>To read more about <em>SageMaker Session</em> refer to the documentation <a href="https://sagemaker.readthedocs.io/en/stable/api/utility/session.html#sagemaker.session.Session">sagemaker.session.Session</a></p>
 <div id="cell-11" class="cell" data-tags="[]" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> sagemaker, boto3</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="im">import</span> sagemaker, boto3</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="im">from</span> sagemaker <span class="im">import</span> get_execution_role</span>
 <span id="cb5-3"><a href="#cb5-3"></a></span>
 <span id="cb5-4"><a href="#cb5-4"></a>aws_role <span class="op">=</span> get_execution_role()</span>
 <span id="cb5-5"><a href="#cb5-5"></a>aws_region <span class="op">=</span> boto3.Session().region_name</span>
 <span id="cb5-6"><a href="#cb5-6"></a>sagemaker_session <span class="op">=</span> sagemaker.Session()</span>
 <span id="cb5-7"><a href="#cb5-7"></a></span>
-<span id="cb5-8"><a href="#cb5-8"></a>aws_region</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-8"><a href="#cb5-8"></a>aws_region</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>'us-east-1'</code></pre>
 </div>
@@ -455,7 +458,7 @@ Architecture: 64bit
 <div id="cell-13" class="cell" data-tags="[]" data-execution_count="10">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris, model_uris</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris, model_uris</span>
 <span id="cb7-2"><a href="#cb7-2"></a><span class="im">from</span> sagemaker.model <span class="im">import</span> Model</span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="im">from</span> sagemaker.predictor <span class="im">import</span> Predictor</span>
 <span id="cb7-4"><a href="#cb7-4"></a><span class="im">from</span> sagemaker.utils <span class="im">import</span> name_from_base</span>
@@ -520,7 +523,7 @@ Architecture: 64bit
 <span id="cb7-63"><a href="#cb7-63"></a><span class="kw">def</span> remove_model_endpoint(model_predictor):</span>
 <span id="cb7-64"><a href="#cb7-64"></a>    <span class="co">"""Remove the model and deployed inference endpoint"""</span></span>
 <span id="cb7-65"><a href="#cb7-65"></a>    model_predictor.delete_model()</span>
-<span id="cb7-66"><a href="#cb7-66"></a>    model_predictor.delete_endpoint()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-66"><a href="#cb7-66"></a>    model_predictor.delete_endpoint()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -530,7 +533,7 @@ Architecture: 64bit
 <div id="cell-15" class="cell" data-tags="[]" data-execution_count="23">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb8-3"><a href="#cb8-3"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
 <span id="cb8-4"><a href="#cb8-4"></a><span class="im">from</span> io <span class="im">import</span> BytesIO</span>
@@ -608,7 +611,7 @@ Architecture: 64bit
 <span id="cb8-76"><a href="#cb8-76"></a>    )</span>
 <span id="cb8-77"><a href="#cb8-77"></a>    generated_images, prompt <span class="op">=</span> parse_response_multiple_images(query_response)</span>
 <span id="cb8-78"><a href="#cb8-78"></a></span>
-<span id="cb8-79"><a href="#cb8-79"></a>    display_encoded_images(generated_images, prompt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-79"><a href="#cb8-79"></a>    display_encoded_images(generated_images, prompt)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="supported-inference-parameters" class="level3">
@@ -625,7 +628,7 @@ Architecture: 64bit
 <li><code>seed</code>: Fix the randomized state for reproducibility. If specified, it must be an integer.</li>
 </ul>
 <p>An example request payload is provided below. The effect of these parameters will become apparent when we generate images using them.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>payload <span class="op">=</span> {</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a>payload <span class="op">=</span> {</span>
 <span id="cb9-2"><a href="#cb9-2"></a>    <span class="st">"prompt"</span>: <span class="st">"a portrait of a man"</span>,</span>
 <span id="cb9-3"><a href="#cb9-3"></a>    <span class="st">"negative_prompt"</span>: <span class="st">"beard"</span></span>
 <span id="cb9-4"><a href="#cb9-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -634,7 +637,7 @@ Architecture: 64bit
 <span id="cb9-7"><a href="#cb9-7"></a>    <span class="st">"num_inference_steps"</span>: <span class="dv">50</span>,</span>
 <span id="cb9-8"><a href="#cb9-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb9-9"><a href="#cb9-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
-<span id="cb9-10"><a href="#cb9-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-10"><a href="#cb9-10"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -716,8 +719,8 @@ Tip
 <h2 class="anchored" data-anchor-id="stable-diffusion-v2-1">Stable Diffusion v2-1</h2>
 <p>Let’s get our first model up and running <a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">stable-diffusion-2-1</a>.</p>
 <div id="cell-19" class="cell" data-tags="[]" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>model_id <span class="op">=</span> <span class="st">"model-txt2img-stabilityai-stable-diffusion-v2-1-base"</span></span>
-<span id="cb10-2"><a href="#cb10-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a>model_id <span class="op">=</span> <span class="st">"model-txt2img-stabilityai-stable-diffusion-v2-1-base"</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---------!</code></pre>
 </div>
@@ -739,7 +742,7 @@ Tip
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -750,7 +753,7 @@ Prompt
 <div id="cell-21" class="cell" data-tags="[]" data-execution_count="27">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w"</span></span>
 <span id="cb12-3"><a href="#cb12-3"></a></span>
 <span id="cb12-4"><a href="#cb12-4"></a>payload <span class="op">=</span> {</span>
@@ -764,7 +767,7 @@ Prompt
 <span id="cb12-12"><a href="#cb12-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb12-13"><a href="#cb12-13"></a>}</span>
 <span id="cb12-14"><a href="#cb12-14"></a></span>
-<span id="cb12-15"><a href="#cb12-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-15"><a href="#cb12-15"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -816,7 +819,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -828,7 +831,7 @@ Prompt
 <div id="cell-23" class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>prompt <span class="op">=</span> <span class="st">"sitting on green grass, bodybuilder posing, bodycam footage, man esthete with disgust face, overlooking a dark street, black and white photograph, sitting on a bench, dirty concrete wall, very sexy outfit, perfect face mode, sport photography, black business suit"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>prompt <span class="op">=</span> <span class="st">"sitting on green grass, bodybuilder posing, bodycam footage, man esthete with disgust face, overlooking a dark street, black and white photograph, sitting on a bench, dirty concrete wall, very sexy outfit, perfect face mode, sport photography, black business suit"</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad"</span></span>
 <span id="cb13-3"><a href="#cb13-3"></a></span>
 <span id="cb13-4"><a href="#cb13-4"></a>payload <span class="op">=</span> {</span>
@@ -842,7 +845,7 @@ Prompt
 <span id="cb13-12"><a href="#cb13-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb13-13"><a href="#cb13-13"></a>}</span>
 <span id="cb13-14"><a href="#cb13-14"></a></span>
-<span id="cb13-15"><a href="#cb13-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-15"><a href="#cb13-15"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -890,7 +893,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -900,7 +903,7 @@ Prompt
 <div id="cell-25" class="cell" data-tags="[]" data-execution_count="28">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>prompt <span class="op">=</span> <span class="st">"A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>prompt <span class="op">=</span> <span class="st">"A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
 <span id="cb14-2"><a href="#cb14-2"></a></span>
 <span id="cb14-3"><a href="#cb14-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb14-4"><a href="#cb14-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -912,7 +915,7 @@ Prompt
 <span id="cb14-10"><a href="#cb14-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb14-11"><a href="#cb14-11"></a>}</span>
 <span id="cb14-12"><a href="#cb14-12"></a></span>
-<span id="cb14-13"><a href="#cb14-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-13"><a href="#cb14-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -958,7 +961,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -968,7 +971,7 @@ Prompt
 <div id="cell-27" class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful digital illustration of BARCELONA, 4k, crystal clear, ultra HD, high definition, detailed, trending in artstation, fantasy"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful digital illustration of BARCELONA, 4k, crystal clear, ultra HD, high definition, detailed, trending in artstation, fantasy"</span></span>
 <span id="cb15-2"><a href="#cb15-2"></a></span>
 <span id="cb15-3"><a href="#cb15-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb15-4"><a href="#cb15-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -980,7 +983,7 @@ Prompt
 <span id="cb15-10"><a href="#cb15-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb15-11"><a href="#cb15-11"></a>}</span>
 <span id="cb15-12"><a href="#cb15-12"></a></span>
-<span id="cb15-13"><a href="#cb15-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-13"><a href="#cb15-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1015,7 +1018,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1025,7 +1028,7 @@ Prompt
 <div id="cell-29" class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>prompt <span class="op">=</span> <span class="st">"A surreal 3D render of a cityscape with twisted buildings, upside-down structures, and floating objects, creating a dreamlike and disorienting atmosphere, by Simon Stålenhag"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>prompt <span class="op">=</span> <span class="st">"A surreal 3D render of a cityscape with twisted buildings, upside-down structures, and floating objects, creating a dreamlike and disorienting atmosphere, by Simon Stålenhag"</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a></span>
 <span id="cb16-3"><a href="#cb16-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb16-4"><a href="#cb16-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1037,7 +1040,7 @@ Prompt
 <span id="cb16-10"><a href="#cb16-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb16-11"><a href="#cb16-11"></a>}</span>
 <span id="cb16-12"><a href="#cb16-12"></a></span>
-<span id="cb16-13"><a href="#cb16-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-13"><a href="#cb16-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1082,7 +1085,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1092,7 +1095,7 @@ Prompt
 <div id="cell-31" class="cell" data-tags="[]" data-execution_count="46">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>prompt <span class="op">=</span> <span class="st">"A futuristic space station orbiting a distant planet, with sleek design and advanced technology visible through the windows, Nuremberg Chronicle, 1493, Liber Chronicarum, Michael Wolgemut, detailed archtitecture"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a>prompt <span class="op">=</span> <span class="st">"A futuristic space station orbiting a distant planet, with sleek design and advanced technology visible through the windows, Nuremberg Chronicle, 1493, Liber Chronicarum, Michael Wolgemut, detailed archtitecture"</span></span>
 <span id="cb17-2"><a href="#cb17-2"></a>negative_prompt <span class="op">=</span> <span class="st">"writings, ugly, bad, immature, anime, b&amp;w, lines, latin"</span></span>
 <span id="cb17-3"><a href="#cb17-3"></a></span>
 <span id="cb17-4"><a href="#cb17-4"></a>payload <span class="op">=</span> {</span>
@@ -1106,7 +1109,7 @@ Prompt
 <span id="cb17-12"><a href="#cb17-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb17-13"><a href="#cb17-13"></a>}</span>
 <span id="cb17-14"><a href="#cb17-14"></a></span>
-<span id="cb17-15"><a href="#cb17-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-15"><a href="#cb17-15"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1136,7 +1139,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1146,7 +1149,7 @@ Prompt
 <div id="cell-33" class="cell" data-tags="[]" data-execution_count="45">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a>prompt <span class="op">=</span> <span class="st">"Realistic 3D render of an isometric hospital in a low poly art style, medical workers, doctors, nurses, patients, beds and equipment."</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a>prompt <span class="op">=</span> <span class="st">"Realistic 3D render of an isometric hospital in a low poly art style, medical workers, doctors, nurses, patients, beds and equipment."</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a></span>
 <span id="cb18-3"><a href="#cb18-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb18-4"><a href="#cb18-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1158,7 +1161,7 @@ Prompt
 <span id="cb18-10"><a href="#cb18-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb18-11"><a href="#cb18-11"></a>}</span>
 <span id="cb18-12"><a href="#cb18-12"></a></span>
-<span id="cb18-13"><a href="#cb18-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-13"><a href="#cb18-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1192,7 +1195,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1202,7 +1205,7 @@ Prompt
 <div id="cell-35" class="cell" data-tags="[]" data-execution_count="41">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a>prompt <span class="op">=</span> <span class="st">"The green idyllic Arcadian prairie with sheep by Thomas Cole, Breath-taking digital painting with placid colors, amazing art, artstation 3, cottagecore."</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a>prompt <span class="op">=</span> <span class="st">"The green idyllic Arcadian prairie with sheep by Thomas Cole, Breath-taking digital painting with placid colors, amazing art, artstation 3, cottagecore."</span></span>
 <span id="cb19-2"><a href="#cb19-2"></a></span>
 <span id="cb19-3"><a href="#cb19-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb19-4"><a href="#cb19-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1214,7 +1217,7 @@ Prompt
 <span id="cb19-10"><a href="#cb19-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb19-11"><a href="#cb19-11"></a>}</span>
 <span id="cb19-12"><a href="#cb19-12"></a></span>
-<span id="cb19-13"><a href="#cb19-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-13"><a href="#cb19-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1256,7 +1259,7 @@ Note
 <div id="cell-37" class="cell" data-tags="[]" data-execution_count="42">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ, full view"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ, full view"</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a></span>
 <span id="cb20-3"><a href="#cb20-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb20-4"><a href="#cb20-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1268,7 +1271,7 @@ Note
 <span id="cb20-10"><a href="#cb20-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb20-11"><a href="#cb20-11"></a>}</span>
 <span id="cb20-12"><a href="#cb20-12"></a></span>
-<span id="cb20-13"><a href="#cb20-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-13"><a href="#cb20-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1303,7 +1306,7 @@ Note
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1314,7 +1317,7 @@ Prompt
 <div id="cell-39" class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>prompt <span class="op">=</span> <span class="st">"A painting of a pirate ship in the ocean, a digital painting, renaissance, color study, portrait, castle, three masts, davinci, whole page illustration, small boat"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a>prompt <span class="op">=</span> <span class="st">"A painting of a pirate ship in the ocean, a digital painting, renaissance, color study, portrait, castle, three masts, davinci, whole page illustration, small boat"</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a>negative_prompt <span class="op">=</span> <span class="st">"logos, icons, writings, description"</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a></span>
 <span id="cb21-4"><a href="#cb21-4"></a>payload <span class="op">=</span> {</span>
@@ -1328,7 +1331,7 @@ Prompt
 <span id="cb21-12"><a href="#cb21-12"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb21-13"><a href="#cb21-13"></a>}</span>
 <span id="cb21-14"><a href="#cb21-14"></a></span>
-<span id="cb21-15"><a href="#cb21-15"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-15"><a href="#cb21-15"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1358,7 +1361,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1368,7 +1371,7 @@ Prompt
 <div id="cell-41" class="cell" data-tags="[]" data-execution_count="48">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a>prompt <span class="op">=</span> <span class="st">"Complex detailed medieval painting of a fantasy medieval cleric woman walking through a field of flowers, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a>prompt <span class="op">=</span> <span class="st">"Complex detailed medieval painting of a fantasy medieval cleric woman walking through a field of flowers, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting"</span></span>
 <span id="cb22-2"><a href="#cb22-2"></a></span>
 <span id="cb22-3"><a href="#cb22-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb22-4"><a href="#cb22-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1380,7 +1383,7 @@ Prompt
 <span id="cb22-10"><a href="#cb22-10"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb22-11"><a href="#cb22-11"></a>}</span>
 <span id="cb22-12"><a href="#cb22-12"></a></span>
-<span id="cb22-13"><a href="#cb22-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-13"><a href="#cb22-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1406,7 +1409,7 @@ Prompt
 </div>
 <p>Please delete the model endpoint once it is no longer required to avoid unforeseen costs.</p>
 <div id="cell-43" class="cell" data-tags="[]" data-execution_count="49">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a>remove_model_endpoint(model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="true" aria-label="Toggle callout">
@@ -1431,8 +1434,8 @@ Tip
 <p>Besides the Stable Diffusion base models, people have also released models with unique styles and tastes. One such model is <a href="https://huggingface.co/prompthero/openjourney">OpenJourney</a>. Openjourney is based on <a href="https://huggingface.co/runwayml/stable-diffusion-v1-5">Stable Diffusion v1.5</a> but fine-tuned with many <a href="https://en.wikipedia.org/wiki/Midjourney">Midjourney</a> images. The result is a model capable of generating very detailed and colorful photos. But to invoke the model’s unique style, we must append the prompt with the text <code>modern-v4 style</code>.</p>
 <p>Let’s get this model up and running.</p>
 <div id="cell-46" class="cell" data-tags="[]" data-execution_count="50">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-prompthero-openjourney"</span></span>
-<span id="cb24-2"><a href="#cb24-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-prompthero-openjourney"</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---------!</code></pre>
 </div>
@@ -1446,7 +1449,7 @@ Tip
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1457,7 +1460,7 @@ Prompt
 <div id="cell-48" class="cell" data-tags="[]" data-execution_count="52">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style old, female robot, metal, rust, wisible wires, destroyed, sad, dark, dirty, looking at viewer, portrait, photography, detailed skin, realistic, photo-realistic, 8k, highly detailed, full length frame, High detail RAW color art, piercing, diffused soft lighting, shallow depth of field, sharp focus, hyperrealism, cinematic lighting"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style old, female robot, metal, rust, wisible wires, destroyed, sad, dark, dirty, looking at viewer, portrait, photography, detailed skin, realistic, photo-realistic, 8k, highly detailed, full length frame, High detail RAW color art, piercing, diffused soft lighting, shallow depth of field, sharp focus, hyperrealism, cinematic lighting"</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>negative_prompt <span class="op">=</span> <span class="st">"logo, CGI, 3d, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature"</span></span>
 <span id="cb26-3"><a href="#cb26-3"></a></span>
 <span id="cb26-4"><a href="#cb26-4"></a>payload <span class="op">=</span> {</span>
@@ -1472,7 +1475,7 @@ Prompt
 <span id="cb26-13"><a href="#cb26-13"></a>}</span>
 <span id="cb26-14"><a href="#cb26-14"></a></span>
 <span id="cb26-15"><a href="#cb26-15"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb26-16"><a href="#cb26-16"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-16"><a href="#cb26-16"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1502,7 +1505,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1513,7 +1516,7 @@ Prompt
 <div id="cell-50" class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style portrait photograph of Madison Beer as Pocahontas, young beautiful native american woman, perfect symmetrical face, feather jewelry, traditional handmade dress, armed female hunter warrior, wild west environment, Utah landscape, ultra realistic, concept art, elegant, intricate, highly detailed, depth of field, professionally color graded, 8k, art by artgerm and greg rutkowski and alphonse mucha"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style portrait photograph of Madison Beer as Pocahontas, young beautiful native american woman, perfect symmetrical face, feather jewelry, traditional handmade dress, armed female hunter warrior, wild west environment, Utah landscape, ultra realistic, concept art, elegant, intricate, highly detailed, depth of field, professionally color graded, 8k, art by artgerm and greg rutkowski and alphonse mucha"</span></span>
 <span id="cb27-2"><a href="#cb27-2"></a>negative_prompt <span class="op">=</span> <span class="st">"backlight, dark face, white fur, gold fabric, cropped head, out of frame, deformed, cripple, ugly, additional arms, additional legs, additional head, two heads, multiple people, group of people"</span></span>
 <span id="cb27-3"><a href="#cb27-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb27-4"><a href="#cb27-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1526,7 +1529,7 @@ Prompt
 <span id="cb27-11"><a href="#cb27-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb27-12"><a href="#cb27-12"></a>}</span>
 <span id="cb27-13"><a href="#cb27-13"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb27-14"><a href="#cb27-14"></a><span class="co"># https://prompthero.com/prompt/d4f36f0dcdf</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-14"><a href="#cb27-14"></a><span class="co"># https://prompthero.com/prompt/d4f36f0dcdf</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1556,7 +1559,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1567,7 +1570,7 @@ Prompt
 <div id="cell-52" class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style Incredibly detailed technical diagram of the profile of a woman with the top and back of her head split into complex geometric shapes and flowers growing from the shapes, Chiaroscuro lighting, fine intricate details"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style Incredibly detailed technical diagram of the profile of a woman with the top and back of her head split into complex geometric shapes and flowers growing from the shapes, Chiaroscuro lighting, fine intricate details"</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a>negative_prompt <span class="op">=</span> <span class="st">"long neck, skinny"</span></span>
 <span id="cb28-3"><a href="#cb28-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb28-4"><a href="#cb28-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1580,7 +1583,7 @@ Prompt
 <span id="cb28-11"><a href="#cb28-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb28-12"><a href="#cb28-12"></a>}</span>
 <span id="cb28-13"><a href="#cb28-13"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb28-14"><a href="#cb28-14"></a><span class="co"># https://prompthero.com/prompt/0c8536f3b23</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-14"><a href="#cb28-14"></a><span class="co"># https://prompthero.com/prompt/0c8536f3b23</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1614,7 +1617,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1624,7 +1627,7 @@ Prompt
 <div id="cell-54" class="cell" data-tags="[]" data-execution_count="53">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style painting of a fairy forest, dream light, full of colors, mushroom tree, dim light, super detailed, unreal engine 5, hdr, 12k, by Vincent Van Goth"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style painting of a fairy forest, dream light, full of colors, mushroom tree, dim light, super detailed, unreal engine 5, hdr, 12k, by Vincent Van Goth"</span></span>
 <span id="cb29-2"><a href="#cb29-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb29-3"><a href="#cb29-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb29-4"><a href="#cb29-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -1635,7 +1638,7 @@ Prompt
 <span id="cb29-9"><a href="#cb29-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb29-10"><a href="#cb29-10"></a>}</span>
 <span id="cb29-11"><a href="#cb29-11"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb29-12"><a href="#cb29-12"></a><span class="co"># https://prompthero.com/prompt/19c0ad9cac1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-12"><a href="#cb29-12"></a><span class="co"># https://prompthero.com/prompt/19c0ad9cac1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1669,7 +1672,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1679,7 +1682,7 @@ Prompt
 <div id="cell-56" class="cell" data-tags="[]" data-execution_count="54">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style little dragon staring at magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style little dragon staring at magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
 <span id="cb30-2"><a href="#cb30-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb30-3"><a href="#cb30-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb30-4"><a href="#cb30-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -1690,7 +1693,7 @@ Prompt
 <span id="cb30-9"><a href="#cb30-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb30-10"><a href="#cb30-10"></a>}</span>
 <span id="cb30-11"><a href="#cb30-11"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb30-12"><a href="#cb30-12"></a><span class="co"># https://prompthero.com/prompt/63c7ed7865f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-12"><a href="#cb30-12"></a><span class="co"># https://prompthero.com/prompt/63c7ed7865f</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1720,7 +1723,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1730,7 +1733,7 @@ Prompt
 <div id="cell-58" class="cell" data-tags="[]" data-execution_count="55">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style, magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a>prompt <span class="op">=</span> <span class="st">"mdjrny-v4 style, magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"</span></span>
 <span id="cb31-2"><a href="#cb31-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb31-3"><a href="#cb31-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb31-4"><a href="#cb31-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -1741,7 +1744,7 @@ Prompt
 <span id="cb31-9"><a href="#cb31-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb31-10"><a href="#cb31-10"></a>}</span>
 <span id="cb31-11"><a href="#cb31-11"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb31-12"><a href="#cb31-12"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-12"><a href="#cb31-12"></a><span class="co"># https://prompthero.com/prompt/4c1a987fec7</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1766,7 +1769,7 @@ Prompt
 </div>
 </div>
 <div id="cell-59" class="cell" data-tags="[]" data-execution_count="58">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a>remove_model_endpoint(model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -1775,8 +1778,8 @@ Prompt
 <p><a href="https://huggingface.co/andite/anything-v4.0">anything-v4.0</a> is another model with a particular style. It is also based on Stable Diffusion and is good at producing high-quality, highly detailed anime styles with just a few prompts.</p>
 <p>Let’s get this model up and running.</p>
 <div id="cell-61" class="cell" data-tags="[]" data-execution_count="59">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-andite-anything-v4-0"</span></span>
-<span id="cb33-2"><a href="#cb33-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-andite-anything-v4-0"</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---------!</code></pre>
 </div>
@@ -1790,7 +1793,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1800,7 +1803,7 @@ Prompt
 <div id="cell-63" class="cell" data-tags="[]" data-execution_count="60">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a>prompt <span class="op">=</span> <span class="st">"1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1"></a>prompt <span class="op">=</span> <span class="st">"1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
 <span id="cb35-2"><a href="#cb35-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb35-3"><a href="#cb35-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb35-4"><a href="#cb35-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -1810,7 +1813,7 @@ Prompt
 <span id="cb35-8"><a href="#cb35-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb35-9"><a href="#cb35-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb35-10"><a href="#cb35-10"></a>}</span>
-<span id="cb35-11"><a href="#cb35-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb35-11"><a href="#cb35-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1841,7 +1844,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1852,7 +1855,7 @@ Prompt
 <div id="cell-65" class="cell" data-tags="[]" data-execution_count="61">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a>prompt <span class="op">=</span> <span class="st">"photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, cartoon, anime, 3d, painting, b&amp;w"</span></span>
 <span id="cb36-3"><a href="#cb36-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb36-4"><a href="#cb36-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -1864,7 +1867,7 @@ Prompt
 <span id="cb36-10"><a href="#cb36-10"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb36-11"><a href="#cb36-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb36-12"><a href="#cb36-12"></a>}</span>
-<span id="cb36-13"><a href="#cb36-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-13"><a href="#cb36-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1911,7 +1914,7 @@ Warning
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1921,7 +1924,7 @@ Prompt
 <div id="cell-67" class="cell" data-tags="[]" data-execution_count="62">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1"></a>prompt <span class="op">=</span> <span class="st">"A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
 <span id="cb37-2"><a href="#cb37-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb37-3"><a href="#cb37-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb37-4"><a href="#cb37-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -1931,7 +1934,7 @@ Prompt
 <span id="cb37-8"><a href="#cb37-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb37-9"><a href="#cb37-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb37-10"><a href="#cb37-10"></a>}</span>
-<span id="cb37-11"><a href="#cb37-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-11"><a href="#cb37-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1956,7 +1959,7 @@ Prompt
 </div>
 </div>
 <div id="cell-68" class="cell" data-tags="[]" data-execution_count="66">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a>remove_model_endpoint(model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -1964,8 +1967,8 @@ Prompt
 <h2 class="anchored" data-anchor-id="mo-di-diffusion">Mo Di Diffusion</h2>
 <p><a href="https://huggingface.co/nitrosocke/mo-di-diffusion">mo-di-diffusion</a> is another model good at expressing Disney animation studio style. It is based on Stable Diffusion 1.5 and fine-tuned on screenshots from Disney animation studio. However, users must use the tokens <code>modern disney style</code> in the prompts to get the desired effect.</p>
 <div id="cell-70" class="cell" data-tags="[]" data-execution_count="67">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-nitrosocke-mo-di-diffusion"</span></span>
-<span id="cb39-2"><a href="#cb39-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-nitrosocke-mo-di-diffusion"</span></span>
+<span id="cb39-2"><a href="#cb39-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>----------!</code></pre>
 </div>
@@ -1979,7 +1982,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -1989,7 +1992,7 @@ Prompt
 <div id="cell-72" class="cell" data-tags="[]" data-execution_count="69">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style 1boy, bishounen, casual, indoors, sitting, coffee shop, bokeh"</span></span>
 <span id="cb41-2"><a href="#cb41-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb41-3"><a href="#cb41-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb41-4"><a href="#cb41-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -1999,7 +2002,7 @@ Prompt
 <span id="cb41-8"><a href="#cb41-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb41-9"><a href="#cb41-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb41-10"><a href="#cb41-10"></a>}</span>
-<span id="cb41-11"><a href="#cb41-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-11"><a href="#cb41-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2030,7 +2033,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2041,7 +2044,7 @@ Prompt
 <div id="cell-74" class="cell" data-tags="[]" data-execution_count="70">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style photo of young woman, highlight hair, sitting outside restaurant, wearing dress, rim lighting, studio lighting, looking at the camera, dslr, ultra quality, sharp focus, tack sharp, dof, film grain, Fujifilm XT3, crystal clear, 8K UHD, highly detailed glossy eyes, high detailed skin, skin pores"</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a>negative_prompt <span class="op">=</span> <span class="st">"disfigured, ugly, bad, immature, crowd, people"</span></span>
 <span id="cb42-3"><a href="#cb42-3"></a>payload <span class="op">=</span> {</span>
 <span id="cb42-4"><a href="#cb42-4"></a>    <span class="st">"prompt"</span>: prompt,</span>
@@ -2053,7 +2056,7 @@ Prompt
 <span id="cb42-10"><a href="#cb42-10"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb42-11"><a href="#cb42-11"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb42-12"><a href="#cb42-12"></a>}</span>
-<span id="cb42-13"><a href="#cb42-13"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-13"><a href="#cb42-13"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2087,7 +2090,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2097,7 +2100,7 @@ Prompt
 <div id="cell-76" class="cell" data-tags="[]" data-execution_count="71">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A beautiful castle beside a waterfall in the woods, by Josef Thoma, matte painting, trending on artstation HQ"</span></span>
 <span id="cb43-2"><a href="#cb43-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb43-3"><a href="#cb43-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb43-4"><a href="#cb43-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -2107,7 +2110,7 @@ Prompt
 <span id="cb43-8"><a href="#cb43-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb43-9"><a href="#cb43-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb43-10"><a href="#cb43-10"></a>}</span>
-<span id="cb43-11"><a href="#cb43-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb43-11"><a href="#cb43-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2137,7 +2140,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2147,7 +2150,7 @@ Prompt
 <div id="cell-78" class="cell" data-tags="[]" data-execution_count="72">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>prompt <span class="op">=</span> <span class="st">"modern disney style A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
 <span id="cb44-2"><a href="#cb44-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb44-3"><a href="#cb44-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb44-4"><a href="#cb44-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -2157,7 +2160,7 @@ Prompt
 <span id="cb44-8"><a href="#cb44-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb44-9"><a href="#cb44-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb44-10"><a href="#cb44-10"></a>}</span>
-<span id="cb44-11"><a href="#cb44-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-11"><a href="#cb44-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2182,7 +2185,7 @@ Prompt
 </div>
 </div>
 <div id="cell-79" class="cell" data-tags="[]" data-execution_count="73">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a>remove_model_endpoint(model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -2191,8 +2194,8 @@ Prompt
 <p>Our last model to try is <a href="https://huggingface.co/Envvi/Inkpunk-Diffusion">Inkpunk-Diffusion</a>. It is also based on Stable Diffusion and fine-tuned for “Inky” and “Punky” styles. We have to use <code>nvinkpunk</code> in our prompts to summon this style. If you find that the <em>InkPunk style</em> is very dominating in the outcomes, then try experimenting without this token to get a lighter version of this style.</p>
 <p>Let’s get this model up and running.</p>
 <div id="cell-81" class="cell" data-tags="[]" data-execution_count="74">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-envvi-inkpunk-diffusion"</span></span>
-<span id="cb46-2"><a href="#cb46-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a>model_id <span class="op">=</span> <span class="st">"huggingface-txt2img-envvi-inkpunk-diffusion"</span></span>
+<span id="cb46-2"><a href="#cb46-2"></a>model_predictor <span class="op">=</span> get_model_endpoint(model_id, sagemaker_session)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>----------!</code></pre>
 </div>
@@ -2206,7 +2209,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2216,7 +2219,7 @@ Prompt
 <div id="cell-83" class="cell" data-tags="[]" data-execution_count="75">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting."</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk Complex detailed painting of a fantasy medieval cleric woman walking through a field of flowers by rembrandt, cleric wearing a tiara and a ornate embroidered hooded cloak, bright blue eyes, evocative, sharp focus, close shot, long blonde hair, high contrast, low saturation, lush flower field and clouds background, backlighting."</span></span>
 <span id="cb48-2"><a href="#cb48-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb48-3"><a href="#cb48-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb48-4"><a href="#cb48-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -2226,7 +2229,7 @@ Prompt
 <span id="cb48-8"><a href="#cb48-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb48-9"><a href="#cb48-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb48-10"><a href="#cb48-10"></a>}</span>
-<span id="cb48-11"><a href="#cb48-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb48-11"><a href="#cb48-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2259,7 +2262,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2269,7 +2272,7 @@ Prompt
 <div id="cell-85" class="cell" data-tags="[]" data-execution_count="76">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk A Hyperrealistic photograph of Italian architectural modern home in Italy, lens flares, cinematic, hdri, matte painting, concept art, celestial, soft render, highly detailed, octane render, architectural HD, HQ, 4k, 8k"</span></span>
 <span id="cb49-2"><a href="#cb49-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb49-3"><a href="#cb49-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb49-4"><a href="#cb49-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -2279,7 +2282,7 @@ Prompt
 <span id="cb49-8"><a href="#cb49-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb49-9"><a href="#cb49-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb49-10"><a href="#cb49-10"></a>}</span>
-<span id="cb49-11"><a href="#cb49-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb49-11"><a href="#cb49-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2312,7 +2315,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2322,7 +2325,7 @@ Prompt
 <div id="cell-87" class="cell" data-tags="[]" data-execution_count="77">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk bomb diffuser robot with assault rifle strapped to the top, killer robot"</span></span>
 <span id="cb50-2"><a href="#cb50-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb50-3"><a href="#cb50-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb50-4"><a href="#cb50-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -2333,7 +2336,7 @@ Prompt
 <span id="cb50-9"><a href="#cb50-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb50-10"><a href="#cb50-10"></a>}</span>
 <span id="cb50-11"><a href="#cb50-11"></a>query_model_and_display(payload, model_predictor)</span>
-<span id="cb50-12"><a href="#cb50-12"></a><span class="co"># https://prompthero.com/prompt/67bc77c123f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb50-12"><a href="#cb50-12"></a><span class="co"># https://prompthero.com/prompt/67bc77c123f</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2363,7 +2366,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2373,7 +2376,7 @@ Prompt
 <div id="cell-89" class="cell" data-tags="[]" data-execution_count="78">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk f-18 Fighter Jet flying over a city, comic book style, bold colors and lines"</span></span>
 <span id="cb51-2"><a href="#cb51-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb51-3"><a href="#cb51-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb51-4"><a href="#cb51-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -2383,7 +2386,7 @@ Prompt
 <span id="cb51-8"><a href="#cb51-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb51-9"><a href="#cb51-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb51-10"><a href="#cb51-10"></a>}</span>
-<span id="cb51-11"><a href="#cb51-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb51-11"><a href="#cb51-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2413,7 +2416,7 @@ Prompt
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Prompt
+<span class="screen-reader-only">Note</span>Prompt
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -2423,7 +2426,7 @@ Prompt
 <div id="cell-91" class="cell" data-tags="[]" data-execution_count="79">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk steampunk style blimp, Jules Verne, mechanical"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1"></a>prompt <span class="op">=</span> <span class="st">"nvinkpunk steampunk style blimp, Jules Verne, mechanical"</span></span>
 <span id="cb52-2"><a href="#cb52-2"></a>payload <span class="op">=</span> {</span>
 <span id="cb52-3"><a href="#cb52-3"></a>    <span class="st">"prompt"</span>: prompt,</span>
 <span id="cb52-4"><a href="#cb52-4"></a>    <span class="st">"width"</span>: <span class="dv">512</span>,</span>
@@ -2433,7 +2436,7 @@ Prompt
 <span id="cb52-8"><a href="#cb52-8"></a>    <span class="st">"guidance_scale"</span>: <span class="fl">7.5</span>,</span>
 <span id="cb52-9"><a href="#cb52-9"></a>    <span class="st">"seed"</span>: <span class="dv">1</span>,</span>
 <span id="cb52-10"><a href="#cb52-10"></a>}</span>
-<span id="cb52-11"><a href="#cb52-11"></a>query_model_and_display(payload, model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb52-11"><a href="#cb52-11"></a>query_model_and_display(payload, model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -2458,7 +2461,7 @@ Prompt
 </div>
 </div>
 <div id="cell-92" class="cell" data-tags="[]" data-execution_count="81">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a>remove_model_endpoint(model_predictor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1"></a>remove_model_endpoint(model_predictor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
@@ -2517,13 +2520,14 @@ Prompt
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

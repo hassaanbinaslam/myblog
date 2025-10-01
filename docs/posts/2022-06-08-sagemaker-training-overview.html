@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -60,7 +60,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -70,14 +70,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../images/favicon.ico" rel="icon">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ec1a476101e3788554028e6f9c82f7c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f6be708b9af329f0047851ee1ff6b399.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -113,7 +114,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
@@ -136,6 +137,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Random Thoughts</span>
     </a>
@@ -260,18 +263,18 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="reading-and-checking-the-data">Reading and Checking the Data</h2>
 <p>In this post, we will be using <a href="https://www.kaggle.com/c/boston-housing">Boston Housing Dataset</a>. This is a small dataset with 506 rows and 14 columns. <code>medv</code> is the target variable which means <code>median value of owner-occupied homes in $1000s</code>. This dataset is also available with this notebook. Let’s read it and see how it looks.</p>
 <div id="cell-5" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3"></a></span>
 <span id="cb1-4"><a href="#cb1-4"></a>data_location <span class="op">=</span> <span class="st">"./datasets/2022-06-08-sagemaker-training-overview/"</span></span>
 <span id="cb1-5"><a href="#cb1-5"></a></span>
 <span id="cb1-6"><a href="#cb1-6"></a>df <span class="op">=</span> pd.read_csv(data_location <span class="op">+</span> <span class="st">'housing.csv'</span>)</span>
-<span id="cb1-7"><a href="#cb1-7"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7"></a>df.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -292,7 +295,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
+<th data-quarto-table-cell-role="th">0</th>
 <td>0.00632</td>
 <td>18.0</td>
 <td>2.31</td>
@@ -308,7 +311,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <td>24.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">1</td>
+<th data-quarto-table-cell-role="th">1</th>
 <td>0.02731</td>
 <td>0.0</td>
 <td>7.07</td>
@@ -324,7 +327,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <td>21.6</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
+<th data-quarto-table-cell-role="th">2</th>
 <td>0.02729</td>
 <td>0.0</td>
 <td>7.07</td>
@@ -340,7 +343,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <td>34.7</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
+<th data-quarto-table-cell-role="th">3</th>
 <td>0.03237</td>
 <td>0.0</td>
 <td>2.18</td>
@@ -356,7 +359,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <td>33.4</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
+<th data-quarto-table-cell-role="th">4</th>
 <td>0.06905</td>
 <td>0.0</td>
 <td>2.18</td>
@@ -379,7 +382,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 </div>
 <p>let’s quickly check the dimensions of our loaded dataset.</p>
 <div id="cell-7" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a>df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a>df.shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>(506, 13)</code></pre>
 </div>
@@ -387,7 +390,7 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <p>The good thing about this dataset is that it does not require any preprocessing as all the features are already in numerical format (no categorical features), and also there are no missing values. We can quickly verify these assumptions.</p>
 <p>Check the feature data types.</p>
 <div id="cell-9" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>df.dtypes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>df.dtypes</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>crim       float64
 zn         float64
@@ -407,7 +410,7 @@ dtype: object</code></pre>
 </div>
 <p>Check if there are any missing values in our dataset.</p>
 <div id="cell-11" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>df.isnull().values.<span class="bu">any</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>df.isnull().values.<span class="bu">any</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>False</code></pre>
 </div>
@@ -419,14 +422,14 @@ dtype: object</code></pre>
 <p>In the documentation it says &gt;For training, the linear learner algorithm supports both recordIO-wrapped protobuf and CSV formats. For the application/x-recordio-protobuf input type, only Float32 tensors are supported. For the text/csv input type, the first column is assumed to be the label, which is the target variable for prediction. You can use either File mode or Pipe mode to train linear learner models on data that is formatted as recordIO-wrapped-protobuf or as CSV.</p>
 <p>It means that we can use CSV format for our training data. It also mentions that the first column in the training dataset should be the target label. So let’s move our target label <code>medv</code> to the first column.</p>
 <div id="cell-13" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>df <span class="op">=</span> pd.concat([df[<span class="st">'medv'</span>], df.drop(<span class="st">'medv'</span>, axis<span class="op">=</span><span class="st">'columns'</span>)], axis<span class="op">=</span><span class="st">'columns'</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>df <span class="op">=</span> pd.concat([df[<span class="st">'medv'</span>], df.drop(<span class="st">'medv'</span>, axis<span class="op">=</span><span class="st">'columns'</span>)], axis<span class="op">=</span><span class="st">'columns'</span>)</span>
 <span id="cb8-2"><a href="#cb8-2"></a></span>
-<span id="cb8-3"><a href="#cb8-3"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-3"><a href="#cb8-3"></a>df.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div>
 
 
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
@@ -447,7 +450,7 @@ dtype: object</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
+<th data-quarto-table-cell-role="th">0</th>
 <td>24.0</td>
 <td>0.00632</td>
 <td>18.0</td>
@@ -463,7 +466,7 @@ dtype: object</code></pre>
 <td>4.98</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">1</td>
+<th data-quarto-table-cell-role="th">1</th>
 <td>21.6</td>
 <td>0.02731</td>
 <td>0.0</td>
@@ -479,7 +482,7 @@ dtype: object</code></pre>
 <td>9.14</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
+<th data-quarto-table-cell-role="th">2</th>
 <td>34.7</td>
 <td>0.02729</td>
 <td>0.0</td>
@@ -495,7 +498,7 @@ dtype: object</code></pre>
 <td>4.03</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
+<th data-quarto-table-cell-role="th">3</th>
 <td>33.4</td>
 <td>0.03237</td>
 <td>0.0</td>
@@ -511,7 +514,7 @@ dtype: object</code></pre>
 <td>2.94</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
+<th data-quarto-table-cell-role="th">4</th>
 <td>36.2</td>
 <td>0.06905</td>
 <td>0.0</td>
@@ -538,13 +541,13 @@ dtype: object</code></pre>
 </blockquote>
 <p>We have already moved our target label to the first column, and while exporting our dataframe to CSV format we should omit column headers as well.</p>
 <div id="cell-15" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
 <span id="cb9-2"><a href="#cb9-2"></a></span>
 <span id="cb9-3"><a href="#cb9-3"></a><span class="co"># out data size is very small so we will use a small test set</span></span>
 <span id="cb9-4"><a href="#cb9-4"></a>training_data, validation_data <span class="op">=</span> train_test_split(df, test_size<span class="op">=</span><span class="fl">0.1</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
 <span id="cb9-5"><a href="#cb9-5"></a></span>
 <span id="cb9-6"><a href="#cb9-6"></a>training_data.to_csv(data_location <span class="op">+</span> <span class="st">"training_data.csv"</span>, index<span class="op">=</span><span class="va">False</span>, header<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb9-7"><a href="#cb9-7"></a>validation_data.to_csv(data_location <span class="op">+</span> <span class="st">"validation_data.csv"</span>, index<span class="op">=</span><span class="va">False</span>, header<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-7"><a href="#cb9-7"></a>validation_data.to_csv(data_location <span class="op">+</span> <span class="st">"validation_data.csv"</span>, index<span class="op">=</span><span class="va">False</span>, header<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The next step is to upload this data to S3 bucket, and for this we will take the help of SageMaker Python SDK. There are two Python SDKs (Software Development Kit) available for SageMaker.</p>
 <ol type="1">
@@ -561,7 +564,7 @@ dtype: object</code></pre>
 </ul>
 <p>Since we are already running this notebook from SageMaker environment, we don’t need to care about credentials and permissions. We can simply start our new session with SageMaker environment using its SDK.</p>
 <div id="cell-17" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">import</span> sagemaker</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1"></a><span class="im">import</span> sagemaker</span>
 <span id="cb10-2"><a href="#cb10-2"></a></span>
 <span id="cb10-3"><a href="#cb10-3"></a>session <span class="op">=</span> sagemaker.Session()</span>
 <span id="cb10-4"><a href="#cb10-4"></a>role <span class="op">=</span> sagemaker.get_execution_role()</span>
@@ -572,7 +575,7 @@ dtype: object</code></pre>
 <span id="cb10-9"><a href="#cb10-9"></a><span class="bu">print</span>(<span class="ss">f"Session: </span><span class="sc">{</span>session<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb10-10"><a href="#cb10-10"></a><span class="bu">print</span>(<span class="ss">f"Role: </span><span class="sc">{</span>role<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb10-11"><a href="#cb10-11"></a><span class="bu">print</span>(<span class="ss">f"Bucket: </span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb10-12"><a href="#cb10-12"></a><span class="bu">print</span>(<span class="ss">f"Region: </span><span class="sc">{</span>region<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-12"><a href="#cb10-12"></a><span class="bu">print</span>(<span class="ss">f"Region: </span><span class="sc">{</span>region<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>sagemaker.__version__: 2.88.1
 Session: &lt;sagemaker.session.Session object at 0x7ff91637cd50&gt;
@@ -584,32 +587,32 @@ Region: us-east-1</code></pre>
 <p>What we have done is * imported the SageMaker Python SDK into our runtime * get a session to work with SageMaker API and other AWS services * get the execution role associated with the user profile. It is the same profile that is available to the user to work from console UI and has <code>AmazonSageMakerFullAccess</code> policy attached to it. * create or get a default bucket to use and return its name. Default bucket name has the format <code>sagemaker-{region}-{account_id}</code>. If it doesn’t exist then our session will automatically create it. You may also use any other bucket in its place given that you have enough permission for reading and writing. * get the region name attached to our session</p>
 <p>Next, we will use this session to upload data to our default bucket.</p>
 <div id="cell-19" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">##</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a><span class="co"># You may choose any other prefix for your bucket. All the data related to this post will be under this prefix.</span></span>
-<span id="cb12-3"><a href="#cb12-3"></a>bucket_prefix <span class="op">=</span> <span class="st">'2022-06-08-sagemaker-training-overview'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-3"><a href="#cb12-3"></a>bucket_prefix <span class="op">=</span> <span class="st">'2022-06-08-sagemaker-training-overview'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s upload our training data first. In the output, we will get the complete path (S3 URI) for our uploaded data.</p>
 <div id="cell-21" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>s3_train_data_path <span class="op">=</span> session.upload_data(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a>s3_train_data_path <span class="op">=</span> session.upload_data(</span>
 <span id="cb13-2"><a href="#cb13-2"></a>    path<span class="op">=</span>data_location <span class="op">+</span> <span class="st">"training_data.csv"</span>,</span>
 <span id="cb13-3"><a href="#cb13-3"></a>    bucket<span class="op">=</span>bucket,</span>
 <span id="cb13-4"><a href="#cb13-4"></a>    key_prefix<span class="op">=</span>bucket_prefix <span class="op">+</span> <span class="st">'/input/training'</span></span>
 <span id="cb13-5"><a href="#cb13-5"></a>)</span>
 <span id="cb13-6"><a href="#cb13-6"></a></span>
-<span id="cb13-7"><a href="#cb13-7"></a><span class="bu">print</span>(s3_train_data_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-7"><a href="#cb13-7"></a><span class="bu">print</span>(s3_train_data_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/input/training/training_data.csv</code></pre>
 </div>
 </div>
 <p>Let’s do the same for our validation data.</p>
 <div id="cell-23" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>s3_validation_data_path <span class="op">=</span>  session.upload_data(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>s3_validation_data_path <span class="op">=</span>  session.upload_data(</span>
 <span id="cb15-2"><a href="#cb15-2"></a>    path<span class="op">=</span>data_location <span class="op">+</span> <span class="st">"validation_data.csv"</span>,</span>
 <span id="cb15-3"><a href="#cb15-3"></a>    bucket<span class="op">=</span>bucket,</span>
 <span id="cb15-4"><a href="#cb15-4"></a>    key_prefix<span class="op">=</span>bucket_prefix <span class="op">+</span> <span class="st">'/input/validation_data'</span></span>
 <span id="cb15-5"><a href="#cb15-5"></a>)</span>
 <span id="cb15-6"><a href="#cb15-6"></a></span>
-<span id="cb15-7"><a href="#cb15-7"></a><span class="bu">print</span>(s3_validation_data_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="bu">print</span>(s3_validation_data_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/input/validation_data/validation_data.csv</code></pre>
 </div>
@@ -631,11 +634,11 @@ Region: us-east-1</code></pre>
 </div>
 <p>So let’s use the provided sample code to get the container URI for our linear learner algorithm.</p>
 <div id="cell-26" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a><span class="im">from</span> sagemaker <span class="im">import</span> image_uris</span>
 <span id="cb17-2"><a href="#cb17-2"></a></span>
 <span id="cb17-3"><a href="#cb17-3"></a>image_uri <span class="op">=</span> image_uris.retrieve(framework<span class="op">=</span><span class="st">'linear-learner'</span>,region<span class="op">=</span>region)</span>
 <span id="cb17-4"><a href="#cb17-4"></a></span>
-<span id="cb17-5"><a href="#cb17-5"></a><span class="bu">print</span>(image_uri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-5"><a href="#cb17-5"></a><span class="bu">print</span>(image_uri)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>382416733822.dkr.ecr.us-east-1.amazonaws.com/linear-learner:1</code></pre>
 </div>
@@ -646,17 +649,17 @@ Region: us-east-1</code></pre>
 <p>To configure our estimator we need to fulfill the following requirements. * <strong>output path</strong> Define the output path where we want to store the trained model artifacts * <strong>instance type</strong> Since we have a small dataset and not so complex model so a small machine should suffice. ‘ml.m5.large’ will do. It is a general purpose instance with 2vCPU and 8GiB RAM. * <strong>hyperparameters</strong> For the hyperparameters check the <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/ll_hyperparameters.html">Linear Learner model documentaion</a>. From the documentation, we find that the most important parameters for our problem are * <code>predictor_type</code>: which should be ‘regressor’ in our case * <code>mini_batch_size</code>: default is 1000 which is too large for our small dataset. Let’s use 30 instead.</p>
 <p>It is also important to note that the Estimator class will automatically provision a separate <code>ml.m5.large</code> machine to start the training run. This machine will be different from the one on which we are running this Jupyter notebook. Once training is complete this new machine will be terminated and we will be billed for only the time we have used it. This approach makes SageMaker very cost effective. We can keep using small less powerful machines for running Jupyter notebooks, and for training and other heavy workloads, we can provision separate machines for short durations and avoid any unnecessary bills.</p>
 <div id="cell-28" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">##</span></span>
 <span id="cb19-2"><a href="#cb19-2"></a><span class="co"># define the output path to store trained model artifacts</span></span>
 <span id="cb19-3"><a href="#cb19-3"></a>s3_output_path <span class="op">=</span> <span class="ss">f"s3://</span><span class="sc">{</span>bucket<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>bucket_prefix<span class="sc">}</span><span class="ss">/output/"</span></span>
 <span id="cb19-4"><a href="#cb19-4"></a></span>
-<span id="cb19-5"><a href="#cb19-5"></a><span class="bu">print</span>(s3_output_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-5"><a href="#cb19-5"></a><span class="bu">print</span>(s3_output_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/</code></pre>
 </div>
 </div>
 <div id="cell-29" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="im">from</span> sagemaker.estimator <span class="im">import</span> Estimator</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="im">from</span> sagemaker.estimator <span class="im">import</span> Estimator</span>
 <span id="cb21-2"><a href="#cb21-2"></a></span>
 <span id="cb21-3"><a href="#cb21-3"></a>ll_estimator <span class="op">=</span> Estimator(</span>
 <span id="cb21-4"><a href="#cb21-4"></a>    image_uri <span class="op">=</span> image_uri, <span class="co"># algorithm container</span></span>
@@ -669,12 +672,12 @@ Region: us-east-1</code></pre>
 <span id="cb21-11"><a href="#cb21-11"></a>        <span class="st">'predictor_type'</span>: <span class="st">'regressor'</span>,</span>
 <span id="cb21-12"><a href="#cb21-12"></a>        <span class="st">'mini_batch_size'</span>: <span class="dv">30</span></span>
 <span id="cb21-13"><a href="#cb21-13"></a>    }</span>
-<span id="cb21-14"><a href="#cb21-14"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-14"><a href="#cb21-14"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In the above cell, we have defined the hyperparameters within the <code>Estimator</code> object constructor. There is a second way to pass the hyperparameters to the Estimator object using the ‘set_hyperparameters’ function call. This method can be useful when we have a large number of parameters to set, or when we want to change them in multiple training runs.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a>ll_estimator.set_hyperparameters(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a>ll_estimator.set_hyperparameters(</span>
 <span id="cb22-2"><a href="#cb22-2"></a>    predictor_type<span class="op">=</span><span class="st">'regressor'</span>, </span>
-<span id="cb22-3"><a href="#cb22-3"></a>    mini_batch_size<span class="op">=</span><span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-3"><a href="#cb22-3"></a>    mini_batch_size<span class="op">=</span><span class="dv">30</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>You might ask that for our problem even a small <code>ml.t3.medium</code> or <code>ml.c5.large</code> machine would have been sufficient. Why have not we used them? The answer to this is that AWS SageMaker at this time supports a limited number of machine types for training jobs and both of them are not supported. If you configure the Estimator object for these instance types you will get an error shown below</p>
 <pre><code>An error occurred (ValidationException) when calling the CreateTrainingJob operation: 1 validation error detected: Value 'ml.t3.medium' at 'resourceConfig.instanceType' failed to satisfy constraint: Member must satisfy enum value set: 
 
@@ -685,7 +688,7 @@ Region: us-east-1</code></pre>
 <h1>Launch Training Job</h1>
 <p>To start our training run we need to associate our Estimator object with the training data. Our data is available on S3 bucket but we also need to tell our Estimator object in which format this data is provided. Is it in CSV format? Is it compressed or not? For these data format issues, we can use <code>Input Channels</code>. An input channel is configurations for S3 and file system data sources for AWS SageMaker (<a href="https://sagemaker.readthedocs.io/en/stable/api/utility/inputs.html">check the input docs</a>). All SageMaker built-in algorithms require at least one training input channel, and more can be passed for validation and testing. In our case, we have two channels and both are in CSV format. Let’s configure them.</p>
 <div id="cell-32" class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">from</span> sagemaker.session <span class="im">import</span> TrainingInput</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="im">from</span> sagemaker.session <span class="im">import</span> TrainingInput</span>
 <span id="cb24-2"><a href="#cb24-2"></a></span>
 <span id="cb24-3"><a href="#cb24-3"></a>train_input <span class="op">=</span> TrainingInput(s3_train_data_path, content_type<span class="op">=</span><span class="st">"text/csv"</span>)</span>
 <span id="cb24-4"><a href="#cb24-4"></a>validation_input <span class="op">=</span> TrainingInput(s3_validation_data_path, content_type<span class="op">=</span><span class="st">"text/csv"</span>)</span>
@@ -694,14 +697,14 @@ Region: us-east-1</code></pre>
 <span id="cb24-7"><a href="#cb24-7"></a>ll_data <span class="op">=</span> {</span>
 <span id="cb24-8"><a href="#cb24-8"></a>    <span class="st">'train'</span>: train_input,</span>
 <span id="cb24-9"><a href="#cb24-9"></a>    <span class="st">'validation'</span>: validation_input</span>
-<span id="cb24-10"><a href="#cb24-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-10"><a href="#cb24-10"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Make sure that you use content_type <code>text/csv</code>. Only providing <code>csv</code> will not work and you will get the exception</p>
 <pre><code>Error for Training job linear-learner-2022-06-15-07-58-01-908: Failed. Reason: ClientError: No iterator has been registered for ContentType ('csv', '1.0'), exit code: 2</code></pre>
 <p>Alright, we are ready. To start the training run call estimator <code>fit</code> function and pass the data input channels. You can read more about <code>fit</code> call from docs <a href="https://sagemaker.readthedocs.io/en/stable/api/training/estimators.html#sagemaker.estimator.Estimator.fit">sagemaker.estimator.Estimator.fit</a></p>
 <div id="cell-35" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">#collapse-output</span></span>
-<span id="cb26-2"><a href="#cb26-2"></a>ll_estimator.fit(ll_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">#collapse-output</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>ll_estimator.fit(ll_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre>2022-06-16 09:04:57 Starting - Starting the training job...
@@ -2879,33 +2882,33 @@ Billable seconds: 132</code></pre>
 <p>In our case, the billable seconds are 132. This billable time is for the <code>ml.m5.large</code> instance that we have configured for our training run. To find the billable amount we first need to find the price rate for our selected machine. For this go to the SageMaker pricing link <a href="https://aws.amazon.com/sagemaker/pricing/">https://aws.amazon.com/sagemaker/pricing/</a> and select <code>On Demand Pricing</code>. From the given tabs click on the <strong>Training tab</strong>. Select your region <code>US East (N. Virginia)</code>. This will show you the pricing of different training instances. This page can also be used to find the available training instance types in your region. From this page, we can find that the price for our instance type <code>ml.m5.large</code> is <code>$0.115</code>. This price rate is per hour so we need to convert our billable time to per hour before multiplying it. i.e.&nbsp;(132/3600) * 0.115 = $0.0042 which is less than a penny for our training job.</p>
 <p>We can also use Estimator object to get important information related to our training run.</p>
 <div id="cell-38" class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="co">##</span></span>
 <span id="cb30-2"><a href="#cb30-2"></a><span class="co"># to get the output path where the trained model artifacts are stored</span></span>
-<span id="cb30-3"><a href="#cb30-3"></a>ll_estimator.output_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-3"><a href="#cb30-3"></a>ll_estimator.output_path</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <pre><code>'s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/'</code></pre>
 </div>
 </div>
 <div id="cell-39" class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co">##</span></span>
 <span id="cb32-2"><a href="#cb32-2"></a><span class="co"># to get the training job name</span></span>
-<span id="cb32-3"><a href="#cb32-3"></a>ll_estimator.latest_training_job.job_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb32-3"><a href="#cb32-3"></a>ll_estimator.latest_training_job.job_name</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
 <pre><code>'linear-learner-2022-06-16-09-04-57-576'</code></pre>
 </div>
 </div>
 <div id="cell-40" class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1"></a><span class="co">##</span></span>
 <span id="cb34-2"><a href="#cb34-2"></a><span class="co"># to get the trained model location</span></span>
-<span id="cb34-3"><a href="#cb34-3"></a>ll_estimator.model_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-3"><a href="#cb34-3"></a>ll_estimator.model_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>'s3://sagemaker-us-east-1-801598032724/2022-06-08-sagemaker-training-overview/output/linear-learner-2022-06-16-09-04-57-576/output/model.tar.gz'</code></pre>
 </div>
 </div>
 <div id="cell-41" class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">#collapse-output</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1"></a><span class="co">#collapse-output</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a><span class="co"># to get all the configuration information for our training run</span></span>
-<span id="cb36-3"><a href="#cb36-3"></a>ll_estimator.latest_training_job.describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-3"><a href="#cb36-3"></a>ll_estimator.latest_training_job.describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>{'TrainingJobName': 'linear-learner-2022-06-16-09-04-57-576',
  'TrainingJobArn': 'arn:aws:sagemaker:us-east-1:801598032724:training-job/linear-learner-2022-06-16-09-04-57-576',
@@ -3057,23 +3060,23 @@ Billable seconds: 132</code></pre>
 <p>It is important to note that endpoints are scoped to an individual AWS account, and are not public. The URL does not contain the account ID, but SageMaker determines the account ID from the authentication token that is supplied by the caller. We will discuss in a separate post on how to use AWS Lambda and API Gateway to set up and deploy your inference endpoint for public access.</p>
 <p>Read more about deployment from the documentation <a href="https://sagemaker.readthedocs.io/en/stable/api/training/estimators.html#sagemaker.estimator.Estimator.deploy">sagemaker.estimator.Estimator.deploy</a></p>
 <div id="cell-44" class="cell" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1"></a><span class="co">##</span></span>
 <span id="cb38-2"><a href="#cb38-2"></a><span class="co"># define the endpoint. can be any unique string</span></span>
 <span id="cb38-3"><a href="#cb38-3"></a>endpoint_name <span class="op">=</span> ll_estimator.latest_training_job.job_name</span>
 <span id="cb38-4"><a href="#cb38-4"></a></span>
-<span id="cb38-5"><a href="#cb38-5"></a><span class="bu">print</span>(endpoint_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb38-5"><a href="#cb38-5"></a><span class="bu">print</span>(endpoint_name)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>linear-learner-2022-06-16-09-04-57-576</code></pre>
 </div>
 </div>
 <div id="cell-45" class="cell" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1"></a><span class="co">##</span></span>
 <span id="cb40-2"><a href="#cb40-2"></a><span class="co"># deploy the model</span></span>
 <span id="cb40-3"><a href="#cb40-3"></a>ll_predictor <span class="op">=</span> ll_estimator.deploy(</span>
 <span id="cb40-4"><a href="#cb40-4"></a>    initial_instance_count<span class="op">=</span><span class="dv">1</span>, </span>
 <span id="cb40-5"><a href="#cb40-5"></a>    instance_type<span class="op">=</span><span class="st">'ml.t2.medium'</span>,</span>
 <span id="cb40-6"><a href="#cb40-6"></a>    endpoint_name<span class="op">=</span>endpoint_name</span>
-<span id="cb40-7"><a href="#cb40-7"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb40-7"><a href="#cb40-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>-------------!</code></pre>
 </div>
@@ -3086,30 +3089,30 @@ Billable seconds: 132</code></pre>
 </figure>
 </div>
 <div id="cell-47" class="cell" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1"></a><span class="co">##</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a><span class="co"># a test sample to get live inference from our model</span></span>
-<span id="cb42-3"><a href="#cb42-3"></a>test_sample <span class="op">=</span> <span class="st">'0.00632,18.00,2.310,0,0.5380,6.5750,65.20,4.0900,1,296.0,15.30,4.98'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-3"><a href="#cb42-3"></a>test_sample <span class="op">=</span> <span class="st">'0.00632,18.00,2.310,0,0.5380,6.5750,65.20,4.0900,1,296.0,15.30,4.98'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Similar to data input channels that tell the Estimator object on how to read the data from S3 bucket, we need to tell our <code>predictor</code> object on how to receive (encode) input and return (decode) data during inference. For this we will use <a href="https://sagemaker.readthedocs.io/en/stable/api/inference/serializers.html#sagemaker.serializers.CSVSerializer">sagemaker.serializers.CSVSerializer</a> object to serialize data of various formats to a CSV-formatted string.</p>
 <div id="cell-49" class="cell" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="im">from</span> sagemaker.serializers <span class="im">import</span> CSVSerializer</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1"></a><span class="im">from</span> sagemaker.serializers <span class="im">import</span> CSVSerializer</span>
 <span id="cb43-2"><a href="#cb43-2"></a><span class="im">from</span> sagemaker.deserializers <span class="im">import</span> CSVDeserializer</span>
 <span id="cb43-3"><a href="#cb43-3"></a></span>
 <span id="cb43-4"><a href="#cb43-4"></a>ll_predictor.serializer <span class="op">=</span> CSVSerializer()</span>
-<span id="cb43-5"><a href="#cb43-5"></a>ll_predictor.deserializer <span class="op">=</span> CSVDeserializer()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb43-5"><a href="#cb43-5"></a>ll_predictor.deserializer <span class="op">=</span> CSVDeserializer()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Note that we can also pass these Serializers in the deploy method call like this</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>ll_predictor <span class="op">=</span> ll_estimator.deploy(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1"></a>ll_predictor <span class="op">=</span> ll_estimator.deploy(</span>
 <span id="cb44-2"><a href="#cb44-2"></a>    initial_instance_count<span class="op">=</span><span class="dv">1</span>, </span>
 <span id="cb44-3"><a href="#cb44-3"></a>    instance_type<span class="op">=</span><span class="st">'ml.t2.medium'</span>,</span>
 <span id="cb44-4"><a href="#cb44-4"></a>    endpoint_name<span class="op">=</span>endpoint_name,</span>
 <span id="cb44-5"><a href="#cb44-5"></a>    serializer <span class="op">=</span> CSVSerializer(),</span>
 <span id="cb44-6"><a href="#cb44-6"></a>    deserializer <span class="op">=</span> CSVDeserializer()</span>
-<span id="cb44-7"><a href="#cb44-7"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-7"><a href="#cb44-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div id="cell-51" class="cell" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1"></a><span class="co">##</span></span>
 <span id="cb45-2"><a href="#cb45-2"></a><span class="co"># call the endpoint for live inference</span></span>
-<span id="cb45-3"><a href="#cb45-3"></a>ll_predictor.predict(test_sample)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-3"><a href="#cb45-3"></a>ll_predictor.predict(test_sample)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="37">
 <pre><code>[['29.98671531677246']]</code></pre>
 </div>
@@ -3117,17 +3120,17 @@ Billable seconds: 132</code></pre>
 <p>The prediction output tells us that this house will cost $29986.</p>
 <p>When we called the <code>estimator.deploy()</code> it has returned us <code>sagemaker.Predictor</code> object. If we want to call endpoint from a separate code then we can use the same ‘Predictor’ object to call it. You can read more about this class here <a href="https://sagemaker.readthedocs.io/en/stable/api/inference/predictors.html#sagemaker.predictor.Predictor">sagemaker.predictor.Predictor</a></p>
 <div id="cell-53" class="cell" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a><span class="im">from</span> sagemaker.predictor <span class="im">import</span> Predictor</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1"></a><span class="im">from</span> sagemaker.predictor <span class="im">import</span> Predictor</span>
 <span id="cb47-2"><a href="#cb47-2"></a></span>
 <span id="cb47-3"><a href="#cb47-3"></a>ll_predictor_2 <span class="op">=</span> Predictor(</span>
 <span id="cb47-4"><a href="#cb47-4"></a>    endpoint_name, </span>
 <span id="cb47-5"><a href="#cb47-5"></a>    session, <span class="co"># If not specified, then one is created using the default AWS configuration chain</span></span>
 <span id="cb47-6"><a href="#cb47-6"></a>    CSVSerializer(), </span>
 <span id="cb47-7"><a href="#cb47-7"></a>    CSVDeserializer()</span>
-<span id="cb47-8"><a href="#cb47-8"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb47-8"><a href="#cb47-8"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-54" class="cell" data-execution_count="36">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>ll_predictor_2.predict(test_sample)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1"></a>ll_predictor_2.predict(test_sample)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="36">
 <pre><code>[['29.98671531677246']]</code></pre>
 </div>
@@ -3138,10 +3141,10 @@ Billable seconds: 132</code></pre>
 <p>Remember that the inference machine will remain in use until you take it down yourself. This is unlike training where provisioning and decommissioning of machines are done automatically. We have used <code>ml.t2.medium</code> for hosting our model which costs around <code>$0.056</code> per hour. This is not much but still, do clean up your environment once you are done experimenting to avoid unnecessary bills.</p>
 <p>You can remove the endpoint with a single call.</p>
 <div id="cell-56" class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a><span class="co">##</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1"></a><span class="co">##</span></span>
 <span id="cb50-2"><a href="#cb50-2"></a><span class="co"># ll_predictor_2 will work too</span></span>
 <span id="cb50-3"><a href="#cb50-3"></a></span>
-<span id="cb50-4"><a href="#cb50-4"></a>ll_predictor.delete_endpoint()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb50-4"><a href="#cb50-4"></a>ll_predictor.delete_endpoint()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="summary" class="level1">
@@ -3203,13 +3206,14 @@ Billable seconds: 132</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
