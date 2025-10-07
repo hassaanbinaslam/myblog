@@ -168,6 +168,8 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#the-central-question-can-vision-learn-from-nlps-playbook" id="toc-the-central-question-can-vision-learn-from-nlps-playbook" class="nav-link" data-scroll-target="#the-central-question-can-vision-learn-from-nlps-playbook">The Central Question: Can Vision Learn from NLP’s Playbook?</a></li>
   <li><a href="#standing-on-the-shoulders-of-giants-a-history-of-vision-language-models" id="toc-standing-on-the-shoulders-of-giants-a-history-of-vision-language-models" class="nav-link" data-scroll-target="#standing-on-the-shoulders-of-giants-a-history-of-vision-language-models">Standing on the Shoulders of Giants: A History of Vision-Language Models</a></li>
   <li><a href="#the-performance-gap-and-the-pragmatic-middle-ground" id="toc-the-performance-gap-and-the-pragmatic-middle-ground" class="nav-link" data-scroll-target="#the-performance-gap-and-the-pragmatic-middle-ground">The Performance Gap and the “Pragmatic Middle Ground”</a></li>
+  <li><a href="#the-problem-with-the-middle-ground-a-critique-of-weak-supervision" id="toc-the-problem-with-the-middle-ground-a-critique-of-weak-supervision" class="nav-link" data-scroll-target="#the-problem-with-the-middle-ground-a-critique-of-weak-supervision">The Problem with the Middle Ground: A Critique of Weak Supervision</a></li>
+  <li><a href="#closing-the-gap-with-scale-introducing-clip" id="toc-closing-the-gap-with-scale-introducing-clip" class="nav-link" data-scroll-target="#closing-the-gap-with-scale-introducing-clip">Closing the Gap with Scale: Introducing CLIP</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -598,6 +600,70 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <li>The pragmatic approach of learning from <em>massive but targeted weak labels</em> (like hashtags or noisy class labels) was a huge success for pre-training.</li>
 </ol>
 <p>This sets the stage for the authors to critique this successful “middle ground” and introduce their own approach as the true solution.</p>
+</section>
+<section id="the-problem-with-the-middle-ground-a-critique-of-weak-supervision" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem-with-the-middle-ground-a-critique-of-weak-supervision">The Problem with the Middle Ground: A Critique of Weak Supervision</h3>
+<p>The successful pre-training methods from Instagram and Google (JFT-300M) represented a huge step forward. The authors acknowledge this, calling it the “pragmatic middle ground.”</p>
+<blockquote class="blockquote">
+<p>This line of work represents the current pragmatic middle ground between learning from a limited amount of supervised “gold-labels” and learning from practically unlimited amounts of raw text.</p>
+</blockquote>
+<p>Think of it as a spectrum of supervision:</p>
+<ul>
+<li><strong>One Extreme:</strong> A small set of high-quality, human-verified “gold labels” (e.g., ImageNet).</li>
+<li><strong>The Other Extreme:</strong> A nearly infinite amount of messy, unstructured, raw text paired with images (the authors’ ultimate goal).</li>
+<li><strong>The Middle Ground:</strong> Massive datasets of “weakly” labeled images (e.g., Instagram hashtags). This approach successfully captured the <em>scale</em> of the internet data but constrained the supervision to be more like traditional labels.</li>
+</ul>
+<p>However, the authors argue that this pragmatic solution comes with a major compromise that limits its ultimate potential.</p>
+<blockquote class="blockquote">
+<p>However, it is not without compromises. Both works carefully design, and in the process limit, their supervision to 1000 and 18291 classes respectively. Natural language is able to express, and therefore supervise, a much wider set of visual concepts through its generality.</p>
+</blockquote>
+<p>This is the core of the critique. Even though these models were trained on billions of images, the <em>supervision</em> was still a fixed list of categories. It might be a much bigger list than ImageNet’s 1000 classes, but it is a list nonetheless. This fundamentally restricts what the model can learn. If a concept isn’t in your list of 18,291 target labels, the model has no way to learn it.</p>
+<p>Natural language, by contrast, is not a list. It is a general-purpose system for describing the world. It can express an almost infinite variety of visual concepts: objects (“dog”), actions (“a dog jumping”), attributes (“a fluffy brown dog”), relationships (“a dog chasing a cat”), and abstract ideas (“a lonely dog”). This is the expressiveness and generality the authors want to capture.</p>
+<p>The second, more technical limitation is baked into the architecture of these “middle ground” models.</p>
+<blockquote class="blockquote">
+<p>Both approaches also use static softmax classifiers to perform prediction and lack a mechanism for dynamic outputs. This severely curtails their flexibility and limits their “zero-shot” capabilities.</p>
+</blockquote>
+<p>This is a crucial technical point. Let’s break it down:</p>
+<ul>
+<li><strong>Static Softmax Classifier:</strong> As we discussed in our earlier note, this refers to the final layer of a traditional classification model. It has a <em>fixed</em> number of outputs, one for each class in the predefined list. The softmax function then converts these outputs into a probability distribution over that fixed list.</li>
+<li><strong>Lack of Dynamic Outputs:</strong> Because the classifier’s structure is fixed, it cannot produce outputs for new, unseen classes. It is architecturally locked into its original set of categories.</li>
+</ul>
+<p>This architectural choice makes true, flexible <strong>zero-shot transfer</strong> impossible. You cannot simply give the model a new text description at test time and have it classify an image, because there is no output neuron corresponding to that new concept. The model’s knowledge is trapped behind this rigid, static classifier.</p>
+<p>In essence, the authors are arguing that while the weak supervision approach was a powerful trick for boosting performance on existing benchmarks, it was an evolutionary dead end. To achieve their goal of a truly flexible, general-purpose vision model, they needed to abandon the fixed-classifier paradigm entirely, a problem that would require a different approach to both the data <em>and</em> the model.</p>
+</section>
+<section id="closing-the-gap-with-scale-introducing-clip" class="level3">
+<h3 class="anchored" data-anchor-id="closing-the-gap-with-scale-introducing-clip">Closing the Gap with Scale: Introducing CLIP</h3>
+<p>The authors now identify the final, crucial difference between the successful “weak supervision” models and the less successful attempts at learning from general natural language: <strong>scale</strong>.</p>
+<blockquote class="blockquote">
+<p>A crucial difference between these weakly supervised models and recent explorations of learning image representations directly from natural language is scale. While Mahajan et al.&nbsp;(2018) and Kolesnikov et al.&nbsp;(2019) trained their models for accelerator years on millions to billions of images, VirTex, ICMLM, and ConVIRT trained for accelerator days on one to two hundred thousand images.</p>
+</blockquote>
+<p>This is a critical insight. The successful models weren’t just successful because they used targeted hashtags; they were successful because they were trained on an absolutely colossal scale.</p>
+<ul>
+<li><strong>Weak Supervision Models (Instagram, JFT-300M):</strong> Trained on <strong>billions</strong> of images, requiring <strong>accelerator-years</strong> of compute. An “accelerator-year” is the equivalent of running a single high-end GPU or TPU for a full year, 24/7.</li>
+<li><strong>Natural Language Supervision Models (VirTex, etc.):</strong> Trained on only <strong>hundreds of thousands</strong> of images, requiring only <strong>accelerator-days</strong> of compute.</li>
+</ul>
+<p>The authors are hypothesizing that the previous attempts at learning from general language failed not because the idea was wrong, but because they were orders of magnitude too small. The rich, noisy, and complex signal of natural language might require a massive amount of data to work effectively.</p>
+<p>This leads directly to their own contribution.</p>
+<blockquote class="blockquote">
+<p>In this work, we close this gap and study the behaviors of image classifiers trained with natural language supervision at large scale. Enabled by the large amounts of publicly available data of this form on the internet, we create a new dataset of 400 million (image, text) pairs and demonstrate that a simplified version of ConVIRT trained from scratch, which we call CLIP, for Contrastive Language-Image Pre-training, is an efficient method of learning from natural language supervision.</p>
+</blockquote>
+<p>Here, they lay out the core components of their work:</p>
+<ol type="1">
+<li><strong>Close the Scale Gap:</strong> They are the first to attempt training with general natural language supervision at the same massive scale as the successful weak supervision methods.</li>
+<li><strong>A New Dataset:</strong> To do this, they had to build their own dataset from scratch, collecting <strong>400 million</strong> image-text pairs from the internet. This is a monumental engineering effort and a key contribution in itself.</li>
+<li><strong>The Method (CLIP):</strong> They name their model <strong>CLIP</strong>, which stands for <strong>C</strong>ontrastive <strong>L</strong>anguage-<strong>I</strong>mage <strong>P</strong>re-training. They explicitly state it’s a simplified version of the <strong>ConVIRT</strong> model (one of the immediate predecessors they mentioned), which uses the efficient and robust contrastive learning objective we discussed earlier.</li>
+</ol>
+<p>Finally, they summarize the key findings they will present in the rest of the paper.</p>
+<blockquote class="blockquote">
+<p>We study the scalability of CLIP by training a series of eight models… and observe that transfer performance is a smoothly predictable function of compute… We find that CLIP, similar to the GPT family, learns to perform a wide set of tasks during pre-training including OCR, geo-localization, action recognition, and many others. We measure this by benchmarking the zero-shot transfer performance of CLIP on over 30 existing datasets…</p>
+</blockquote>
+<p>This is the roadmap for the rest of the paper. They will show that:</p>
+<ul>
+<li>CLIP’s performance <strong>scales predictably</strong> with model size and compute, just like the GPT models did for NLP. This is a strong sign that the approach is robust and has not yet hit its limits.</li>
+<li>During pre-training, CLIP learns a <strong>surprising variety of skills</strong> beyond simple object recognition.</li>
+<li>They will prove its capabilities by testing its <strong>zero-shot transfer</strong> performance on a very broad and diverse set of over 30 benchmarks.</li>
+</ul>
+<p>This paragraph perfectly concludes the setup and transitions us into the main body of the paper, where the authors will provide the evidence to back up these claims.</p>
 
 
 </section>
