@@ -171,6 +171,30 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
   <li><a href="#the-problem-with-the-middle-ground-a-critique-of-weak-supervision" id="toc-the-problem-with-the-middle-ground-a-critique-of-weak-supervision" class="nav-link" data-scroll-target="#the-problem-with-the-middle-ground-a-critique-of-weak-supervision">The Problem with the Middle Ground: A Critique of Weak Supervision</a></li>
   <li><a href="#closing-the-gap-with-scale-introducing-clip" id="toc-closing-the-gap-with-scale-introducing-clip" class="nav-link" data-scroll-target="#closing-the-gap-with-scale-introducing-clip">Closing the Gap with Scale: Introducing CLIP</a></li>
   </ul></li>
+  <li><a href="#approach" id="toc-approach" class="nav-link" data-scroll-target="#approach">2. Approach</a>
+  <ul class="collapse">
+  <li><a href="#natural-language-supervision" id="toc-natural-language-supervision" class="nav-link" data-scroll-target="#natural-language-supervision">2.1 Natural Language Supervision</a></li>
+  <li><a href="#creating-a-sufficiently-large-dataset" id="toc-creating-a-sufficiently-large-dataset" class="nav-link" data-scroll-target="#creating-a-sufficiently-large-dataset">2.2 Creating a Sufficiently Large Dataset</a></li>
+  <li><a href="#selecting-an-efficient-pre-training-method" id="toc-selecting-an-efficient-pre-training-method" class="nav-link" data-scroll-target="#selecting-an-efficient-pre-training-method">2.3 Selecting an Efficient Pre-Training Method</a></li>
+  <li><a href="#choosing-and-scaling-a-model" id="toc-choosing-and-scaling-a-model" class="nav-link" data-scroll-target="#choosing-and-scaling-a-model">2.4 Choosing and Scaling a Model</a></li>
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">2.5. Training</a></li>
+  </ul></li>
+  <li><a href="#experiments" id="toc-experiments" class="nav-link" data-scroll-target="#experiments">3. Experiments</a>
+  <ul class="collapse">
+  <li><a href="#zero-shot-transfer" id="toc-zero-shot-transfer" class="nav-link" data-scroll-target="#zero-shot-transfer">3.1 Zero-Shot Transfer</a></li>
+  <li><a href="#using-clip-for-zero-shot-transfer" id="toc-using-clip-for-zero-shot-transfer" class="nav-link" data-scroll-target="#using-clip-for-zero-shot-transfer">3.1.2 Using CLIP for Zero-Shot Transfer</a></li>
+  <li><a href="#initial-comparison-to-visual-n-grams" id="toc-initial-comparison-to-visual-n-grams" class="nav-link" data-scroll-target="#initial-comparison-to-visual-n-grams">3.1.3 Initial Comparison to Visual N-Grams</a></li>
+  <li><a href="#prompt-engineering-and-ensembling-getting-the-best-out-of-clip" id="toc-prompt-engineering-and-ensembling-getting-the-best-out-of-clip" class="nav-link" data-scroll-target="#prompt-engineering-and-ensembling-getting-the-best-out-of-clip">3.1.4 Prompt Engineering and Ensembling: Getting the Best Out of CLIP</a></li>
+  <li><a href="#analysis-of-zero-shot-clip-performance" id="toc-analysis-of-zero-shot-clip-performance" class="nav-link" data-scroll-target="#analysis-of-zero-shot-clip-performance">3.1.5 Analysis of Zero-Shot CLIP Performance</a></li>
+  <li><a href="#representation-learning" id="toc-representation-learning" class="nav-link" data-scroll-target="#representation-learning">3.2 Representation Learning</a></li>
+  <li><a href="#robustness-to-natural-distribution-shift" id="toc-robustness-to-natural-distribution-shift" class="nav-link" data-scroll-target="#robustness-to-natural-distribution-shift">3.3 Robustness to Natural Distribution Shift</a></li>
+  </ul></li>
+  <li><a href="#comparison-to-human-performance" id="toc-comparison-to-human-performance" class="nav-link" data-scroll-target="#comparison-to-human-performance">4. Comparison to Human Performance</a></li>
+  <li><a href="#data-overlap-analysis" id="toc-data-overlap-analysis" class="nav-link" data-scroll-target="#data-overlap-analysis">5. Data Overlap Analysis</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">6. Limitations</a></li>
+  <li><a href="#broader-impacts" id="toc-broader-impacts" class="nav-link" data-scroll-target="#broader-impacts">7. Broader Impacts</a></li>
+  <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">8. Related Work</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">9. Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -664,9 +688,1154 @@ gtag('config', 'G-D1ST9BH6HX', { 'anonymize_ip': true});
 <li>They will prove its capabilities by testing its <strong>zero-shot transfer</strong> performance on a very broad and diverse set of over 30 benchmarks.</li>
 </ul>
 <p>This paragraph perfectly concludes the setup and transitions us into the main body of the paper, where the authors will provide the evidence to back up these claims.</p>
-
-
 </section>
+</section>
+<section id="approach" class="level2">
+<h2 class="anchored" data-anchor-id="approach">2. Approach</h2>
+<section id="natural-language-supervision" class="level3">
+<h3 class="anchored" data-anchor-id="natural-language-supervision">2.1 Natural Language Supervision</h3>
+<p>At the heart of CLIP is a single, powerful idea that serves as the foundation for all the technical details that follow.</p>
+<blockquote class="blockquote">
+<p>At the core of our approach is the idea of learning perception from supervision contained in natural language.</p>
+</blockquote>
+<p>This is their guiding principle. Instead of learning from predefined class labels like <code>class_id: 7</code> (which a file might later map to “car”), the model learns directly from the raw text that humans use to describe the world: “a photo of a blue car parked on the street.”</p>
+<section id="a-tangle-of-terminology" class="level4">
+<h4 class="anchored" data-anchor-id="a-tangle-of-terminology">A Tangle of Terminology</h4>
+<p>The authors first take a moment to clear up some confusion. The field of machine learning has many different terms for training without clean, human-provided labels, and the lines can get blurry.</p>
+<blockquote class="blockquote">
+<p>…terminology used to describe work in this space is varied, even seemingly contradictory… [approaches are described] as unsupervised, self-supervised, weakly supervised, and supervised respectively.</p>
+</blockquote>
+<p>Imagine one paper scrapes image-caption pairs and calls the method “supervised” because the captions are technically labels. Another paper might do the same but call it “weakly supervised” because the captions are noisy. A third might call it “self-supervised” because the labels come from the data itself.</p>
+<p>The authors of CLIP argue that these distinctions miss the point. The important, common thread is not the specific implementation, but the source of the training signal. To unify this, they propose their own term: <strong>Natural Language Supervision</strong>.</p>
+<blockquote class="blockquote">
+<p>We emphasize that what is common across this line of work is not any of the details of the particular methods used but the appreciation of natural language as a training signal. All these approaches are learning from natural language supervision.</p>
+</blockquote>
+<p>This is a key contribution in itself. They are giving a name to the paradigm they are championing, framing it as the defining characteristic of this entire line of research.</p>
+</section>
+<section id="why-natural-language-supervision" class="level4">
+<h4 class="anchored" data-anchor-id="why-natural-language-supervision">Why Natural Language Supervision?</h4>
+<p>The authors argue that this approach has two game-changing advantages over other methods, from traditional supervised learning to even other forms of self-supervision.</p>
+<p><strong>1. It’s Immensely Scalable.</strong></p>
+<p>Creating a high-quality, labeled dataset like ImageNet is a monumental undertaking. It requires thousands of hours of human labor to manually classify millions of images, often through a voting process to create a single, canonical “gold label” for each image. This process is slow, expensive, and doesn’t scale easily.</p>
+<blockquote class="blockquote">
+<p>It’s much easier to scale natural language supervision compared to standard crowd-sourced labeling for image classification since it does not require annotations to be in a classic “machine learning compatible format”… Instead, methods which work on natural language can learn passively from the supervision contained in the vast amount of text on the internet.</p>
+</blockquote>
+<p>In contrast, the internet is already filled with billions of images that are naturally paired with text. Scraping this data is an engineering challenge, but it’s a process that can be automated and scaled far more easily than manual labeling.</p>
+<p><strong>2. It Enables Flexible Zero-Shot Transfer.</strong></p>
+<p>This is the most critical advantage and what truly sets CLIP’s approach apart. Many self-supervised methods are excellent at learning powerful image features. For example, a model might learn to recognize that two different, augmented views of the same cat image should have a similar feature representation.</p>
+<p>The problem? That representation is just a vector of numbers. It has no inherent connection to human concepts. After pre-training, you <em>still</em> need a labeled dataset to train a classifier that learns to map those feature vectors to class labels like “cat” or “dog.”</p>
+<blockquote class="blockquote">
+<p>Learning from natural language also has an important advantage over most unsupervised or self-supervised learning approaches in that it doesn’t “just” learn a representation but also connects that representation to language which enables flexible zero-shot transfer.</p>
+</blockquote>
+<p>Natural Language Supervision solves this problem by design. From the very beginning, the model is forced to build a bridge between the visual world and the world of human language. It learns to create image representations that are inherently aligned with the text representations of what those images contain. This built-in connection to language is the key that unlocks CLIP’s remarkable ability to perform classification on tasks and categories it has never seen before.</p>
+</section>
+</section>
+<section id="creating-a-sufficiently-large-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-sufficiently-large-dataset">2.2 Creating a Sufficiently Large Dataset</h3>
+<p>A model is only as good as the data it’s trained on. For a task as ambitious as learning general visual concepts from language, the CLIP authors needed an engine fueled by an unprecedented amount of diverse, high-quality data. In this section, they explain why existing datasets were not up to the task.</p>
+<section id="why-existing-datasets-werent-enough" class="level4">
+<h4 class="anchored" data-anchor-id="why-existing-datasets-werent-enough">Why Existing Datasets Weren’t Enough</h4>
+<p>The authors begin by evaluating the common datasets used for this kind of vision-language research. They quickly find them lacking in one of two key areas: <strong>scale</strong> or <strong>quality</strong>.</p>
+<blockquote class="blockquote">
+<p>Existing work has mainly used three datasets, MS-COCO (Lin et al., 2014), Visual Genome (Krishna et al., 2017), and YFCC100M (Thomee et al., 2016).</p>
+</blockquote>
+<p>Let’s break down the limitations of each:</p>
+<ul>
+<li><p><strong>MS-COCO and Visual Genome:</strong> These are the gold standard for <em>quality</em>. They contain images with detailed, human-written captions describing the scene. The problem? They are tiny by modern standards, with only about 100,000 training images each. This is simply not enough data to learn the rich, generalizable representations the authors are aiming for, especially when compared to the billion-image datasets used in the “weak supervision” work.</p></li>
+<li><p><strong>YFCC100M:</strong> This dataset, a collection of 100 million photos from Flickr, seems to solve the scale problem. However, it fails on <em>quality</em>. The “text” associated with these images is often not useful natural language.</p></li>
+</ul>
+<blockquote class="blockquote">
+<p>Many images use automatically generated filenames like <code>20160716_113957.JPG</code> as “titles” or contain “descriptions” of camera exposure settings. After filtering to keep only images with natural language titles and/or descriptions in English, the dataset shrunk by a factor of 6 to only 15 million photos. This is approximately the same size as ImageNet.</p>
+</blockquote>
+<p>This is the killer finding. The one public dataset that seemed large enough for the task ended up being no better than ImageNet after basic quality filtering. This neatly demonstrates the core problem: no publicly available dataset had both the massive scale and the natural language supervision required to truly test their hypothesis.</p>
+</section>
+<section id="building-a-new-dataset-webimagetext-wit" class="level4">
+<h4 class="anchored" data-anchor-id="building-a-new-dataset-webimagetext-wit">Building a New Dataset: WebImageText (WIT)</h4>
+<p>Faced with this data gap, the authors made a critical decision: they would build their own.</p>
+<blockquote class="blockquote">
+<p>To address this, we constructed a new dataset of 400 million (image, text) pairs collected form a variety of publicly available sources on the Internet.</p>
+</blockquote>
+<p>This is a monumental contribution. They created a new dataset, which they later call <strong>WebImageText (WIT)</strong>, that is more than 25 times larger than the filtered YFCC100M dataset.</p>
+<p>Crucially, they didn’t just scrape images randomly. They designed a systematic process to ensure the dataset covered a vast and diverse range of visual concepts.</p>
+<blockquote class="blockquote">
+<p>To attempt to cover as broad a set of visual concepts as possible, we search for (image, text) pairs as part of the construction process whose text includes one of a set of 500,000 queries.</p>
+</blockquote>
+<p>How did they create this list of 500,000 queries? The footnote reveals a clever and highly effective strategy:</p>
+<ul>
+<li>They started with <strong>every word that appears at least 100 times in the English Wikipedia</strong>. This provides a massive base of common and uncommon nouns, verbs, adjectives, and proper nouns.</li>
+<li>They augmented this list with <strong>bi-grams</strong> (two-word phrases) that are statistically significant (i.e., they appear together more often than by chance, like “San Francisco”).</li>
+<li>They also included the titles of all Wikipedia articles above a certain popularity threshold.</li>
+</ul>
+<p>This systematic approach ensures their dataset isn’t just large but also incredibly broad, providing the rich and varied supervision needed to learn a truly general model of the visual world. Building this dataset was a foundational step that made the rest of CLIP’s success possible.</p>
+</section>
+</section>
+<section id="selecting-an-efficient-pre-training-method" class="level3">
+<h3 class="anchored" data-anchor-id="selecting-an-efficient-pre-training-method">2.3 Selecting an Efficient Pre-Training Method</h3>
+<p>Having established the need for a massive dataset, the authors faced their next great challenge: how do you actually train a model on 400 million images without it taking decades? Training efficiency, they realized, was not just a convenience—it was the key to making their entire approach feasible.</p>
+<blockquote class="blockquote">
+<p>State-of-the-art computer vision systems use very large amounts of compute. Mahajan et al.&nbsp;(2018) required 19 GPU-years to train their ResNeXt101… When considering that both these systems were trained to predict only 1000 ImageNet classes, the task of learning an open set of visual concepts from natural language seems daunting.</p>
+</blockquote>
+<p>The authors start by framing the problem. Previous state-of-the-art models required enormous amounts of computation (e.g., 19 GPU-years) just to learn 1000 fixed categories. Their goal of learning a nearly unlimited set of concepts from noisy, complex natural language was far more ambitious. A slow, inefficient training method would be a non-starter. This led them to a crucial bake-off between three different approaches.</p>
+<section id="attempt-1-predictive-language-modeling-too-slow" class="level4">
+<h4 class="anchored" data-anchor-id="attempt-1-predictive-language-modeling-too-slow">Attempt 1: Predictive Language Modeling (Too Slow)</h4>
+<p>Their first attempt was the most direct and, in some ways, the most intuitive. It was similar to the approach used by VirTex, one of the recent papers they cited.</p>
+<blockquote class="blockquote">
+<p>Our initial approach, similar to VirTex, jointly trained an image CNN and text transformer from scratch to predict the caption of an image. However, we encountered difficulties efficiently scaling this method.</p>
+</blockquote>
+<p>In this setup, the model would look at an image and then, using a Transformer-based language model, try to generate the <em>exact</em> caption associated with it, word by word.</p>
+<p>The problem? This is an incredibly difficult and unforgiving task. The text paired with an image on the internet can vary wildly. A photo of a cat might be paired with “a picture of my cat, Fluffy,” or “a cat sitting on a sofa,” or “here’s a cute animal #catsofinstagram.” Forcing the model to predict the <em>exact</em> sequence of words is a very high bar and, as they found, a very slow way to learn. As shown in their Figure 2, this approach was <strong>three times slower</strong> at learning to recognize ImageNet classes than a simpler baseline.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="images/2025-10-01-clip-reading-notes/paper-fig-2.png" class="img-fluid"></a></p>
+</section>
+<section id="attempt-2-bag-of-words-prediction-better-but-not-enough" class="level4">
+<h4 class="anchored" data-anchor-id="attempt-2-bag-of-words-prediction-better-but-not-enough">Attempt 2: Bag-of-Words Prediction (Better, But Not Enough)</h4>
+<p>The simpler baseline they compared against was the bag-of-words (BoW) approach, similar to the one used by Joulin et al.&nbsp;(2016). Instead of predicting the exact sentence, the model’s task was simply to predict the <em>set of words</em> present in the caption, ignoring grammar and word order. This is an easier task and, as expected, it was more efficient than full language modeling. However, it still wasn’t the breakthrough in efficiency they needed.</p>
+</section>
+<section id="the-winner-contrastive-learning-4x-more-efficient" class="level4">
+<h4 class="anchored" data-anchor-id="the-winner-contrastive-learning-4x-more-efficient">The Winner: Contrastive Learning (4x More Efficient)</h4>
+<p>This led them to their third and final approach, which solved the efficiency puzzle by reframing the problem entirely.</p>
+<blockquote class="blockquote">
+<p>…we explored training a system to solve the potentially easier proxy task of predicting only which text as a whole is paired with which image and not the exact words of that text. … Starting with the same bag-of-words encoding baseline, we swapped the predictive objective for a contrastive objective in Figure 2 and observed a further 4x efficiency improvement…</p>
+</blockquote>
+<p>This is the core of CLIP’s training method. Instead of <em>predicting</em> the caption (a generative task), they turned it into a <em>matching</em> task (a contrastive task). Here’s how it works:</p>
+<ol type="1">
+<li>Take a batch of <code>N</code> images and their <code>N</code> corresponding text captions.</li>
+<li>This creates <code>N</code> correct pairs. All other combinations (<code>N*N - N</code> of them) are incorrect.</li>
+<li>The model’s goal is to learn a representation for images and text such that the similarity score for the correct pairs is high, and the similarity score for all incorrect pairs is low.</li>
+</ol>
+<p>This is a much more efficient learning signal. The model doesn’t get punished for minor wording differences in a caption; it just has to learn that “a photo of a dog” is a better match for a dog image than “a photo of a cat” is. This simple change provided a massive <strong>4x efficiency boost</strong> over the already-better BoW method. Combined with the 3x improvement over the language modeling approach, the contrastive objective was up to <strong>12 times more efficient</strong>, making it the clear winner and the right choice for training at scale.</p>
+</section>
+<section id="the-clip-objective-a-simplified-and-scalable-contrastive-loss" class="level4">
+<h4 class="anchored" data-anchor-id="the-clip-objective-a-simplified-and-scalable-contrastive-loss">The CLIP Objective: A Simplified and Scalable Contrastive Loss</h4>
+<p>The paper then provides the technical details of their contrastive approach.</p>
+<blockquote class="blockquote">
+<p>Given a batch of N (image, text) pairs, CLIP is trained to predict which of the N × N possible (image, text) pairings across a batch actually occurred. To do this, CLIP learns a multi-modal embedding space by jointly training an image encoder and text encoder to maximize the cosine similarity of the image and text embeddings of the N real pairs in the batch while minimizing the cosine similarity of the embeddings of the N^2 − N incorrect pairings.</p>
+</blockquote>
+<p>This method, known formally as the InfoNCE loss, was becoming popular in self-supervised learning, and the authors adapted it for their vision-language task. They also made several key simplifications compared to other contemporary methods, demonstrating the robustness of the core idea:</p>
+<ul>
+<li>They trained the model <strong>from scratch</strong>, without using pre-trained ImageNet weights for the image encoder or a pre-trained language model for the text encoder.</li>
+<li>They used a simple <strong>linear projection</strong> to map the encoder outputs into the multi-modal embedding space, forgoing the more complex non-linear projection heads used by models like SimCLR.</li>
+<li>They used minimal data augmentation: just a single <strong>random square crop</strong> from the resized images.</li>
+<li>They even <strong>optimized the temperature parameter</strong> of the softmax function, a small but important hyperparameter, directly during training.</li>
+</ul>
+<p>These simplifications show that the power of CLIP doesn’t come from lots of complex tricks or architectural bells and whistles. It comes from a simple, highly efficient contrastive objective applied to a massive and diverse dataset.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: What is a “Projection Head” and Why Did CLIP Use a Simple One?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In the paper, the authors state they used a “simple linear projection” instead of the “more complex non-linear projection heads” used by other models like SimCLR. This might sound like technical jargon, but it’s a key architectural choice that’s worth understanding.</p>
+<p>At its core, the issue is about how you get from the raw output of an encoder to the final space where you perform the contrastive learning (the matching game).</p>
+<section id="the-standard-approach-at-the-time-the-non-linear-projection-head" class="level4">
+<h4 class="anchored" data-anchor-id="the-standard-approach-at-the-time-the-non-linear-projection-head">The Standard Approach at the Time: The Non-Linear Projection Head</h4>
+<p>In many self-supervised and contrastive learning frameworks, particularly <strong>SimCLR</strong> (a very influential paper on contrastive learning for images), the process looked like this:</p>
+<ol type="1">
+<li><strong>Encoder:</strong> An image goes into a powerful encoder (e.g., a ResNet) which produces a feature vector, let’s call it <code>h</code>. This vector <code>h</code> is the rich, general-purpose representation of the image that you want to use for downstream tasks later on.</li>
+<li><strong>Projection Head:</strong> The feature vector <code>h</code> is <strong>not</strong> used directly for the contrastive loss. Instead, it’s passed through a small neural network, typically a Multi-Layer Perceptron (MLP), called the “projection head.” This MLP transforms <code>h</code> into a new vector, <code>z</code>.</li>
+<li><strong>Contrastive Loss:</strong> The contrastive learning (the matching game of pulling similar things together and pushing different things apart) is performed on these final <code>z</code> vectors.</li>
+<li><strong>Discard after Training:</strong> Crucially, after pre-training is finished, the projection head is <strong>thrown away</strong>. For any downstream task (like classification), you use the original feature vectors, <code>h</code>, that came directly from the encoder.</li>
+</ol>
+<p><strong>Why do this?</strong> The theory behind SimCLR’s approach was that this separation was beneficial. The projection head’s job was to transform the features into a space where it’s easy to perform the contrastive task. This process might involve throwing away some information that’s not useful for the matching game (e.g., precise color information might be discarded if the task is just to match two augmented views of the same object).</p>
+<p>By adding this extra step, you allow the main encoder’s representation <code>h</code> to remain as rich and general as possible, retaining all that potentially useful information, while the disposable projection head does the “dirty work” of preparing the features for the contrastive loss.</p>
+</section>
+<section id="clips-simpler-approach-the-linear-projection" class="level4">
+<h4 class="anchored" data-anchor-id="clips-simpler-approach-the-linear-projection">CLIP’s Simpler Approach: The Linear Projection</h4>
+<p>The CLIP authors decided to simplify this entire process.</p>
+<ol type="1">
+<li><strong>Encoder:</strong> An image (or text) goes into its respective encoder, producing a feature vector.</li>
+<li><strong>Linear Projection:</strong> Instead of a multi-layer MLP, this feature vector is passed through a single, simple linear layer (essentially, just one matrix multiplication). This transforms the vector into the final representation used in the contrastive space.</li>
+</ol>
+<p><strong>What does this mean?</strong> A linear projection is much less powerful than a non-linear MLP. It can only perform basic transformations like rotating and scaling the feature space; it can’t learn complex, non-linear relationships.</p>
+<p>By making this choice, the CLIP authors are making an implicit statement: the representations coming directly out of our encoders are already good enough. They don’t need a powerful, complex transformation to be prepared for the contrastive learning task. The raw features can be mapped directly into the shared multi-modal embedding space with a simple, learned linear map.</p>
+<p><strong>Why did they make this choice?</strong></p>
+<ul>
+<li><strong>Simplicity and Efficiency:</strong> It’s a simpler architecture with fewer parameters.</li>
+<li><strong>It Just Worked:</strong> As the authors state, “We did not notice a difference in training efficiency between the two versions.” This suggests that with their massive dataset and the strong signal from the language-image objective, the extra complexity of the non-linear head was simply unnecessary.</li>
+<li><strong>A Different Problem:</strong> They speculate that the non-linear head might be specifically beneficial for <em>image-only</em> self-supervised learning, where the task is to identify two augmented views of the same image. In CLIP’s case, the task is to match a photo with a sentence — a fundamentally different and perhaps clearer signal that doesn’t require the extra transformation.</li>
+</ul>
+</section>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: The “Confidence Knob,” or Why Learnable Temperature is a Clever Trick
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In the paper, the authors mention that the “temperature parameter… is directly optimized during training.” This might seem like a minor detail, but it’s a clever and pragmatic solution to a notoriously difficult problem in contrastive learning. To understand why, let’s think of this parameter as the model’s “confidence knob.”</p>
+<section id="what-is-softmax-temperature" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-softmax-temperature">1. What is Softmax Temperature?</h4>
+<p>First, a quick refresher. In classification, a model often outputs raw scores, called <strong>logits</strong>. The softmax function then converts these logits into a clean probability distribution (a set of numbers that add up to 1).</p>
+<p>The <strong>temperature</strong> (let’s call it <code>T</code>) is a parameter that controls the shape of this probability distribution. It works by dividing the logits before they are fed into the softmax function:</p>
+<p><code>probabilities = softmax(logits / T)</code></p>
+<p>The effect of <code>T</code> is as follows:</p>
+<ul>
+<li><strong>High Temperature (e.g., T &gt; 1):</strong> This makes the probabilities “softer” or more uniform. The model becomes <em>less confident</em>. A high <code>T</code> shrinks the logits, making the differences between them smaller. For example, logits of <code>[10, 0, -10]</code> might become probabilities of <code>[0.6, 0.2, 0.2]</code>.</li>
+<li><strong>Low Temperature (e.g., T &lt; 1):</strong> This makes the probabilities “sharper” or more “peaked.” The model becomes <em>more confident</em>. A low <code>T</code> exaggerates the differences between the logits. The same logits of <code>[10, 0, -10]</code> might become probabilities of <code>[0.99, 0.01, 0.0]</code>.</li>
+</ul>
+</section>
+<section id="the-goldilocks-problem-in-contrastive-learning" class="level4">
+<h4 class="anchored" data-anchor-id="the-goldilocks-problem-in-contrastive-learning">2. The Goldilocks Problem in Contrastive Learning</h4>
+<p>In CLIP’s contrastive setup, the “logits” are the similarity scores between an image and all the text captions in a batch. The model’s goal is to assign a very high probability to the one correct match. The temperature here is crucial for controlling the learning process:</p>
+<ul>
+<li><strong>If <code>T</code> is too high (too soft):</strong> The model will be unconfident. The probability of the correct pair will only be slightly higher than the incorrect pairs. This creates a very weak learning signal (a small gradient), and the model will learn very slowly or not at all.</li>
+<li><strong>If <code>T</code> is too low (too sharp):</strong> The model will be overconfident. It might quickly learn to separate the “easy” negative examples (e.g., a dog image vs.&nbsp;the caption “a photo of a car”) but fail to learn from the “hard” negative examples (e.g., a dog image vs.&nbsp;the caption “a photo of a wolf”). This can lead to poor training and a worse final model.</li>
+</ul>
+<p>You need a temperature that is “just right”—a value that properly balances the penalties for incorrect pairings and creates a stable, effective learning signal.</p>
+</section>
+<section id="the-old-way-expensive-and-painful-hyperparameter-tuning" class="level4">
+<h4 class="anchored" data-anchor-id="the-old-way-expensive-and-painful-hyperparameter-tuning">3. The Old Way: Expensive and Painful Hyperparameter Tuning</h4>
+<p>Traditionally, the temperature <code>T</code> is a <strong>hyperparameter</strong>. This means it’s a value that the data scientist has to choose and set <em>before</em> training begins. How do you find the best value?</p>
+<p>The standard method is a brute-force approach like a <strong>grid search</strong>. You would run a series of small-scale experiments, trying a fixed <code>T</code> of 0.01, then 0.05, then 0.07, then 0.1, and so on. You’d then pick the value that worked best and use it for your final, large-scale training run.</p>
+<p>For a model like CLIP, which is trained on 400 million images and takes weeks on hundreds of GPUs, this process is prohibitively expensive. Running multiple experiments just to tune one knob is not a feasible option.</p>
+</section>
+<section id="clips-elegant-solution-let-the-model-learn-the-knobs-setting" class="level4">
+<h4 class="anchored" data-anchor-id="clips-elegant-solution-let-the-model-learn-the-knobs-setting">4. CLIP’s Elegant Solution: Let the Model Learn the Knob’s Setting</h4>
+<p>Instead of manually guessing the best temperature, the CLIP authors did something much smarter: they made the temperature a <strong>learnable parameter</strong>.</p>
+<p>Just like the millions of other weights in the neural network, the temperature <code>T</code> was initialized at some value and then updated at every step of training via backpropagation and gradient descent. The model itself was tasked with figuring out the optimal “confidence level” that best helped it minimize the overall loss. If the model was too unconfident, the loss function would effectively “tell” it to lower the temperature. If it was too overconfident, it would tell it to raise it.</p>
+<p>This is more than just a minor tweak; it’s a perfect example of CLIP’s design philosophy:</p>
+<ul>
+<li><strong>It automates a difficult process:</strong> It removes the need for the human researcher to perform an expensive and time-consuming hyperparameter search.</li>
+<li><strong>It’s more efficient:</strong> It saves a massive amount of computation that would have been wasted on tuning experiments.</li>
+<li><strong>It’s potentially more robust:</strong> The model can find a more optimal value for <code>T</code> than a human might through a coarse grid search.</li>
+</ul>
+<p>By making the temperature learnable, the authors simplified their training pipeline and made their entire large-scale experiment more practical and likely to succeed.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="choosing-and-scaling-a-model" class="level3">
+<h3 class="anchored" data-anchor-id="choosing-and-scaling-a-model">2.4 Choosing and Scaling a Model</h3>
+<p>With the dataset and training objective settled, the final piece of the puzzle was the model architecture itself. What kind of neural networks should be used for the image and text encoders, and more importantly, how can they be scaled up effectively to handle the massive dataset?</p>
+<section id="the-image-encoder-the-workhorse-vs.-the-new-challenger" class="level4">
+<h4 class="anchored" data-anchor-id="the-image-encoder-the-workhorse-vs.-the-new-challenger">The Image Encoder: The Workhorse vs.&nbsp;The New Challenger</h4>
+<p>The authors evaluated two different families of architectures for the image encoder, representing both the established state-of-the-art and a new, promising alternative.</p>
+<p><strong>1. The Workhorse: A Modernized ResNet</strong></p>
+<p>The first choice was a <strong>ResNet-50</strong>. The Residual Network (ResNet) architecture is one of the most influential and widely used in computer vision history. It’s a known, reliable “workhorse.” However, the authors didn’t just use the original 2016 version. They made several key modernizations to boost its performance:</p>
+<ul>
+<li>They incorporated <strong>ResNet-D improvements</strong>, a series of small but effective tweaks to the internal structure of the ResNet blocks.</li>
+<li>They added <strong>antialiased blur pooling</strong>, a technique that helps the model be less sensitive to small shifts or translations in an image, improving its overall robustness.</li>
+<li>Most interestingly, they replaced the standard “global average pooling” layer with an <strong>attention pooling mechanism</strong>. Instead of just taking a simple average of all the features at the end of the network, this new layer uses a Transformer-style multi-head attention mechanism to learn a <em>weighted</em> average. In essence, it learns to pay more attention to the most important parts of the image when creating its final summary representation.</li>
+</ul>
+<p><strong>2. The New Challenger: The Vision Transformer (ViT)</strong> The second architecture they tested was the <strong>Vision Transformer (ViT)</strong>, which was a very new and exciting development at the time. The ViT radically rethinks image processing by applying the Transformer architecture, which was originally designed for text, directly to images. It works by:</p>
+<ul>
+<li>Breaking an image down into a grid of small, fixed-size patches (e.g., 16x16 pixels).</li>
+<li>Treating this sequence of patches as if it were a sequence of words in a sentence.</li>
+<li>Feeding this sequence into a standard Transformer encoder to learn the relationships between the different parts of the image.</li>
+</ul>
+<p>The authors followed the original ViT implementation closely, making only a minor modification. By testing both ResNets and ViTs, they were able to compare a mature, highly-optimized CNN against a powerful new paradigm.</p>
+</section>
+<section id="the-text-encoder-a-standard-transformer" class="level4">
+<h4 class="anchored" data-anchor-id="the-text-encoder-a-standard-transformer">The Text Encoder: A Standard Transformer</h4>
+<p>The choice of text encoder was more straightforward. They used a standard <strong>Transformer</strong> architecture, very similar to the one used in models like GPT-2. The key details are:</p>
+<ul>
+<li><strong>Architecture:</strong> A 12-layer, 512-unit-wide Transformer with 8 attention heads.</li>
+<li><strong>Tokenization:</strong> The text is processed using a <strong>byte-pair encoding (BPE)</strong> tokenizer with a vocabulary of about 49,000 “tokens.” BPE is a clever way to handle language: instead of just splitting words, it breaks words down into common sub-word units. This allows it to represent any word, even ones it has never seen before, without having an enormous vocabulary.</li>
+<li><strong>Processing:</strong> For any given text input, the sequence of tokens is capped at 76, bracketed with <code>[SOS]</code> (start of sentence) and <code>[EOS]</code> (end of sentence) tokens. The final representation of the <code>[EOS]</code> token is taken as the feature representation for the entire text snippet, as this token’s final state is influenced by all the words that came before it.</li>
+</ul>
+</section>
+<section id="the-scaling-strategy-growing-smarter-not-just-bigger" class="level4">
+<h4 class="anchored" data-anchor-id="the-scaling-strategy-growing-smarter-not-just-bigger">The Scaling Strategy: Growing Smarter, Not Just Bigger</h4>
+<p>How do you make a model more powerful? The naive approach is to just make it deeper (add more layers) or wider (add more units per layer). However, work from the <strong>EfficientNet</strong> paper (Tan &amp; Le, 2019) showed that the best strategy is <strong>compound scaling</strong>: simultaneously increasing the model’s depth, width, and the resolution of the input images in a balanced way.</p>
+<p>The CLIP authors adapted this sophisticated strategy for their ResNet models. Instead of painstakingly tuning the exact ratio for each dimension, they used a simple rule of thumb: they allocated additional compute <em>equally</em> to increasing the width, depth, and resolution. This allowed them to create a series of progressively larger and more powerful ResNet models in a principled way.</p>
+<p>Interestingly, for the text encoder, they found that performance was much less sensitive to its size. As a result, when scaling up their models, they only scaled the <em>width</em> of the text Transformer, keeping its depth (number of layers) constant. This is a great example of the empirical, results-driven engineering required to build such a massive system.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: What is ResNet-D and Why Does it Matter?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>When the CLIP authors chose ResNet as one of their image encoders, they didn’t use the original 2016 version off the shelf. Instead, they incorporated a set of important upgrades from a 2018 paper titled “Bag of Tricks for Image Classification with Convolutional Neural Networks.” One of the key improvements from that paper is a modified architecture known as <strong>ResNet-D</strong>.</p>
+<p>To understand ResNet-D, we first need to understand a subtle flaw in the original ResNet design.</p>
+<p><strong>The Flaw in the Original ResNet</strong></p>
+<p>A standard ResNet is built from “residual blocks.” These blocks have two paths for information to flow:</p>
+<ol type="1">
+<li><strong>The Main Path:</strong> The input goes through a series of convolutional layers.</li>
+<li><strong>The Skip Connection (or Shortcut):</strong> The original input “skips” over these layers and is added back in at the end.</li>
+</ol>
+<p>In some of these blocks, the convolutional path needs to downsample the image (i.e., reduce its spatial resolution, like from 56x56 to 28x28). The original ResNet did this using a <strong>stride of 2</strong> in the very first 1x1 convolution of the main path.</p>
+<p>The problem? A 1x1 convolution with a stride of 2 effectively throws away 3/4 of the information in the feature map. It only looks at every other pixel, discarding the rest. While this works, it’s an aggressive and inefficient way to downsample, causing a significant loss of information early in the block.</p>
+<p><strong>The ResNet-D Improvement</strong></p>
+<p>ResNet-D fixes this by making a simple but clever change to the downsampling blocks:</p>
+<ul>
+<li>It moves the stride of 2 from the initial 1x1 convolution to the <strong>3x3 convolution</strong> later in the path.</li>
+</ul>
+<p>This small change has a big impact. Now, the 3x3 convolution sees <em>all</em> of the input features (it has a stride of 1), and it performs the downsampling itself. Because a 3x3 convolution looks at a larger area (a 3x3 patch of pixels), it can learn a much more effective and information-preserving way to downsample the feature map, rather than just naively discarding 75% of the data.</p>
+<p>This is a perfect example of a “trick” that costs almost nothing in terms of computation but leads to a noticeable improvement in model accuracy by preserving more information as it flows through the network. By incorporating ResNet-D, the CLIP authors ensured their CNN baseline was as strong and modern as possible.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: What is Blur Pooling and Why is it Important for Robustness?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Another key modernization the authors added to their ResNet was <strong>antialiased blur pooling</strong>. This technique addresses a fundamental problem with how traditional Convolutional Neural Networks (CNNs) handle small shifts in an image.</p>
+<p><strong>The Problem: CNNs are Surprisingly Brittle to Shifts</strong></p>
+<p>We often think of CNNs as being “translation invariant,” meaning that if you shift an object slightly in an image, the model’s prediction shouldn’t change. In practice, this isn’t entirely true. A standard CNN can be surprisingly sensitive to small, one-pixel shifts.</p>
+<p>The culprit is often the <strong>max pooling</strong> layer (or a convolution with a stride greater than 1), which is used to downsample the feature maps. Imagine a max pooling layer that looks at a 2x2 grid of pixels and outputs the maximum value. If a key feature is right on the edge of that 2x2 grid, a tiny shift in the input image can cause it to fall into a different grid, leading to a completely different output. This can make the network’s internal representations unstable and brittle.</p>
+<p>This violates a core principle of signal processing known as <strong>Nyquist’s sampling theorem</strong>. In simple terms, if you sample a signal (like an image) too aggressively without smoothing it first, you can get aliasing artifacts—unwanted patterns that distort the true signal. This is exactly what a standard max pooling or strided convolution does.</p>
+<p><strong>The Solution: Blur First, Then Sample</strong></p>
+<p>Antialiased blur pooling (from the 2019 paper “Making Convolutional Networks Shift-Invariant Again”) solves this problem with an incredibly simple and elegant idea inspired by classic signal processing:</p>
+<ol type="1">
+<li><strong>Blur:</strong> Before downsampling, apply a small, fixed blurring filter (like a 3x3 triangular filter) to the feature map. This has the effect of smoothing it out.</li>
+<li><strong>Downsample:</strong> Now, perform the standard downsampling operation (like max pooling or a strided convolution) on this new, blurred feature map.</li>
+</ol>
+<p>By blurring first, you are effectively “spreading out” the features. This makes the downsampling operation much more stable. A small shift in the input will no longer cause a drastic change in the output, because the blurred feature has influence over a slightly larger area.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="training" class="level3">
+<h3 class="anchored" data-anchor-id="training">2.5. Training</h3>
+<p>With the architecture and scaling strategy defined, the authors now turn to the specifics of the training process. This section highlights the different model configurations they trained and the immense computational resources required.</p>
+<section id="the-model-zoo-a-fleet-of-resnets-and-vits" class="level4">
+<h4 class="anchored" data-anchor-id="the-model-zoo-a-fleet-of-resnets-and-vits">The Model Zoo: A Fleet of ResNets and ViTs</h4>
+<p>The authors didn’t just train one final CLIP model. To study how performance scales with compute, they trained a whole family of models of varying sizes. This is crucial for their scientific claim that the benefits of their approach are a predictable function of scale.</p>
+<p>They trained a total of <strong>eight</strong> primary models:</p>
+<ul>
+<li><strong>Five ResNet-based models:</strong>
+<ul>
+<li>A standard <strong>ResNet-50</strong> and <strong>ResNet-101</strong>.</li>
+<li>Three much larger, custom ResNets built using their EfficientNet-style compound scaling strategy. These are denoted <strong>RN50x4</strong>, <strong>RN50x16</strong>, and <strong>RN50x64</strong>, representing models that use approximately 4x, 16x, and 64x the compute of the base ResNet-50, respectively.</li>
+</ul></li>
+<li><strong>Three Vision Transformer (ViT) based models:</strong>
+<ul>
+<li><strong>ViT-B/32</strong> (the “Base” ViT model using 32x32 pixel patches).</li>
+<li><strong>ViT-B/16</strong> (the “Base” ViT model using smaller 16x16 patches, which is more powerful).</li>
+<li><strong>ViT-L/14</strong> (the “Large” ViT model using 14x14 patches).</li>
+</ul></li>
+</ul>
+<p>All models were trained for a fixed <strong>32 epochs</strong>, meaning they saw the entire 400 million image dataset 32 times.</p>
+</section>
+<section id="the-training-recipe-optimization-and-hyperparameters" class="level4">
+<h4 class="anchored" data-anchor-id="the-training-recipe-optimization-and-hyperparameters">The Training Recipe: Optimization and Hyperparameters</h4>
+<p>The training setup used a standard but highly optimized recipe for large-scale deep learning:</p>
+<ul>
+<li><strong>Optimizer:</strong> They used the <strong>Adam optimizer</strong>, a very popular and effective choice, with a specific modification called “decoupled weight decay regularization,” which can improve generalization.</li>
+<li><strong>Learning Rate Schedule:</strong> The learning rate, which controls how big of a step the optimizer takes at each iteration, was decayed over the course of training using a <strong>cosine schedule</strong>. This means the learning rate starts high, gradually and smoothly decreases in a cosine curve, and ends near zero. This is a very common and robust schedule for training large models.</li>
+<li><strong>Hyperparameter Tuning:</strong> Interestingly, they note that the initial hyperparameters were found by experimenting on the baseline ResNet-50 model. For the larger, more expensive models, these settings were then “adapted heuristically” due to the massive computational cost of doing a full hyperparameter search for each one. This is a pragmatic admission of the real-world constraints of training at this scale.</li>
+<li><strong>Batch Size:</strong> They used an absolutely enormous minibatch size of <strong>32,768</strong>. This is one of the keys to training large models efficiently on parallel hardware like GPUs and TPUs. A large batch size ensures that the hardware is fully utilized and that the estimate of the gradient at each step is very stable.</li>
+</ul>
+</section>
+<section id="the-engineering-of-scale-making-it-all-fit" class="level4">
+<h4 class="anchored" data-anchor-id="the-engineering-of-scale-making-it-all-fit">The Engineering of Scale: Making it all Fit</h4>
+<p>Training a model of this magnitude on a dataset this large requires a suite of advanced engineering techniques to manage memory and speed up computation. The authors used several key methods:</p>
+<ul>
+<li><strong>Mixed-Precision Training:</strong> Instead of representing all numbers in the network with 32-bit floating point precision (FP32), this technique uses a mix of lower-precision 16-bit floats (FP16) and FP32. FP16 requires half the memory and is often much faster on modern GPUs. This is a standard and essential trick for large-scale training.</li>
+<li><strong>Gradient Checkpointing:</strong> A memory-saving technique where, instead of storing all the intermediate activations needed for backpropagation, the model re-computes them on the fly. This trades extra compute for a significant reduction in memory usage, allowing larger models to be trained.</li>
+<li><strong>Sharded Computation:</strong> They note that the calculation of the N x N similarity matrix was “sharded,” meaning it was split up across the individual GPUs. Each GPU only had to compute the similarities between its local batch of images and all the text embeddings, rather than having one GPU compute the entire massive matrix.</li>
+</ul>
+<p>Finally, the authors provide a sense of the staggering compute involved:</p>
+<ul>
+<li>The largest ResNet model (<strong>RN50x64</strong>) took <strong>18 days</strong> to train on <strong>592 V100 GPUs</strong>.</li>
+<li>The largest Vision Transformer model (<strong>ViT-L/14</strong>) took <strong>12 days</strong> on <strong>256 V100 GPUs</strong>.</li>
+</ul>
+<p>This section makes it clear that CLIP is not just a scientific breakthrough, but also a monumental feat of engineering.</p>
+</section>
+</section>
+</section>
+<section id="experiments" class="level2">
+<h2 class="anchored" data-anchor-id="experiments">3. Experiments</h2>
+<section id="zero-shot-transfer" class="level3">
+<h3 class="anchored" data-anchor-id="zero-shot-transfer">3.1 Zero-Shot Transfer</h3>
+<p>The entire premise of CLIP is that its novel pre-training strategy enables flexible transfer to new tasks. In this section, the authors put that claim to the test. But before they show us the results, they take a moment to define exactly what they mean by “zero-shot transfer” and why their definition represents a more ambitious and meaningful measure of a model’s capabilities.</p>
+<section id="motivation-redefining-zero-shot-as-true-task-learning" class="level4">
+<h4 class="anchored" data-anchor-id="motivation-redefining-zero-shot-as-true-task-learning">3.1.1 Motivation: Redefining “Zero-Shot” as True Task Learning</h4>
+<p>The term “zero-shot learning” can mean different things to different people. The authors begin by clarifying the distinction between the traditional, narrow definition and their own broader, more challenging one.</p>
+<blockquote class="blockquote">
+<p>In computer vision, zero-shot learning usually refers to the study of generalizing to unseen object categories in image classification (Lampert et al., 2009). We instead use the term in a broader sense and study generalization to unseen datasets.</p>
+</blockquote>
+<p>The classic definition of zero-shot learning in computer vision often involves a specific setup: a model is trained on a set of seen classes (e.g., horses, dogs) and a list of their semantic attributes (e.g., <code>has_fur</code>, <code>has_hooves</code>, <code>has_tail</code>). At test time, it’s given the attributes for an <em>unseen</em> class (e.g., <code>has_stripes</code>, <code>has_hooves</code>) and must identify a “zebra” from a list of unseen class names, even though it has never seen a zebra image. This tests generalization to a new category <em>within a single, constrained task</em>.</p>
+<p>The CLIP authors propose a much harder test: <strong>generalization to entirely new datasets</strong>. This is a proxy for evaluating a model’s ability to perform new <em>tasks</em>. This reframing is the core of their evaluation philosophy.</p>
+<blockquote class="blockquote">
+<p>While much research in the field of unsupervised learning focuses on the representation learning capabilities of machine learning systems, we motivate studying zero-shot transfer as a way of measuring the <strong>task-learning capabilities</strong> of machine learning systems.</p>
+</blockquote>
+<p>This is a critical distinction. Let’s break it down:</p>
+<ul>
+<li><strong>Representation Learning:</strong> The goal is to learn a good set of features from an image. The standard evaluation is a “linear probe,” where you freeze the features from the pre-trained model and train a simple linear classifier on top of them for a new task. This tests whether the <em>features</em> are good, but not whether the model <em>itself</em> can perform the task.</li>
+<li><strong>Task Learning:</strong> The goal is to see if the model can perform a new task directly, with no additional training. For CLIP, this means giving it an image and a set of new text descriptions and seeing if it can make the correct classification. This is a much higher bar. It tests the model’s ability to apply its knowledge in a flexible, zero-shot way. This evaluation philosophy is directly inspired by the work on GPT-2 and GPT-3, which were also benchmarked on their surprising ability to perform tasks they weren’t explicitly trained for.</li>
+</ul>
+<p>To illustrate this point further, they draw a clever contrast between two well-known datasets.</p>
+<blockquote class="blockquote">
+<p>While it is reasonable to say that the SVHN dataset measures the task of street number transcription on the distribution of Google Street View photos, it is unclear what “real” task the CIFAR-10 dataset measures.</p>
+</blockquote>
+<p>This is a subtle but powerful argument.</p>
+<ul>
+<li><strong>SVHN (Street View House Numbers):</strong> This dataset has a clear, real-world task: reading digits from photos of houses. Testing a model on SVHN zero-shot is a true test of its ability to generalize to the task of number recognition.</li>
+<li><strong>CIFAR-10:</strong> This is a classic academic benchmark of low-resolution images. It doesn’t correspond to a specific real-world application. Therefore, testing zero-shot on CIFAR-10 is less a test of “task generalization” and more a test of <strong>domain generalization</strong> or <strong>robustness to distribution shift</strong>. Can the model recognize a tiny, blurry car when it was pre-trained on high-resolution internet photos?</li>
+</ul>
+<p>This shows the nuance in their approach. By evaluating across more than 30 datasets, they can test not just one capability, but a whole spectrum of generalization skills, from task learning to robustness.</p>
+</section>
+</section>
+<section id="using-clip-for-zero-shot-transfer" class="level3">
+<h3 class="anchored" data-anchor-id="using-clip-for-zero-shot-transfer">3.1.2 Using CLIP for Zero-Shot Transfer</h3>
+<p>The real power of CLIP’s pre-training is that the mechanism for zero-shot classification is not a clever hack or an afterthought—it is a direct application of the very task the model was trained to perform.</p>
+<blockquote class="blockquote">
+<p>CLIP is pre-trained to predict if an image and a text snippet are paired together in its dataset. To perform zero-shot classification, we reuse this capability.</p>
+</blockquote>
+<p>The process is straightforward and powerful, turning any set of class names into a dynamic, on-the-fly classifier.</p>
+<blockquote class="blockquote">
+<p>For each dataset, we use the names of all the classes in the dataset as the set of potential text pairings and predict the most probable (image, text) pair according to CLIP.</p>
+</blockquote>
+<p>Let’s walk through the step-by-step process they describe, which we also detailed in our earlier note:</p>
+<ol type="1">
+<li><strong>Get the Image Embedding:</strong> First, an input image is passed through CLIP’s trained <strong>image encoder</strong>. This produces a single feature vector that represents the visual content of the image.</li>
+<li><strong>Get the Text Embeddings:</strong> Next, you take the list of all possible class names for the dataset you want to test on (e.g., for CIFAR-10, this would be “plane”, “car”, “bird”, “cat”, etc.). Each of these class names is passed through CLIP’s trained <strong>text encoder</strong>. This produces a set of feature vectors, one for each class name.</li>
+<li><strong>Calculate Similarity:</strong> The cosine similarity is then calculated between the single image embedding and each of the text embeddings. This results in a list of scores (logits), one for each class, representing how “close” the image is to the concept described by each text label.</li>
+<li><strong>Normalize to Probabilities:</strong> These similarity scores are then scaled by the learned temperature parameter and converted into a probability distribution using a softmax function. The class with the highest probability is the model’s final prediction.</li>
+</ol>
+<section id="a-new-perspective-the-text-encoder-as-a-hypernetwork" class="level4">
+<h4 class="anchored" data-anchor-id="a-new-perspective-the-text-encoder-as-a-hypernetwork">A New Perspective: The Text Encoder as a “Hypernetwork”</h4>
+<p>The authors then offer a fascinating reinterpretation of what’s happening under the hood. They frame the whole system not just as two encoders, but as a computer vision backbone paired with a network that <em>generates</em> the weights of a classifier on demand.</p>
+<blockquote class="blockquote">
+<p>When interpreted this way, the image encoder is the computer vision backbone which computes a feature representation for the image and the text encoder is a <strong>hypernetwork</strong> (Ha et al., 2016) which generates the weights of a linear classifier based on the text specifying the visual concepts that the classes represent.</p>
+</blockquote>
+<p>This is a powerful analogy. Let’s break it down:</p>
+<ul>
+<li>A <strong>linear classifier</strong> is just a set of weights. For a given image feature vector, you take the dot product of the features with the weights for each class to get the scores.</li>
+<li>A <strong>hypernetwork</strong> is a neural network that <em>outputs the weights</em> of another neural network.</li>
+</ul>
+<p>In CLIP’s zero-shot setup, the text encoder is acting as a hypernetwork. You give it a text description like “a photo of a dog,” and it outputs a vector. This vector is, functionally, the <em>weight vector</em> for the “dog” class in a dynamically generated linear classifier. The cosine similarity calculation is mathematically equivalent to taking the dot product between L2-normalized feature and weight vectors.</p>
+<p>This idea of generating a classifier from natural language dates back several years, but CLIP is the first model to make it truly effective at a large scale.</p>
+<p>This perspective also provides a novel way to think about the pre-training process itself:</p>
+<blockquote class="blockquote">
+<p>…every step of CLIP pre-training can be viewed as optimizing the performance of a randomly created proxy to a computer vision dataset which contains 1 example per class and has 32,768 total classes defined via natural language descriptions.</p>
+</blockquote>
+<p>This is a beautiful insight. Every single training step, with its massive batch size of 32,768, is like a mini, one-shot classification task. For that single step, the model is trying to correctly classify 32,768 images into 32,768 unique “classes” defined by their captions. By doing this billions of times with different random “datasets,” the model learns a truly general ability to connect any image to any text description.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: Understanding CLIP’s Evaluation Philosophy
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Before diving into pages of results and tables, the authors of CLIP take a moment to establish <em>how</em> and <em>why</em> they evaluate their model the way they do. This philosophy is just as important as the results themselves and is centered on a more ambitious definition of what a “general purpose” vision model should be able to do.</p>
+<section id="from-representation-learning-to-task-learning" class="level4">
+<h4 class="anchored" data-anchor-id="from-representation-learning-to-task-learning">From “Representation Learning” to “Task Learning”</h4>
+<p>For years, the standard way to evaluate a pre-trained vision model was to test its <strong>representation learning</strong> capabilities. The process, often called “linear probing,” works like this:</p>
+<ol type="1">
+<li>Pre-train a large model on a dataset like ImageNet.</li>
+<li>Take this model and freeze the weights of all its layers except the very last one.</li>
+<li>For a new, downstream dataset (e.g., classifying flower species), train a new, simple linear classifier “head” on top of these frozen features.</li>
+</ol>
+<p>If the model performs well, it means the pre-training process produced a good, general-purpose set of features. However, this doesn’t test the model’s intrinsic ability to perform the new task; it only tests if its features are useful for <em>someone else</em> (the new classifier) to perform the task.</p>
+<p>CLIP’s authors argue for a higher standard: <strong>task learning</strong>. Inspired by the remarkable capabilities of models like GPT-3, they want to measure if the model can perform a new task directly, with <strong>zero additional training</strong>. This is the essence of their focus on zero-shot transfer. Instead of asking, “Are the features good?”, they ask, “Can the model <em>itself</em> do the job?”</p>
+</section>
+<section id="a-broader-definition-of-zero-shot" class="level4">
+<h4 class="anchored" data-anchor-id="a-broader-definition-of-zero-shot">A Broader Definition of “Zero-Shot”</h4>
+<p>This new philosophy requires a broader definition of “zero-shot.”</p>
+<ul>
+<li><strong>The Classic Definition:</strong> Generalizing to <em>unseen categories</em> within a single, familiar task (e.g., classifying a zebra after only being trained on horses and their attributes).</li>
+<li><strong>CLIP’s Definition:</strong> Generalizing to <em>unseen datasets</em> which are a proxy for entirely new <em>tasks</em>. For example, can a model pre-trained on a vast collection of internet images and text instantly perform well on a specialized task like recognizing traffic signs, transcribing street numbers, or classifying satellite imagery?</li>
+</ul>
+<p>This is a much more challenging and meaningful benchmark. It tests a model’s flexibility and its ability to apply its learned knowledge to novel problems, which is a key step towards more general AI.</p>
+</section>
+<section id="how-it-works-a-classifier-generated-from-language" class="level4">
+<h4 class="anchored" data-anchor-id="how-it-works-a-classifier-generated-from-language">How It Works: A Classifier Generated from Language</h4>
+<p>The mechanism for this powerful zero-shot transfer is a direct and elegant consequence of CLIP’s pre-training:</p>
+<ol type="1">
+<li>CLIP is trained to find the best match between a given image and a set of text descriptions. It learns to create a shared “concept space” where an image of a cat and the sentence “a photo of a cat” are mathematically close.</li>
+<li>To perform zero-shot classification, you simply <strong>reuse this capability</strong>.</li>
+<li>You take an image and a list of text labels for your new task (e.g., “a photo of a car,” “a photo of a truck”).</li>
+<li>You encode both the image and all the text labels into the shared concept space.</li>
+<li>You then calculate which text description is “closest” to the image. That becomes your prediction.</li>
+</ol>
+<p>In this framework, the “classifier” is not a fixed part of the model’s architecture. It is created dynamically, on-the-fly, from whatever list of text descriptions you provide. In a sense, CLIP’s text encoder acts as a <strong>“hypernetwork”</strong>—a network that generates the weights of a classifier just from being told the names of the classes. This is the simple yet profound idea that enables CLIP’s incredible flexibility.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="initial-comparison-to-visual-n-grams" class="level3">
+<h3 class="anchored" data-anchor-id="initial-comparison-to-visual-n-grams">3.1.3 Initial Comparison to Visual N-Grams</h3>
+<p>Now for the moment of truth. After all the theory and motivation, how does CLIP’s zero-shot performance actually stack up against the previous state-of-the-art? The authors chose <strong>Visual N-Grams (Li et al., 2017)</strong> as their primary point of comparison. As we discussed, this was the most relevant predecessor that had also demonstrated zero-shot transfer by learning from image-text pairs from the web.</p>
+<p>The results, presented in Table 1 of the paper, are not just an incremental improvement; they represent a seismic leap in capability.</p>
+<blockquote class="blockquote">
+<p>In Table 1 we compare Visual N-Grams to CLIP. The best CLIP model improves accuracy on ImageNet from a proof of concept 11.5% to 76.2% and matches the performance of the original ResNet-50 despite using none of the 1.28 million crowd-labeled training examples available for this dataset.</p>
+</blockquote>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-table-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="images/2025-10-01-clip-reading-notes/paper-table-1.png" class="img-fluid"></a></p>
+<p>This is the headline result of the entire paper, and it’s worth pausing to fully appreciate its significance.</p>
+<ul>
+<li><strong>The Leap in Accuracy:</strong> On the standard ImageNet benchmark, CLIP achieves <strong>76.2%</strong> accuracy in a zero-shot setting. This is a nearly <strong>7x improvement</strong> over the 11.5% achieved by Visual N-Grams. It elevates the approach from a “proof of concept” to a genuinely useful and powerful method.</li>
+<li><strong>Matching a Fully Supervised Model, with Zero Data:</strong> This is the most shocking part. The 76.2% accuracy score <strong>matches the performance of the original ResNet-50 model</strong>. But the ResNet-50 was explicitly trained on all 1.28 million labeled ImageNet training images. CLIP achieved the same performance <em>without being trained on a single one of them</em>. It did so just by matching the images to text descriptions of the 1000 ImageNet classes. This is a powerful demonstration that learning from vast, noisy natural language on the internet can be as effective as learning from a massive, clean, human-labeled dataset.</li>
+</ul>
+<p>The authors also note another impressive result:</p>
+<blockquote class="blockquote">
+<p>Additionally, the top-5 accuracy of CLIP models are noticeably higher than their top-1, and this model has a 95% top-5 accuracy, matching Inception-V4 (Szegedy et al., 2016).</p>
+</blockquote>
+<ul>
+<li><strong>Top-5 Accuracy:</strong> This metric means that the correct label was in the model’s top five predictions 95% of the time. This incredibly high score suggests that even when CLIP’s top guess is wrong, the correct answer is usually very close. This indicates a deep and robust semantic understanding of the visual concepts, on par with another very strong, fully supervised model (Inception-V4).</li>
+</ul>
+<section id="an-important-caveat-this-isnt-an-apples-to-apples-fight" class="level4">
+<h4 class="anchored" data-anchor-id="an-important-caveat-this-isnt-an-apples-to-apples-fight">An Important Caveat: This Isn’t an Apples-to-Apples Fight</h4>
+<p>The authors, practicing good scientific diligence, are quick to point out that this comparison is not entirely fair.</p>
+<blockquote class="blockquote">
+<p>…the comparison to Visual N-Grams is meant for contextualizing the performance of CLIP and should not be interpreted as a direct methods comparison… many performance relevant differences between the two systems were not controlled for.</p>
+</blockquote>
+<p>The goal here is to show a generational leap, not to claim a direct victory on a level playing field. The key differences were:</p>
+<ul>
+<li><strong>Dataset Size:</strong> CLIP was trained on a dataset 10x larger.</li>
+<li><strong>Model and Training Scale:</strong> CLIP uses a much larger vision model and likely over 1000x more total training compute.</li>
+<li><strong>Architecture:</strong> CLIP uses a modern Transformer-based text encoder, which did not exist when Visual N-Grams was published in 2017.</li>
+</ul>
+</section>
+<section id="a-fairer-comparison-the-clip-objective-still-wins" class="level4">
+<h4 class="anchored" data-anchor-id="a-fairer-comparison-the-clip-objective-still-wins">A Fairer Comparison: The CLIP Objective Still Wins</h4>
+<p>To address this, the authors ran a more controlled experiment to isolate the benefit of their <em>training method</em> (contrastive learning) from the benefit of their massive new dataset.</p>
+<blockquote class="blockquote">
+<p>As a closer comparison, we trained a CLIP ResNet-50 on the same YFCC100M dataset that Visual N-Grams was trained on and found it matched their reported ImageNet performance within a V100 GPU day.</p>
+</blockquote>
+<p>This is a crucial control experiment. By training their own model on the <em>same dataset</em> as the previous work, they show that the <strong>contrastive objective</strong> used by CLIP is a far more efficient and effective learning method than the predictive, n-gram-based objective used by Visual N-Grams.</p>
+<p>Finally, they note that CLIP’s dominance holds on the other datasets reported by Visual N-Grams as well, achieving a 95% reduction in error on one and more than doubling the accuracy on another. With this initial, powerful result established, they signal their intent to move beyond this small comparison and stress-test CLIP against a much broader suite of over 30 computer vision datasets.</p>
+</section>
+</section>
+<section id="prompt-engineering-and-ensembling-getting-the-best-out-of-clip" class="level3">
+<h3 class="anchored" data-anchor-id="prompt-engineering-and-ensembling-getting-the-best-out-of-clip">3.1.4 Prompt Engineering and Ensembling: Getting the Best Out of CLIP</h3>
+<p>For a model that understands vision through the lens of language, the way you <em>talk</em> to it matters immensely. The authors discovered that the raw class names provided by most datasets are a poor way to communicate with CLIP, and they developed two powerful techniques — <strong>prompt engineering</strong> and <strong>ensembling</strong> — to dramatically improve its zero-shot performance.</p>
+<section id="the-problem-the-raw-label-distribution-gap" class="level4">
+<h4 class="anchored" data-anchor-id="the-problem-the-raw-label-distribution-gap">The Problem: The “Raw Label” Distribution Gap</h4>
+<p>The authors first identify a fundamental mismatch between CLIP’s training data and the data in standard evaluation benchmarks.</p>
+<blockquote class="blockquote">
+<p>It’s relatively rare in our pre-training dataset for the text paired with the image to be just a single word. Usually the text is a full sentence describing the image in some way.</p>
+</blockquote>
+<p>CLIP was trained on rich, descriptive sentences. However, most classification datasets just provide a single word for a label, like <code>cat</code>, <code>dog</code>, or <code>car</code>. This creates a <strong>distribution gap</strong>. It’s like training someone to understand entire news articles and then testing them by only giving them single, isolated headline words. This lack of context can lead to ambiguity and poor performance.</p>
+</section>
+<section id="the-first-solution-prompt-engineering" class="level4">
+<h4 class="anchored" data-anchor-id="the-first-solution-prompt-engineering">The First Solution: Prompt Engineering</h4>
+<p>To bridge this gap, the authors developed a simple but highly effective technique that has come to be known as <strong>prompt engineering</strong>. Instead of just feeding the model the raw, single-word label, they wrap it in a descriptive sentence, or a “prompt template.”</p>
+<blockquote class="blockquote">
+<p>To help bridge this distribution gap, we found that using the prompt template <strong>“A photo of a {label}.”</strong> to be a good default that helps specify the text is about the content of the image. This often improves performance over the baseline of using only the label text. For instance, just using this prompt improves accuracy on ImageNet by 1.3%.</p>
+</blockquote>
+<p>This is a remarkably simple fix with a significant impact. By changing the input from just <code>dog</code> to <code>"A photo of a dog."</code>, they provide the text encoder with the kind of sentence-level context it is used to seeing. This seemingly minor change instantly boosted ImageNet accuracy by 1.3%.</p>
+<p>This technique is particularly useful for solving the problem of <strong>polysemy</strong>, where a single word can have multiple meanings.</p>
+<blockquote class="blockquote">
+<p>A common issue is polysemy. When the name of a class is the only information provided to CLIP’s text encoder it is unable to differentiate which word sense is meant due to the lack of context. … This happens in ImageNet which contains both construction cranes and cranes that fly. Another example is found in classes of the Oxford-IIIT Pet dataset where the word boxer is, from context, clearly referring to a breed of dog, but to a text encoder lacking context could just as likely refer to a type of athlete.</p>
+</blockquote>
+<p>By engineering the prompt, you can provide the necessary context to disambiguate the meaning. For the Oxford Pets dataset, using a prompt like <code>"A photo of a {label}, a type of pet."</code> makes it perfectly clear to the model that it should be looking for a Boxer dog, not a human boxer. The authors show that customizing prompts to the specific context of a dataset (e.g., <code>"a satellite photo of a {label}"</code> for satellite imagery) can significantly improve performance.</p>
+</section>
+<section id="the-second-solution-ensembling" class="level4">
+<h4 class="anchored" data-anchor-id="the-second-solution-ensembling">The Second Solution: Ensembling</h4>
+<p>The authors took this idea a step further. If one good prompt helps, do multiple different prompts help even more? The answer is a resounding yes. This led to their second technique: <strong>ensembling</strong>.</p>
+<blockquote class="blockquote">
+<p>We also experimented with ensembling over multiple zero-shot classifiers as another way of improving performance. These classifiers are computed by using different context prompts such as ’A photo of a big {label}” and “A photo of a small {label}”.</p>
+</blockquote>
+<p>Instead of relying on a single prompt template, they generate embeddings for dozens of different ones. For example: <code>"a photo of a {label}"</code>, <code>"a cropped photo of a {label}"</code>, <code>"a drawing of a {label}"</code>, <code>"a photo of a big {label}"</code>, etc.</p>
+<p>Crucially, they perform the ensembling in an extremely efficient way. Instead of getting the final prediction for each prompt and averaging the probabilities, they <strong>average the text embeddings</strong> themselves. This creates a single, robust text embedding for each class that represents a blended “average” of many different descriptions. This is computationally “free” at inference time, because the averaged embeddings can be pre-computed and cached. For ImageNet, they used an ensemble of <strong>80 different prompt templates</strong>, which improved accuracy by an additional <strong>3.5%</strong> over the single default prompt.</p>
+</section>
+<section id="the-combined-impact-a-free-performance-boost" class="level4">
+<h4 class="anchored" data-anchor-id="the-combined-impact-a-free-performance-boost">The Combined Impact: A “Free” Performance Boost</h4>
+<p>When combined, these two techniques provide a massive boost to CLIP’s zero-shot performance. On ImageNet, they improved accuracy by nearly <strong>5 percentage points</strong> (1.3% from the initial prompt + 3.5% from ensembling).</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-4.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="images/2025-10-01-clip-reading-notes/paper-fig-4.png" class="img-fluid"></a></p>
+<p>Figure 4 in the paper visualizes this beautifully. The authors plot model performance against the amount of compute (GFLOPs). As models get bigger, performance smoothly increases. But prompt engineering and ensembling provide a large, immediate vertical jump in performance <em>without any increase in model size or compute</em>. This 5-point gain is roughly equivalent to the performance jump you’d get from scaling a model to be <strong>four times larger</strong>. It’s one of the closest things to a “free lunch” in machine learning: a significant boost in accuracy for almost no additional inference cost.</p>
+</section>
+</section>
+<section id="analysis-of-zero-shot-clip-performance" class="level3">
+<h3 class="anchored" data-anchor-id="analysis-of-zero-shot-clip-performance">3.1.5 Analysis of Zero-Shot CLIP Performance</h3>
+<p>With the core zero-shot mechanism established, the authors conduct a deep dive to contextualize its performance. Is it actually good? Where does it work best? And how does it compare to other learning paradigms like few-shot learning?</p>
+<section id="how-good-is-zero-shot-clip-a-new-supervised-baseline" class="level4">
+<h4 class="anchored" data-anchor-id="how-good-is-zero-shot-clip-a-new-supervised-baseline">How Good is Zero-Shot CLIP? A New Supervised Baseline</h4>
+<p>Saying CLIP matches the original ResNet-50 is a great headline, but the field has advanced significantly since 2016. To provide a more modern and challenging baseline, the authors compare zero-shot CLIP to a simple but very strong supervised approach.</p>
+<blockquote class="blockquote">
+<p>To contextualize this, we compare to the performance of a simple off-the-shelf baseline: fitting a fully supervised, regularized, logistic regression classifier on the features of the canonical ResNet-50.</p>
+</blockquote>
+<p>Let’s break down this baseline:</p>
+<ul>
+<li><strong>Canonical ResNet-50:</strong> The standard, pre-trained ResNet-50 model that is the workhorse of computer vision.</li>
+<li><strong>Features:</strong> They take the image representations produced by this ResNet-50 (before its final classification layer).</li>
+<li><strong>Fully Supervised Logistic Regression:</strong> They then train a simple linear classifier on top of these features using the <em>entire training set</em> for each of the 27 benchmark datasets.</li>
+</ul>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-5.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="images/2025-10-01-clip-reading-notes/paper-fig-5.png" class="img-fluid"></a></p>
+<p>This is a very fair and common way to evaluate the quality of pre-trained features. The results of this comparison, shown in Figure 5, are remarkable. Zero-shot CLIP, without seeing a single training example for any of these 27 tasks, <strong>beats the fully supervised ResNet-50 baseline on 16 of the datasets</strong>. This is a powerful statement: for a majority of these tasks, a zero-shot instruction to CLIP is more effective than fully training a classifier on thousands of labeled examples from a state-of-the-art ResNet model.</p>
+</section>
+<section id="where-does-zero-shot-clip-excel-and-where-does-it-stumble" class="level4">
+<h4 class="anchored" data-anchor-id="where-does-zero-shot-clip-excel-and-where-does-it-stumble">Where Does Zero-Shot CLIP Excel and Where Does It Stumble?</h4>
+<p>The breakdown of performance across these 27 datasets reveals a clear pattern of strengths and weaknesses.</p>
+<p><strong>CLIP’s Strengths:</strong></p>
+<ul>
+<li><strong>Action Recognition:</strong> CLIP shows a significant advantage on datasets like <code>Kinetics700</code> and <code>UCF101</code>. The authors speculate this is because its pre-training on natural language provides a much wider source of supervision for verbs (actions), whereas ImageNet is heavily biased towards nouns (objects).</li>
+<li><strong>General Object Recognition:</strong> On classic datasets like <code>ImageNet</code>, <code>CIFAR-10/100</code>, and <code>PascalVOC2007</code>, CLIP’s zero-shot performance is very competitive with the supervised baseline.</li>
+<li><strong>Some Fine-Grained Tasks:</strong> It performs exceptionally well on <code>Stanford Cars</code> and <code>Food101</code>, outperforming the baseline by over 20%.</li>
+</ul>
+<p><strong>CLIP’s Weaknesses:</strong></p>
+<p>Zero-shot CLIP struggles significantly on several types of highly specialized or abstract tasks.</p>
+<blockquote class="blockquote">
+<p>we see that zero-shot CLIP is quite weak on several specialized, complex, or abstract tasks such as satellite image classification (EuroSAT), lymph node tumor detection (PatchCamelyon), counting objects in synthetic scenes (CLEVRCounts), [and] self-driving related tasks…</p>
+</blockquote>
+<p>These failures highlight the limits of the pre-training data. Tasks that require very specific domain knowledge not commonly found in general web text (e.g., medical imaging), or tasks that are more abstract than simple object recognition (e.g., counting), are a major challenge. As the authors wisely caution, for some of these difficult tasks, it may not even be fair to expect a model to succeed with zero prior experience.</p>
+</section>
+<section id="zero-shot-vs.-few-shot-an-unexpected-result" class="level4">
+<h4 class="anchored" data-anchor-id="zero-shot-vs.-few-shot-an-unexpected-result">Zero-Shot vs.&nbsp;Few-Shot: An Unexpected Result</h4>
+<p>The most mind-bending comparison in this section is between zero-shot CLIP and <strong>few-shot</strong> linear classifiers. Intuitively, a one-shot model (which sees one example of each class) should always beat a zero-shot model (which sees none). The authors find that this is surprisingly not the case.</p>
+<blockquote class="blockquote">
+<p>While it is intuitive to expect zero-shot to underperform one-shot, we instead find that <strong>zero-shot CLIP matches the performance of 4-shot logistic regression on the same feature space.</strong></p>
+</blockquote>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-6.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="images/2025-10-01-clip-reading-notes/paper-fig-6.png" class="img-fluid"></a></p>
+<p>This result, visualized in Figure 6, is astounding. A single text instruction to CLIP is as powerful as showing a standard linear classifier four labeled examples from each class. The authors offer a brilliant explanation for this phenomenon:</p>
+<ol type="1">
+<li><strong>Zero-Shot is “Communicated”:</strong> With a text prompt, you are <em>directly communicating</em> the visual concept you want the model to find. It’s an unambiguous instruction.</li>
+<li><strong>Few-Shot is “Inferred”:</strong> With a handful of examples, the model must <em>infer</em> the target concept. A single image of a dog also contains grass, a sky, a collar, and fur. With only a few examples, it’s very difficult for the model to know which of the many possible visual concepts in the image is the one it’s supposed to learn.</li>
+</ol>
+<p>This suggests that for a powerful model like CLIP, a well-crafted text prompt can be a much richer and more efficient learning signal than a small number of ambiguous image examples.</p>
+</section>
+<section id="the-final-frontier-how-much-room-is-left-to-improve" class="level4">
+<h4 class="anchored" data-anchor-id="the-final-frontier-how-much-room-is-left-to-improve">The Final Frontier: How Much Room is Left to Improve?</h4>
+<p>Finally, the authors ask: how good could zero-shot performance possibly get? To estimate this, they compare zero-shot CLIP’s performance to that of a <strong>fully supervised linear classifier trained on CLIP’s own features</strong>. This supervised classifier represents a rough upper bound on the performance that is “linearly” extractable from the features.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-8.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="images/2025-10-01-clip-reading-notes/paper-fig-8.png" class="img-fluid"></a></p>
+<p>The results in Figure 8 show a strong correlation, but also a consistent gap: the zero-shot classifier is usually 10% to 25% worse than the fully supervised one. This is actually fantastic news. It means that <strong>CLIP’s image features are even more powerful than its current zero-shot mechanism can fully exploit</strong>. There is still significant headroom to improve the language-based task learning, suggesting that future work on better prompting or other techniques could unlock even more performance from the very same model.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: Key Takeaways from the Zero-Shot Performance Analysis
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Section 3.1.5 is a deep dive into the practical performance of CLIP’s zero-shot capabilities. The authors go beyond a single headline number and dissect the model’s strengths and weaknesses through a series of clever comparisons. Here are the four main lessons learned:</p>
+<p><strong>1. Zero-Shot CLIP is a Supervised Learning Competitor.</strong></p>
+<p>To establish a meaningful baseline, the authors compared zero-shot CLIP (which sees <em>no</em> training examples for a given task) against a standard, fully supervised classifier trained on top of features from a powerful ResNet-50. The result was stunning: CLIP beat this supervised baseline on <strong>16 out of 27</strong> diverse datasets. This proves that zero-shot transfer is not just a novelty; it is a genuinely powerful and competitive technique, often more effective than training on thousands of task-specific labeled examples.</p>
+<p><strong>2. CLIP Has Clear Strengths and Weaknesses.</strong></p>
+<p>The model’s performance is not uniform across all tasks. By analyzing the breakdown, we can infer what kind of knowledge was captured during its web-scale pre-training.</p>
+<ul>
+<li><strong>Strengths:</strong> CLIP excels at tasks involving <strong>general object recognition</strong> and, notably, <strong>action recognition in videos</strong>. The authors speculate this is because its training on natural language (sentences) provided rich supervision for verbs (actions), whereas traditional datasets like ImageNet are heavily biased towards nouns (objects).</li>
+<li><strong>Weaknesses:</strong> CLIP struggles on highly <strong>specialized and abstract tasks</strong>. This includes niche domains like medical imaging (<code>PatchCamelyon</code>) and satellite photo analysis (<code>EuroSAT</code>), as well as abstract tasks like counting objects (<code>CLEVRCounts</code>). This suggests its knowledge is broad but not infinitely deep, and its capabilities are limited by the concepts present in its vast but not all-encompassing training data.</li>
+</ul>
+<p><strong>3. A Good Instruction Can Be Better Than a Few Examples.</strong></p>
+<p>Perhaps the most counter-intuitive finding is how zero-shot performance compares to <em>few-shot</em> performance. The authors found that, on average, zero-shot CLIP’s performance was equivalent to that of a <strong>4-shot</strong> linear classifier trained on its own features. In other words, giving the model a single, well-crafted text prompt is as effective as giving a standard classifier four labeled examples for every single class. The authors reason that a text prompt is a direct and unambiguous way to <em>communicate</em> a concept, whereas a few image examples can be ambiguous, forcing the model to <em>infer</em> the target concept from a noisy signal.</p>
+<p><strong>4. There Is Still Room for Improvement.</strong></p>
+<p>The authors compared zero-shot CLIP’s performance to a fully supervised classifier trained on CLIP’s own features. This supervised model represents a rough “upper bound” on the quality of the learned features. They found a consistent gap of 10-25% between the zero-shot and fully supervised results. This is actually very promising news. It means that CLIP’s image representations are even more powerful than its current zero-shot mechanism can tap into. The features are excellent; the bottleneck is in translating any arbitrary text prompt into the perfect classifier. This suggests that future improvements in prompt engineering or other zero-shot techniques could unlock even more performance from the existing CLIP model.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: What is a “4-Shot Linear Classifier Trained on CLIP’s Features”?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This phrase describes a specific, controlled experiment designed to fairly measure the quality of a model’s learned features and compare different learning paradigms (like zero-shot vs.&nbsp;few-shot). Let’s dissect the term piece by piece.</p>
+<section id="on-clips-features-the-foundation" class="level4">
+<h4 class="anchored" data-anchor-id="on-clips-features-the-foundation">1. “…on CLIP’s Features” (The Foundation)</h4>
+<p>This is the most important part. In this experiment, the powerful, pre-trained CLIP model is used as a <strong>fixed feature extractor</strong>.</p>
+<ul>
+<li><strong>Step 1:</strong> You take an image from a downstream dataset (e.g., a picture of a cat from the Oxford Pets dataset).</li>
+<li><strong>Step 2:</strong> You feed this image into CLIP’s <strong>Image Encoder</strong>.</li>
+<li><strong>Step 3:</strong> You take the output vector from one of the final layers of the encoder. This vector is the “features”—a rich, numerical representation of the image.</li>
+</ul>
+<p>Crucially, during this entire process, the CLIP model itself is <strong>frozen</strong>. None of its weights are updated or changed. Its only job is to turn images into high-quality feature vectors. The goal of the experiment is to see how good these features are for a new task.</p>
+</section>
+<section id="linear-classifier-the-tool" class="level4">
+<h4 class="anchored" data-anchor-id="linear-classifier-the-tool">2. “Linear Classifier” (The Tool)</h4>
+<p>Now that you have a way to get features, you need to use them to make a prediction. The simplest possible way to do this is with a <strong>linear classifier</strong>.</p>
+<ul>
+<li><strong>What it is:</strong> A linear classifier is a very simple model. For each class, it learns a single “weight vector.” To classify a new image, it calculates the dot product between the image’s feature vector and each class’s weight vector. The class with the highest score wins.</li>
+<li><strong>Why use it?</strong> A linear classifier has no hidden layers and no complex non-linearities. It’s deliberately “dumb.” It cannot learn new, complex features; it can only draw simple linear boundaries (lines or planes) in the feature space.</li>
+</ul>
+<p>This simplicity is exactly why it’s used for this evaluation. If you can get high accuracy on a task using just a linear classifier on top of the frozen features, it’s a very strong signal that the features themselves are powerful and well-organized. It proves that the feature extractor has already done the hard work of separating the different classes in its representation space.</p>
+</section>
+<section id="shot-trained-the-constraint" class="level4">
+<h4 class="anchored" data-anchor-id="shot-trained-the-constraint">3. “4-Shot… Trained” (The Constraint)</h4>
+<p>This part describes the tiny amount of data the linear classifier is allowed to learn from. <strong>“K-shot learning”</strong> (or few-shot learning) means you train your model using only <em>K</em> labeled examples for each class.</p>
+<p>So, a <strong>“4-shot trained”</strong> classifier for the Oxford Pets dataset (which has 37 classes) would be trained as follows:</p>
+<ol type="1">
+<li>From the entire training set, you randomly select <strong>4 images of Boxer dogs</strong>, <strong>4 images of Beagle dogs</strong>, <strong>4 images of Persian cats</strong>, and so on for all 37 classes.</li>
+<li>Your entire training dataset consists of just these <code>4 * 37 = 148</code> labeled images.</li>
+<li>You convert these 148 images into 148 feature vectors using the frozen CLIP image encoder.</li>
+<li>You then train the simple linear classifier on this tiny dataset of 148 labeled feature vectors.</li>
+</ol>
+</section>
+<section id="putting-it-all-together" class="level4">
+<h4 class="anchored" data-anchor-id="putting-it-all-together">Putting It All Together</h4>
+<p>So, the phrase <strong>“a 4-shot linear classifier trained on CLIP’s features”</strong> describes a process:</p>
+<ol type="1">
+<li><strong>Freeze</strong> the powerful CLIP image encoder.</li>
+<li>Create a tiny training set by taking only <strong>4 labeled examples</strong> per class from a new dataset.</li>
+<li>Use the frozen CLIP encoder to <strong>extract feature vectors</strong> for these few examples.</li>
+<li><strong>Train</strong> a simple, “dumb” <strong>linear classifier</strong> on these feature vectors to perform the new task.</li>
+<li>Finally, evaluate this classifier’s accuracy on the full test set for that dataset.</li>
+</ol>
+<p>The surprising result in the paper is that this whole process, which gets to see four examples of each class, achieves roughly the same average accuracy as CLIP’s zero-shot mechanism, which sees <strong>zero</strong> examples and relies only on a text prompt.</p>
+</section>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Quick Note: What is a “Fully Supervised Classifier on CLIP’s Features” and Why is it an “Upper Bound”?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>After showing that zero-shot CLIP is surprisingly competitive with a 4-shot classifier, the authors perform one final, crucial experiment. They want to answer the question: “What is the absolute maximum performance we can squeeze out of these image features with a simple classifier, if we give it all the data it could possibly want?” This experiment is often called a <strong>“linear probe”</strong> and it’s a standard method for evaluating the quality of learned representations.</p>
+<section id="how-it-works-the-same-process-just-more-data" class="level4">
+<h4 class="anchored" data-anchor-id="how-it-works-the-same-process-just-more-data">How It Works: The Same Process, Just More Data</h4>
+<p>The process for this experiment is nearly identical to the “4-shot” experiment we just discussed. The only difference is the amount of data used.</p>
+<ol type="1">
+<li><strong>Freeze the CLIP Image Encoder:</strong> Just like before, CLIP is used as a fixed, off-the-shelf feature extractor. Its weights are not updated.</li>
+<li><strong>Extract Features for the <em>Entire</em> Training Set:</strong> Instead of using just 4 examples per class, you now take the <strong>entire available training set</strong> for the downstream task (e.g., all ~50,000 training images for CIFAR-10, or all 1.28 million training images for ImageNet). You run every single one of these images through the frozen CLIP encoder to get their feature vectors.</li>
+<li><strong>Train a Linear Classifier:</strong> You then train the same simple linear classifier on this massive dataset of labeled feature vectors.</li>
+</ol>
+</section>
+<section id="how-it-compares-to-the-4-shot-classifier" class="level4">
+<h4 class="anchored" data-anchor-id="how-it-compares-to-the-4-shot-classifier">How it Compares to the 4-Shot Classifier</h4>
+<p>The comparison between the two experiments is beautifully simple and highlights the power of data.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Experiment</th>
+<th style="text-align: left;"><strong>4-Shot Linear Probe</strong></th>
+<th style="text-align: left;"><strong>Fully Supervised Linear Probe</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Feature Extractor</strong></td>
+<td style="text-align: left;">Frozen CLIP Image Encoder</td>
+<td style="text-align: left;">Frozen CLIP Image Encoder</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Classifier Model</strong></td>
+<td style="text-align: left;">Simple Linear Classifier</td>
+<td style="text-align: left;">Simple Linear Classifier</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Training Data</strong></td>
+<td style="text-align: left;"><strong>4 images</strong> per class</td>
+<td style="text-align: left;"><strong>ALL available images</strong> in the training set</td>
+</tr>
+</tbody>
+</table>
+<p>As you can see, the feature extractor and the classifier are identical. The <em>only</em> variable being changed is the number of labeled examples the linear classifier gets to learn from—a tiny handful versus the entire dataset.</p>
+</section>
+<section id="why-is-this-a-rough-upper-bound" class="level4">
+<h4 class="anchored" data-anchor-id="why-is-this-a-rough-upper-bound">Why is this a “Rough Upper Bound”?</h4>
+<p>This fully supervised linear probe represents the best-case scenario for a linear classifier operating on CLIP’s features.</p>
+<ul>
+<li><strong>It’s an “Upper Bound”…:</strong> Because it has access to all the training data, it represents the highest possible accuracy a <em>linear</em> model can achieve on these features. You can’t give it any more information to learn from. Therefore, the performance of this classifier sets a ceiling, or an upper bound, on what we can expect from any other <em>linear</em> method using these features, including the zero-shot classifier.</li>
+<li><strong>…But it’s “Rough”:</strong> The authors wisely call it a “rough” upper bound because a more complex, <em>non-linear</em> classifier (e.g., a multi-layer neural network) could potentially achieve even higher accuracy by learning more intricate patterns in the feature space. However, the linear probe is the standard benchmark in the field because it’s a pure test of the features’ “linear separability”—how well-organized they are.</li>
+</ul>
+</section>
+<section id="what-the-10-25-gap-tells-us" class="level4">
+<h4 class="anchored" data-anchor-id="what-the-10-25-gap-tells-us">What the 10-25% Gap Tells Us</h4>
+<p>The authors found that the fully supervised linear probe consistently outperformed the zero-shot classifier by about 10-25%. This is the most important finding of this analysis.</p>
+<p>This gap should not be seen as a failure of CLIP. On the contrary, it is <strong>incredibly promising</strong>. It means that the feature representations learned by CLIP’s image encoder are so good that they contain more information than the zero-shot mechanism can currently access.</p>
+<p>Think of it this way:</p>
+<ul>
+<li>The <strong>fully supervised performance</strong> represents the total amount of “knowledge” stored in the image features.</li>
+<li>The <strong>zero-shot performance</strong> represents the amount of that knowledge that can be “unlocked” using a simple text prompt.</li>
+</ul>
+<p>The gap between them shows that there is still a wealth of knowledge locked away inside the features. This suggests that the CLIP image encoder is even more powerful than its famous zero-shot performance implies, and that future research into better ways of “prompting” or “instructing” the model could close this gap and unlock even more of its true potential.</p>
+</section>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="representation-learning" class="level3">
+<h3 class="anchored" data-anchor-id="representation-learning">3.2 Representation Learning</h3>
+<p>While zero-shot transfer is CLIP’s most unique feature, it’s also important to ask a more conventional question: how good are the raw visual representations that CLIP learns? Are they as powerful as the features learned by state-of-the-art models trained with supervised or self-supervised methods on ImageNet? This section answers that question with a resounding yes.</p>
+<section id="why-evaluate-with-linear-probes" class="level4">
+<h4 class="anchored" data-anchor-id="why-evaluate-with-linear-probes">Why Evaluate with Linear Probes?</h4>
+<p>The standard way to measure the quality of a model’s learned representations (or “features”) is to perform <strong>linear probe evaluation</strong>. The process is simple:</p>
+<ol type="1">
+<li><strong>Freeze the Model:</strong> Take the pre-trained model and lock all of its weights. It is no longer allowed to learn.</li>
+<li><strong>Extract Features:</strong> Pass all the images from a downstream dataset (like CIFAR-10) through the frozen model and save the feature vectors that come out of its penultimate layer.</li>
+<li><strong>Train a Linear Classifier:</strong> Train a simple, single-layer linear classifier (like logistic regression) on these frozen features.</li>
+<li><strong>Measure Performance:</strong> The final accuracy of this simple classifier on the test set is taken as a measure of the quality of the original model’s representations. A higher accuracy means the features are more “linearly separable” and thus of higher quality.</li>
+</ol>
+<p>The authors choose this method over end-to-end fine-tuning for several reasons:</p>
+<ul>
+<li><strong>It’s a Fairer Test of the Pre-Trained Features:</strong> Fine-tuning allows the model to adapt its features to the new dataset, which can mask failures in the original representation. Linear probes are a purer test of the “out-of-the-box” quality of the pre-trained features.</li>
+<li><strong>It’s Directly Comparable to Zero-Shot:</strong> As we’ve discussed, CLIP’s zero-shot classifier is itself a linear classifier. This allows for direct, apples-to-apples comparisons between the zero-shot performance and the “best possible” linear performance on the same features.</li>
+<li><strong>It’s More Manageable at Scale:</strong> Fairly fine-tuning dozens of different models across dozens of datasets is a computationally massive and complex undertaking. Linear probes are much simpler and faster to run, making a broad, comprehensive comparison feasible.</li>
+</ul>
+</section>
+<section id="clip-vs.-the-world-a-new-state-of-the-art" class="level4">
+<h4 class="anchored" data-anchor-id="clip-vs.-the-world-a-new-state-of-the-art">CLIP vs.&nbsp;The World: A New State of the Art</h4>
+<p>The authors compare the linear probe performance of their CLIP models against a comprehensive suite of the best publicly available computer vision models. This includes:</p>
+<ul>
+<li><strong>Supervised Models:</strong> EfficientNets, Instagram-pretrained ResNeXts, and Google’s BiT models.</li>
+<li><strong>Self-Supervised Models:</strong> SimCLRv2, BYOL, and MoCo.</li>
+</ul>
+<p>The results, shown in the incredible plots of Figure 10, are a major statement.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-10.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="images/2025-10-01-clip-reading-notes/paper-fig-10.png" class="img-fluid"></a></p>
+<p><strong>Finding 1: CLIP Models Scale Extremely Well.</strong></p>
+<p>When comparing models with similar computational requirements, the smaller CLIP models are competitive but don’t always win. However, the CLIP training approach scales incredibly well. The largest CLIP ResNet model (<strong>RN50x64</strong>) and the Vision Transformer models decisively outperform the previous best models on the standard 12-dataset benchmark from Kornblith et al.&nbsp;(2019).</p>
+<blockquote class="blockquote">
+<p>The largest model we trained (ResNet-50x64) slightly outperforms the best performing existing model (a Noisy Student EfficientNet-L2) on both overall score and compute efficiency.</p>
+</blockquote>
+<p><strong>Finding 2: Vision Transformers are More Efficient.</strong></p>
+<p>The results also confirm a key finding from the original ViT paper: when trained on sufficiently large datasets, Vision Transformers are more compute-efficient than CNNs like ResNet.</p>
+<blockquote class="blockquote">
+<p>We also find that CLIP vision transformers are about 3x more compute efficient than CLIP ResNets, which allows us to reach higher overall performance within our compute budget.</p>
+</blockquote>
+<p>The best overall model, a large Vision Transformer (<strong>ViT-L/14</strong>), outperforms the best existing model (Noisy Student EfficientNet-L2) by an average of 2.6% across the 12-dataset evaluation suite, solidifying CLIP’s position as the new state-of-the-art in representation learning.</p>
+<p><strong>Finding 3: The Broader the Test, the Better CLIP Looks.</strong></p>
+<p>The standard 12-dataset benchmark is heavily weighted towards tasks that are similar to ImageNet. The authors argue this might be a form of “selection bias,” and to get a truer sense of general performance, they also evaluate on their broader 27-dataset suite.</p>
+<p>On this more diverse set of tasks — which includes OCR, geo-localization, and traffic sign recognition — the benefits of CLIP’s training are even more apparent. The performance gap between the best CLIP model and the previous state-of-the-art widens from 2.6% to <strong>5%</strong>. This suggests that CLIP’s pre-training on a diverse set of internet data results in features that are more general and robust than those learned from the more narrow supervision of ImageNet. As shown in Figure 11, CLIP’s features outperform the best ImageNet model’s features on <strong>21 out of the 27</strong> different tasks. This is a powerful demonstration of its superior generalization.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-11.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="images/2025-10-01-clip-reading-notes/paper-fig-11.png" class="img-fluid"></a></p>
+</section>
+</section>
+<section id="robustness-to-natural-distribution-shift" class="level3">
+<h3 class="anchored" data-anchor-id="robustness-to-natural-distribution-shift">3.3 Robustness to Natural Distribution Shift</h3>
+<p>For years, deep learning models have been making headlines for achieving “superhuman performance” on benchmarks like ImageNet. However, subsequent research has repeatedly shown that these same models can fail in simple, surprising ways when presented with images that differ even slightly from their training data. This discrepancy is a central problem in modern AI.</p>
+<blockquote class="blockquote">
+<p>What explains this discrepancy? Various ideas have been suggested… A common theme… is that deep learning models are exceedingly adept at finding correlations and patterns which hold across their training dataset… However many of these correlations and patterns are actually <strong>spurious</strong> and do not hold for other distributions…</p>
+</blockquote>
+<p>A <strong>spurious correlation</strong> is a pattern that happens to be true in the training data but is not a fundamental truth about the world. For example, if a dataset of cow images mostly shows them in grassy fields, a model might learn that “green pixels at the bottom of the image” is a key feature for identifying a cow. This trick works well for the test set, but the model will fail spectacularly when shown a picture of a cow on a beach.</p>
+<p>The authors ask a critical question: is this brittleness an inherent flaw of deep learning, or is it a flaw of the <em>dataset</em> we train them on (i.e., ImageNet)? CLIP provides a perfect opportunity to investigate this.</p>
+<section id="measuring-robustness-to-natural-distribution-shift" class="level4">
+<h4 class="anchored" data-anchor-id="measuring-robustness-to-natural-distribution-shift">Measuring Robustness to “Natural Distribution Shift”</h4>
+<p>To do this, they use a suite of benchmark datasets from a recent paper by Taori et al.&nbsp;(2020) that are specifically designed to test for this kind of failure. These aren’t synthetic corruptions; they are “natural” shifts in the data distribution, created by collecting new images “in the wild.” These include:</p>
+<ul>
+<li><strong>ImageNetV2:</strong> A fresh, independent test set for ImageNet collected with the exact same protocol.</li>
+<li><strong>ImageNet-Sketch:</strong> Images of objects as black-and-white sketches.</li>
+<li><strong>ObjectNet:</strong> Images of objects in unusual orientations (e.g., a chair lying on its side).</li>
+<li><strong>And others…</strong></li>
+</ul>
+<p>On these datasets, standard ImageNet models suffer a massive drop in performance. The question is, how does CLIP fare?</p>
+</section>
+<section id="finding-1-zero-shot-clip-is-dramatically-more-robust" class="level4">
+<h4 class="anchored" data-anchor-id="finding-1-zero-shot-clip-is-dramatically-more-robust">Finding 1: Zero-Shot CLIP is Dramatically More Robust</h4>
+<p>The core hypothesis is that a zero-shot model, by definition, has not been trained on the specific distribution of the test dataset (ImageNet). Therefore, it <em>cannot</em> overfit to its spurious correlations.</p>
+<blockquote class="blockquote">
+<p>Intuitively, a zero-shot model should not be able to exploit spurious correlations or patterns that hold only on a specific distribution, since it is not trained on that distribution. Thus it is reasonable to expect zero-shot models to have much higher effective robustness.</p>
+</blockquote>
+<p>The results, shown in the powerful plot in Figure 13, confirm this intuition in a stunning way. The plot shows ImageNet accuracy on the x-axis and accuracy on the distribution shift datasets on the y-axis.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-13.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="images/2025-10-01-clip-reading-notes/paper-fig-13.png" class="img-fluid"></a></p>
+<ul>
+<li><strong>Standard ImageNet Models:</strong> Lie on a line far below the <code>y=x</code> diagonal. A model with 80% accuracy on ImageNet might only get 40% on the robust datasets—a huge “robustness gap.”</li>
+<li><strong>Zero-Shot CLIP Models:</strong> Lie on a line much, much closer to the ideal <code>y=x</code> line. They close the robustness gap by up to <strong>75%</strong>.</li>
+</ul>
+<p>This is a massive finding. It suggests that a significant portion of the brittleness of modern vision models is not an inherent flaw of deep learning, but a direct result of <strong>overfitting to the specific biases and spurious correlations present in the ImageNet training set</strong>. By learning from a much larger and more diverse dataset of natural language supervision, CLIP learns more robust and generalizable features.</p>
+</section>
+<section id="finding-2-supervised-fine-tuning-on-imagenet-introduces-brittleness" class="level4">
+<h4 class="anchored" data-anchor-id="finding-2-supervised-fine-tuning-on-imagenet-introduces-brittleness">Finding 2: Supervised Fine-Tuning on ImageNet <em>Introduces</em> Brittleness</h4>
+<p>But is this robustness due to CLIP’s pre-training, or is it simply because it’s a zero-shot model? To test this, the authors perform a fascinating experiment. They take the robust, pre-trained CLIP model and then fine-tune it on ImageNet by training a linear classifier on its features, just as they did in the previous section.</p>
+<p>The results, shown in Figure 14, are incredible:</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-14.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="images/2025-10-01-clip-reading-notes/paper-fig-14.png" class="img-fluid"></a></p>
+<ul>
+<li><strong>ImageNet Accuracy:</strong> Goes UP by a massive 9.2% (from 76.2% to 85.4%). The model is now even better at the specific task of ImageNet classification.</li>
+<li><strong>Robustness:</strong> Goes DOWN. The average accuracy across the seven natural distribution shift datasets <em>slightly decreases</em>.</li>
+</ul>
+<p>This is a shocking result. They achieved a 9.2% accuracy gain on the in-distribution task, which corresponds to roughly three years of SOTA progress on ImageNet, and it resulted in <strong>zero improvement</strong> in out-of-distribution robustness.</p>
+<p>This strongly suggests that supervised adaptation to the ImageNet distribution actively encourages the model to learn and exploit the dataset’s spurious correlations. The 9.2% gain in accuracy wasn’t from learning a deeper, more fundamental understanding of the objects; it was from learning the “tricks” needed to do well on the ImageNet test.</p>
+</section>
+<section id="finding-3-robustness-is-a-continuum" class="level4">
+<h4 class="anchored" data-anchor-id="finding-3-robustness-is-a-continuum">Finding 3: Robustness is a Continuum</h4>
+<p>Finally, the authors investigate how this robustness changes as you move from zero-shot to fully supervised. In Figure 15, they plot the performance of classifiers trained on CLIP’s features with 0, 1, 2, 4, 8… all the way up to all the training examples.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-15.png" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="images/2025-10-01-clip-reading-notes/paper-fig-15.png" class="img-fluid"></a></p>
+<p>The results show a clear and beautiful trend:</p>
+<ul>
+<li><strong>Zero-shot CLIP</strong> is the most robust model.</li>
+<li>As you add more ImageNet training examples (from one-shot to few-shot), the <strong>ImageNet accuracy goes up</strong>, but the <strong>robustness goes down</strong>. The model gradually moves away from the ideal <code>y=x</code> robustness line.</li>
+<li>The <strong>fully supervised model</strong> is the least robust of all.</li>
+</ul>
+<p>The conclusion is clear: minimizing the amount of training data from a specific distribution (like ImageNet) leads to higher effective robustness. This is a profound statement about the trade-offs between in-distribution performance and real-world robustness, and it suggests that re-orienting research towards zero-shot and few-shot evaluation is crucial for building more reliable AI systems.</p>
+</section>
+</section>
+</section>
+<section id="comparison-to-human-performance" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-to-human-performance">4. Comparison to Human Performance</h2>
+<p>After demonstrating CLIP’s state-of-the-art performance against other models, the authors introduce a new, more challenging benchmark: human beings. The goal is not just to see who gets a higher score, but to understand the fundamental <em>differences in how humans and machines learn</em>. This comparison reveals a profound gap in sample efficiency and points toward major opportunities for future research.</p>
+<section id="the-experiment-a-tough-fine-grained-challenge" class="level4">
+<h4 class="anchored" data-anchor-id="the-experiment-a-tough-fine-grained-challenge">The Experiment: A Tough, Fine-Grained Challenge</h4>
+<p>To create a meaningful comparison, the authors chose a difficult, fine-grained visual classification task: identifying 37 different breeds of cats and dogs from the Oxford-IIIT Pets dataset. They then had five human participants perform this task under three different conditions, designed to mirror the machine learning paradigms of zero-shot, one-shot, and two-shot learning.</p>
+<ul>
+<li><strong>Zero-Shot:</strong> The humans were given only the list of 37 breed names. They had to classify the images based on their existing prior knowledge of what these breeds look like, without being shown any examples. This is directly analogous to CLIP’s zero-shot setup.</li>
+<li><strong>One-Shot:</strong> The humans were shown a single, labeled example image for each of the 37 breeds before they began the classification task.</li>
+<li><strong>Two-Shot:</strong> They were shown two example images for each breed.</li>
+</ul>
+</section>
+<section id="the-results-a-shocking-gap-in-learning-efficiency" class="level4">
+<h4 class="anchored" data-anchor-id="the-results-a-shocking-gap-in-learning-efficiency">The Results: A Shocking Gap in Learning Efficiency</h4>
+<p>The results of this experiment are one of the most insightful parts of the paper. While CLIP’s zero-shot performance on this task is incredibly strong (93.5% accuracy), the way humans learn from examples is radically different and far more efficient.</p>
+<p>The key finding is the jump between the zero-shot and one-shot human performance.</p>
+<blockquote class="blockquote">
+<p>Interestingly, humans went from a performance average of 54% to 76% with just one training example per class, and the marginal gain from an additional training example is minimal.</p>
+</blockquote>
+<p>This is a profound difference.</p>
+<ul>
+<li><strong>Humans:</strong> A single example image provided a massive <strong>+22%</strong> boost in accuracy. This suggests that humans are incredibly adept at using one example to resolve their uncertainty. They can effectively “know what they don’t know” and use a single piece of new information to generalize across many different images of the same breed.</li>
+<li><strong>CLIP (and ML Models):</strong> As we saw in the previous section (Figure 6), the standard “few-shot” method of training a linear classifier on CLIP’s features shows a slow, gradual improvement with more data. There is no magical jump. The authors even note that for ML models, performance can sometimes <em>drop</em> when going from zero-shot to one-shot because a single, potentially ambiguous example can be a worse learning signal than a clear text description.</li>
+</ul>
+<p>The authors’ conclusion is stark:</p>
+<blockquote class="blockquote">
+<p>…it seems that while CLIP is a promising training strategy for zero-shot performance… there is a large difference between how humans learn from a few examples and the few-shot methods in this paper.</p>
+</blockquote>
+</section>
+<section id="why-the-gap-the-power-of-prior-knowledge" class="level4">
+<h4 class="anchored" data-anchor-id="why-the-gap-the-power-of-prior-knowledge">Why the Gap? The Power of Prior Knowledge</h4>
+<p>What explains this vast difference in sample efficiency? The authors speculate that the key is the ability to effectively <strong>integrate prior knowledge</strong>.</p>
+<p>The standard few-shot learning method — training a linear classifier on top of frozen features — is a very simple algorithm. It doesn’t have a sophisticated mechanism for combining the rich, pre-trained knowledge embedded in CLIP’s features with the new information provided by a handful of examples.</p>
+<p>Humans, on the other hand, do this automatically. We bring a lifetime of experience and a rich conceptual understanding of the world to any new learning task. We don’t just see a picture of a “Samoyed”; we connect it to our existing knowledge of dogs, fur, animals, and what features are important for distinguishing between them.</p>
+<p>This finding suggests that while CLIP has learned an incredible representation of the world, the methods for <em>using</em> that representation in a few-shot setting are still in their infancy. As the authors note, this points to a critical direction for future work: developing better algorithms that can properly integrate a model’s prior knowledge with a few examples to achieve human-like learning efficiency.</p>
+</section>
+<section id="a-silver-lining-shared-difficulty" class="level4">
+<h4 class="anchored" data-anchor-id="a-silver-lining-shared-difficulty">A Silver Lining: Shared Difficulty</h4>
+<p>Interestingly, the experiment also revealed a key similarity: the tasks that are hard for CLIP are also hard for humans. As shown in Figure 16, the specific dog and cat breeds that CLIP had the lowest accuracy on were, by and large, the same ones that humans struggled with. This suggests that both CLIP and humans have captured a meaningful and consistent understanding of the visual similarity between breeds, and their errors are not random but are concentrated on the most genuinely ambiguous cases.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-16.png" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="images/2025-10-01-clip-reading-notes/paper-fig-16.png" class="img-fluid"></a></p>
+</section>
+</section>
+<section id="data-overlap-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="data-overlap-analysis">5. Data Overlap Analysis</h2>
+<p>A major concern for any model pre-trained on a massive, uncurated dataset from the internet is the potential for <strong>data leakage</strong> or <strong>overlap</strong>. What if, by chance, some of the images from the downstream evaluation datasets (like the test sets of CIFAR-10 or ImageNet) were also present in the 400 million images used for pre-training?</p>
+<blockquote class="blockquote">
+<p>This is important to investigate since, in a worst-case scenario, a complete copy of an evaluation dataset could leak into the pre-training dataset and invalidate the evaluation as a meaningful test of generalization.</p>
+</blockquote>
+<p>If a model has already “seen the answers” during training, then its high performance on that test set isn’t a measure of its ability to generalize—it’s just a measure of its ability to memorize. Proving that this is not the case is essential for the validity of the paper’s claims.</p>
+<section id="the-challenge-you-cant-pre-filter-for-every-possible-test" class="level4">
+<h4 class="anchored" data-anchor-id="the-challenge-you-cant-pre-filter-for-every-possible-test">The Challenge: You Can’t Pre-Filter for Every Possible Test</h4>
+<p>One way to prevent this is to identify all potential evaluation datasets ahead of time, find any duplicates in your training set, and remove them before you begin training. The authors argue against this approach for a very practical reason:</p>
+<blockquote class="blockquote">
+<p>This has the downside of limiting the scope of benchmarking and analysis. Adding a new evaluation would require an expensive re-train or risk reporting an un-quantified benefit due to overlap.</p>
+</blockquote>
+<p>This is a forward-looking argument. If you pre-filter for today’s 30 benchmarks, you can’t fairly test your model on a new benchmark that someone creates tomorrow without re-training your multi-million dollar model from scratch.</p>
+</section>
+<section id="the-solution-detect-document-and-analyze" class="level4">
+<h4 class="anchored" data-anchor-id="the-solution-detect-document-and-analyze">The Solution: Detect, Document, and Analyze</h4>
+<p>Instead of trying to prevent overlap, the authors choose a more transparent and flexible approach: <strong>documenting how much overlap occurs and analyzing how it affects performance.</strong></p>
+<p>They developed a sophisticated, three-step procedure to do this for each of their 35 evaluation datasets:</p>
+<ol type="1">
+<li><strong>Duplicate Detection:</strong> They built a custom near-duplicate detection model (detailed in Appendix C) designed to find images in their 400-million-image training set that were visually very similar to the images in each evaluation dataset. This process created two new subsets for each evaluation set:
+<ul>
+<li><strong>Overlap:</strong> The small subset of evaluation images that <em>did</em> have a near-duplicate in the training data.</li>
+<li><strong>Clean:</strong> The large subset of evaluation images that <em>did not</em>.</li>
+</ul></li>
+<li><strong>Performance Analysis:</strong> They then computed the zero-shot accuracy of CLIP separately on the <strong>Overlap</strong> and <strong>Clean</strong> subsets. The main metric of interest is the difference in accuracy between these two (<code>All - Clean</code>). If the model was simply memorizing, its accuracy on the <strong>Overlap</strong> set should be significantly higher than on the <strong>Clean</strong> set.</li>
+<li><strong>Statistical Significance:</strong> Because the amount of overlap is often very small, they also performed statistical tests to see if the observed accuracy difference was likely to be real or just due to random chance.</li>
+</ol>
+</section>
+<section id="the-results-overlap-is-minimal-and-has-almost-no-effect" class="level4">
+<h4 class="anchored" data-anchor-id="the-results-overlap-is-minimal-and-has-almost-no-effect">The Results: Overlap is Minimal and Has Almost No Effect</h4>
+<p>The results of this extensive analysis, presented in Figure 17, provide strong evidence that CLIP’s performance is not a result of memorization.</p>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-fig-17.png" class="lightbox" data-gallery="quarto-lightbox-gallery-21"><img src="images/2025-10-01-clip-reading-notes/paper-fig-17.png" class="img-fluid"></a></p>
+<ul>
+<li><strong>Overlap is Low:</strong> For the vast majority of the datasets, the amount of overlap was very small, with a median of just <strong>2.2%</strong> and an average of <strong>3.2%</strong>. Some specialized or synthetic datasets had no overlap at all.</li>
+<li><strong>Performance Impact is Negligible:</strong> Because the overlap was so small, its effect on the overall reported accuracy was almost nonexistent. For most datasets, the accuracy was shifted by less than 0.1%. The largest “inflation” of accuracy due to overlap was a mere <strong>0.6%</strong> on the Birdsnap dataset.</li>
+<li><strong>No Strong Signs of Memorization:</strong> Even on the datasets with the most significant overlap (like Country211, which had 21.5% overlap because it was also constructed from Flickr’s YFCC100M dataset), the performance boost was negligible. The authors speculate that even when an image is a duplicate, the <em>text</em> paired with it in the training set is often not relevant to the downstream task (e.g., a photo taken in France might not have the word “France” in its caption).</li>
+</ul>
+<p>The authors do acknowledge potential confounders. Their duplicate detector isn’t perfect, and there could be subtle shifts in the <em>type</em> of images that get duplicated (e.g., all-black transition frames in video datasets). However, their findings are consistent with similar analyses done by other researchers (Mahajan et al., 2018; Kolesnikov et al., 2019) on their own large-scale datasets.</p>
+<p>Ultimately, this careful and transparent analysis provides strong support for the paper’s main conclusion: CLIP’s remarkable zero-shot performance is a genuine demonstration of generalization, not a trick of memorization.</p>
+</section>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">6. Limitations</h2>
+<p>While CLIP represents a monumental leap forward, the authors are careful to ground their results by providing a frank and detailed discussion of its limitations. Far from being a perfect, solve-all model, CLIP has clear weaknesses and areas where significant work is still needed.</p>
+<section id="performance-is-still-not-state-of-the-art-on-most-tasks" class="level4">
+<h4 class="anchored" data-anchor-id="performance-is-still-not-state-of-the-art-on-most-tasks">1. Performance is Still Not State-of-the-Art on Most Tasks</h4>
+<p>The first and most important limitation is a humbling reality check on performance. While CLIP’s zero-shot performance is often competitive with a supervised ResNet-50 baseline, this baseline is now many years old.</p>
+<blockquote class="blockquote">
+<p>On datasets with training splits, the performance of zero-shot CLIP is on average competitive with the simple supervised baseline of a linear classifier on top of ResNet-50 features. On most of these datasets, the performance of this baseline is now well below the overall state of the art.</p>
+</blockquote>
+<p>In essence, while zero-shot CLIP is a revolutionary <em>capability</em>, it is not (yet) a replacement for a fully supervised, state-of-the-art model trained specifically for a given task. The authors make a sobering estimate of the work that remains:</p>
+<blockquote class="blockquote">
+<p>…we estimate around a <strong>1000x increase in compute</strong> is required for zero-shot CLIP to reach overall state-of-the-art performance. This is infeasible to train with current hardware.</p>
+</blockquote>
+<p>This highlights the need for future research into more data-efficient and computationally-efficient training methods. Simply scaling up the current approach is not a viable path to supremacy on every task.</p>
+</section>
+<section id="weak-performance-on-certain-task-types" class="level4">
+<h4 class="anchored" data-anchor-id="weak-performance-on-certain-task-types">2. Weak Performance on Certain Task Types</h4>
+<p>As discussed in the zero-shot analysis (Section 3.1.5), CLIP’s performance is not uniform across all types of vision problems. It struggles significantly with several categories of tasks:</p>
+<ul>
+<li><strong>Very Fine-Grained Classification:</strong> While it does well on some fine-grained tasks (like food), it struggles with others that require distinguishing between very subtle differences, such as different models of cars, species of flowers, or variants of aircraft.</li>
+<li><strong>Abstract or Systematic Tasks:</strong> CLIP is poor at more abstract tasks like counting the number of objects in an image (<code>CLEVRCounts</code>). This suggests its understanding of vision is more about recognizing “what” than “how many.”</li>
+<li><strong>“Un-Googlable” Novel Tasks:</strong> For tasks that are truly novel and unlikely to have appeared in its internet-scale pre-training data, CLIP’s performance can be near random. Their example is classifying the distance to the nearest car in a photo, a specialized task from the KITTI self-driving dataset.</li>
+</ul>
+</section>
+<section id="poor-generalization-to-truly-out-of-distribution-images" class="level4">
+<h4 class="anchored" data-anchor-id="poor-generalization-to-truly-out-of-distribution-images">3. Poor Generalization to “Truly Out-of-Distribution” Images</h4>
+<p>While Section 3.3 showed that CLIP is very robust to <em>natural</em> distribution shifts, the authors make it clear that it is still brittle when faced with data that is fundamentally different from its pre-training distribution.</p>
+<blockquote class="blockquote">
+<p>…we’ve observed that zero-shot CLIP still generalizes poorly to data that is truly out-of-distribution for it. An illustrative example occurs for the task of OCR…</p>
+</blockquote>
+<p>CLIP learns a high-quality representation for recognizing text that is digitally rendered, as this is common on the internet. However, its performance on handwritten digits from the <strong>MNIST</strong> dataset is terrible — achieving only 88% accuracy. This is worse than an “embarrassingly simple baseline of logistic regression on raw pixels.”</p>
+<p>This is a critical finding. It shows that CLIP does not solve the underlying problem of brittle generalization in deep learning. Instead, its strategy is to “circumvent the problem” by training on a dataset so massive and varied that it hopes most data will be effectively “in-distribution.” As the MNIST example proves, this is a “naive assumption that… is easy to violate.”</p>
+</section>
+<section id="the-flexibility-trap-clip-cant-generate-novel-outputs" class="level4">
+<h4 class="anchored" data-anchor-id="the-flexibility-trap-clip-cant-generate-novel-outputs">4. The Flexibility Trap: CLIP Can’t Generate Novel Outputs</h4>
+<p>While CLIP’s zero-shot interface is incredibly flexible for <em>classification</em>, it is still limited to choosing from a predefined set of concepts that you provide as text prompts. It cannot generate novel descriptions for an image it has never seen before.</p>
+<blockquote class="blockquote">
+<p>This is a significant restriction compared to a truly flexible approach like image captioning which could generate novel outputs.</p>
+</blockquote>
+<p>An image captioning model can look at a photo and generate a brand new sentence describing it. CLIP can only tell you which of your proposed sentences is the best match. The authors note that they tried training a captioning model but found it to be far less computationally efficient than the contrastive approach, which is why they chose CLIP’s design. They suggest that future work could explore jointly training a contrastive and a generative model to get the best of both worlds.</p>
+</section>
+<section id="data-efficiency-is-still-poor" class="level4">
+<h4 class="anchored" data-anchor-id="data-efficiency-is-still-poor">5. Data Efficiency is Still Poor</h4>
+<p>CLIP is not a sample-efficient learner. Its entire premise is the opposite: it compensates for the poor data efficiency of deep learning by leveraging a source of supervision that can be scaled to hundreds of millions of examples. The authors provide a staggering statistic to illustrate this:</p>
+<blockquote class="blockquote">
+<p>If every image seen during training of a CLIP model was presented at a rate of one per second, it would take <strong>405 years</strong> to iterate through the 12.8 billion images seen over 32 training epochs.</p>
+</blockquote>
+<p>This highlights that while CLIP is a new paradigm, it does not address the fundamental challenge of creating models that can learn efficiently from a small number of examples, like humans do.</p>
+</section>
+<section id="co-adaptation-and-benchmark-haphazardness" class="level4">
+<h4 class="anchored" data-anchor-id="co-adaptation-and-benchmark-haphazardness">6. Co-Adaptation and Benchmark Haphazardness</h4>
+<p>Finally, the authors are admirably self-critical about their own evaluation methodology.</p>
+<ul>
+<li>They admit that despite their focus on zero-shot transfer, they repeatedly checked performance on validation sets to guide their research. This is not a “true” zero-shot scenario, where a model is developed in a vacuum and then tested once.</li>
+<li>They also acknowledge that their main 27-dataset evaluation suite was “somewhat haphazardly assembled” and is “undeniably co-adapted with the development and capabilities of CLIP.” In other words, they built a benchmark that, in part, plays to their model’s strengths. They call for the creation of new, standardized benchmarks designed explicitly to evaluate broad, zero-shot transfer capabilities.</li>
+</ul>
+</section>
+</section>
+<section id="broader-impacts" class="level2">
+<h2 class="anchored" data-anchor-id="broader-impacts">7. Broader Impacts</h2>
+<p>The creation of a powerful, general-purpose technology like CLIP is not a neutral act. It has the potential for both immense benefit and significant harm. In this section, the authors confront these dual-use possibilities head-on, discussing the model’s capabilities, inherent biases, and the challenges it presents for society.</p>
+<section id="a-double-edged-sword-the-power-of-an-arbitrary-classifier" class="level4">
+<h4 class="anchored" data-anchor-id="a-double-edged-sword-the-power-of-an-arbitrary-classifier">A Double-Edged Sword: The Power of an Arbitrary Classifier</h4>
+<p>The central capability of CLIP is also its central challenge.</p>
+<blockquote class="blockquote">
+<p>CLIP has a wide range of capabilities due to its ability to carry out arbitrary image classification tasks. One can give it images of cats and dogs and ask it to classify cats, or give it images taken in a department store and ask it to classify shoplifters—a task with significant social implications and for which AI may be unfit.</p>
+</blockquote>
+<p>This perfectly captures the dual-use nature of the technology. The same flexibility that allows a museum to build a tool for art discovery could allow a government to build a tool for surveillance. Furthermore, CLIP makes this power accessible to everyone.</p>
+<blockquote class="blockquote">
+<p>CLIP also introduces a capability that will magnify and alter such issues: CLIP makes it possible to easily create your own classes for categorization (to ‘roll your own classifier’) without a need for re-training.</p>
+</blockquote>
+<p>Before CLIP, deploying a new image classification system for a bespoke task required significant data and expertise. Now, anyone with basic programming skills can define any set of classes they can imagine in plain text and instantly deploy a classifier. This “democratization” of capability is powerful, but it also lowers the barrier for misuse and introduces challenges similar to those seen with large-scale generative models like GPT-3, where the full range of a model’s capabilities (and potential harms) only becomes clear after extensive testing and real-world interaction.</p>
+</section>
+<section id="characterizing-inherited-social-biases" class="level4">
+<h4 class="anchored" data-anchor-id="characterizing-inherited-social-biases">Characterizing Inherited Social Biases</h4>
+<p>Because CLIP is trained on a massive, unfiltered dataset of image-text pairs from the internet, it inevitably learns and reflects the biases present in that data. The internet is a reflection of society, warts and all, and the model internalizes these associations.</p>
+<blockquote class="blockquote">
+<p>Our bias tests represent our initial efforts to probe aspects of how the model responds in different scenarios, and are by nature limited in scope.</p>
+</blockquote>
+<p>The authors conduct a series of probes to begin to characterize these biases. Using the FairFace benchmark for demographic classification and other exploratory tests, they find significant and concerning issues (which are detailed in Section 7.1 of the paper):</p>
+<ul>
+<li><strong>Denigration and Harmful Associations:</strong> The model learns to associate certain demographic groups with harmful concepts. For example, when given crime-related labels like “thief” or “criminal,” the model misclassifies male images at a higher rate than female images. More troublingly, it misclassifies images of Black people into non-human categories (like “gorilla”) at a significantly higher rate than other races.</li>
+<li><strong>Performance Disparities:</strong> The model’s accuracy on tasks like gender classification is not uniform across all demographic groups.</li>
+<li><strong>Class Design Sensitivity:</strong> The authors show that these biases are highly sensitive to “class design”—the specific words one chooses for the labels. Adding the label “child” to a set of classes, for instance, drastically reduces the number of young people who are misclassified with crime-related labels. This shows how easily a developer’s choices can either amplify or mitigate the model’s inherent biases.</li>
+</ul>
+<p>These tests are not comprehensive, but they are a crucial first step. They demonstrate that CLIP, like any model trained on societal data, is not a neutral observer but an active participant in perpetuating social biases. This necessitates careful analysis and mitigation before any real-world deployment.</p>
+</section>
+<section id="the-challenge-of-surveillance" class="level4">
+<h4 class="anchored" data-anchor-id="the-challenge-of-surveillance">The Challenge of Surveillance</h4>
+<p>The authors explicitly address the use of CLIP’s capabilities for surveillance. Many of the tasks CLIP learns to perform—from action recognition and object classification to geo-localization and facial emotion recognition—have direct applications in surveillance.</p>
+<p>While they argue that CLIP is not ideally designed for many common surveillance tasks (like object detection) and that its performance may not be competitive with specialized, supervised models, they acknowledge a key risk:</p>
+<blockquote class="blockquote">
+<p>…CLIP and similar models could enable bespoke, niche surveillance use cases for which no well-tailored models or datasets exist, and could lower the skill requirements to build such applications.</p>
+</blockquote>
+<p>This is the core danger. CLIP’s flexibility makes it a powerful tool for creating novel, highly specific surveillance systems “on the fly,” for which no commercial solutions or dedicated datasets currently exist.</p>
+<p>The authors’ analysis in this section is a model of responsible research. They do not shy away from the negative potential of their work. Instead, they proactively investigate it, quantify it where possible, and call on the broader AI community to develop more robust testing schemes to better characterize the capabilities and biases of these powerful general-purpose models.</p>
+</section>
+</section>
+<section id="related-work" class="level2">
+<h2 class="anchored" data-anchor-id="related-work">8. Related Work</h2>
+<p>No research happens in a vacuum. In this section, the authors meticulously map out the surrounding intellectual landscape to clarify what CLIP is, what it isn’t, and how it builds upon decades of prior work. They situate their contribution not as a single, isolated invention, but as a powerful synthesis of ideas from multiple fields.</p>
+<section id="a-broad-intellectual-heritage-in-nlp" class="level4">
+<h4 class="anchored" data-anchor-id="a-broad-intellectual-heritage-in-nlp">A Broad Intellectual Heritage in NLP</h4>
+<p>First, the authors make a bold and expansive claim, arguing that the idea of “natural language supervision” is the bedrock of nearly all of modern NLP.</p>
+<blockquote class="blockquote">
+<p>Any model that leverages written, spoken, signed or any other form of human language as part of its training signal is arguably using natural language as a source of supervision. This is an admittedly extremely broad area and covers most work in the field of distributional semantics including topic models…, word, sentence, and paragraph vectors…, and language models…</p>
+</blockquote>
+<p>They are connecting CLIP to the core principle of <strong>distributional semantics</strong>: the idea that the meaning of a word (or sentence) can be learned from the contexts in which it appears. This is the foundational concept behind everything from Word2Vec to GPT-3. By framing their work this way, they are claiming that CLIP is essentially an application of this core NLP principle to the visual domain.</p>
+</section>
+<section id="the-core-task-text-image-retrieval" class="level4">
+<h4 class="anchored" data-anchor-id="the-core-task-text-image-retrieval">The Core Task: Text-Image Retrieval</h4>
+<p>More specifically, CLIP’s pre-training objective is a form of <strong>text-image retrieval</strong>. This is a long-standing subfield of computer vision dedicated to finding relevant images for a given text query, and vice versa. The authors acknowledge a rich history of work in this area, which evolved from predictive objectives (trying to predict words) to learning <strong>joint multi-modal embedding spaces</strong>—the “shared concept space” that is central to CLIP’s design. CLIP’s primary contribution to this specific field is not a fundamentally new algorithm, but rather the successful application of these existing contrastive learning principles at an unprecedented scale.</p>
+</section>
+<section id="a-close-cousin-webly-supervised-learning" class="level4">
+<h4 class="anchored" data-anchor-id="a-close-cousin-webly-supervised-learning">A Close Cousin: “Webly Supervised Learning”</h4>
+<p>CLIP is closely related to another popular paradigm called <strong>webly supervised learning</strong>. This approach involves:</p>
+<ol type="1">
+<li>Choosing a class name (e.g., “tiger”).</li>
+<li>Using that name as a query in an image search engine.</li>
+<li>Using the resulting images as training examples, with the query (“tiger”) as the label.</li>
+</ol>
+<p>While this also uses internet-scale data, the authors draw a crucial distinction:</p>
+<blockquote class="blockquote">
+<p>However CLIP only uses full text sequences co-occuring with images as supervision rather than just the queries, which are often only a single word or short n-gram.</p>
+</blockquote>
+<p>This is a critical difference in the <em>richness</em> of the supervision signal. A webly supervised model learns from the pairing <code>[image] -&gt; "tiger"</code>. CLIP learns from the pairing <code>[image] -&gt; "a photo of a Bengal tiger resting in the shade"</code>. The full, natural language caption provides a much deeper, more nuanced, and more generalizable learning signal than a single-word label.</p>
+</section>
+<section id="the-contemporary-competitors-complex-vision-language-models" class="level4">
+<h4 class="anchored" data-anchor-id="the-contemporary-competitors-complex-vision-language-models">The Contemporary Competitors: Complex Vision-Language Models</h4>
+<p>Finally, the authors differentiate CLIP from a family of powerful, contemporary vision-language (V&amp;L) models like ViLBERT, LXMERT, and Oscar. These models are designed for complex reasoning tasks like Visual Question Answering (VQA).</p>
+<blockquote class="blockquote">
+<p>This line of work focuses on richly connecting vision and language in order to solve complex downstream tasks… These approaches leverage impressively engineered models which combine 3 (or more) pre-trained subsystems…</p>
+</blockquote>
+<p>These models typically use a complex <strong>joint attention mechanism</strong>, where different regions of the image and different words in the text can directly “attend” to each other through multiple layers of a Transformer. This allows for a very deep, fine-grained fusion of the two modalities.</p>
+<p>CLIP is fundamentally different in its approach:</p>
+<blockquote class="blockquote">
+<p>The only interaction in a CLIP model between the image and text domain is a single dot product in a learned joint embedding space.</p>
+</blockquote>
+<p>CLIP intentionally avoids this complex, dense fusion. Its image and text encoders are entirely separate, and their representations only interact at the very end via a simple similarity calculation. This architectural simplicity is a deliberate design choice. While it may be less powerful for intricate reasoning tasks, this simplicity is precisely what makes CLIP <strong>computationally efficient enough to be scaled up</strong> to a dataset of 400 million images. It represents a trade-off: sacrificing deep fusion for massive scale.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">9. Conclusion</h2>
+<p><a href="images/2025-10-01-clip-reading-notes/paper-section-9.png" class="lightbox" data-gallery="quarto-lightbox-gallery-22"><img src="images/2025-10-01-clip-reading-notes/paper-section-9.png" class="img-fluid"></a></p>
+<p>In their concluding remarks, the authors succinctly summarize the journey and the destination of their research. They frame their work as a successful test of a grand hypothesis: can the principles that revolutionized Natural Language Processing be successfully transferred to the domain of computer vision?</p>
+<blockquote class="blockquote">
+<p>We have investigated whether it is possible to transfer the success of task-agnostic web-scale pre-training in NLP to another domain. We find that adopting this formula results in similar behaviors emerging in the field of computer vision…</p>
+</blockquote>
+<p>Their answer is a clear and confident “yes.” Just as large language models trained on web text develop a surprising ability to perform a wide range of tasks, so too does CLIP.</p>
+<p>The authors recap the core mechanism and its powerful outcome:</p>
+<blockquote class="blockquote">
+<p>In order to optimize their training objective, CLIP models learn to perform a wide variety of tasks during pre-training. This task learning can then be leveraged via natural language prompting to enable zero-shot transfer to many existing datasets.</p>
+</blockquote>
+<p>This is the central narrative of the paper in two sentences. The simple, scalable contrastive objective forces the model to learn a rich, general-purpose understanding of visual concepts. This learned knowledge is intrinsically linked to language, which allows it to be flexibly deployed to new tasks through the powerful and intuitive interface of natural language prompting.</p>
+<p>Finally, they offer a concluding thought on the performance and the road ahead:</p>
+<blockquote class="blockquote">
+<p>At sufficient scale, the performance of this approach can be competitive with task-specific supervised models although there is still room for much improvement.</p>
+</blockquote>
+<p>This is a statement of both triumph and humility. They have proven that their approach is not just a novelty but a genuinely competitive method that can rival traditional supervised models on their own turf. However, they also acknowledge that the journey is far from over. As their own “Limitations” section made clear, there are still many tasks where supervised models reign supreme, and future work is needed to continue closing this gap.</p>
+<p>In essence, the CLIP paper concludes by establishing a new paradigm for computer vision. By successfully adapting the NLP playbook of large-scale, task-agnostic pre-training, the authors unlocked an unprecedented level of zero-shot generalization, fundamentally changing the way we think about building and interacting with models that can see.</p>
+
+
 </section>
 
 </main> <!-- /main -->
